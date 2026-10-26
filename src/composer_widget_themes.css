@@ -1,0 +1,996 @@
+/* ========================================================
+   BROADCAST PLAYROOM 3.0 - COMPLETE WIDGET THEMES ENGINE
+   Imported directly from Version 2 (32 Clock, 28 Viewer, 23 Webcam, Goal)
+   Strict Zero GPU Lockup compliant (isolated, no full-screen blur)
+   ======================================================== */
+
+/* ── CLOCK THEMES (32 THEMES) ── */
+:is(.widget, .composer-widget).clock-theme-default :is(.widget-inner, .composer-widget-inner) { color: #fff; text-shadow: 0 1px 4px #000; }
+:is(.widget, .composer-widget).clock-theme-neon :is(.widget-inner, .composer-widget-inner) {
+    color: #00ffff; text-shadow: 0 0 5px #00ffff, 0 0 15px #00ffff, 0 0 25px #0099ff;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).clock-theme-cyberpunk :is(.widget-inner, .composer-widget-inner) {
+    color: #ff00ff; text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ff88, 2px 2px 0 #00ff88;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).clock-theme-digital :is(.widget-inner, .composer-widget-inner) {
+    color: #00ff00; text-shadow: 0 0 8px #00ff00; background: #000;
+    font-family: 'Courier New', monospace; padding: 4px 12px; border: 1px solid #00ff00;
+  }
+:is(.widget, .composer-widget).clock-theme-glass :is(.widget-inner, .composer-widget-inner) {
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+    padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+  }
+:is(.widget, .composer-widget).clock-theme-sakura :is(.widget-inner, .composer-widget-inner) {
+    color: #ff69b4; text-shadow: 0 1px 3px #fff, 0 0 8px #ffb6c1;
+    font-style: italic;
+  }
+:is(.widget, .composer-widget).clock-theme-gold :is(.widget-inner, .composer-widget-inner) {
+    color: #ffd700; text-shadow: 0 1px 2px #8b6914, 0 0 8px #ffd700;
+    font-family: Georgia, serif;
+  }
+:is(.widget, .composer-widget).clock-theme-retro :is(.widget-inner, .composer-widget-inner) {
+    color: #f4e04d; text-shadow: 2px 2px 0 #c44569, 4px 4px 0 rgba(0,0,0,0.3);
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).clock-theme-pipboy :is(.widget-inner, .composer-widget-inner) {
+    color: #14ff14; text-shadow: 0 0 5px #14ff14; background: rgba(0,20,0,0.6);
+    font-family: 'Courier New', monospace; padding: 4px 10px;
+    border: 1px solid #14ff14; border-radius: 2px;
+  }
+:is(.widget, .composer-widget).clock-theme-minimal :is(.widget-inner, .composer-widget-inner) {
+    color: #fff; text-shadow: none; font-weight: 400; letter-spacing: 2px;
+  }
+:is(.widget, .composer-widget).clock-theme-outline :is(.widget-inner, .composer-widget-inner) {
+    color: transparent; -webkit-text-stroke: 1.5px #fff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.4);
+  }
+:is(.widget, .composer-widget).clock-theme-shadow :is(.widget-inner, .composer-widget-inner) {
+    color: #fff; text-shadow: 3px 3px 0 #000, 5px 5px 8px rgba(0,0,0,0.6);
+  }
+:is(.widget, .composer-widget).clock-theme-digital-red :is(.widget-inner, .composer-widget-inner) {
+    color: #ff3030; text-shadow: 0 0 8px #ff3030; background: #000;
+    font-family: 'Courier New', monospace; padding: 4px 12px; border: 1px solid #ff3030;
+  }
+:is(.widget, .composer-widget).clock-theme-digital-amber :is(.widget-inner, .composer-widget-inner) {
+    color: #ffb000; text-shadow: 0 0 8px #ffb000; background: #000;
+    font-family: 'Courier New', monospace; padding: 4px 12px; border: 1px solid #ffb000;
+  }
+:is(.widget, .composer-widget).clock-theme-matrix :is(.widget-inner, .composer-widget-inner) {
+    color: #00ff41; text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).clock-theme-vaporwave :is(.widget-inner, .composer-widget-inner) {
+    color: #ff71ce; text-shadow: 0 0 8px #ff71ce, 2px 2px 0 #01cdfe;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).clock-theme-fire :is(.widget-inner, .composer-widget-inner) {
+    color: #ff6b1a; text-shadow: 0 0 8px #ff4500, 0 0 16px #ff8c00;
+  }
+:is(.widget, .composer-widget).clock-theme-ice :is(.widget-inner, .composer-widget-inner) {
+    color: #b3e5fc; text-shadow: 0 0 8px #4fc3f7, 0 1px 3px #0277bd;
+  }
+:is(.widget, .composer-widget).clock-theme-royal :is(.widget-inner, .composer-widget-inner) {
+    color: #ffd700; text-shadow: 0 1px 3px #1a237e, 0 0 8px #ffd700;
+    font-family: Georgia, serif;
+    background: rgba(26,35,126,0.4); padding: 4px 12px; border: 1px solid #ffd700;
+  }
+:is(.widget, .composer-widget).clock-theme-sunset :is(.widget-inner, .composer-widget-inner) {
+    color: #ff6b6b; text-shadow: 0 0 8px #ff9a8b, 0 1px 3px #c44569;
+  }
+:is(.widget, .composer-widget).clock-theme-hologram :is(.widget-inner, .composer-widget-inner) {
+    color: #00ffff; text-shadow: 0 0 3px #ff00ff, 0 0 8px #00ffff;
+    background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(255,0,255,0.1));
+    padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(0,255,255,0.4);
+  }
+:is(.widget, .composer-widget).clock-theme-led :is(.widget-inner, .composer-widget-inner) {
+    color: #ff0000; text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+    font-family: 'Courier New', monospace; letter-spacing: 2px;
+    background: rgba(20,0,0,0.6); padding: 4px 10px; border-radius: 2px;
+  }
+:is(.widget, .composer-widget).clock-theme-led-green :is(.widget-inner, .composer-widget-inner) {
+    color: #00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+    font-family: 'Courier New', monospace; letter-spacing: 2px;
+    background: rgba(0,20,0,0.6); padding: 4px 10px; border-radius: 2px;
+  }
+:is(.widget, .composer-widget).clock-theme-led-blue :is(.widget-inner, .composer-widget-inner) {
+    color: #0080ff; text-shadow: 0 0 5px #0080ff, 0 0 10px #0080ff;
+    font-family: 'Courier New', monospace; letter-spacing: 2px;
+    background: rgba(0,0,20,0.6); padding: 4px 10px; border-radius: 2px;
+  }
+:is(.widget, .composer-widget).clock-theme-aqua :is(.widget-inner, .composer-widget-inner) {
+    color: #7fffd4; text-shadow: 0 0 8px #40e0d0, 0 1px 2px #008080;
+  }
+:is(.widget, .composer-widget).clock-theme-coral :is(.widget-inner, .composer-widget-inner) {
+    color: #ff7f50; text-shadow: 0 0 8px #ff6347, 0 1px 3px #8b0000;
+  }
+:is(.widget, .composer-widget).clock-theme-mint :is(.widget-inner, .composer-widget-inner) {
+    color: #98ff98; text-shadow: 0 0 6px #00ff7f, 0 1px 2px #006400;
+  }
+:is(.widget, .composer-widget).clock-theme-lavender :is(.widget-inner, .composer-widget-inner) {
+    color: #e6e6fa; text-shadow: 0 0 8px #9370db, 0 1px 2px #4b0082;
+  }
+:is(.widget, .composer-widget).clock-theme-bronze :is(.widget-inner, .composer-widget-inner) {
+    color: #cd7f32; text-shadow: 0 1px 2px #8b4513, 0 0 6px #cd7f32;
+    font-family: Georgia, serif;
+  }
+:is(.widget, .composer-widget).clock-theme-platinum :is(.widget-inner, .composer-widget-inner) {
+    color: #e5e4e2; text-shadow: 0 0 4px #b8b8b8, 0 1px 2px #808080;
+  }
+:is(.widget, .composer-widget).clock-theme-neon-purple :is(.widget-inner, .composer-widget-inner) {
+    color: #bf00ff; text-shadow: 0 0 5px #bf00ff, 0 0 10px #8000ff, 0 0 20px #bf00ff;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).clock-theme-pixel-rpg :is(.widget-inner, .composer-widget-inner) {
+    /* ★ ฉากหลัง: ดำสนิท */
+    background: #000 !important;
+    /* ★ ขอบขาว pixelate: ขาวนอกหนา + ขาวในบาง (double border สไตล์ RPG) */
+    border: 4px solid #fff !important;
+    /* ★ box-shadow: ขอบดำด้านใน + เงาแบบคมชัดไม่เบลอ */
+    box-shadow:
+      inset 0 0 0 2px #000,
+      inset 0 0 0 4px #fff,
+      4px 4px 0 #000 !important;
+    padding: 8px 14px !important;
+    border-radius: 0 !important;   /* ★ มุมตรง ไม่มน — สไตล์ pixel */
+    /* ★ ฟอนต์ dot pixel จริง (VT323 = CRT terminal, Press Start 2P = 8-bit) */
+    font-family: 'VT323', 'Press Start 2P', monospace !important;
+    color: #ffffff;
+    text-shadow: 2px 2px 0 #000 !important;
+    font-weight: 400 !important;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+  }
+:is(.widget, .composer-widget).clock-theme-pixel-rpg .clock-time {
+    /* ★ เวลา: สีขาวสว่าง + hard shadow ดำ (เหมือนเกม 8-bit)
+       ไม่ใส่ !important ที่ color เพื่อให้ color picker ใน settings ทับได้ */
+    color: #ffffff;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000 !important;
+    font-size: 1.4em !important;   /* ★ ใหญ่ขึ้นเพราะ VT323 เล็ก */
+    letter-spacing: 2px;
+  }
+:is(.widget, .composer-widget).clock-theme-pixel-rpg .clock-date {
+    /* ★ วันที่: สีเขียวอ่อนแบบ RPG status bar (ไม่ใส่ !important ที่ color) */
+    color: #94e44d;
+    text-shadow: 1px 1px 0 #000 !important;
+    font-size: 0.9em !important;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+/* ── VIEWER THEMES (28 THEMES) ── */
+:is(.widget, .composer-widget).viewer-theme-default :is(.widget-inner, .composer-widget-inner) {
+    color: #fff; text-shadow: 0 1px 3px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-default .viewer-total {
+    background: rgba(80,140,255,0.5); padding: 4px 12px; border-radius: 8px;
+  }
+:is(.widget, .composer-widget).viewer-theme-default .viewer-chip {
+    background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 8px;
+  }
+:is(.widget, .composer-widget).viewer-theme-neon :is(.widget-inner, .composer-widget-inner) {
+    color: #00ffff; text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).viewer-theme-neon .viewer-total {
+    background: rgba(0,255,255,0.15); padding: 4px 12px; border-radius: 6px;
+    border: 1px solid rgba(0,255,255,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-neon .viewer-chip {
+    background: rgba(0,255,255,0.1); padding: 2px 8px; border-radius: 6px;
+    border: 1px solid rgba(0,255,255,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-glass :is(.widget-inner, .composer-widget-inner) {
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-glass .viewer-total {
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+    padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+  }
+:is(.widget, .composer-widget).viewer-theme-glass .viewer-chip {
+    background: rgba(255,255,255,0.08); backdrop-filter: blur(4px);
+    padding: 2px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+  }
+:is(.widget, .composer-widget).viewer-theme-pill :is(.widget-inner, .composer-widget-inner) {
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+  }
+:is(.widget, .composer-widget).viewer-theme-pill .viewer-total {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    padding: 5px 16px; border-radius: 20px; box-shadow: 0 2px 8px rgba(102,126,234,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-pill .viewer-chip {
+    background: linear-gradient(135deg, #f093fb, #f5576c);
+    padding: 3px 10px; border-radius: 16px; box-shadow: 0 1px 4px rgba(245,87,108,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-dark :is(.widget-inner, .composer-widget-inner) {
+    color: #e2e8f0; text-shadow: none;
+  }
+:is(.widget, .composer-widget).viewer-theme-dark .viewer-total {
+    background: #1e293b; padding: 4px 12px; border-radius: 6px; border: 1px solid #334155;
+  }
+:is(.widget, .composer-widget).viewer-theme-dark .viewer-chip {
+    background: #0f172a; padding: 2px 8px; border-radius: 6px; border: 1px solid #1e293b;
+  }
+:is(.widget, .composer-widget).viewer-theme-cyberpunk :is(.widget-inner, .composer-widget-inner) {
+    color: #ff00ff; text-shadow: 0 0 5px #ff00ff, 2px 2px 0 #00ff88;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).viewer-theme-cyberpunk .viewer-total {
+    background: rgba(255,0,255,0.15); padding: 4px 12px; border-radius: 0;
+    border: 1px solid #ff00ff; clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+  }
+:is(.widget, .composer-widget).viewer-theme-cyberpunk .viewer-chip {
+    background: rgba(0,255,136,0.15); padding: 2px 8px; border-radius: 0;
+    border: 1px solid #00ff88;
+  }
+:is(.widget, .composer-widget).viewer-theme-gold :is(.widget-inner, .composer-widget-inner) {
+    color: #ffd700; text-shadow: 0 1px 2px #8b6914, 0 0 6px #ffd700;
+    font-family: Georgia, serif;
+  }
+:is(.widget, .composer-widget).viewer-theme-gold .viewer-total {
+    background: linear-gradient(135deg, rgba(255,215,0,0.2), rgba(184,134,11,0.2));
+    padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(255,215,0,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-gold .viewer-chip {
+    background: rgba(255,215,0,0.1); padding: 2px 8px; border-radius: 6px;
+    border: 1px solid rgba(255,215,0,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-retro :is(.widget-inner, .composer-widget-inner) {
+    color: #f4e04d; text-shadow: 2px 2px 0 #c44569;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).viewer-theme-retro .viewer-total {
+    background: rgba(244,224,77,0.15); padding: 4px 12px; border-radius: 4px;
+    border: 2px solid #f4e04d;
+  }
+:is(.widget, .composer-widget).viewer-theme-retro .viewer-chip {
+    background: rgba(196,69,105,0.2); padding: 2px 8px; border-radius: 4px;
+    border: 1px solid #c44569;
+  }
+:is(.widget, .composer-widget).viewer-theme-aqua :is(.widget-inner, .composer-widget-inner) {
+    color: #7fffd4; text-shadow: 0 0 6px #40e0d0, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-aqua .viewer-total {
+    background: rgba(127,255,212,0.15); padding: 4px 12px; border-radius: 8px;
+    border: 1px solid rgba(127,255,212,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-aqua .viewer-chip {
+    background: rgba(64,224,208,0.1); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(64,224,208,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-magma :is(.widget-inner, .composer-widget-inner) {
+    color: #ff4500; text-shadow: 0 0 8px #ff8c00, 0 1px 2px #8b0000;
+  }
+:is(.widget, .composer-widget).viewer-theme-magma .viewer-total {
+    background: linear-gradient(135deg, rgba(255,69,0,0.3), rgba(255,140,0,0.2));
+    padding: 4px 12px; border-radius: 6px; border: 1px solid #ff4500;
+  }
+:is(.widget, .composer-widget).viewer-theme-magma .viewer-chip {
+    background: rgba(255,69,0,0.15); padding: 2px 8px; border-radius: 6px;
+    border: 1px solid rgba(255,140,0,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-forest :is(.widget-inner, .composer-widget-inner) {
+    color: #90ee90; text-shadow: 0 0 5px #228b22, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-forest .viewer-total {
+    background: rgba(34,139,34,0.2); padding: 4px 12px; border-radius: 8px;
+    border: 1px solid rgba(144,238,144,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-forest .viewer-chip {
+    background: rgba(34,139,34,0.15); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(144,238,144,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-sapphire :is(.widget-inner, .composer-widget-inner) {
+    color: #58a6ff; text-shadow: 0 0 6px #1e90ff, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-sapphire .viewer-total {
+    background: rgba(30,144,255,0.2); padding: 4px 12px; border-radius: 20px;
+    border: 1px solid rgba(88,166,255,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-sapphire .viewer-chip {
+    background: rgba(30,144,255,0.12); padding: 2px 8px; border-radius: 16px;
+    border: 1px solid rgba(88,166,255,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-neon-purple :is(.widget-inner, .composer-widget-inner) {
+    color: #bf00ff; text-shadow: 0 0 5px #bf00ff, 0 0 10px #8000ff;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).viewer-theme-neon-purple .viewer-total {
+    background: rgba(191,0,255,0.15); padding: 4px 12px; border-radius: 6px;
+    border: 1px solid #bf00ff;
+  }
+:is(.widget, .composer-widget).viewer-theme-neon-purple .viewer-chip {
+    background: rgba(128,0,255,0.1); padding: 2px 8px; border-radius: 6px;
+    border: 1px solid rgba(191,0,255,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-sunset-orange :is(.widget-inner, .composer-widget-inner) {
+    color: #ff9a44; text-shadow: 0 0 6px #ff6b6b, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-sunset-orange .viewer-total {
+    background: linear-gradient(135deg, rgba(255,154,68,0.25), rgba(255,107,107,0.15));
+    padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,154,68,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-sunset-orange .viewer-chip {
+    background: rgba(255,107,107,0.12); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(255,154,68,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-mono :is(.widget-inner, .composer-widget-inner) {
+    color: #d4d4d4; text-shadow: 0 1px 2px #000; font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).viewer-theme-mono .viewer-total {
+    background: rgba(255,255,255,0.08); padding: 4px 12px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+:is(.widget, .composer-widget).viewer-theme-mono .viewer-chip {
+    background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+:is(.widget, .composer-widget).viewer-theme-rainbow :is(.widget-inner, .composer-widget-inner) {
+    color: #fff; text-shadow: 0 1px 3px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-rainbow .viewer-total {
+    background: linear-gradient(90deg, #ff0080, #ff8c00, #ffd700, #00ff00, #00bfff, #8b00ff);
+    padding: 5px 14px; border-radius: 20px; color: #fff;
+  }
+:is(.widget, .composer-widget).viewer-theme-rainbow .viewer-chip {
+    background: linear-gradient(135deg, rgba(255,0,128,0.2), rgba(139,0,255,0.2));
+    padding: 3px 10px; border-radius: 16px;
+  }
+:is(.widget, .composer-widget).viewer-theme-carbon :is(.widget-inner, .composer-widget-inner) {
+    color: #a8b3cf; text-shadow: 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-carbon .viewer-total {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    padding: 4px 14px; border-radius: 8px; border: 1px solid #2a3a5e;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  }
+:is(.widget, .composer-widget).viewer-theme-carbon .viewer-chip {
+    background: #0d1117; padding: 2px 8px; border-radius: 6px;
+    border: 1px solid #1e293b;
+  }
+:is(.widget, .composer-widget).viewer-theme-vapor :is(.widget-inner, .composer-widget-inner) {
+    color: #ff71ce; text-shadow: 0 0 5px #ff71ce, 2px 2px 0 #01cdfe;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).viewer-theme-vapor .viewer-total {
+    background: rgba(255,113,206,0.15); padding: 4px 12px; border-radius: 0;
+    border: 1px solid #ff71ce;
+  }
+:is(.widget, .composer-widget).viewer-theme-vapor .viewer-chip {
+    background: rgba(1,205,254,0.1); padding: 2px 8px; border-radius: 0;
+    border: 1px solid #01cdfe;
+  }
+:is(.widget, .composer-widget).viewer-theme-ice :is(.widget-inner, .composer-widget-inner) {
+    color: #e0f7ff; text-shadow: 0 0 6px #7dd3fc, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-ice .viewer-total {
+    background: linear-gradient(135deg, rgba(224,247,255,0.2), rgba(125,211,252,0.15));
+    padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(224,247,255,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-ice .viewer-chip {
+    background: rgba(125,211,252,0.12); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(224,247,255,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-rose-gold :is(.widget-inner, .composer-widget-inner) {
+    color: #f7cac9; text-shadow: 0 1px 2px #8b4a52, 0 0 4px #e8b4a0;
+    font-family: Georgia, serif;
+  }
+:is(.widget, .composer-widget).viewer-theme-rose-gold .viewer-total {
+    background: linear-gradient(135deg, rgba(245,208,197,0.25), rgba(232,180,160,0.2));
+    padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(247,202,201,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-rose-gold .viewer-chip {
+    background: rgba(232,180,160,0.15); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(247,202,201,0.35);
+  }
+:is(.widget, .composer-widget).viewer-theme-emerald :is(.widget-inner, .composer-widget-inner) {
+    color: #50fa7b; text-shadow: 0 0 6px #10b981, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-emerald .viewer-total {
+    background: rgba(16,185,129,0.18); padding: 4px 12px; border-radius: 8px;
+    border: 1px solid rgba(80,250,123,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-emerald .viewer-chip {
+    background: rgba(16,185,129,0.12); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(80,250,123,0.3);
+  }
+:is(.widget, .composer-widget).viewer-theme-sakura :is(.widget-inner, .composer-widget-inner) {
+    color: #ffb7c5; text-shadow: 0 1px 3px #fff, 0 0 6px #ff8fab;
+  }
+:is(.widget, .composer-widget).viewer-theme-sakura .viewer-total {
+    background: linear-gradient(135deg, rgba(255,183,197,0.25), rgba(255,214,224,0.2));
+    padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(255,183,197,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-sakura .viewer-chip {
+    background: rgba(255,143,171,0.15); padding: 2px 8px; border-radius: 16px;
+    border: 1px solid rgba(255,183,197,0.35);
+  }
+:is(.widget, .composer-widget).viewer-theme-toxic :is(.widget-inner, .composer-widget-inner) {
+    color: #ccff00; text-shadow: 0 0 6px #adff2f, 0 0 12px #7fff00;
+    font-family: 'Courier New', monospace;
+  }
+:is(.widget, .composer-widget).viewer-theme-toxic .viewer-total {
+    background: rgba(173,255,47,0.15); padding: 4px 12px; border-radius: 4px;
+    border: 1px solid #adff2f;
+  }
+:is(.widget, .composer-widget).viewer-theme-toxic .viewer-chip {
+    background: rgba(127,255,0,0.1); padding: 2px 8px; border-radius: 4px;
+    border: 1px solid rgba(173,255,47,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-blood-moon :is(.widget-inner, .composer-widget-inner) {
+    color: #ff4757; text-shadow: 0 0 8px #c0392b, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-blood-moon .viewer-total {
+    background: radial-gradient(circle, rgba(192,57,43,0.3), rgba(80,0,0,0.25));
+    padding: 4px 12px; border-radius: 50px; border: 1px solid rgba(255,71,87,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-blood-moon .viewer-chip {
+    background: rgba(192,57,43,0.18); padding: 2px 8px; border-radius: 50px;
+    border: 1px solid rgba(255,71,87,0.35);
+  }
+:is(.widget, .composer-widget).viewer-theme-chrome :is(.widget-inner, .composer-widget-inner) {
+    color: #e8eaed; text-shadow: 0 1px 2px #000, 0 0 4px rgba(255,255,255,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-chrome .viewer-total {
+    background: linear-gradient(135deg, #4b5563, #1f2937, #4b5563);
+    padding: 4px 12px; border-radius: 6px; border: 1px solid #9ca3af;
+  }
+:is(.widget, .composer-widget).viewer-theme-chrome .viewer-chip {
+    background: linear-gradient(135deg, #374151, #111827);
+    padding: 2px 8px; border-radius: 6px; border: 1px solid #6b7280;
+  }
+:is(.widget, .composer-widget).viewer-theme-coral :is(.widget-inner, .composer-widget-inner) {
+    color: #ff7f6b; text-shadow: 0 0 5px #ff6b6b, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-coral .viewer-total {
+    background: linear-gradient(135deg, rgba(255,127,107,0.25), rgba(255,159,127,0.2));
+    padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(255,127,107,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-coral .viewer-chip {
+    background: rgba(255,127,107,0.15); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(255,159,127,0.35);
+  }
+:is(.widget, .composer-widget).viewer-theme-galaxy :is(.widget-inner, .composer-widget-inner) {
+    color: #c4b5fd; text-shadow: 0 0 6px #8b5cf6, 0 1px 2px #000;
+  }
+:is(.widget, .composer-widget).viewer-theme-galaxy .viewer-total {
+    background: linear-gradient(135deg, #1e1b4b, #4c1d95, #1e1b4b);
+    padding: 4px 12px; border-radius: 8px; border: 1px solid rgba(196,181,253,0.4);
+  }
+:is(.widget, .composer-widget).viewer-theme-galaxy .viewer-chip {
+    background: rgba(76,29,149,0.3); padding: 2px 8px; border-radius: 8px;
+    border: 1px solid rgba(139,92,246,0.35);
+  }
+:is(.widget, .composer-widget).viewer-theme-amber :is(.widget-inner, .composer-widget-inner) {
+    color: #ffb86c; text-shadow: 0 1px 2px #7c2d12, 0 0 5px #f59e0b;
+    font-family: Georgia, serif;
+  }
+:is(.widget, .composer-widget).viewer-theme-amber .viewer-total {
+    background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(180,83,9,0.2));
+    padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.5);
+  }
+:is(.widget, .composer-widget).viewer-theme-amber .viewer-chip {
+    background: rgba(180,83,9,0.18); padding: 2px 8px; border-radius: 6px;
+    border: 1px solid rgba(245,158,11,0.35);
+  }
+
+/* ── WEBCAM THEMES (23 THEMES & ANIMATIONS) ── */
+:is(.widget, .composer-widget).webcam-theme-simple-white .webcam-frame { border-style: solid; border-color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.4); }
+  :is(.widget, .composer-widget).webcam-theme-simple-black .webcam-frame { border-style: solid; border-color: #000; box-shadow: 0 2px 12px rgba(0,0,0,0.6); }
+  :is(.widget, .composer-widget).webcam-theme-rounded .webcam-frame { border-style: solid; border-color: #fff; border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+  :is(.widget, .composer-widget).webcam-theme-glass .webcam-frame { border-style: solid; border-color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.08); background: transparent; border-radius: 12px; }
+  :is(.widget, .composer-widget).webcam-theme-neon-blue .webcam-frame { border-style: solid; border-color: #00d4ff; box-shadow: 0 0 20px #00d4ff, 0 0 40px #00d4ff, inset 0 0 20px rgba(0,212,255,0.2); }
+  :is(.widget, .composer-widget).webcam-theme-neon-pink .webcam-frame { border-style: solid; border-color: #ff00ea; box-shadow: 0 0 20px #ff00ea, 0 0 40px #ff00ea, inset 0 0 20px rgba(255,0,234,0.2); }
+  :is(.widget, .composer-widget).webcam-theme-gold .webcam-frame { border-style: solid; border-color: #f4e04d; box-shadow: 0 0 15px rgba(244,224,77,0.6), 0 4px 12px rgba(0,0,0,0.4); }
+  :is(.widget, .composer-widget).webcam-theme-cyberpunk .webcam-frame { border-style: solid; border-color: #ff006e; box-shadow: 0 0 0 3px #00f5d4, 0 0 20px #ff006e; }
+  :is(.widget, .composer-widget).webcam-theme-pixel .webcam-frame { border-style: solid; border-color: #f4e04d; box-shadow: inset 0 0 0 2px #1a1c2c, inset 0 0 0 4px #3b5dc9, 0 0 0 2px #000; image-rendering: pixelated; }
+  :is(.widget, .composer-widget).webcam-theme-none .webcam-frame { border-style: none; box-shadow: none; }
+
+  /* ── 10 อนิเมชั่น ── */
+  @keyframes wc-glow-pulse {
+    0%, 100% { box-shadow: 0 0 15px #00d4ff, 0 0 30px #00d4ff; }
+    50% { box-shadow: 0 0 30px #00d4ff, 0 0 60px #00d4ff, 0 0 90px #00d4ff; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-glow-pulse .webcam-frame { border-style: solid; border-color: #00d4ff; animation: wc-glow-pulse 2s ease-in-out infinite; }
+
+  @keyframes wc-rainbow-border {
+    0% { border-color: #ff006e; box-shadow: 0 0 20px #ff006e; }
+    25% { border-color: #ffbe0b; box-shadow: 0 0 20px #ffbe0b; }
+    50% { border-color: #00f5d4; box-shadow: 0 0 20px #00f5d4; }
+    75% { border-color: #8338ec; box-shadow: 0 0 20px #8338ec; }
+    100% { border-color: #ff006e; box-shadow: 0 0 20px #ff006e; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-rainbow-border .webcam-frame { border-style: solid; border-color: #ff006e; animation: wc-rainbow-border 3s linear infinite; }
+
+  @keyframes wc-neon-flow {
+    0% { box-shadow: 0 0 10px #ff00ea, 0 0 20px #ff00ea, inset 0 0 10px rgba(255,0,234,0.3); border-color: #ff00ea; }
+    50% { box-shadow: 0 0 25px #00d4ff, 0 0 50px #00d4ff, inset 0 0 15px rgba(0,212,255,0.3); border-color: #00d4ff; }
+    100% { box-shadow: 0 0 10px #ff00ea, 0 0 20px #ff00ea, inset 0 0 10px rgba(255,0,234,0.3); border-color: #ff00ea; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-neon-flow .webcam-frame { border-style: solid; border-color: #ff00ea; animation: wc-neon-flow 2.5s ease-in-out infinite; }
+
+  /* ★ เกม-style: HP/Shield bar — เส้นกรอบไล่สีแบบเกม วิ่งรอบ */
+  @keyframes wc-game-shield {
+    0% { box-shadow: inset 0 0 0 3px #38b764, 0 0 15px rgba(56,183,100,0.5); border-color: #38b764; }
+    50% { box-shadow: inset 0 0 0 3px #f4e04d, 0 0 20px rgba(244,224,77,0.6); border-color: #f4e04d; }
+    100% { box-shadow: inset 0 0 0 3px #38b764, 0 0 15px rgba(56,183,100,0.5); border-color: #38b764; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-game-shield .webcam-frame { border-style: solid; border-color: #38b764; animation: wc-game-shield 2s ease-in-out infinite; }
+
+  /* ★ เกม-style: Loading bar — ไล่สีเหมือนโหลดเกม */
+  @keyframes wc-game-loading {
+    0% { border-bottom-color: #ff006e; box-shadow: 0 4px 0 -2px #ff006e; }
+    25% { border-right-color: #ffbe0b; box-shadow: 4px 0 0 -2px #ffbe0b; }
+    50% { border-top-color: #00f5d4; box-shadow: 0 -4px 0 -2px #00f5d4; }
+    75% { border-left-color: #8338ec; box-shadow: -4px 0 0 -2px #8338ec; }
+    100% { border-bottom-color: #ff006e; box-shadow: 0 4px 0 -2px #ff006e; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-game-loading .webcam-frame { border-style: solid; border-color: transparent animation: wc-game-loading 1.5s linear infinite; }
+
+  /* ★ เกม-style: RPG Aura — เรืองแสงสีทองหมุนเหมือนบัพเกม */
+  @keyframes wc-rpg-aura {
+    0%, 100% { box-shadow: 0 0 20px #f4e04d, 0 0 40px rgba(244,224,77,0.4), inset 0 0 15px rgba(244,224,77,0.2); border-color: #f4e04d; }
+    33% { box-shadow: 0 0 25px #ff8c00, 0 0 50px rgba(255,140,0,0.4), inset 0 0 20px rgba(255,140,0,0.3); border-color: #ff8c00; }
+    66% { box-shadow: 0 0 30px #ff4500, 0 0 60px rgba(255,69,0,0.4), inset 0 0 25px rgba(255,69,0,0.3); border-color: #ff4500; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-rpg-aura .webcam-frame { border-style: solid; border-color: #f4e04d; animation: wc-rpg-aura 3s ease-in-out infinite; }
+
+  /* ★ เกม-style: Neon Tron — เส้นนีออนวิ่งเหมือนเกม Tron */
+  @keyframes wc-tron-line {
+    0% { border-top-color: #00f5d4; border-right-color: transparent; border-bottom-color: transparent; border-left-color: #00f5d4; }
+    25% { border-top-color: transparent; border-right-color: #00f5d4; border-bottom-color: #00f5d4; border-left-color: transparent; }
+    50% { border-top-color: #00f5d4; border-right-color: transparent; border-bottom-color: transparent; border-left-color: #00f5d4; }
+    75% { border-top-color: transparent; border-right-color: #00f5d4; border-bottom-color: #00f5d4; border-left-color: transparent; }
+    100% { border-top-color: #00f5d4; border-right-color: transparent; border-bottom-color: transparent; border-left-color: #00f5d4; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-tron-line .webcam-frame { border-style: solid; border-color: transparent box-shadow: 0 0 15px #00f5d4, inset 0 0 10px rgba(0,245,212,0.2); animation: wc-tron-line 1s linear infinite; }
+
+  @keyframes wc-pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7), 0 0 0 0 rgba(16,185,129,0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(16,185,129,0), 0 0 0 20px rgba(16,185,129,0); }
+    100% { box-shadow: 0 0 0 0 rgba(16,185,129,0), 0 0 0 0 rgba(16,185,129,0); }
+  }
+  :is(.widget, .composer-widget).webcam-theme-pulse-ring .webcam-frame { border-style: solid; border-color: #10b981; animation: wc-pulse-ring 2s ease-out infinite; }
+
+  @keyframes wc-electric {
+    0%, 90%, 100% { box-shadow: 0 0 5px #00d4ff; border-color: rgba(0,212,255,0.3); }
+    92% { box-shadow: 0 0 30px #fff, 0 0 60px #00d4ff; border-color: #fff; }
+    94% { box-shadow: 0 0 10px #00d4ff; border-color: rgba(0,212,255,0.5); }
+    96% { box-shadow: 0 0 40px #fff, 0 0 80px #00d4ff; border-color: #fff; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-electric .webcam-frame { border-style: solid; border-color: rgba(0,212,255,0.3); animation: wc-electric 3s linear infinite; }
+
+  @keyframes wc-gradient-shift {
+    0% { border-image: linear-gradient(0deg, #ff006e, #8338ec, #3a86ff) 1; }
+    33% { border-image: linear-gradient(120deg, #ff006e, #8338ec, #3a86ff) 1; }
+    66% { border-image: linear-gradient(240deg, #ff006e, #8338ec, #3a86ff) 1; }
+    100% { border-image: linear-gradient(360deg, #ff006e, #8338ec, #3a86ff) 1; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-gradient-shift .webcam-frame { border: 5px solid; border-image-slice: 1; animation: wc-gradient-shift 4s linear infinite; }
+
+  @keyframes wc-bounce-border {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 15px #ffbe0b; }
+    50% { transform: scale(1.02); box-shadow: 0 0 30px #ffbe0b; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-bounce-border .webcam-frame { border-style: solid; border-color: #ffbe0b; animation: wc-bounce-border 1.5s ease-in-out infinite; }
+
+  @keyframes wc-fire-border {
+    0% { box-shadow: 0 0 10px #ff4500, 0 4px 0 #ff6b00, inset 0 -4px 10px rgba(255,69,0,0.3); border-color: #ff4500; }
+    50% { box-shadow: 0 0 25px #ff8c00, 0 8px 0 #ff4500, inset 0 -8px 15px rgba(255,140,0,0.5); border-color: #ff8c00; }
+    100% { box-shadow: 0 0 10px #ff4500, 0 4px 0 #ff6b00, inset 0 -4px 10px rgba(255,69,0,0.3); border-color: #ff4500; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-fire-border .webcam-frame { border-style: solid; border-color: #ff4500; animation: wc-fire-border 1s ease-in-out infinite; }
+
+  @keyframes wc-sparkle {
+    0%, 100% { box-shadow: 0 0 5px #fff, 0 0 10px #fff; border-color: rgba(255,255,255,0.5); }
+    50% { box-shadow: 0 0 20px #fff, 0 0 40px #fff, 0 0 60px #a855f7; border-color: #fff; }
+  }
+  :is(.widget, .composer-widget).webcam-theme-sparkle .webcam-frame { border-style: solid; border-color: rgba(255,255,255,0.5); animation: wc-sparkle 1.5s ease-in-out infinite; }
+
+  /* ═══ Text widget ═══ */
+  :is(.widget, .composer-widget).type-text :is(.widget-inner, .composer-widget-inner) {
+    display: block;          /* ★ block แทน flex → text-align ทำงานได้ */
+    overflow: hidden;
+    background: transparent;
+    padding: 0;
+  }
+  /* ★ schedule mode — parent เป็น relative เพื่อให้ text-line (absolute) จัดกลางได้ */
+  :is(.widget, .composer-widget).type-text.text-schedule :is(.widget-inner, .composer-widget-inner) { position: relative; }
+  :is(.widget, .composer-widget).type-text .text-content {
+    width: 100%;
+    text-align: var(--text-align, center);
+    word-break: break-word;
+    /* ★ จัดกลางแนวตั้งด้วย (สำหรับ static mode) */
+    display: flex;
+    align-items: center;
+    min-height: 100%;
+    justify-content: var(--text-justify, center);   /* left/center/right แบบ flex */
+  }
+  /* scroll mode — วิ่งซ้าย loop */
+  /* scroll mode — ใช้ JS animation (ควบคุม delay + รอข้อความออกจากจอให้หมด) */
+  :is(.widget, .composer-widget).type-text.text-scroll :is(.widget-inner, .composer-widget-inner) {
+    justify-content: flex-start;
+    position: relative;
+  }
+  :is(.widget, .composer-widget).type-text.text-scroll .text-content {
+    white-space: nowrap;
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    will-change: left;
+    /* ★ ชิดซ้ายเสมอใน scroll mode — ข้อความเริ่มที่ขอบขวาแล้วไหลเข้ามาทีละน้อย
+       (เดิม inherit center จาก .text-content → ข้อความยาวกว่ากล่องโผล่กลางจอตอน reset
+        และ scrollWidth วัดไม่ครบเพราะส่วนล้นซ้ายไม่ถูกนับ → timing loop คลาด) */
+    text-align: left;
+    justify-content: flex-start;
+  }
+  /* schedule mode — fadeIn/fadeOut transition */
+  :is(.widget, .composer-widget).type-text.text-schedule .text-line {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: var(--text-justify, center);   /* ★ รับจาก align setting */
+    padding: 0 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+  }
+  :is(.widget, .composer-widget).type-text.text-schedule .text-line.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+
+  /* ═══ ASK widget โพล — เฟรมเต็มจอ + แผงโพลเลือกทิศทาง/ยื่น% ═══ */
+  /* ★ defaults ที่ระดับ .widget (ก่อนธีมในไฟล์ → ธีม override ชนะ) — พื้นทึบ 100% */
+  :is(.widget, .composer-widget).type-ask {
+    --ask-accent: #7c3aed; --ask-accent2: #a78bfa;
+    --ask-win: #10b981;
+    --ask-bg: rgba(17, 22, 40, 1);
+    --ask-card: rgba(30, 41, 59, 1);
+    --ask-border: rgba(124, 58, 237, 0.45);
+    --ask-text: #ffffff; --ask-dim: #a5b0c2;
+    --ask-scale: 1;
+    --ask-extend: 20;  /* % ของจอที่โพลยื่นออกมา (จำกัด 20-30) */
+    --ask-qfs: 24; --ask-cfs: 18;
+    --ask-px: 85; --ask-py: 12;  /* ตำแหน่ง Minimal (% ของ canvas — จุดกึ่งกลางกล่อง) */
+  }
+
+/* ── DONATE GOAL BAR & FRAME STYLES ── */
+/* ── Bar styles เพิ่มเติม ── */
+  /* wavy — คลื่นไหวตอนขยับ */
+  :is(.widget, .composer-widget).ask-bar-wavy .ask-bar-wrap { border-radius: 999px; overflow: hidden; }
+  :is(.widget, .composer-widget).ask-bar-wavy .ask-bar {
+    border-radius: 999px;
+    clip-path: polygon(0 20%, 3% 0, 6% 20%, 9% 0, 12% 20%, 15% 0, 18% 20%, 21% 0, 24% 20%, 27% 0, 30% 20%, 33% 0, 36% 20%, 39% 0, 42% 20%, 45% 0, 48% 20%, 51% 0, 54% 20%, 57% 0, 60% 20%, 63% 0, 66% 20%, 69% 0, 72% 20%, 75% 0, 78% 20%, 81% 0, 84% 20%, 87% 0, 90% 20%, 93% 0, 96% 20%, 100% 0, 100% 100%, 0 100%);
+  }
+  /* dots — จุดกลมเรียงแถว */
+  :is(.widget, .composer-widget).ask-bar-dots .ask-bar-wrap {
+    border-radius: 0; background: transparent; height: calc(14px * var(--ask-scale)) !important;
+    display: flex; gap: 3px; overflow: hidden; align-items: center;
+  }
+  :is(.widget, .composer-widget).ask-bar-dots .ask-bar {
+    border-radius: 0; height: 100%;
+    background-image: radial-gradient(circle, var(--ask-accent) 3px, var(--ask-accent2) 3px, transparent 4px);
+    background-size: 12px 100%;
+    background-repeat: repeat-x;
+  }
+  /* neon-line — เส้นนีออนบางสว่าง */
+  :is(.widget, .composer-widget).ask-bar-neonline .ask-bar-wrap {
+    border-radius: 999px; background: rgba(0,0,0,0.3);
+    height: calc(7px * var(--ask-scale)) !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  }
+  :is(.widget, .composer-widget).ask-bar-neonline .ask-bar {
+    border-radius: 999px;
+    box-shadow: 0 0 6px var(--ask-accent), 0 0 14px var(--ask-accent), 0 0 20px var(--ask-accent2);
+    filter: saturate(1.4) brightness(1.2);
+  }
+  /* gradient-flow — ไล่สีไหลย้อนกลับ */
+  :is(.widget, .composer-widget).ask-bar-gradientflow .ask-bar-wrap { border-radius: 999px; }
+  :is(.widget, .composer-widget).ask-bar-gradientflow .ask-bar {
+    border-radius: 999px;
+    background-size: 200% 100%;
+    animation: gradient-flow 3s ease infinite;
+  }
+  @keyframes gradient-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  /* chunky — บล็อกเหลี่ยมหนาช่องกว้าง */
+  :is(.widget, .composer-widget).ask-bar-chunky .ask-bar-wrap {
+    border-radius: 0; background: transparent; height: calc(16px * var(--ask-scale)) !important;
+    display: flex; gap: 4px; overflow: hidden;
+  }
+  :is(.widget, .composer-widget).ask-bar-chunky .ask-bar {
+    border-radius: 0;
+    background-image: repeating-linear-gradient(90deg,
+      var(--ask-accent) 0 20px, rgba(0,0,0,0.3) 20px 24px);
+  }
+  /* pulse — เต้นเป็นจังหวะ */
+  :is(.widget, .composer-widget).ask-bar-pulse .ask-bar-wrap { border-radius: 999px; }
+  :is(.widget, .composer-widget).ask-bar-pulse .ask-bar {
+    border-radius: 999px;
+    animation: bar-pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes bar-pulse-glow {
+    0%, 100% { box-shadow: 0 0 4px var(--ask-accent); }
+    50% { box-shadow: 0 0 12px var(--ask-accent), 0 0 20px var(--ask-accent2); }
+  }
+
+  /* ═══ Frame Styles — กรอบแผง 5 แบบ ═══ */
+  :is(.widget, .composer-widget).ask-frame-sharp .ask-panel { border-radius: 0 !important; }
+  :is(.widget, .composer-widget).ask-frame-sharp .ask-choice { border-radius: 0 !important; }
+  :is(.widget, .composer-widget).ask-frame-sharp .ask-choice-key { border-radius: 0 !important; }
+  :is(.widget, .composer-widget).ask-frame-floating .ask-panel {
+    border: none !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+  }
+  :is(.widget, .composer-widget).ask-frame-floating .ask-choice { border: none; }
+  :is(.widget, .composer-widget).ask-frame-glow .ask-panel {
+    border: 2px solid var(--ask-accent) !important;
+    box-shadow: 0 0 12px var(--ask-accent), 0 0 30px rgba(0,0,0,0.4);
+  }
+  :is(.widget, .composer-widget).ask-frame-emboss .ask-panel {
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), inset 0 -1px 2px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  :is(.widget, .composer-widget).ask-frame-emboss .ask-choice { box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+
+  /* ── Frame styles เพิ่มเติม ── */
+  /* double — ขอบคู่เส้นบาง */
+  :is(.widget, .composer-widget).ask-frame-double .ask-panel {
+    border: 3px double var(--ask-border) !important;
+    outline: 1px solid var(--ask-border);
+    outline-offset: 2px;
+  }
+  /* rounded-lg — มุมโค้งใหญ่ */
+  :is(.widget, .composer-widget).ask-frame-roundedlg .ask-panel { border-radius: 20px !important; }
+  :is(.widget, .composer-widget).ask-frame-roundedlg .ask-choice { border-radius: 12px !important; }
+  :is(.widget, .composer-widget).ask-frame-roundedlg .ask-choice-key { border-radius: 8px !important; }
+  /* ticket — ขอบมีรอยปรุ๊น (แบบตั๋ว) */
+  :is(.widget, .composer-widget).ask-frame-ticket .ask-panel {
+    border-radius: 0 !important;
+    -webkit-mask-image: radial-gradient(circle at 0 50%, transparent 8px, #000 8px),
+                         radial-gradient(circle at 100% 50%, transparent 8px, #000 8px);
+    -webkit-mask-composite: source-in;
+    mask-image: radial-gradient(circle at 0 50%, transparent 8px, #000 8px),
+                 radial-gradient(circle at 100% 50%, transparent 8px, #000 8px);
+    mask-composite: intersect;
+  }
+  /* hologram — ขอบเรืองรุ้ง */
+  :is(.widget, .composer-widget).ask-frame-hologram .ask-panel {
+    border: 2px solid transparent !important;
+    background: linear-gradient(160deg, var(--ask-bg), rgba(15,15,30,0.95)) padding-box,
+                linear-gradient(135deg, #ff0080, #ff8c00, #40e0d0, #ff0080) border-box !important;
+    box-shadow: 0 0 15px rgba(255,0,128,0.2), 0 0 25px rgba(64,224,208,0.15);
+  }
+  /* carbon — ลายเส้นทแยงเข้ม */
+  :is(.widget, .composer-widget).ask-frame-carbon .ask-panel {
+    background: linear-gradient(160deg, #1a1a1a, #0d0d0d) !important;
+    border: 1px solid #333 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.5);
+  }
+  :is(.widget, .composer-widget).ask-frame-carbon .ask-panel::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    background: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(255,255,255,0.03) 6px 8px);
+  }
+  :is(.widget, .composer-widget).ask-frame-carbon .ask-choice {
+    background: linear-gradient(160deg, #222, #151515) !important;
+    border-color: #444 !important;
+  }
+  /* idle — overlay หายทั้งแผง / editor = เส้นประเต็มจอ + ป้าย */
+  :is(.widget, .composer-widget).type-ask :is(.widget-inner, .composer-widget-inner).ask-idle .ask-panel { display: none; }
+  body.edit-mode :is(.widget, .composer-widget).type-ask :is(.widget-inner, .composer-widget-inner) { border: 1px dashed rgba(148, 163, 184, 0.3); }
+
+
+
+/* ========================================================
+   CLOCK STYLES ENGINE (Dot Clock, Circle Clock, Live Text, FPS)
+   Ported 100% from Version 2
+   ======================================================== */
+
+  /* ── Common: เมื่อมี clock-style → ล้างค่าเริ่มต้นทั้งหมด ── */
+  :is(.widget, .composer-widget).clock-style-set :is(.widget-inner, .composer-widget-inner) {
+    background: transparent !important; padding: 0 !important; border-radius: 0 !important;
+    box-shadow: none !important; border: none !important; text-shadow: none !important;
+    display: flex !important; flex-direction: row !important; gap: 0 !important;
+  }
+
+  /* ═══ DOT CLOCK (3 designs) — Silkscreen + double border + typing + blink ═══ */
+  /* โครงสร้าง: .dot-outbox > .dot-inbox > (.dot-time + .dot-wait.blink) */
+  :is(.widget, .composer-widget).clock-style-dot1 :is(.widget-inner, .composer-widget-inner),
+  :is(.widget, .composer-widget).clock-style-dot2 :is(.widget-inner, .composer-widget-inner),
+  :is(.widget, .composer-widget).clock-style-dot3 :is(.widget-inner, .composer-widget-inner) { justify-content: center !important; align-items: center !important; }
+  :is(.widget, .composer-widget)[class*="clock-style-dot"] .dot-outbox {
+    position: relative; background: #fff; border: 1.6px solid #000; border-radius: 4px;
+    display: inline-flex; box-sizing: border-box;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-dot"] .dot-inbox {
+    position: relative; background: #242424; border: 1.6px solid #000; border-radius: 4px;
+    display: inline-flex; align-items: center; box-sizing: border-box;
+    margin: 4px;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-dot"] .dot-time {
+    color: #fff; font-family: 'Silkscreen', 'Courier New', monospace; font-weight: 400;
+    line-height: 1em; white-space: nowrap; letter-spacing: 1px;
+    padding: 8px 0 8px 12px;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-dot"] .dot-wait {
+    color: #fff; font-family: 'Silkscreen', 'Courier New', monospace; font-weight: 400;
+    padding: 0 12px 0 8px; align-self: center;
+    animation: dot-blink 0.75s steps(2, jump-none) infinite alternate;
+  }
+  @keyframes dot-blink { 0% { opacity: 0; } 100% { opacity: 1; } }
+  /* dot1: HH:MM (narrow) */
+  :is(.widget, .composer-widget).clock-style-dot1 .dot-time { font-size: 28px; }
+  :is(.widget, .composer-widget).clock-style-dot1 .dot-wait { font-size: 16px; }
+  /* dot2: YYYY.MM.DD HH:MM (wide) */
+  :is(.widget, .composer-widget).clock-style-dot2 .dot-time { font-size: 28px; }
+  :is(.widget, .composer-widget).clock-style-dot2 .dot-wait { font-size: 16px; }
+  /* dot3: DD.MM.YYYY HH:MM (wide) + ● cursor */
+  :is(.widget, .composer-widget).clock-style-dot3 .dot-time { font-size: 28px; }
+  :is(.widget, .composer-widget).clock-style-dot3 .dot-wait { font-size: 16px; }
+
+  /* ═══ CIRCLE CLOCK (5 colors × 4 variants = 20) ═══ */
+  /* โครงสร้าง: .cc-main > (.cc-oc + .cc-ic + .cc-t1 [+ .cc-t2 | .cc-live]) */
+  /* ★ oc = วงกลมนอก (conic-gradient หมุนตามวินาที), ic = วงกลมใน (สีทึบ), t1 = เวลา */
+  /* ★ ใช้ % ทั้งหมดเพื่อให้ scale ตาม widget size (responsive) */
+  :is(.widget, .composer-widget)[class*="clock-style-cc"] :is(.widget-inner, .composer-widget-inner) {
+    justify-content: center !important; align-items: center !important;
+    position: relative !important; overflow: visible !important;
+    /* ★ aspect-ratio บังคับให้ widget เป็นวงกลม — ใช้ min(w,h) เป็นเส้นผ่านศูนย์กลาง */
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-cc"] .cc-main {
+    position: relative; width: 180px; height: 180px;
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    font-family: 'Noto Sans', sans-serif; font-weight: 700;
+    /* ★ กำหนดขนาดเป็น % ของ widget — ใช้ min(width,height) เป็น base */
+    /* ผ่าน JS: cc-main จะถูกปรับขนาดตาม widget */
+  }
+  /* ★ วงกลมนอก — ขนาด = 100% ของ cc-main */
+  :is(.widget, .composer-widget)[class*="clock-style-cc"] .cc-oc {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; height: 100%; border-radius: 50%; pointer-events: none;
+  }
+  /* ★ วงกลมใน — ขนาด = 88% ของ cc-main เผื่อขอบวงแหวน */
+  :is(.widget, .composer-widget)[class*="clock-style-cc"] .cc-ic {
+    position: absolute; top: 6%; left: 50%; transform: translateX(-50%);
+    width: 88%; height: 88%; border-radius: 50%; pointer-events: none;
+  }
+  /* ★ เวลา — อยู่กึ่งกลางวงกลมในแนวตั้ง (พื้นที่ส่วนล่างของวงกลม) */
+  :is(.widget, .composer-widget)[class*="clock-style-cc"] .cc-t1 {
+    position: relative; z-index: 1; font-size: 42px; color: #000; line-height: 1em;
+    letter-spacing: 1px; text-align: center;
+  }
+  /* ★ Date / Seconds / LIVE — อยู่ด้านล่างเวลา */
+  :is(.widget, .composer-widget)[class*="clock-style-cc"] .cc-t2 {
+    position: relative; z-index: 1; font-size: 20px; color: #000; margin-top: 4px;
+    white-space: nowrap; text-align: center;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-cc"] .cc-live {
+    position: relative; z-index: 1; font-size: 22px; color: #000; margin-top: 6px;
+    border: 2px solid #000; border-radius: 5px; line-height: 24px;
+    letter-spacing: 3px; text-indent: 3px; padding: 0 4px;
+  }
+  /* ★ Normal variant (ไม่มี date/seconds/live) — เวลาอยู่ตรงกลางพอดี */
+  :is(.widget, .composer-widget).clock-style-cc1 .cc-main,
+  :is(.widget, .composer-widget).clock-style-cc2 .cc-main,
+  :is(.widget, .composer-widget).clock-style-cc3 .cc-main,
+  :is(.widget, .composer-widget).clock-style-cc4 .cc-main,
+  :is(.widget, .composer-widget).clock-style-cc5 .cc-main {
+    justify-content: center;
+  }
+  /* ★ Date variant — t1 มี underline */
+  :is(.widget, .composer-widget).clock-style-ccdate1 .cc-t1,
+  :is(.widget, .composer-widget).clock-style-ccdate2 .cc-t1,
+  :is(.widget, .composer-widget).clock-style-ccdate3 .cc-t1,
+  :is(.widget, .composer-widget).clock-style-ccdate4 .cc-t1,
+  :is(.widget, .composer-widget).clock-style-ccdate5 .cc-t1 {
+    border-bottom: 2px solid #000; padding-bottom: 4px;
+  }
+  /* Color schemes: c1=inner bg, c2=active arc, c3=inactive arc */
+  :is(.widget, .composer-widget).clock-style-cc1 .cc-ic,  :is(.widget, .composer-widget).clock-style-cclive1 .cc-ic,
+  :is(.widget, .composer-widget).clock-style-ccdate1 .cc-ic, :is(.widget, .composer-widget).clock-style-ccsec1 .cc-ic { background: #FF8C8C; }
+  :is(.widget, .composer-widget).clock-style-cc2 .cc-ic,  :is(.widget, .composer-widget).clock-style-cclive2 .cc-ic,
+  :is(.widget, .composer-widget).clock-style-ccdate2 .cc-ic, :is(.widget, .composer-widget).clock-style-ccsec2 .cc-ic { background: #47B5FF; }
+  :is(.widget, .composer-widget).clock-style-cc3 .cc-ic,  :is(.widget, .composer-widget).clock-style-cclive3 .cc-ic,
+  :is(.widget, .composer-widget).clock-style-ccdate3 .cc-ic, :is(.widget, .composer-widget).clock-style-ccsec3 .cc-ic { background: #9DDD8F; }
+  :is(.widget, .composer-widget).clock-style-cc4 .cc-ic,  :is(.widget, .composer-widget).clock-style-cclive4 .cc-ic,
+  :is(.widget, .composer-widget).clock-style-ccdate4 .cc-ic, :is(.widget, .composer-widget).clock-style-ccsec4 .cc-ic { background: #FAC213; }
+  :is(.widget, .composer-widget).clock-style-cc5 .cc-ic,  :is(.widget, .composer-widget).clock-style-cclive5 .cc-ic,
+  :is(.widget, .composer-widget).clock-style-ccdate5 .cc-ic, :is(.widget, .composer-widget).clock-style-ccsec5 .cc-ic { background: #DFDFDE; }
+
+  /* ═══ CLOCK WITH LIVE TEXT (5 designs) — Roboto bold ═══ */
+  /* โครงสร้าง: .lt-nowtime > (.lt-live? + .lt-time + .lt-date?) */
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] :is(.widget-inner, .composer-widget-inner) {
+    justify-content: center !important; align-items: center !important;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-nowtime {
+    font-family: 'Roboto', sans-serif; font-weight: 700; color: #000;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-time {
+    font-size: 48px; line-height: 1em; letter-spacing: 3px;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-time .lt-colon { vertical-align: 7%; }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-date {
+    font-size: 24px; line-height: 1.5em; letter-spacing: 3px;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-live {
+    font-size: 22px; letter-spacing: 5px; text-indent: 5px;
+    border: 2px solid #000; border-radius: 5px; line-height: 24px;
+    width: 76px; margin-bottom: 2px; text-align: center;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-sec {
+    font-size: 28px; letter-spacing: 1px; line-height: 1em;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-bolt-svg {
+    height: 22px; display: inline-block; vertical-align: middle;
+    animation: lt-bolt-spin 5s linear infinite;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-lt"] .lt-bolt-svg svg {
+    height: 100%; width: auto; display: block;
+    fill: currentColor;
+  }
+  @keyframes lt-bolt-spin { 0% { transform: rotateY(0deg); } 100% { transform: rotateY(360deg); } }
+  /* lt1: LIVE + time(underline) + date, semi-transparent bg, bottom-rounded */
+  :is(.widget, .composer-widget).clock-style-lt1 .lt-nowtime {
+    background: rgba(255,255,255,0.7); padding: 10px 12px 5px;
+    border-radius: 0 0 10px 10px; width: 140px;
+  }
+  :is(.widget, .composer-widget).clock-style-lt1 .lt-time { border-bottom: 2px solid #000; padding-bottom: 4px; }
+  /* lt2: time(underline) + date, semi-transparent bg, bottom-rounded (no LIVE) */
+  :is(.widget, .composer-widget).clock-style-lt2 .lt-nowtime {
+    background: rgba(255,255,255,0.7); padding: 8px 12px 5px;
+    border-radius: 0 0 10px 10px; width: 140px;
+  }
+  :is(.widget, .composer-widget).clock-style-lt2 .lt-time { border-bottom: 2px solid #000; padding-bottom: 4px; }
+  /* lt3: time only, solid white bg, all-rounded */
+  :is(.widget, .composer-widget).clock-style-lt3 .lt-nowtime {
+    background: rgba(255,255,255,1.0); padding: 8px 16px;
+    border-radius: 10px; display: inline-flex; flex-direction: row;
+  }
+  :is(.widget, .composer-widget).clock-style-lt3 .lt-date { display: none; }
+  /* lt4: time + seconds inline, solid white bg, all-rounded */
+  :is(.widget, .composer-widget).clock-style-lt4 .lt-nowtime {
+    background: rgba(255,255,255,1.0); padding: 8px 16px;
+    border-radius: 10px; display: inline-flex; flex-direction: row; align-items: baseline; gap: 4px;
+  }
+  :is(.widget, .composer-widget).clock-style-lt4 .lt-date { display: none; }
+  /* lt5: time + ⚡LIVE (rotating bolt svg), solid white bg, all-rounded */
+  :is(.widget, .composer-widget).clock-style-lt5 .lt-nowtime {
+    background: rgba(255,255,255,1.0); padding: 8px 16px;
+    border-radius: 10px; display: inline-flex; flex-direction: row; align-items: center; gap: 6px;
+  }
+  :is(.widget, .composer-widget).clock-style-lt5 .lt-date { display: none; }
+
+  /* ═══ FPS CLOCK (3 designs) — Chakra Petch + SVG shape + time with seconds ═══ */
+  /* โครงสร้าง: .fps-overlay > (.fps-svg + .fps-time) */
+  :is(.widget, .composer-widget)[class*="clock-style-fps"] :is(.widget-inner, .composer-widget-inner) {
+    justify-content: center !important; align-items: center !important;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-fps"] .fps-overlay {
+    position: relative; width: 300px; height: 50px;
+    font-family: 'Chakra Petch', sans-serif; font-weight: 600; color: #fff;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-fps"] .fps-svg {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-fps"] .fps-svg .fps-bg { fill: #000; opacity: 0.3; }
+  :is(.widget, .composer-widget)[class*="clock-style-fps"] .fps-svg .fps-frame { fill: currentColor; }
+  :is(.widget, .composer-widget)[class*="clock-style-fps"] .fps-time {
+    position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%);
+    font-size: 30px; letter-spacing: 3px; line-height: 1.2em;
+  }
+  :is(.widget, .composer-widget)[class*="clock-style-fps"] .fps-time .fps-colon { vertical-align: 0.1em; }
+
+  /* ═══ Viewer widget themes ═══ */
+

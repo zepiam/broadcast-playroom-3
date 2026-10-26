@@ -1,0 +1,58 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "หน้า 1 (มาตรฐาน)",
+      "widgets": [
+        {
+          "id": "w-chat-1",
+          "type": "chat",
+          "title": "แชทสด",
+          "x": 40,
+          "y": 480,
+          "width": 460,
+          "height": 560,
+          "z": 10,
+          "chatTheme": "glass-dark",
+          "chatMode": "default"
+        },
+        {
+          "id": "w-clock-1",
+          "type": "clock",
+          "title": "นาฬิกาดิจิทัล",
+          "x": 1640,
+          "y": 40,
+          "width": 240,
+          "height": 70,
+          "z": 11,
+          "clockTheme": "neon-glow",
+          "clockFormat": "HH:MM:SS"
+        },
+        {
+          "id": "w-ask-1",
+          "type": "ask",
+          "title": "โพลสำรวจความคิดเห็น",
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "z": 50,
+          "isFullScreen": true
+        },
+        {
+          "id": "w-gw-1",
+          "type": "giveaway",
+          "title": "กิจกรรมแจกของรางวัล",
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080,
+          "z": 51,
+          "isFullScreen": true
+        }
+      ]
+    }
+  ],
+  "activePageId": "page-1",
+  "updatedAt": 1792998220.1979342
+}

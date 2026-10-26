@@ -1,0 +1,602 @@
+/* ========================================================
+   FLOATING & DRAGGABLE STUDIO TOOL WINDOWS
+   - Non-blocking ไม่มีพื้นหลังสีดำมาบังจอ เปิดทิ้งไว้พร้อมพิมพ์แชทได้
+   - Draggable by Header คลิกที่หัวหน้าต่างเพื่อลากย้ายไปวางมุมไหนก็ได้
+   - Full fidelity (เก็บเครื่องมือครบ 100% ตามเวอร์ชันเก่า)
+   - GPU-safe: contain: content; isolation: isolate;
+   ======================================================== */
+
+.floating-window {
+  position: fixed;
+  top: 70px;
+  left: 360px;
+  width: 760px;
+  max-width: calc(100vw - 100px);
+  max-height: calc(100vh - 100px);
+  background-color: #232428;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 500;
+  contain: content;
+  isolation: isolate;
+}
+
+.floating-window.active {
+  display: flex;
+}
+
+/* Header แถบหัวหน้าต่าง (ลากย้ายหน้าต่างได้) */
+.floating-header {
+  height: 48px;
+  padding: 0 16px;
+  background-color: #1e1f22;
+  border-bottom: 1px solid var(--dc-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.floating-header:active {
+  cursor: grabbing;
+}
+
+.floating-title-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.floating-title-box h3 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--dc-text-primary);
+}
+
+.floating-title-box .badge-sub {
+  font-size: 11px;
+  color: var(--dc-text-dim);
+}
+
+.floating-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-win-action {
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  color: var(--dc-text-muted);
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-win-action:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dc-text-primary);
+}
+
+.btn-win-action.close-red:hover {
+  background: var(--dc-red);
+  color: white;
+}
+
+.btn-win-action.btn-popout-toggle {
+  width: auto !important;
+  min-width: 28px !important;
+  max-width: none !important;
+  height: 26px !important;
+  padding: 0 10px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  white-space: nowrap !important;
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  background: rgba(56, 189, 248, 0.12) !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+  color: #38bdf8 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.btn-win-action.btn-popout-toggle:hover {
+  background: rgba(56, 189, 248, 0.25) !important;
+  border-color: rgba(56, 189, 248, 0.55) !important;
+  color: #ffffff !important;
+}
+
+/* Body หน้าต่าง */
+.floating-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: #2b2d31;
+}
+
+/* Stepper Bar (ก้าวการทำงานของ Giveaway) */
+.stepper-bar {
+  display: flex;
+  align-items: center;
+  background-color: #1e1f22;
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  gap: 6px;
+  border: 1px solid var(--dc-border);
+}
+
+.step-item {
+  flex: 1;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--dc-text-dim);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.step-item.active {
+  background-color: var(--dc-blurple);
+  color: white;
+}
+
+.step-item.done {
+  background-color: rgba(35, 165, 90, 0.15);
+  color: #34d399;
+}
+
+.step-arrow {
+  color: var(--dc-text-dim);
+  font-size: 11px;
+}
+
+/* Nav Tabs ภายในหน้าต่าง */
+.win-tabs {
+  display: flex;
+  background-color: #1e1f22;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--dc-border);
+  gap: 4px;
+}
+
+.win-tab-btn {
+  flex: 1;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  color: var(--dc-text-muted);
+  border-radius: 4px;
+  font-family: var(--font-family);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  text-align: center;
+}
+
+.win-tab-btn.active {
+  background-color: #35373c;
+  color: var(--dc-text-primary);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+/* ตารางข้อมูล (เช่น รายชื่อคนสุ่ม / ตารางคำสั่ง Replie) */
+.tool-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  text-align: left;
+}
+
+.tool-table th {
+  background-color: #1e1f22;
+  color: var(--dc-text-dim);
+  font-weight: 600;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--dc-border);
+}
+
+.tool-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--dc-text-primary);
+}
+
+.tool-table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* Footer หน้าต่าง */
+.floating-footer {
+  height: 52px;
+  padding: 0 18px;
+  background-color: #1e1f22;
+  border-top: 1px solid var(--dc-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.floating-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Minimized Window */
+.floating-window.minimized {
+  max-height: 48px !important;
+  height: 48px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.floating-window.minimized .floating-body,
+.floating-window.minimized .floating-footer,
+.floating-window.minimized .win-tabs,
+.floating-window.minimized > div:not(.floating-header) {
+  display: none !important;
+}
+
+/* 9-Grid Position Selector (Replie / Overlay) */
+.pos-grid-9 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  width: 140px;
+}
+
+.pos-btn {
+  height: 32px;
+  background-color: #1e1f22;
+  border: 1px solid var(--dc-border);
+  border-radius: 4px;
+  color: var(--dc-text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+
+.pos-btn:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: var(--dc-text-primary);
+}
+
+.pos-btn.active {
+  background-color: var(--dc-blurple);
+  color: white;
+  border-color: var(--dc-blurple);
+}
+
+/* Section Card inside Tool Windows */
+.section-card {
+  background-color: #1e1f22;
+  border: 1px solid var(--dc-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dc-text-primary);
+}
+
+/* ========================================================
+   FORM CONTROLS & INPUT STYLING (DISCORD DARK THEME)
+   ======================================================== */
+.modal-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dc-text-muted);
+}
+
+.modal-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+/* Dark Inputs for all floating windows */
+.floating-window input[type="text"],
+.floating-window input[type="number"],
+.floating-window textarea,
+.floating-window select,
+.modal-input,
+.voice-select-box {
+  background-color: #1e1f22 !important;
+  color: #f2f3f5 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-family: var(--font-family);
+  font-size: 13.5px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  user-select: text;
+}
+
+/* Ensure ALL select dropdowns have comfortable height so Thai text is NEVER cut off */
+.floating-window select,
+select,
+.voice-select-box {
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 4px 36px 4px 12px !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23949ba4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+  cursor: pointer;
+}
+
+.floating-window input[type="text"]::placeholder,
+.floating-window input[type="number"]::placeholder,
+.floating-window textarea::placeholder,
+.modal-input::placeholder {
+  color: #6d6f78 !important;
+}
+
+.floating-window input[type="text"]:focus,
+.floating-window input[type="number"]:focus,
+.floating-window textarea:focus,
+.floating-window select:focus,
+.modal-input:focus,
+.voice-select-box:focus {
+  border-color: var(--dc-blurple) !important;
+  background-color: #18191c !important;
+  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.28);
+}
+
+/* Choice rows in ASK widget */
+.ask-choice-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #1e1f22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px 8px;
+}
+
+.ask-choice-row input {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px 6px !important;
+  flex: 1;
+}
+
+.ask-choice-row input:focus {
+  background-color: transparent !important;
+}
+
+.choice-tag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background-color: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  font-weight: 700;
+  font-size: 12.5px;
+}
+
+/* Modal Mode Cards (e.g. Gachapon / Slot / Shuffle) */
+.modal-mode-card {
+  background-color: #1e1f22;
+  border: 1px solid var(--dc-border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modal-mode-card:hover {
+  background-color: #2b2d31;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.modal-mode-card.active {
+  background-color: rgba(88, 101, 242, 0.15);
+  border-color: var(--dc-blurple);
+  color: white;
+}
+
+/* ========================================================
+   SETTINGS WINDOW SIDEBAR & CONTENT LAYOUT
+   ======================================================== */
+.settings-layout {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+  background-color: #2b2d31;
+}
+
+.settings-sidebar {
+  width: 220px;
+  background-color: #1e1f22;
+  border-right: 1px solid var(--dc-border);
+  display: flex;
+  flex-direction: column;
+  padding: 12px 8px;
+  gap: 2px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.settings-nav-header {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--dc-text-dim);
+  padding: 8px 10px 4px 10px;
+  letter-spacing: 0.5px;
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--dc-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.settings-nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--dc-text-primary);
+}
+
+.settings-nav-item.active {
+  background-color: #35373c;
+  color: var(--dc-text-primary);
+}
+
+.settings-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  background-color: #2b2d31;
+}
+
+.settings-section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--dc-text-primary);
+  margin-bottom: 2px;
+}
+
+.settings-section-desc {
+  font-size: 12.5px;
+  color: var(--dc-text-muted);
+  margin-bottom: 12px;
+}
+
+
+/* ========================================================
+   FLOATING WINDOW RESIZABLE SUPPORT & CORNER GRIP
+   ======================================================== */
+.floating-window {
+  min-width: 400px;
+  min-height: 260px;
+  max-width: calc(100vw - 24px) !important;
+  max-height: calc(100vh - 24px) !important;
+}
+
+.floating-window.resizing {
+  user-select: none !important;
+  cursor: se-resize !important;
+}
+
+body.win-is-resizing {
+  user-select: none !important;
+  cursor: se-resize !important;
+}
+
+.win-resize-handle {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 18px;
+  height: 18px;
+  cursor: se-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  user-select: none;
+  color: rgba(255, 255, 255, 0.35);
+  transition: all 0.15s ease;
+  pointer-events: auto;
+}
+
+.win-resize-handle:hover,
+.floating-window.resizing .win-resize-handle {
+  color: var(--dc-blurple);
+  transform: scale(1.25);
+  filter: drop-shadow(0 0 6px rgba(88, 101, 242, 0.8));
+}
+
+.floating-window.minimized .win-resize-handle {
+  display: none !important;
+}
+
+/* Window Maximize support */
+.floating-window.maximized {
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+  z-index: 9990 !important;
+  box-shadow: none !important;
+}
+.floating-window.maximized .win-resize-handle {
+  display: none !important;
+}

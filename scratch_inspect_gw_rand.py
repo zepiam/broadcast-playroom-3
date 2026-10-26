@@ -1,0 +1,14 @@
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+html_path = r'E:\DOCS\Documents\AI TOOLS\broadcast playroom 3\src\index.html'
+
+with open(html_path, 'r', encoding='utf-8') as f:
+    text = f.read()
+
+idx = text.find('function rerollGwWinner() {')
+print("rerollGwWinner:")
+print(text[idx:idx+1500])
+
+idx2 = text.find('function runSpinRandomizer() {')
+print("runSpinRandomizer:")
+print(text[idx2-200:idx2+1500])

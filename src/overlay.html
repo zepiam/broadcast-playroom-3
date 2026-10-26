@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="th" class="notranslate" translate="no">
+<head>
+  <!-- Browser Extension & Password Manager Suppression (Bitwarden, 1Password, LastPass, etc.) -->
+  <style>
+    div[id*="bitwarden"],
+    div[class*="bitwarden"],
+    [data-bitwarden-watching],
+    [data-bwautofill],
+    iframe[id*="bitwarden"],
+    div[id*="dashlane"],
+    div[id*="1password"],
+    div[id*="lastpass"],
+    div[class*="lastpass"],
+    div[id^="__lp_"],
+    div[id*="keeper"] {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      opacity: 0 !important;
+      max-width: 0 !important;
+      max-height: 0 !important;
+    }
+  </style>
+  <script>
+    (function() {
+      function isolateInput(el) {
+        if (!el || !el.setAttribute) return;
+        el.setAttribute('autocomplete', 'off');
+        el.setAttribute('autocorrect', 'off');
+        el.setAttribute('autocapitalize', 'off');
+        el.setAttribute('spellcheck', 'false');
+        el.setAttribute('data-bwignore', 'true');
+        el.setAttribute('data-lpignore', 'true');
+        el.setAttribute('data-1p-ignore', 'true');
+        el.setAttribute('data-form-type', 'other');
+      }
+      function protectAll(root = document) {
+        try {
+          const els = root.querySelectorAll('input, select, textarea, form');
+          els.forEach(isolateInput);
+        } catch (e) {}
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => protectAll());
+      } else {
+        protectAll();
+      }
+      try {
+        const observer = new MutationObserver(mutations => {
+          for (const m of mutations) {
+            for (const node of m.addedNodes) {
+              if (node.nodeType === 1) {
+                if (node.matches && node.matches('input, select, textarea, form')) {
+                  isolateInput(node);
+                }
+                if (node.querySelectorAll) {
+                  protectAll(node);
+                }
+              }
+            }
+          }
+        });
+        observer.observe(document.documentElement, { childList: true, subtree: true });
+      } catch (e) {}
+    })();
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920, height=1080, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Broadcast Playroom 3 — OBS Live Overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Noto+Sans+Thai+Looped:wght@400;500;600;700&family=Press+Start+2P&family=Chakra+Petch:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./composer_studio.css">
+  <link rel="stylesheet" href="./composer_widget_themes.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 1920px;
+      height: 1080px;
+      overflow: hidden;
+      background: transparent !important;
+      font-family: 'Kanit', sans-serif;
+      contain: strict;
+      isolation: isolate;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #obsCanvasStage {
+      position: absolute;
+      width: 1920px;
+      height: 1080px;
+      top: 0;
+      left: 0;
+      overflow: hidden;
+      background: transparent !important;
+    }
+    .composer-widget {
+      position: absolute !important;
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+    /* Hide editor UI markers on OBS */
+    .composer-widget::before,
+    .composer-widget::after,
+    .composer-resize-handle,
+    .composer-widget-badge,
+    .composer-widget-tools,
+    .smart-guide-line {
+      display: none !important;
+    }
+    .composer-widget.selected {
+      outline: none !important;
+      box-shadow: none !important;
+    }
+    /* Status banner for browser test mode */
+    #obsStatusNotice {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #f8fafc;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 500;
+      display: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      z-index: 999999;
+      pointer-events: auto;
+      max-width: 450px;
+      backdrop-filter: none;
+    }
+    #obsStatusNotice b { color: #38bdf8; }
+  </style>
+</head>
+<body class="overlay-mode preview-clean-mode" translate="no" class="notranslate">
+  <div id="obsCanvasStage"></div>
+  <div id="obsStatusNotice">
+    <div>📡 <b>Broadcast Playroom 3 — OBS Live Overlay</b></div>
+    <div style="font-size:12px; color:#94a3b8; margin-top:3px;">เชื่อมต่อเรียบร้อยแล้ว กำลังรอรับข้อมูลวิดเจ็ตจาก Composer Studio...</div>
+  </div>
+
+  <script src="./cwc_themes_data.js"></script>
+  <script src="./composer_studio.js"></script>
+  <script>
+  (function() {
+    const stage = document.getElementById('obsCanvasStage');
+    const notice = document.getElementById('obsStatusNotice');
+    const params = new URLSearchParams(window.location.search);
+    const targetPageParam = params.get('p') || params.get('page') || '1';
+    const isBrowserTest = params.has('test') || window.location.protocol === 'http:';
+
+    let lastConfigHash = '';
+    let clockTimer = null;
+
+    // Show temporary notice in browser test
+    if (params.has('test')) {
+      if (notice) {
+        notice.style.display = 'block';
+        setTimeout(() => { notice.style.display = 'none'; }, 4000);
+      }
+    }
+
+    // Helper to get active page data
+    function resolvePage(data) {
+      if (!data) return null;
+      let pages = Array.isArray(data) ? data : (data.pages || []);
+      if (!pages.length) return null;
+
+      const num = parseInt(targetPageParam, 10);
+      if (!isNaN(num) && num >= 1 && num <= pages.length) {
+        return pages[num - 1];
+      }
+      const byId = pages.find(p => p.id === targetPageParam || p.name === targetPageParam);
+      if (byId) return byId;
+
+      return pages[0];
+    }
+
+    // Render widgets onto OBS stage
+    function renderWidgets(page) {
+      if (!stage || !page || !Array.isArray(page.widgets)) return;
+
+      const renderer = window.renderWidgetInnerHtml || (window.ComposerStudio && window.ComposerStudio.renderWidgetInnerHtml);
+      const isFullFn = window.isFullscreenWidget || (window.ComposerStudio && window.ComposerStudio.isFullscreenWidget);
+
+      stage.innerHTML = '';
+
+      page.widgets.forEach(w => {
+        if (w.hidden) return;
+
+        const el = document.createElement('div');
+        const isFull = isFullFn ? isFullFn(w) : (
+          (w.type === 'chat' && w.chatMode === 'danmaku') ||
+          w.type === 'ask' ||
+          w.type === 'giveaway' ||
+          w.type === 'emote_party' ||
+          w.type === 'randomizer' ||
+          w.type === 'replie' ||
+          w.isFullScreen === true
+        );
+        
+        let classes = ['composer-widget', 'widget', 'type-' + w.type];
+        if (isFull) classes.push('widget-fullscreen-fixed', 'widget-danmaku-full');
+        if (w.clockTheme) classes.push('clock-theme-' + w.clockTheme);
+        if (w.clockStyle && w.clockStyle !== 'none') classes.push('clock-style-set', 'clock-style-' + w.clockStyle);
+        if (w.viewerTheme) classes.push('viewer-theme-' + w.viewerTheme);
+        if (w.webcamTheme) classes.push('webcam-theme-' + w.webcamTheme);
+        if (w.chatTheme) classes.push('chat-theme-' + w.chatTheme);
+        if (w.chatMode) classes.push('chat-mode-' + w.chatMode);
+
+        el.className = classes.join(' ');
+        el.dataset.id = w.id;
+        el.dataset.type = w.type;
+
+        el.style.left = (isFull ? 0 : (w.x || 0)) + 'px';
+        el.style.top = (isFull ? 0 : (w.y || 0)) + 'px';
+        el.style.width = (isFull ? 1920 : (w.width || 300)) + 'px';
+        el.style.height = (isFull ? 1080 : (w.height || 200)) + 'px';
+        el.style.zIndex = w.z || 1;
+        el.style.opacity = w.opacity ?? 1;
+
+        if (typeof renderer === 'function') {
+          el.innerHTML = renderer(w);
+        } else {
+          el.innerHTML = `<div class="composer-widget-inner">${w.title || w.type}</div>`;
+        }
+
+        stage.appendChild(el);
+      });
+
+      startClockTicker();
+    }
+
+    // Live Clock Ticker
+    function startClockTicker() {
+      if (clockTimer) clearInterval(clockTimer);
+      clockTimer = setInterval(() => {
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        const s = String(now.getSeconds()).padStart(2, '0');
+        const yr = now.getFullYear();
+        const mo = String(now.getMonth() + 1).padStart(2, '0');
+        const dy = String(now.getDate()).padStart(2, '0');
+
+        document.querySelectorAll('.composer-widget.type-clock').forEach(el => {
+          const dotTime = el.querySelector('.dot-time');
+          if (dotTime) dotTime.textContent = `${h}:${m}`;
+          const ltTime = el.querySelector('.lt-time');
+          if (ltTime) ltTime.innerHTML = `${h}<span class="lt-colon">:</span>${m}`;
+          const ltSec = el.querySelector('.lt-sec');
+          if (ltSec) ltSec.textContent = s;
+          const clockTime = el.querySelector('.clock-time');
+          if (clockTime) {
+            clockTime.textContent = clockTime.textContent.includes(':') ? (clockTime.textContent.split(':').length === 3 ? `${h}:${m}:${s}` : `${h}:${m}`) : `${h}:${m}`;
+          }
+        });
+      }, 1000);
+    }
+
+    // Fetch layout from Server or fallback to localStorage
+    async function updateLayout() {
+      let data = null;
+
+      // 1. Try server API /api/composer/layout
+      try {
+        const res = await fetch('/api/composer/layout?t=' + Date.now(), { cache: 'no-store' });
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (e) {
+        // Server offline
+      }
+
+      // 2. Fallback to localStorage
+      if (!data) {
+        try {
+          const local = localStorage.getItem('bp_composer_studio_v3_full') || localStorage.getItem('bp_composer_studio_v3');
+          if (local) data = JSON.parse(local);
+        } catch (e) {}
+      }
+
+      if (data) {
+        const page = resolvePage(data);
+        const hash = JSON.stringify(page);
+        if (hash !== lastConfigHash) {
+          lastConfigHash = hash;
+          renderWidgets(page);
+        }
+      }
+    }
+
+    // Initial load
+    updateLayout();
+
+    // Fast Polling (700ms hash diff)
+    setInterval(updateLayout, 700);
+
+        let _randomizerTimer = null;
+    function escapeHtml(str) {
+      return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function handleRandomizerSpin(data) {
+      if (!data) return;
+
+      // 1. Update canvas widget if exists
+      document.querySelectorAll('.widget.type-randomizer').forEach(widgetEl => {
+        const wid = widgetEl.dataset.id;
+        const card = document.getElementById(`compRandomizerCard_${wid}`);
+        const res = document.getElementById(`compRandomizerResult_${wid}`);
+        const hint = document.getElementById(`compRandomizerHint_${wid}`);
+        if (card && res) {
+          card.style.display = 'block';
+          const items = (data.items && data.items.length) ? data.items : ['1', '2'];
+          let count = 0;
+          const spinInt = setInterval(() => {
+            count++;
+            res.textContent = items[Math.floor(Math.random() * items.length)];
+            res.style.color = '#fbbf24';
+            if (count > 16) {
+              clearInterval(spinInt);
+              res.textContent = data.winner || items[0];
+              res.style.color = '#38bdf8';
+              if (hint) hint.textContent = '🎉 สุ่มเสร็จสิ้น';
+              setTimeout(() => {
+                card.style.display = 'none';
+              }, (data.duration || 5) * 1000);
+            }
+          }, 80);
+        }
+      });
+
+      // 2. On-Demand Dynamic Modal Overlay (Matches Old Version Dev exactly)
+      const existing = document.getElementById('on-demand-randomizer-overlay');
+      if (existing) {
+        existing.remove();
+      }
+      if (_randomizerTimer) {
+        clearTimeout(_randomizerTimer);
+        _randomizerTimer = null;
+      }
+
+      const items = (data.items && data.items.length) ? data.items : ['ตัวเลือก 1', 'ตัวเลือก 2'];
+      const winner = data.winner || items[0];
+      const title = data.title || '🎰 สุ่มกิจกรรม';
+      const st = data.settings || {};
+      const scale = (st.scale || 100) / 100;
+      const ox = parseInt(st.offset_x, 10) || 0;
+      const oy = parseInt(st.offset_y, 10) || 0;
+      const anchor = st.anchor || 'center';
+      const holdDuration = (st.duration !== undefined ? parseFloat(st.duration) : (data.duration || 5)) * 1000;
+
+      let anchorStyle = '';
+      let transOrigin = 'center center';
+      let baseTrans = '';
+
+      if (anchor === 'top-left') {
+        anchorStyle = 'top: 40px; left: 40px;';
+        transOrigin = 'top left';
+        baseTrans = 'translate(0px, 0px)';
+      } else if (anchor === 'top-center') {
+        anchorStyle = 'top: 40px; left: 50%;';
+        transOrigin = 'top center';
+        baseTrans = 'translate(-50%, 0px)';
+      } else if (anchor === 'top-right') {
+        anchorStyle = 'top: 40px; right: 40px;';
+        transOrigin = 'top right';
+        baseTrans = 'translate(0px, 0px)';
+      } else if (anchor === 'middle-left') {
+        anchorStyle = 'top: 50%; left: 40px;';
+        transOrigin = 'left center';
+        baseTrans = 'translate(0px, -50%)';
+      } else if (anchor === 'center') {
+        anchorStyle = 'top: 50%; left: 50%;';
+        transOrigin = 'center center';
+        baseTrans = 'translate(-50%, -50%)';
+      } else if (anchor === 'middle-right') {
+        anchorStyle = 'top: 50%; right: 40px;';
+        transOrigin = 'right center';
+        baseTrans = 'translate(0px, -50%)';
+      } else if (anchor === 'bottom-left') {
+        anchorStyle = 'bottom: 40px; left: 40px;';
+        transOrigin = 'bottom left';
+        baseTrans = 'translate(0px, 0px)';
+      } else if (anchor === 'bottom-center') {
+        anchorStyle = 'bottom: 40px; left: 50%;';
+        transOrigin = 'bottom center';
+        baseTrans = 'translate(-50%, 0px)';
+      } else if (anchor === 'bottom-right') {
+        anchorStyle = 'bottom: 40px; right: 40px;';
+        transOrigin = 'bottom right';
+        baseTrans = 'translate(0px, 0px)';
+      }
+
+      const overlay = document.createElement('div');
+      overlay.id = 'on-demand-randomizer-overlay';
+      overlay.style.cssText = `
+        position: fixed;
+        ${anchorStyle}
+        z-index: 9999999;
+        pointer-events: none;
+        transform: ${baseTrans} translate(${ox}px, ${oy}px) scale(${scale});
+        transform-origin: ${transOrigin};
+        transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        opacity: 0;
+        contain: layout style paint;
+        isolation: isolate;
+      `;
+
+      overlay.innerHTML = `
+        <div style="
+          width: 460px;
+          background: rgba(11, 17, 32, 0.96);
+          border: 2px solid #3b82f6;
+          border-radius: 18px;
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(59, 130, 246, 0.25);
+          padding: 24px 26px 20px 26px;
+          font-family: -apple-system, BlinkMacSystemFont, 'Prompt', 'Kanit', 'Noto Sans Thai', sans-serif;
+          box-sizing: border-box;
+          color: #ffffff;
+          text-align: center;
+          contain: layout style paint;
+        ">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
+            <span style="font-size: 20px;">🎰</span>
+            <span style="font-size: 15px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px; text-transform: uppercase;">
+              ${escapeHtml(title)}
+            </span>
+          </div>
+
+          <div id="randomizer-roller-box" style="
+            background: rgba(2, 6, 23, 0.95);
+            border: 2px solid #1e293b;
+            border-radius: 12px;
+            height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 16px;
+            box-sizing: border-box;
+            overflow: hidden;
+            transition: border-color 0.3s, background-color 0.3s;
+          ">
+            <span id="randomizer-roller-text" style="
+              font-size: 24px;
+              font-weight: 800;
+              color: #f1f5f9;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              max-width: 100%;
+            ">...</span>
+          </div>
+
+          <div id="randomizer-footer-pill" style="
+            margin-top: 14px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+          ">
+            <span>⚡ กำลังสุ่ม...</span>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+
+      requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+      });
+
+      const rollerText = overlay.querySelector('#randomizer-roller-text');
+      const rollerBox = overlay.querySelector('#randomizer-roller-box');
+      const footerPill = overlay.querySelector('#randomizer-footer-pill');
+
+      let ticks = 0;
+      const maxTicks = 26;
+      let delay = 50;
+
+      function runTick() {
+        ticks++;
+        const cand = items[Math.floor(Math.random() * items.length)];
+        if (rollerText) rollerText.textContent = cand;
+
+        if (ticks < maxTicks) {
+          if (ticks > maxTicks - 8) {
+            delay += 35;
+          }
+          setTimeout(runTick, delay);
+        } else {
+          if (rollerText) rollerText.textContent = winner;
+          if (rollerBox) {
+            rollerBox.style.borderColor = '#f59e0b';
+            rollerBox.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
+            rollerText.style.color = '#fbbf24';
+          }
+          if (footerPill) {
+            footerPill.innerHTML = '<span style="color: #fbbf24; font-weight: 700;">🎉 ผลการสุ่มเรียบร้อยแล้ว</span>';
+          }
+
+          _randomizerTimer = setTimeout(() => {
+            overlay.style.opacity = '0';
+            overlay.style.transform = `${baseTrans} translate(${ox}px, ${oy - 20}px) scale(${scale * 0.95})`;
+            setTimeout(() => {
+              overlay.remove();
+            }, 400);
+          }, holdDuration);
+        }
+      }
+
+      runTick();
+    }
+
+    function handleAskUpdate(data) {
+      document.querySelectorAll('.widget.type-ask').forEach(widgetEl => {
+        const wid = widgetEl.dataset.id;
+        const panel = document.getElementById(`compAskPanel_${wid}`);
+        const isAskActive = data && data.active === true && (data.phase === 'voting' || data.phase === 'ended');
+        if (panel) {
+          panel.style.display = isAskActive ? 'block' : 'none';
+        }
+        if (isAskActive) {
+          const qEl = document.getElementById(`compAskQ_${wid}`);
+          if (qEl) qEl.textContent = data.phase === 'ended' ? `🏆 สรุปผล: ${data.question}` : `📊 ${data.question}`;
+          const timerEl = document.getElementById(`compAskTimer_${wid}`);
+          if (timerEl) {
+            timerEl.textContent = data.phase === 'ended' ? '🏆 สรุปผล' : (data.remainingSec != null ? `⏱ ${data.remainingSec}s` : '🗳️ โหวตสด');
+          }
+          const listEl = document.getElementById(`compAskChoicesList_${wid}`);
+          if (listEl && data.choices) {
+            listEl.innerHTML = data.choices.map(c => `
+              <div style="background:rgba(255,255,255,0.05); border-radius:6px; padding:6px 10px; position:relative; overflow:hidden;">
+                <div style="position:absolute; inset:0; width:${c.pct}%; background:${c.color || '#38bdf8'}; opacity:0.25; border-radius:6px;"></div>
+                <div style="position:relative; z-index:1; display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:#ffffff;">
+                  <span>${c.label}: ${c.text}</span>
+                  <span style="color:${c.color || '#38bdf8'}; font-weight:700;">${c.pct}% (${c.votes || 0})</span>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+      });
+    }
+
+    function handleGwUpdate(data) {
+      document.querySelectorAll('.widget.type-giveaway').forEach(widgetEl => {
+        const wid = widgetEl.dataset.id;
+        const panel = document.getElementById(`compGwPanel_${wid}`);
+        const isGwActive = data && data.active === true && (data.phase === 'running' || data.phase === 'winner');
+        if (panel) {
+          panel.style.display = isGwActive ? 'block' : 'none';
+        }
+        if (isGwActive) {
+          const pEl = document.getElementById(`compGwPrize_${wid}`);
+          if (pEl) pEl.textContent = data.prize;
+          const hEl = document.getElementById(`compGwHint_${wid}`);
+          if (hEl) hEl.innerHTML = `พิมพ์ <strong style="color:#fb7185;">${data.code}</strong> ในแชทเพื่อเข้าร่วมสุ่ม`;
+          const cEl = document.getElementById(`compGwCount_${wid}`);
+          if (cEl) cEl.textContent = `ผู้เข้าร่วม: ${data.count} คน`;
+          const winEl = document.getElementById(`compGwWinner_${wid}`);
+          const winNameEl = document.getElementById(`compGwWinnerName_${wid}`);
+          if (winEl && winNameEl) {
+            if (data.winner) {
+              winNameEl.textContent = data.winner;
+              winEl.style.display = 'block';
+            } else {
+              winEl.style.display = 'none';
+            }
+          }
+        }
+      });
+    }
+
+    function handlePlayroomAction(data) {
+      document.querySelectorAll('.widget.type-playroom').forEach(widgetEl => {
+        const wid = widgetEl.dataset.id;
+        const stage = document.getElementById(`compPlayroomStage_${wid}`);
+        const idle = document.getElementById(`compPlayroomIdle_${wid}`);
+        const title = document.getElementById(`compPlayroomTitle_${wid}`);
+        const tag = document.getElementById(`compPlayroomTag_${wid}`);
+        const bar = document.getElementById(`compPlayroomBar_${wid}`);
+        if (idle) idle.style.display = 'none';
+        if (stage && title && tag && bar) {
+          title.textContent = data.name;
+          tag.textContent = `คำสั่ง ${data.trigger}`;
+          stage.style.display = 'flex';
+          bar.style.transition = 'none';
+          bar.style.width = '100%';
+          setTimeout(() => {
+            bar.style.transition = `width ${data.duration || 5}s linear`;
+            bar.style.width = '0%';
+          }, 50);
+
+          setTimeout(() => {
+            stage.style.display = 'none';
+            if (idle) idle.style.display = 'none';
+          }, (data.duration || 5) * 1000);
+        }
+      });
+    }
+
+    // BroadcastChannel real-time sync
+    if ('BroadcastChannel' in window) {
+      try {
+        const bus = new BroadcastChannel('bp3_system_channel');
+        bus.onmessage = (e) => {
+          const { event, payload } = e.data || {};
+          if (event === 'CANVAS_LAYOUT_SAVED') {
+            updateLayout();
+          } else if (event === 'RANDOMIZER_SPIN') {
+            handleRandomizerSpin(payload);
+          } else if (event === 'ASK_UPDATE') {
+            window._liveAskState = payload;
+            handleAskUpdate(payload);
+          } else if (event === 'GIVEAWAY_UPDATE') {
+            window._liveGwState = payload;
+            handleGwUpdate(payload);
+          } else if (event === 'PLAYROOM_ACTION') {
+            handlePlayroomAction(payload);
+          }
+        };
+      } catch (e) {}
+    }
+  })();
+  </script>
+</body>
+</html>
