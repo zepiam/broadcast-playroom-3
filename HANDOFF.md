@@ -440,3 +440,10 @@ Current next work: user acceptance on actual OBS/live accounts and their own lon
 - Updated Settings "About" section in `src/index.html`: added `v3.0.0` badge, dynamic `appUpdateStatusBadge`, interactive "🔄 ตรวจสอบการอัปเดต" button calling `/api/check-update`, and GitHub link.
 - Authored `UPDATER_DESIGN.md` detailing the update architecture, data safety guarantees (user data never touched), channel isolation, and separation from legacy v2 (`broadcast-playroom-ex`).
 - Ran `npm run build` and `python sync_trial_frontend.py` to ensure all dist and trial directories remain fully synchronized.
+
+## 2026-10-28 — Non-intrusive Glowing Rail Update Button (Antigravity)
+- Added glowing downward-pointing update button `#btnRailUpdate` on the far-left server rail (`nav.discord-server-rail`) directly above `#btnRailSettings`.
+- Styled with `.rail-icon-btn.update-glow` in `src/styles.css`: emerald neon glow with hover downward translation, strictly adhering to zero infinite GPU looping animations.
+- Implemented non-intrusive update notification: background update checks reveal the button silently without showing any toast or popup alerts to the user.
+- Wired click handler `handleRailUpdateClick()` to open `win-settings` and focus the `sec-about` pane displaying changelog and update actions for manual user trigger.
+- Verified via Playwright test `scratch/test_rail_update_ui.py` (DOM hierarchy, silent detection, zero toasts, click navigation, up-to-date hiding). Synced across build trials.

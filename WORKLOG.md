@@ -135,3 +135,27 @@ pm run build และ python sync_trial_frontend.py สำเร็จ
   - รันการทดสอบ Unit Test (`scratch/test_updater_system.py`) ตรวจสอบความถูกต้องของ Semver Logic, Build Detection, และการเช็คอัปเดตกับ GitHub API คืนค่า `up_to_date` ถูกต้อง 100%
   - ทดสอบการกดปุ่มเช็คอัปเดตใน UI ตอบสนองและแสดงผลถูกต้อง
 - **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀
+
+## [2026-10-28 19:38] Antigravity (Non-intrusive Glowing Rail Update Button)
+- **ผู้ดำเนินงาน/ทีม:** Antigravity
+- **เป้าหมาย / คำสั่งของผู้ใช้:**
+  - เมื่อมีอัปเดตใหม่ ให้ขึ้นปุ่มอยู่ด้านซ้ายสุดของโปรแกรม เหนือเฟือง setting เป็นปุ่มชี้ลง มีเอฟเฟค glow
+  - ให้ผู้ใช้กดอัปเดตเอง ไม่มีการเด้งป็อปอัปเตือนกวนใจระหว่างใช้งาน
+- **สิ่งที่ได้ดำเนินการ:**
+  - เพิ่มปุ่ม `#btnRailUpdate` ลงใน `nav.discord-server-rail` ในตำแหน่งเหนือเฟือง Setting (`#btnRailSettings`) พร้อมไอคอนหัวลูกศรชี้ลง
+  - เพิ่มสไตล์ `.rail-icon-btn.update-glow` ใน `src/styles.css` ให้มีมิติเรืองแสงสีเขียวมรกต พร้อม Hover Downward Shift โดยยึดตามหลัก Zero GPU Lockup (ไม่มี infinite looping animation)
+  - ปรับปรุงฟังก์ชัน `checkAppUpdate(manual)` ใน `src/index.html`:
+    - เมื่อตรวจพบอัปเดตใหม่ (`has_update: true`): ปลดล็อกการแสดงผล `#btnRailUpdate` (`display: flex`)
+    - ซ่อนปุ่มอัตโนมัติเมื่อเป็นเวอร์ชันล่าสุด (`up_to_date`)
+    - ระบบทำงานเงียบสนิท (Silent Check) จะไม่มีการแสดง Toast หรือ Popup เด้งเตือนอัตโนมัติหาก `manual === false`
+    - เมื่อผู้ใช้คลิกปุ่ม `#btnRailUpdate` จะเรียก `handleRailUpdateClick()` เพื่อเปิดหน้าต่าง Settings แท็บ About พร้อมแสดงรายการการเปลี่ยนแปลง (Changelog) และปุ่มดาวน์โหลด/อัปเดตให้กดเอง
+  - เพิ่ม Silent poller ใน `DOMContentLoaded`: ตรวจสอบอัปเดตเงียบๆ หลังเปิดโปรแกรม 3 วินาที และทุกๆ 30 นาที
+  - ทำการ Rebuild Frontend (`npm run build`) และซิงค์ Trial Builds (`python sync_trial_frontend.py`)
+- **ผลการทดสอบ (Verification Results):**
+  - รันการทดสอบ Playwright E2E (`scratch/test_rail_update_ui.py`):
+    - สถานะเริ่มต้น: `#btnRailUpdate` ถูกซ่อน (`display: none`)
+    - ลำดับ DOM: อยู่เหนือ `#btnRailSettings` ทันที (order check ผ่าน)
+    - เมื่อพบอัปเดต: `#btnRailUpdate` แสดงผล มีคลาส `update-glow` และ Tooltip ถูกต้อง
+    - ไม่พบ Toast หรือ Dialog เด้งขึ้นมาขัดจังหวะการทำงาน (0 toasts created)
+    - เมื่อคลิกปุ่ม: หน้าต่าง `win-settings` และแท็บ `sec-about` เปิดขึ้นมาพร้อมใช้งาน
+- **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀

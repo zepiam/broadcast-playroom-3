@@ -348,6 +348,15 @@
 
 
 
+      <!-- ปุ่มอัปเดตใหม่ (แสดงบน Server Rail เหนือเฟือง Setting เมื่อมีเวอร์ชันใหม่ มีเอฟเฟค Glow ชี้ลง) -->
+      <button class="rail-icon-btn update-glow" id="btnRailUpdate" title="⚡ มีอัปเดตใหม่พร้อมติดตั้ง (คลิกเพื่อดูรายละเอียดและอัปเดต)" onclick="handleRailUpdateClick()" style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v13"/>
+          <path d="m6 11 6 6 6-6"/>
+          <path d="M19 21H5"/>
+        </svg>
+      </button>
+
       <!-- เฟือง Setting โปรแกรมหลัก ชิดซ้ายล่างสุดของโปรแกรม -->
 
       <button class="rail-icon-btn" id="btnRailSettings" title="⚙️ การตั้งค่าระบบหลัก" onclick="openToolWindow('settings')" style="margin-bottom: 6px;">
@@ -14067,6 +14076,9 @@
 
       setTimeout(() => { checkTtsServerHealth(false); }, 600);
       setInterval(() => { checkTtsServerHealth(false); }, 60000);
+      // ตรวจสอบอัปเดตอัตโนมัติแบบเงียบๆ (ไม่มีป็อปอัปเด้งกวนใจ)
+      setTimeout(() => { checkAppUpdate(false); }, 3000);
+      setInterval(() => { checkAppUpdate(false); }, 1800000);
 
     });
 
@@ -16436,20 +16448,32 @@
       }, 10000);
     }
 
+    function handleRailUpdateClick() {
+      openToolWindow('settings');
+      switchSettingsSection('about');
+      const sec = document.getElementById('sec-about');
+      if (sec) {
+        sec.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
     async function checkAppUpdate(manual = false) {
       const btn = document.getElementById('btnCheckUpdate');
       const badge = document.getElementById('appUpdateStatusBadge');
       const detail = document.getElementById('updateCheckDetail');
+      const railBtn = document.getElementById('btnRailUpdate');
 
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = '⏳ กำลังตรวจสอบ...';
-      }
-      if (badge) {
-        badge.textContent = '⏳ ตรวจสอบ...';
-        badge.style.color = 'var(--dc-text-muted)';
-        badge.style.background = 'rgba(255,255,255,0.06)';
-        badge.style.borderColor = 'rgba(255,255,255,0.1)';
+      if (manual) {
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = '⏳ กำลังตรวจสอบ...';
+        }
+        if (badge) {
+          badge.textContent = '⏳ ตรวจสอบ...';
+          badge.style.color = 'var(--dc-text-muted)';
+          badge.style.background = 'rgba(255,255,255,0.06)';
+          badge.style.borderColor = 'rgba(255,255,255,0.1)';
+        }
       }
 
       try {
@@ -16462,6 +16486,12 @@
         }
 
         if (data.has_update) {
+          // แสดงปุ่มชี้ลงพร้อมเอฟเฟค Glow บน Server Rail เหนือเฟือง Setting
+          if (railBtn) {
+            railBtn.style.display = 'flex';
+            railBtn.title = `⚡ มีเวอร์ชันใหม่ (v${data.latest_version}) พร้อมให้อัปเดต (คลิกเพื่ออัปเดต)`;
+          }
+
           if (badge) {
             badge.textContent = `⚡ มีเวอร์ชันใหม่ v${data.latest_version}`;
             badge.style.color = '#f59e0b';
@@ -16469,12 +16499,27 @@
             badge.style.borderColor = 'rgba(245,158,11,0.3)';
           }
           if (detail) {
-            detail.innerHTML = `พบเวอร์ชันใหม่ <strong>v${data.latest_version}</strong><br><small style="color:var(--dc-text-muted);">${data.changelog ? data.changelog.replace(/\n/g, '<br>') : ''}</small>`;
+            detail.innerHTML = `
+              <div style="background: rgba(35,165,90,0.1); border:1px solid rgba(35,165,90,0.3); border-radius:10px; padding:12px; margin-top:8px; text-align:left;">
+                <div style="font-weight:700; color:#23a55a; margin-bottom:6px; font-size:13px;">🚀 พบเวอร์ชันใหม่ v${data.latest_version}</div>
+                <div style="font-size:12px; color:#e0e0e0; line-height:1.5; white-space:pre-line; margin-bottom:10px;">${data.changelog || ''}</div>
+                <div style="display:flex; gap:8px;">
+                  <button class="btn btn-primary btn-sm" onclick="openExternalUrl('${data.download_url || 'https://github.com/zepiam/broadcast-playroom-3/releases'}')" style="font-size:12px; padding:6px 14px; background:#23a55a; border-color:#23a55a; cursor:pointer;">
+                    ⚡ ดาวน์โหลด / อัปเดตทันที
+                  </button>
+                </div>
+              </div>
+            `;
           }
+          // ไม่เด้งเตือน Pop-up ใดๆ อัตโนมัติ (แสดงเฉพาะเมื่อผู้ใช้กดปุ่มเช็คเอง)
           if (manual) {
-            showToast(`🚀 พบเวอร์ชันใหม่ v${data.latest_version}! สามารถดูรายละเอียดได้ใน Settings > เกี่ยวกับโปรแกรม`);
+            showToast(`🚀 พบเวอร์ชันใหม่ v${data.latest_version}! สามารถคลิกปุ่มอัปเดตด้านซ้ายเพื่อดูรายละเอียด`);
           }
         } else if (data.status === 'up_to_date') {
+          // ซ่อนปุ่มบน Rail หากเป็นเวอร์ชันล่าสุดแล้ว
+          if (railBtn) {
+            railBtn.style.display = 'none';
+          }
           if (badge) {
             badge.textContent = '✅ เวอร์ชันล่าสุด';
             badge.style.color = '#23a55a';
@@ -16482,7 +16527,7 @@
             badge.style.borderColor = 'rgba(35,165,90,0.25)';
           }
           if (detail) {
-            detail.textContent = `คุณกำลังใช้งานเวอร์ชันล่าสุด (v${data.current_version}) แล้วครับ`;
+            detail.innerHTML = `<span style="color:#23a55a;">คุณกำลังใช้งานเวอร์ชันล่าสุด (v${data.current_version}) แล้วครับ</span>`;
           }
           if (manual) {
             showToast(`✅ คุณกำลังใช้งานเวอร์ชันล่าสุด (v${data.current_version}) แล้วครับ`);
