@@ -323,7 +323,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
         if path=='/api/giveaway-settings':
             self.send_json(((get_layout() or {}).get('legacyTools') or {}).get('giveaway') or {});return
         if path=='/api/desktop-overlays':
-            self.send_json({**desktop_overlays.snapshot(),'settings':{key:value for key,value in ((get_layout() or {}).get('legacyTools') or {}).items() if key=='more_overlays' or key.startswith('game_overlay_')}});return
+            self.send_json({**desktop_overlays.snapshot(),'settings':{key:value for key,value in ((get_layout() or {}).get('legacyTools') or {}).items() if key=='more_overlays' or key.startswith('game_overlay_') or key.startswith('viewer_overlay_')}});return
         if path=='/legacy-game-chat.html':
             self.serve_custom_file(os.path.join(DIST_DIR,'legacy_game_chat.html'),'text/html; charset=utf-8');return
         if path in ('/game-chat-config','/game-theme','/game-custom-css'):

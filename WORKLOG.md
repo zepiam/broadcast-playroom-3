@@ -5,6 +5,48 @@
 
 ---
 
+## [2026-10-28 21:10] — Antigravity (Unified Voice TTS Settings, Female Pitch Bug Fix & Floating Game Overlay Window)
+
+- **เครื่องมือที่ทำงาน:** Antigravity (Google DeepMind)
+- **เหตุผล / คำสั่งจากผู้ใช้:**
+  1. หน้าต่างตั้งค่าเสียง TTS ใน Sidebar ('#win-voice-settings') และ Settings > เสียงอ่าน ('#sec-tts') มีตัวเลือกไม่เท่ากัน และหน้าตาไม่สอดคล้องกัน
+  2. สิ่งที่ต้องมีและจัดวางให้ตรงกัน:
+     - ตัวเลือกเสียง หญิง / ชาย ไม่ต้องมีชื่อโมเดลเขียนกำกับ
+     - Master Volume ในการอ่านเสียง
+     - ตัวปรับ Speed (-50% ถึง +50%) และ Pitch (-24 ถึง +24 st) โดยถ้าเป็นเวอร์ชัน Lite ต้องไม่มีตัวปรับ Pitch
+     - ตัวเลือกโมเดลเสียง AI RVC (กรณีเวอร์ชัน FULL) พร้อมปุ่มเปิด/ปิด และจัดการโมเดล
+     - กล่องทดสอบอ่านเสียง (พิมพ์ข้อความ + กดฟัง)
+     - เช็กบ็อกซ์ติ๊กว่าจะอ่านชื่อคนดูก่อนข้อความแชทหรือไม่
+  3. บั๊กเสียงหญิงกลายเป็นเสียงชาย: เมื่อตั้งค่า Speed +50% และ Pitch +50% พบว่าเสียงเปลี่ยนเป็นเสียงผู้ชาย
+  4. การตั้งค่า Game Overlay เมื่อกด 'ตั้งค่า' ในโหมด Edit ของ Game Overlay ถูกนำไปแสดงแบบไม่สวยงามใน Settings > Dock & Web URL ต้องการให้แยกเป็นหน้าต่างตั้งค่าอิสระ (Floating Window) เหมือนเดิม
+- **สิ่งที่เปลี่ยนแปลง:**
+  1. `tts_service.py`:
+     - แก้ไขฟังก์ชัน `clean_prosody(val, default_unit)` โดยใช้ Regex สกัดเฉพาะตัวเลข (`([+-]?\s*\d+)`) และตัดหน่วยแปลกปลอม (เช่น `%` หรือ `st` ที่ส่งเข้ามาใน pitch) ก่อนต่อหน่วยที่ Azure Edge-TTS รองรับ (`Hz` สำหรับ pitch และ `%` สำหรับ rate)
+     - ป้องกันไม่ให้เกิด Error `ValueError: Invalid pitch '+50%Hz'` ซึ่งเป็นสาเหตุให้ Edge-TTS ล้มเหลวและเบราว์เซอร์ตกไปใช้ Web Speech API เสียง Niwat (ชาย) สำรอง
+     - ทดสอบแล้วสังเคราะห์เสียงหญิง Premwadee ด้วย Speed +50% และ Pitch +50% ได้ไฟล์เสียงสมบูรณ์ (10,224 ไบต์)
+  2. `src/index.html`:
+     - ออกแบบการ์ด Settings > เสียงอ่าน (`#sec-tts`) ใหม่ทั้งหมดเป็น 4 การ์ดโมเดิร์นคลีน สอดคล้องกับหน้าต่าง Sidebar (`#win-voice-settings`):
+       - การ์ด 1: เพศเสียงอ่าน (ปุ่ม '👩 หญิง' และ '👨 ชาย' ไม่มีชื่อโมเดล, เช็กบ็อกซ์เสียงสลับ, เช็กบ็อกซ์อ่านชื่อคนดูก่อนพูด)
+       - การ์ด 2: โมเดลเสียง AI RVC (`data-feature="rvc"`)
+       - การ์ด 3: ปรับแต่งเสียง (Master Volume, Speed, และ Pitch กำกับ `data-feature="pitch"`)
+       - การ์ด 4: กล่องทดลองพิมพ์และอ่านสด
+     - เพิ่มเช็กบ็อกซ์อ่านชื่อคนดู (`#winChkReadAuthorName`) ในหน้าต่าง `#win-voice-settings`
+     - ซิงค์คอนโทรลเลอร์สองทิศทาง (`syncVoiceVolume`, `syncVoiceSpeed`, `syncVoicePitch`, `toggleMixedVoice`, `toggleReadAuthorPref`, `playVoiceTest`)
+     - สร้างหน้าต่างตั้งค่าอิสระ `#win-game-overlay` พร้อมแท็บ 3 แท็บ (🎮 Game Overlay, 👥 Viewer Overlay, 🪟 Overlay+) ตามรูปแบบดั้งเดิม สอดคล้องกฎ Zero GPU Lockup
+  3. `src/desktop_overlay_controls.js`:
+     - ปรับปรุงฟังก์ชัน `openDesktopOverlaySettings(tab)` ให้เปิดหน้าต่าง `#win-game-overlay` ดึงค่าจาก `/api/desktop-overlays` และบันทึกผ่าน `saveGameOverlaySettings()` โดยไม่ต้องฉีด DOM เข้าไปใน Setting Docks
+  4. `src/rvc_controls.js`:
+     - อัปเดตให้ค้นหาและโหลดโมเดล RVC ลงทั้ง `#winRvcSelect` และ `#secRvcSelect`
+     - เพิ่มการตรวจสอบและซ่อนองค์ประกอบที่มีแอตทริบิวต์ `[data-feature="pitch"]` อัตโนมัติเมื่อเป็นเวอร์ชัน Lite (`capability.edition !== 'full'`)
+  5. `launch_dev.py`:
+     - อัปเดต GET `/api/desktop-overlays` ให้ส่งค่า `viewer_overlay_*` คืนมายังหน้าต่างตั้งค่าครบถ้วน
+- **ผลการตรวจสอบ (Verification Results):**
+  - รัน `scratch/verify_unified_tts_and_overlay.py` ผ่านครบ 100% (ทั้ง 5 ขั้นตอน: การตรวจสอบป้ายชื่อ, สไลเดอร์, การซิงค์ค่าระหว่างสองหน้าต่าง, และหน้าต่าง Game Overlay)
+  - ทดสอบการสังเคราะห์เสียง Edge-TTS หญิงด้วย Rate +50% Pitch +50% ผ่านจริง ได้ 10,224 ไบต์ ไม่มีหลุดไปเสียงชาย
+  - บิลด์ `npm run build` และซิงค์ `python sync_trial_frontend.py` เรียบร้อย
+
+---
+
 ## [2026-10-26 14:15] — Antigravity (Initial Baseline & Overlay Lifecycle Alignment)
 
 - **เครื่องมือที่ทำงาน:** Antigravity (Google DeepMind)

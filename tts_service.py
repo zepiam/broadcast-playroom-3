@@ -41,15 +41,14 @@ def sanitize_text(text: str) -> str:
 def clean_prosody(val: str, default_unit: str = '%') -> str:
     if not val:
         return ""
-    val = val.strip()
-    if val.startswith(' '):
-        val = '+' + val.strip()
-    if not val.startswith(('+', '-')):
-        if val != '0' and not val.startswith('0'):
-            val = '+' + val
-    if not val.endswith(default_unit):
-        val += default_unit
-    return val
+    val = str(val).strip()
+    num_match = re.search(r'([+-]?\s*\d+)', val)
+    if not num_match:
+        return ""
+    num_str = num_match.group(1).replace(' ', '')
+    if not num_str.startswith(('+', '-')):
+        num_str = '+' + num_str
+    return num_str + default_unit
 
 def resolve_voice(text: str, gender: str = 'female') -> tuple[str, str]:
     """

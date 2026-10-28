@@ -13,10 +13,13 @@
   const busy=['loading','downloading'].includes(status.state);
   const labels={idle:'ยังไม่ได้เปิดใช้โมเดล',loading:'กำลังโหลดโมเดล',downloading:`กำลังดาวน์โหลด ${status.progress || 0}%`,ready:'พร้อมใช้งาน',error:'ไม่สำเร็จ: '+(status.error || '')};
   for(const d of allDocs()){
-   d.querySelectorAll('#rvcStatusLabel,#rvcDownloadStatus').forEach(el=>el.textContent=labels[status.state] || status.state);
+   d.querySelectorAll('#rvcStatusLabel,#secRvcStatusLabel,#rvcDownloadStatus').forEach(el=>el.textContent=labels[status.state] || status.state);
    d.querySelectorAll('#chkEnableRvc,#chkEnableRvcSettings').forEach(el=>{el.checked=Boolean(status.enabled && status.loaded);el.disabled=busy;});
-   const device=d.getElementById('rvcDeviceLabel');if(device)device.textContent=!status.loaded?'ยังไม่ได้โหลดโมเดล':status.device?(status.device.startsWith('cuda')?'GPU':'CPU'):'โมเดลพร้อมใช้';
-   const select=d.getElementById('winRvcSelect');if(select){select.disabled=busy;if(status.selected && models.some(m=>m.id===status.selected))select.value=status.selected;}
+   d.querySelectorAll('#rvcDeviceLabel,#secRvcDeviceLabel').forEach(device=>{device.textContent=!status.loaded?'ยังไม่ได้โหลดโมเดล':status.device?(status.device.startsWith('cuda')?'GPU':'CPU'):'โมเดลพร้อมใช้';});
+   d.querySelectorAll('#winRvcSelect,#secRvcSelect').forEach(select=>{
+    select.disabled=busy;
+    if(status.selected && models.some(m=>m.id===status.selected))select.value=status.selected;
+   });
    const progress=d.getElementById('rvcDownloadProgress');if(progress)progress.value=status.progress || 0;
    const download=d.getElementById('btnRvcDownload');if(download)download.disabled=busy;
   }
@@ -24,16 +27,29 @@
  }
  async function refresh(){
   const result=await api('/api/rvc/models');models=result.models || [];
-  const select=doc().getElementById('winRvcSelect');
-  if(select){select.replaceChildren(new Option('ไม่ใช้ RVC','none'));models.forEach(model=>select.add(new Option(model.name,model.id)));if(!models.length)select.add(new Option('ยังไม่มีไฟล์โมเดล — เลือกนำเข้าหรือดาวน์โหลด','none'));}
+  for(const d of allDocs()){
+   d.querySelectorAll('#winRvcSelect,#secRvcSelect').forEach(select=>{
+    select.replaceChildren(new Option('ไม่ใช้ RVC','none'));
+    models.forEach(model=>select.add(new Option(model.name,model.id)));
+    if(!models.length)select.add(new Option('ยังไม่มีไฟล์โมเดล — เลือกนำเข้าหรือดาวน์โหลด','none'));
+    if(latest?.selected && models.some(m=>m.id===latest.selected))select.value=latest.selected;
+   });
+  }
   showStatus(result.status);return result;
  }
  window.rescanRvcModels=()=>refresh().catch(error=>message(error.message));
  window.changeRvcModel=async id=>{
+  for(const d of allDocs()){
+   d.querySelectorAll('#winRvcSelect,#secRvcSelect').forEach(s=>{s.value=id;});
+  }
   try{pendingRefresh=true;showStatus(await api('/api/rvc/select',{id,enabled:id!=='none'}));}catch(error){message(error.message);}
  };
  window.toggleRvcStatus=async enabled=>{
-  const select=doc().getElementById('winRvcSelect');const id=select?.value;
+  for(const d of allDocs()){
+   d.querySelectorAll('#chkEnableRvc,#chkEnableRvcSettings').forEach(c=>{c.checked=enabled;});
+  }
+  const select=doc().getElementById('winRvcSelect') || document.getElementById('secRvcSelect');
+  const id=select?.value;
   if(enabled && (!id || id==='none')){message('กรุณาเลือกโมเดลก่อนเปิดใช้');if(latest)showStatus(latest);return;}
   try{pendingRefresh=true;showStatus(await api('/api/rvc/select',{id,enabled}));}catch(error){message(error.message);}
  };
@@ -77,12 +93,19 @@
  async function init(){
   try{
    capability=await api('/api/capabilities');window.BP3Capabilities=capability;
-   for(const d of allDocs())d.querySelectorAll('[data-feature="rvc"]').forEach(el=>{if(capability.rvc)el.style.display='';else el.remove();});
-   if(!capability.rvc){const subtitle=document.getElementById('voiceSettingsSubtitle');if(subtitle)subtitle.textContent='ปรับแต่งเสียงอ่านแชท ระดับเสียง ความเร็ว และ Pitch';return;}
+   for(const d of allDocs()){
+    d.querySelectorAll('[data-feature="rvc"]').forEach(el=>{if(capability.rvc)el.style.display='';else el.remove();});
+    d.querySelectorAll('[data-feature="pitch"]').forEach(el=>{if(capability.edition==='full')el.style.display='';else el.remove();});
+   }
+   if(!capability.rvc){
+    const subtitle=document.getElementById('voiceSettingsSubtitle');
+    if(subtitle)subtitle.textContent='ปรับแต่งเสียงอ่านแชท ระดับเสียง และความเร็ว';
+    return;
+   }
    await refresh();
    setInterval(async()=>{
     if(polling)return;
-    const visible=doc().getElementById('rvcVoiceCard')?.getClientRects().length || doc().getElementById('rvcDownloadDialog')?.open;
+    const visible=doc().getElementById('rvcVoiceCard')?.getClientRects().length || doc().getElementById('rvcDownloadDialog')?.open || document.getElementById('secRvcVoiceCard')?.getClientRects().length;
     if(!visible)return;
     polling=true;
     try{const state=await api('/api/rvc/status');showStatus(state);if((pendingRefresh || state.state!==lastState) && !['loading','downloading'].includes(state.state)){await refresh();pendingRefresh=false;}lastState=state.state;}catch(error){message(error.message);}finally{polling=false;}
