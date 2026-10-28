@@ -9,8 +9,46 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 import subprocess
 import logging
+import collections
 import threading
 import time
+
+class _LogCapture:
+    def __init__(self, max_entries=2000):
+        self.buffer = collections.deque(maxlen=max_entries)
+        self.lock = threading.Lock()
+        self.stdout_orig = sys.stdout
+        self.stderr_orig = sys.stderr
+
+    def write(self, s):
+        if s:
+            with self.lock:
+                self.buffer.append((time.time(), s))
+        if self.stdout_orig:
+            try:
+                self.stdout_orig.write(s)
+                self.stdout_orig.flush()
+            except Exception:
+                pass
+
+    def flush(self):
+        if self.stdout_orig:
+            try:
+                self.stdout_orig.flush()
+            except Exception:
+                pass
+
+    def get_logs(self, since=0.0):
+        with self.lock:
+            return [{'time': t, 'text': msg} for t, msg in self.buffer if t > since]
+
+    def clear(self):
+        with self.lock:
+            self.buffer.clear()
+
+log_capture = _LogCapture()
+sys.stdout = log_capture
+sys.stderr = log_capture
 import tempfile
 from pathlib import Path
 from http.server import SimpleHTTPRequestHandler, HTTPServer, ThreadingHTTPServer
@@ -518,6 +556,10 @@ class QuietHandler(SimpleHTTPRequestHandler):
             except (ValueError,TypeError,AttributeError):self.send_json({'error':'ข้อมูล DNS ไม่ถูกต้อง'},400)
             except Exception:self.send_json({'error':'ไม่สามารถทำรายการ DNS ได้'},500)
             return
+
+        if path == '/api/logs/clear':
+            log_capture.clear()
+            self.send_json({'ok': True}); return
 
         if path == '/api/open-external':
             try:
@@ -1052,6 +1094,15 @@ class QuietHandler(SimpleHTTPRequestHandler):
             response_data = check_for_update()
         elif path == '/api/apply-update':
             response_data = perform_update_and_restart()
+        elif path == '/api/logs':
+            query = urllib.parse.parse_qs(parsed.query)
+            try:
+                since = float(query.get('since', ['0'])[0])
+            except (ValueError, TypeError):
+                since = 0.0
+            logs = log_capture.get_logs(since=since)
+            latest_time = logs[-1]['time'] if logs else since
+            response_data = {'logs': logs, 'latest_time': latest_time}
         elif path == '/api/open-external':
             query = urllib.parse.parse_qs(parsed.query)
             url = query.get('url', [''])[0].strip()

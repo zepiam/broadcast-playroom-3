@@ -203,3 +203,30 @@ pm run build และ python sync_trial_frontend.py สำเร็จ
   - รันการทดสอบ Playwright (`scratch/test_external_url.py`): ตรวจสอบการคลิกปุ่ม Edit ของ Twitch, YouTube และ GitHub ลิงก์ถูกส่งไปยัง `/api/open-external` อย่างถูกต้อง
   - เมื่อเปิดผ่านระบบปฏิบัติการ ลิงก์จะถูกเปิดด้วยเบราว์เซอร์จริงที่ผู้ใช้ล็อกอินบัญชีสตรีมเมอร์ค้างไว้อยู่แล้วทันที
 - **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀
+
+## [2026-10-28 20:38] Antigravity (In-App System Log Terminal in Settings & Startup CMD Strategy)
+- **ผู้ดำเนินงาน/ทีม:** Antigravity
+- **เป้าหมาย / คำสั่งของผู้ใช้:**
+  1. ย้ายหน้าต่าง CMD/Console ที่เปิดตามมา ให้ไปแสดงผลอยู่ภายในหน้าต่าง Settings (การตั้งค่า) บริเวณด้านล่างสุด ใต้ "สนับสนุน" เขียนว่า "Log" โดยทำเป็น In-App CMD Terminal ในโปรแกรม
+  2. ให้คำแนะนำ/ข้อเสนอแนะเกี่ยวกับเรื่องหน้าต่าง CMD ตอนเปิดโปรแกรมว่า ควรปิดหรือซ่อนไปเลยไหมในเวอร์ชัน Dev หรือควรปิดเฉพาะในเวอร์ชัน Build
+- **สิ่งที่ได้ออกแบบและดำเนินการ:**
+  1. **Backend Log Capture (`launch_dev.py`):**
+     - สร้างคลาส `_LogCapture` (Ring buffer ใช้ `collections.deque(maxlen=2000)` ป้องกัน Memory leak พร้อม `threading.Lock()` Thread-safe) ดักจับ stdout และ stderr ของโปรแกรมทั้งหมด
+     - เพิ่ม API Endpoint:
+       - `GET /api/logs?since=<timestamp>`: คืนค่า Array บันทึกเหตุการณ์และ timestamp ล่าสุด
+       - `POST /api/logs/clear`: ล้าง Buffer บันทึก
+  2. **Frontend UI Navigation & In-App Terminal (`src/index.html`):**
+     - เพิ่มแท็บ `#nav-sec-log` (ไอคอน 📟 และข้อความ "Log") ไว้ใต้ `#nav-sec-supporters` (สนับสนุน) ล่างสุดของ Sidebar Settings
+     - เพิ่ม Pane `#sec-log` ประกอบด้วยส่วนหัวเรื่อง, ปุ่มเลื่อนอัตโนมัติ (Auto-scroll Toggle), ปุ่มคัดลอก (Copy to Clipboard), ปุ่มล้างหน้าจอ (Clear Log) และกล่อง Terminal คอนโซล `#inAppTerminalContainer`
+     - ออกแบบตามกฎ **Zero GPU Lockup**:
+       - กล่องคอนโซลใช้ Semi-solid Dark `#111214` พร้อม `contain: content; isolation: isolate;`
+       - Polling จะเริ่มทำงานเฉพาะเมื่อผู้ใช้เปิดเข้ามาดูหน้า Log เท่านั้น (`startLogStream()` เมื่อสลับเข้าสู่แท็บ `log` และ `stopLogStream()` ทันทีที่สลับไปแท็บอื่นหรือปิดหน้าต่าง) คืนสู่สถานะ 0% Idle GPU
+  3. **ข้อเสนอแนะสถาปัตยกรรม (Dev vs Build Console):**
+     - **เวอร์ชัน Build (Release / Installer / .exe):** ต้องซ่อนหน้าต่าง CMD 100% (กำหนด `--noconsole` หรือ `-w` ใน PyInstaller) เพื่อให้โปรแกรมดูเรียบร้อย สตรีมเมอร์ไม่ตกใจกับหน้าต่างสีดำ หากต้องการดูข้อความระบบสามารถเปิดดูผ่าน Settings > Log ได้ทันที
+     - **เวอร์ชัน Dev (ขณะพัฒนา):** แนะนำให้เก็บไฟล์ `run.bat` (มี CMD ปกติ) ไว้เป็นหลัก เพื่อให้เห็น Fatal Error ร้ายแรงกรณี Python แครชก่อนเริ่ม Web Server และเตรียม `run_silent.bat` (ใช้ `pythonw.exe`) ไว้เป็นทางเลือกสำหรับเวลารันแบบไร้หน้าต่าง CMD
+  4. **การ Build และซิงค์:**
+     - รัน `npm run build` และ `python sync_trial_frontend.py` อัปเดตไปยัง `dist/` และ Trial builds ครบถ้วน
+- **ผลการทดสอบ (Verification Results):**
+  - ตรวจสอบโครงสร้าง DOM และการจัดวาง: `#nav-sec-log` อยู่ถัดจาก `#nav-sec-supporters` ใน Sidebar อย่างสมบูรณ์
+  - รันการทดสอบและจับภาพหน้าจอ (`scratch/verify_clean.py`): เชื่อมต่อและดึง Logs เข้ามาเรนเดอร์ในคอนโซลแบบเรียลไทม์พร้อม Timestamp สีแยกตามระดับข้อความ (`[INFO]`, `[SYSTEM]`, `[ERROR]`, `[WARN]`) ถูกต้อง 100%
+- **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀

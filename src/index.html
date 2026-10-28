@@ -2745,6 +2745,12 @@
 
         </div>
 
+        <div class="settings-nav-item" id="nav-sec-log" data-sec="log" title="คลิกเปิดคอนโซล Log / คลิกขวาเพื่อปักหมุดไว้ที่ Server Rail" onclick="switchSettingsSection('log')">
+
+          <span>📟</span> <span>Log</span>
+
+        </div>
+
       </aside>
 
 
@@ -4512,7 +4518,59 @@
           </dialog>
         </div>
 
-      </main>
+              <!-- 16. คอนโซล Log บันทึกการทำงานระบบ (In-App Terminal) -->
+
+        <div id="sec-log" class="settings-section-pane" style="display: none;">
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+
+            <div>
+
+              <div class="settings-section-title" style="margin:0;">📟 บันทึกการทำงานของระบบ (System Log)</div>
+
+              <p style="font-size:12px; color:var(--dc-text-muted); margin:4px 0 0 0;">
+
+                แสดงผลข้อความ Console / CMD ภายในตัวโปรแกรมแบบ Real-time
+
+              </p>
+
+            </div>
+
+            <div style="display:flex; gap:8px;">
+
+              <button class="btn btn-secondary btn-sm" id="btnToggleAutoScroll" onclick="toggleLogAutoScroll()" style="font-size:12px; padding:5px 12px; border-radius:6px; cursor:pointer;">
+
+                ⏬ เลื่อนอัตโนมัติ: เปิด
+
+              </button>
+
+              <button class="btn btn-secondary btn-sm" onclick="copyLogToClipboard()" style="font-size:12px; padding:5px 12px; border-radius:6px; cursor:pointer;">
+
+                📋 คัดลอก
+
+              </button>
+
+              <button class="btn btn-secondary btn-sm" onclick="clearSystemLog()" style="font-size:12px; padding:5px 12px; border-radius:6px; cursor:pointer;">
+
+                🗑️ ล้าง
+
+              </button>
+
+            </div>
+
+          </div>
+
+          <!-- Terminal Box (Zero GPU Lockup: semi-solid dark, contain: content) -->
+
+          <div id="inAppTerminalContainer" style="background:#111214; border:1px solid rgba(255,255,255,0.12); border-radius:8px; padding:12px; height:460px; overflow-y:auto; font-family:'JetBrains Mono', Consolas, monospace; font-size:12px; line-height:1.5; color:#dbdee1; white-space:pre-wrap; word-break:break-all; contain:content;">
+
+            <div id="inAppTerminalContent" style="color:#a1a1aa;">กำลังเชื่อมต่อ Log...</div>
+
+          </div>
+
+        </div>
+
+</main>
 
     </div>
 
@@ -10201,6 +10259,16 @@
 
       if (sectionId === 'supporters') window.SupportersUI?.load();
 
+      if (sectionId === 'log') {
+
+        startLogStream();
+
+      } else {
+
+        stopLogStream();
+
+      }
+
       if (sectionId === 'replace' && typeof loadDictionaryTable === 'function') {
 
         loadDictionaryTable();
@@ -10208,6 +10276,173 @@
       }
 
     }
+
+    // ========================================================
+
+    // IN-APP SYSTEM LOG (CMD / CONSOLE STREAM)
+
+    // ========================================================
+
+    let _logPollTimer = null;
+
+    let _lastLogTime = 0.0;
+
+    let _logAutoScroll = true;
+
+    function startLogStream() {
+
+      stopLogStream();
+
+      fetchLogs();
+
+      _logPollTimer = setInterval(fetchLogs, 1500);
+
+    }
+
+    function stopLogStream() {
+
+      if (_logPollTimer) {
+
+        clearInterval(_logPollTimer);
+
+        _logPollTimer = null;
+
+      }
+
+    }
+
+    async function fetchLogs() {
+
+      try {
+
+        const res = await fetch(`/api/logs?since=${_lastLogTime}`);
+
+        const data = await res.json();
+
+        const content = document.getElementById('inAppTerminalContent');
+
+        const container = document.getElementById('inAppTerminalContainer');
+
+        if (!content || !container) return;
+
+        if (_lastLogTime === 0.0 && (!data.logs || data.logs.length === 0)) {
+
+          content.innerHTML = '<span style="color:#71717a;">[SYSTEM] เริ่มต้นบันทึก Log ยังไม่มีข้อความใหม่</span>\n';
+
+        }
+
+        if (data.logs && data.logs.length > 0) {
+
+          if (_lastLogTime === 0.0) {
+
+            content.innerHTML = '';
+
+          }
+
+          for (const item of data.logs) {
+
+            const span = document.createElement('span');
+
+            const timeStr = new Date(item.time * 1000).toLocaleTimeString();
+
+            let color = '#dbdee1';
+
+            if (item.text.includes('[ERROR]') || item.text.includes('Traceback') || item.text.includes('Error:')) {
+
+              color = '#f87171';
+
+            } else if (item.text.includes('[WARN]') || item.text.includes('WARNING')) {
+
+              color = '#fbbf24';
+
+            } else if (item.text.includes('[INFO]') || item.text.includes('[SYSTEM]')) {
+
+              color = '#38bdf8';
+
+            }
+
+            span.style.color = color;
+
+            span.textContent = `[${timeStr}] ${item.text}`;
+
+            content.appendChild(span);
+
+          }
+
+          _lastLogTime = data.latest_time || _lastLogTime;
+
+          if (_logAutoScroll) {
+
+            container.scrollTop = container.scrollHeight;
+
+          }
+
+        }
+
+      } catch (err) {
+
+        // Silent fallback in case server temporarily unreachable
+
+      }
+
+    }
+
+    function toggleLogAutoScroll() {
+
+      _logAutoScroll = !_logAutoScroll;
+
+      const btn = document.getElementById('btnToggleAutoScroll');
+
+      if (btn) {
+
+        btn.innerText = _logAutoScroll ? '⏬ เลื่อนอัตโนมัติ: เปิด' : '⏸️ เลื่อนอัตโนมัติ: ปิด';
+
+      }
+
+    }
+
+    async function clearSystemLog() {
+
+      try {
+
+        await fetch('/api/logs/clear', { method: 'POST' });
+
+        const content = document.getElementById('inAppTerminalContent');
+
+        if (content) {
+
+          content.innerHTML = '<span style="color:#71717a;">[SYSTEM] ล้างหน้าจอ Log เรียบร้อยแล้ว</span>\n';
+
+        }
+
+      } catch (err) {
+
+        console.error('Failed to clear log:', err);
+
+      }
+
+    }
+
+    function copyLogToClipboard() {
+
+      const content = document.getElementById('inAppTerminalContent');
+
+      if (!content) return;
+
+      const text = content.innerText || '';
+
+      navigator.clipboard.writeText(text).then(() => {
+
+        alert('คัดลอกข้อความ Log ลง Clipboard เรียบร้อยแล้วครับ');
+
+      }).catch(err => {
+
+        console.error('Copy failed:', err);
+
+      });
+
+    }
+
 
 
 
@@ -12546,7 +12781,9 @@
       'secret': { name: 'ปิดเสียงโค้ดลับ', icon: '🎟️' },
       'defender': { name: 'การยกเว้นสแกนไวรัส', icon: '🛡️' },
       'about': { name: 'เกี่ยวกับโปรแกรม', icon: 'ℹ️' },
-      'supporters': { name: 'สนับสนุน', icon: '💚' }
+      'supporters': { name: 'สนับสนุน', icon: '💚' },
+
+      'log': { name: 'System Log (CMD)', icon: '📟' }
     };
 
 
