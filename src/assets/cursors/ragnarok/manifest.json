@@ -1,0 +1,234 @@
+{
+  "normal": {
+    "source": "Ro Normal Select.ani",
+    "sha256": "ced2eacec5b4c216ba30cfb0da5852cec2943fed7d2a213052470abe2296da12",
+    "frames": [
+      {
+        "file": "normal-0.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "normal-1.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "normal-2.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "normal-3.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "normal-4.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "normal-5.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      }
+    ],
+    "sequence": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "durationsMs": [
+      500.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0,
+      100.0
+    ]
+  },
+  "link": {
+    "source": "Ro Link Select.ani",
+    "sha256": "4828bba90a1a28d751a6c9547307d0445020c661ed84a1f084051ed9ddca03b2",
+    "frames": [
+      {
+        "file": "link-0.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "link-1.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      }
+    ],
+    "sequence": [
+      0,
+      1
+    ],
+    "durationsMs": [
+      166.6667,
+      166.6667
+    ]
+  },
+  "vertical": {
+    "source": "Ro Vertical Resize.ani",
+    "sha256": "ad11bbc573b85e97fd76d7401914aa7da070415245275fbd6826523949f926f5",
+    "frames": [
+      {
+        "file": "vertical-0.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "vertical-1.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      }
+    ],
+    "sequence": [
+      0,
+      1
+    ],
+    "durationsMs": [
+      166.6667,
+      166.6667
+    ]
+  },
+  "horizontal": {
+    "source": "Ro Horizontal Resize.ani",
+    "sha256": "1d40d83f0ad1b1dd65bc80d036e21333eaea1255601c485dd7a14ddc9b971e24",
+    "frames": [
+      {
+        "file": "horizontal-0.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "horizontal-1.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      }
+    ],
+    "sequence": [
+      0,
+      1
+    ],
+    "durationsMs": [
+      166.6667,
+      166.6667
+    ]
+  },
+  "diagonal": {
+    "source": "Ro Diagonal Resize1.ani",
+    "sha256": "f91ec3e24ecbb29659388169035a513e278ce6add38ebdad481880a91f8b0aab",
+    "frames": [
+      {
+        "file": "diagonal-0.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      },
+      {
+        "file": "diagonal-1.cur",
+        "hotspot": [
+          0,
+          0
+        ],
+        "size": [
+          32,
+          32
+        ]
+      }
+    ],
+    "sequence": [
+      0,
+      1
+    ],
+    "durationsMs": [
+      166.6667,
+      166.6667
+    ]
+  }
+}

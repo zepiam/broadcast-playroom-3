@@ -22,3 +22,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# User RVC models and local state
+rvc_models/
+rvc_settings.json
+
+# Local audit outputs
+work/
+
+/log.txt
+
+# Encrypted local bot OAuth accounts
+/bot_accounts.dat
+
+# Experimental packaged builds and PyInstaller work files
+/build_trials/
+
+__pycache__/
+*.pyc
+scratch/
+.pytest_cache/

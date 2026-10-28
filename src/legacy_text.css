@@ -1,0 +1,57 @@
+  /* ═══ Text widget ═══ */
+  .widget.type-text .composer-widget-inner {
+    display: block;          /* ★ block แทน flex → text-align ทำงานได้ */
+    overflow: hidden;
+    background: transparent;
+    padding: 0;
+  }
+  /* ★ schedule mode — parent เป็น relative เพื่อให้ text-line (absolute) จัดกลางได้ */
+  .widget.type-text.text-schedule .composer-widget-inner { position: relative; }
+  .widget.type-text .text-content {
+    width: 100%;
+    text-align: var(--text-align, center);
+    word-break: break-word;
+    /* ★ จัดกลางแนวตั้งด้วย (สำหรับ static mode) */
+    display: flex;
+    align-items: center;
+    min-height: 100%;
+    justify-content: var(--text-justify, center);   /* left/center/right แบบ flex */
+  }
+  /* scroll mode — วิ่งซ้าย loop */
+  /* scroll mode — ใช้ JS animation (ควบคุม delay + รอข้อความออกจากจอให้หมด) */
+  .widget.type-text.text-scroll .composer-widget-inner {
+    justify-content: flex-start;
+    position: relative;
+  }
+  .widget.type-text.text-scroll .text-content {
+    white-space: nowrap;
+    position: absolute;
+    left: 100%;
+    top: 50%;
+    transform: translateY(-50%);
+    will-change: left;
+    /* ★ ชิดซ้ายเสมอใน scroll mode — ข้อความเริ่มที่ขอบขวาแล้วไหลเข้ามาทีละน้อย
+       (เดิม inherit center จาก .text-content → ข้อความยาวกว่ากล่องโผล่กลางจอตอน reset
+        และ scrollWidth วัดไม่ครบเพราะส่วนล้นซ้ายไม่ถูกนับ → timing loop คลาด) */
+    text-align: left;
+    justify-content: flex-start;
+  }
+  /* schedule mode — fadeIn/fadeOut transition */
+  .widget.type-text.text-schedule .text-line {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: var(--text-justify, center);   /* ★ รับจาก align setting */
+    padding: 0 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+  }
+  .widget.type-text.text-schedule .text-line.active {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+

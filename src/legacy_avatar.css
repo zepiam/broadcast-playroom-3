@@ -1,0 +1,35 @@
+/* ═══ Avatar widget animations ═══ */
+@keyframes avatar-breathing {
+  0%, 100% { transform: scale(1.0); }
+  50%      { transform: scale(1.02); }
+}
+@keyframes avatar-sway {
+  0%, 100% { transform: rotate(-1.2deg) translateY(0); }
+  50%      { transform: rotate(1.2deg) translateY(-2px); }
+}
+@keyframes avatar-bounce {
+  0%, 100% { transform: translateY(0); }
+  25%      { transform: translateY(-4px); }
+  75%      { transform: translateY(-2px); }
+}
+.avatar-stage.avatar-anim-breathing { animation: avatar-breathing 3.2s ease-in-out infinite; }
+.avatar-stage.avatar-anim-sway      { animation: avatar-sway 4.5s ease-in-out infinite; }
+.avatar-stage.avatar-anim-bounce    { animation: avatar-bounce 0.45s ease-in-out infinite; }
+/* ★ breathing + sway ทำงานพร้อมกันได้ — ใช้ wrapper คนละชั้น
+   (ตอนนี้ใส่ class เดียวกัน → browser เอาอันสุดท้าย)
+   แก้โดยใช้ !important + combine — หรือใช้ transform composite ผ่าน CSS variables
+   สำหรับความเรียบง่าย: breathing ใช้ scale, sway ใช้ rotate+translate, bounce ใช้ translateY
+   แต่ transform แบบเดียวกันจะ override → เลือก priority: bounce > sway > breathing
+   ถ้า bounce ทำงาน (talking) → breathing หยุด (ใช้ override) */
+.avatar-stage.avatar-anim-breathing:not(.avatar-anim-bounce):not(.avatar-anim-sway) {
+  animation: avatar-breathing 3.2s ease-in-out infinite;
+}
+.avatar-stage.avatar-anim-sway:not(.avatar-anim-bounce) {
+  animation: avatar-sway 4.5s ease-in-out infinite;
+}
+.avatar-stage.avatar-anim-bounce {
+  animation: avatar-bounce 0.45s ease-in-out infinite !important;
+}
+.avatar-stage .avatar-img {
+  image-rendering: auto;  /* smooth scaling — ไม่ใช่ pixelated */
+}

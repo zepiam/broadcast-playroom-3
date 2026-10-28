@@ -5,7 +5,7 @@ import urllib.request
 import ssl
 import re
 
-DICT_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), 'replace_words.json'))
+DICT_FILE = os.path.abspath(os.path.join(os.environ.get('BP3_DATA_DIR', os.path.dirname(__file__)), 'replace_words.json'))
 OFFICIAL_DICT_URL = "https://men9ch.com/wiki/ng-replace.php?pid=broadcast-playroom&download=1"
 
 class DictionaryManager:
@@ -99,20 +99,30 @@ class DictionaryManager:
         return {'success': False, 'error': 'ไม่พบคำนี้ในคลัง'}
 
     def apply_replace(self, text: str) -> str:
-        """แปลงคำตามคลังศัพท์ก่อนส่งเข้า TTS Pipeline"""
+        """Apply the legacy pronunciation rules without changing displayed chat."""
         if not text or not self._words:
             return text
-        
-        # Sort by length descending to replace longer phrases first
-        sorted_keys = sorted(self._words.keys(), key=len, reverse=True)
-        for key in sorted_keys:
-            rep = self._words[key]
-            # Use regex word boundaries for alphanumeric words, or direct replace for thai/symbols
-            if re.match(r'^[a-zA-Z0-9_]+$', key):
-                pattern = re.compile(r'\b' + re.escape(key) + r'\b', re.IGNORECASE)
-                text = pattern.sub(rep, text)
+        patterns = []
+        for key, entry in self._words.items():
+            if not isinstance(key, str) or not key:
+                continue
+            replacement = entry.get('read', '') if isinstance(entry, dict) else entry
+            if not isinstance(replacement, str) or not replacement:
+                continue
+            repeat = re.fullmatch(r'(.+?)\{(\d+)\+\}', key)
+            if key == '{URL}':
+                expression, priority = r'https?://\S+|www\.\S+', 0
+            elif repeat:
+                count = int(repeat.group(2))
+                if count > 1000: continue
+                expression, priority = re.escape(repeat.group(1)[0]) + '{' + str(count) + ',}', 1
+            elif key.endswith('@') and len(key) > 1:
+                expression, priority = re.escape(key[0]) + '{2,}', 1
             else:
-                text = text.replace(key, rep)
+                expression, priority = re.escape(key), 2
+            patterns.append((priority, -len(replacement), expression, replacement))
+        for _, _, expression, replacement in sorted(patterns, key=lambda item: (item[0], item[1])):
+            text = re.sub(expression, lambda match: replacement, text, flags=re.IGNORECASE | re.UNICODE)
         return text
 
 # Global singleton

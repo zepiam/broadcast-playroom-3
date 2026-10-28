@@ -1,0 +1,159 @@
+/* Legacy slideshow/timer presentation. */
+  /* ── Image & Slideshow widget ── */
+  .widget.type-image .widget-inner {
+    position: relative;
+    overflow: hidden;
+    background: transparent;   /* ★ โปร่งใส — ให้ PNG ที่มี alpha แสดงพื้นหลังโปร่งใสได้ */
+    padding: 0;
+  }
+  .widget.type-image .slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity, transform;
+  }
+  .widget.type-image .slide.active { opacity: 1; }
+  /* fit mode (กำหนดใน JS ผ่าน inline style แต่ละ slide) — fallback */
+  .widget.type-image .slide { object-fit: cover; }
+  /* empty placeholder */
+  .widget.type-image .image-empty {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #888; font-size: 13px; text-align: center; padding: 12px;
+    background: #1a1a2e;
+  }
+  /* slide counter badge (editor only) */
+  /* ═══ Image Timer Mode — ขึ้นมา-หายไปตามเวลา ═══ */
+  .widget.type-image.timer-hidden .widget-inner {
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* ★ entrance animations (widget-inner จะมี class ตามทิศทาง) */
+  .widget.type-image .widget-inner.t-anim-in {
+    animation-duration: var(--t-anim-in-dur, 2s);
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .widget.type-image .widget-inner.t-anim-in-fade {
+    animation-name: t-fade-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-slide-up {
+    animation-name: t-slide-up-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-slide-down {
+    animation-name: t-slide-down-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-slide-left {
+    animation-name: t-slide-left-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-slide-right {
+    animation-name: t-slide-right-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-corner-tl {
+    animation-name: t-corner-tl-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-corner-tr {
+    animation-name: t-corner-tr-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-corner-bl {
+    animation-name: t-corner-bl-in;
+  }
+  .widget.type-image .widget-inner.t-anim-in-corner-br {
+    animation-name: t-corner-br-in;
+  }
+  /* ★ exit animations */
+  .widget.type-image .widget-inner.t-anim-out {
+    animation-duration: var(--t-anim-out-dur, 2s);
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.55, 0.06, 0.68, 0.19);
+  }
+  .widget.type-image .widget-inner.t-anim-out-fade {
+    animation-name: t-fade-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-slide-up {
+    animation-name: t-slide-up-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-slide-down {
+    animation-name: t-slide-down-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-slide-left {
+    animation-name: t-slide-left-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-slide-right {
+    animation-name: t-slide-right-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-corner-tl {
+    animation-name: t-corner-tl-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-corner-tr {
+    animation-name: t-corner-tr-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-corner-bl {
+    animation-name: t-corner-bl-out;
+  }
+  .widget.type-image .widget-inner.t-anim-out-corner-br {
+    animation-name: t-corner-br-out;
+  }
+
+  @keyframes t-fade-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes t-fade-out { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes t-slide-up-in { from { transform: translateY(100vh); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes t-slide-up-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-100vh); opacity: 0; } }
+  @keyframes t-slide-down-in { from { transform: translateY(-100vh); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes t-slide-down-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100vh); opacity: 0; } }
+  @keyframes t-slide-left-in { from { transform: translateX(100vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes t-slide-left-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-100vw); opacity: 0; } }
+  @keyframes t-slide-right-in { from { transform: translateX(-100vw); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes t-slide-right-out { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100vw); opacity: 0; } }
+  @keyframes t-corner-tl-in { from { transform: translate(-100vw, -100vh); opacity: 0; } to { transform: translate(0, 0); opacity: 1; } }
+  @keyframes t-corner-tl-out { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(-100vw, -100vh); opacity: 0; } }
+  @keyframes t-corner-tr-in { from { transform: translate(100vw, -100vh); opacity: 0; } to { transform: translate(0, 0); opacity: 1; } }
+  @keyframes t-corner-tr-out { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(100vw, -100vh); opacity: 0; } }
+  @keyframes t-corner-bl-in { from { transform: translate(-100vw, 100vh); opacity: 0; } to { transform: translate(0, 0); opacity: 1; } }
+  @keyframes t-corner-bl-out { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(-100vw, 100vh); opacity: 0; } }
+  @keyframes t-corner-br-in { from { transform: translate(100vw, 100vh); opacity: 0; } to { transform: translate(0, 0); opacity: 1; } }
+  @keyframes t-corner-br-out { from { transform: translate(0, 0); opacity: 1; } to { transform: translate(100vw, 100vh); opacity: 0; } }
+
+  .widget.type-image .slide-counter {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,0.6); color: #fff;
+    font-size: 11px; padding: 2px 6px; border-radius: 4px;
+    z-index: 5; pointer-events: none;
+  }
+
+  /* ═══ Transition animations (ตอนเปลี่ยนรูป) ═══ */
+  /* tr-fade: สลับ opacity */
+  .widget.type-image.tr-fade .slide { transition: opacity 0.6s ease; }
+  /* tr-none: เปลี่ยนทันที ไม่มี animation */
+  .widget.type-image.tr-none .slide { transition: none; }
+  /* tr-slide-left: รูปใหม่滑入จากขวา */
+  .widget.type-image.tr-slide-left .slide { transform: translateX(100%); transition: transform 0.6s ease, opacity 0.6s ease; }
+  .widget.type-image.tr-slide-left .slide.active { transform: translateX(0); }
+  .widget.type-image.tr-slide-left .slide.exiting { transform: translateX(-100%); opacity: 1; }
+  /* tr-slide-right: รูปใหม่滑入จากซ้าย */
+  .widget.type-image.tr-slide-right .slide { transform: translateX(-100%); transition: transform 0.6s ease, opacity 0.6s ease; }
+  .widget.type-image.tr-slide-right .slide.active { transform: translateX(0); }
+  .widget.type-image.tr-slide-right .slide.exiting { transform: translateX(100%); opacity: 1; }
+  /* tr-slide-up: รูปใหม่ขึ้นจากล่าง */
+  .widget.type-image.tr-slide-up .slide { transform: translateY(100%); transition: transform 0.6s ease, opacity 0.6s ease; }
+  .widget.type-image.tr-slide-up .slide.active { transform: translateY(0); }
+  .widget.type-image.tr-slide-up .slide.exiting { transform: translateY(-100%); opacity: 1; }
+  /* tr-slide-down: รูปใหม่ลงจากบน */
+  .widget.type-image.tr-slide-down .slide { transform: translateY(-100%); transition: transform 0.6s ease, opacity 0.6s ease; }
+  .widget.type-image.tr-slide-down .slide.active { transform: translateY(0); }
+  .widget.type-image.tr-slide-down .slide.exiting { transform: translateY(100%); opacity: 1; }
+  /* tr-zoom-in: รูปใหม่ซูมเข้า */
+  .widget.type-image.tr-zoom-in .slide { transform: scale(0.3); transition: transform 0.6s ease, opacity 0.6s ease; }
+  .widget.type-image.tr-zoom-in .slide.active { transform: scale(1); }
+  /* tr-zoom-out: รูปใหม่ซูมออก */
+  .widget.type-image.tr-zoom-out .slide { transform: scale(1.5); transition: transform 0.6s ease, opacity 0.6s ease; }
+  .widget.type-image.tr-zoom-out .slide.active { transform: scale(1); }
+  /* tr-flip: พลิก 3D */
+  .widget.type-image .widget-inner { perspective: 1000px; }
+  .widget.type-image.tr-flip .slide { transform: rotateY(90deg); transition: transform 0.6s ease, opacity 0.6s ease; backface-visibility: hidden; }
+  .widget.type-image.tr-flip .slide.active { transform: rotateY(0); }
+
+  /* ═══ Webcam Frame widget ═══ */

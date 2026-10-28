@@ -491,12 +491,13 @@ class TwitchChat:
     def _send_raw(self, line: str) -> None:
         """ส่ง raw IRC line ผ่าน socket (thread-safe — ใช้ lock)"""
         if self._sock is None:
-            return
+            return False
         with self._send_lock:
             try:
                 self._sock.sendall(line.encode("utf-8"))
+                return True
             except OSError:
-                pass
+                return False
 
     # ------------------------------------------------------------------ #
     # ★ Send chat (ต้องล็อกอินด้วย OAuth — ไม่ใช่ anonymous)
@@ -526,7 +527,9 @@ class TwitchChat:
         for line in text.split("\n"):
             line = line.strip()
             if line:
-                self._send_raw(f"PRIVMSG #{self._channel} :{line}\r\n")
+                if not self._send_raw(f"PRIVMSG #{self._channel} :{line}\r\n"):
+                    self.on_error("Twitch ส่งข้อความไม่สำเร็จ: การเชื่อมต่อหลุด")
+                    return False
         return True
 
     def send_command(self, command: str) -> bool:

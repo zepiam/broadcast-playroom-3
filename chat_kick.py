@@ -31,6 +31,7 @@ import json
 import re
 import threading
 import time
+import uuid
 from typing import Callable, Optional
 
 from chat_twitch import ChatMessage  # reuse shared dataclass
@@ -68,9 +69,29 @@ KICK_HEADERS = {
 }
 
 # regex strip [emote:id:name] tokens ออกจากข้อความ
-_EMOTE_TOKEN_RE = re.compile(r"\[\d+:\d+[^\]]*\]")
+_EMOTE_TOKEN_RE = re.compile(r"\[(?:emote|\d+):\d+:[^\]]+\]", re.IGNORECASE)
 # กระชับ space หลายช่อง
 _MULTI_SPACE_RE = re.compile(r" {2,}")
+
+
+def _realtime_pusher_url(timeout: float = 10.0) -> str:
+    """Discover the public realtime provider instead of relying on an expired key."""
+    import requests
+    body = {'client': {'id': str(uuid.uuid4()), 'type': 'web'},
+            'capabilities': {'accepted_providers': [{'provider': 'pusher'}]}}
+    headers = dict(KICK_HEADERS, Origin='https://kick.com')
+    try:
+        response = requests.post('https://web.kick.com/api/v1/realtime/connection', json=body, headers=headers, timeout=timeout)
+        response.raise_for_status()
+        data = response.json().get('data', {})
+        for entry in data.get('connections', []):
+            credentials = entry.get('credentials') or {}
+            key, cluster = credentials.get('app_key', ''), credentials.get('cluster', '')
+            if entry.get('provider') == 'pusher' and re.fullmatch(r'[A-Za-z0-9]+', key) and re.fullmatch(r'[a-z0-9-]+', cluster):
+                return f'wss://ws-{cluster}.pusher.com/app/{key}?protocol=7&client=js&version=8.4.0'
+        raise ValueError('ไม่พบข้อมูล Pusher')
+    except Exception as exc:
+        raise RuntimeError(f'KICK: ไม่สามารถค้นหาข้อมูลเชื่อมต่อแชท: {exc}') from exc
 
 
 def _strip_emote_tokens(text: str) -> tuple[str, list]:
@@ -140,7 +161,7 @@ def _resolve_channel(slug: str, timeout: float = 15.0) -> Optional[dict]:
     viewer_count = livestream.get("viewer_count", 0) if livestream else 0
     return {
         "chatroom_id": int(chatroom_id),
-        "user_id": d.get("id") or user.get("id"),
+        "user_id": d.get("user_id") or user.get("id"),
         "username": user.get("username") or d.get("slug") or slug,
         "is_live": bool(d.get("livestream")),
         "viewer_count": int(viewer_count) if viewer_count else 0,
@@ -274,7 +295,9 @@ class KickChat:
                     return False
                 if r.status_code in (200, 201):
                     try:
-                        return bool(r.json().get("is_sent", True))
+                        data = r.json()
+                        result = data.get("data", data) if isinstance(data, dict) else {}
+                        return bool(result.get("is_sent", True)) if isinstance(result, dict) else True
                     except Exception:
                         return True
                 if r.status_code == 401 and attempt < 2:
@@ -370,6 +393,7 @@ class KickChat:
             return False
         self._slug = slug
         self._chatroom_id = info["chatroom_id"]
+        self._broadcaster_user_id = int(info.get("user_id") or 0)
         self._stop_event.clear()
         # emit initial viewer count (จาก resolve response)
         vc = info.get("viewer_count", 0)
@@ -408,12 +432,18 @@ class KickChat:
         try:
             ws = websocket.WebSocket()
             ws.settimeout(5.0)  # short timeout → ตอบ _stop_event ได้
-            ws.connect(KICK_PUSHER_URL)
+            ws.connect(_realtime_pusher_url())
             self._ws = ws
+            hello = json.loads(ws.recv())
+            if hello.get('event') != 'pusher:connection_established':
+                detail = hello.get('data') or hello.get('event') or 'ไม่มีคำตอบ'
+                raise RuntimeError(f'KICK ไม่ยืนยันการเชื่อมต่อ: {detail}')
         except Exception as exc:  # noqa: BLE001
             if not self._stop_event.is_set():
                 self.on_error(f"KICK WS เชื่อมต่อไม่ได้: {exc}")
             self._is_connected = False
+            try: ws.close()
+            except Exception: pass
             return
 
         # subscribe to chatroom channel (anonymous — auth ว่าง)
@@ -423,10 +453,26 @@ class KickChat:
                 "event": "pusher:subscribe",
                 "data": {"auth": "", "channel": channel},
             }))
+            deadline = time.monotonic() + 10
+            subscribed = False
+            while time.monotonic() < deadline and not self._stop_event.is_set():
+                frame = json.loads(ws.recv())
+                event = frame.get('event')
+                if event == 'pusher:ping':
+                    ws.send(json.dumps({'event': 'pusher:pong', 'data': {}}))
+                elif event == 'pusher_internal:subscription_succeeded' and frame.get('channel') == channel:
+                    subscribed = True
+                    break
+                elif event in ('pusher:error', 'pusher:subscription_error'):
+                    raise RuntimeError(str(frame.get('data') or event))
+            if not subscribed:
+                raise RuntimeError('ไม่ได้รับการยืนยันเข้าห้องแชท KICK')
         except Exception as exc:  # noqa: BLE001
             if not self._stop_event.is_set():
                 self.on_error(f"KICK subscribe ไม่ได้: {exc}")
             self._is_connected = False
+            try: ws.close()
+            except Exception: pass
             return
 
         self._is_connected = True

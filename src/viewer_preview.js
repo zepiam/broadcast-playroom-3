@@ -1,0 +1,11 @@
+/* Viewer tests stay in Composer memory; Overlay always receives provider counts. */
+(()=>{'use strict';const previews=new Map();let state={total:0,per_platform:{}},connected=new Set(),busy=false;
+function widgets(){return window.ComposerStudio?.getActivePage?.()?.widgets?.filter(w=>w.type==='viewer') || [];}
+function render(element,w){if(!element)return;const data=previews.has(w.id)?{total:previews.get(w.id),per_platform:{}}:state;element.querySelectorAll('.viewer-total .viewer-ticker').forEach(n=>n.textContent=String(data.total));element.querySelectorAll('[data-platform-ticker]').forEach(n=>n.textContent=String(data.per_platform[n.dataset.platformTicker] || 0));}
+function update(){for(const w of widgets()){if(!previews.has(w.id))render(document.getElementById('widget-'+w.id),w);}const button=document.getElementById('btnViewerUseLive');if(button){const selected=window.ComposerStudio?.getState?.()?.selectedWidgetId;button.disabled=!previews.has(selected);button.title='ยกเลิกค่าทดสอบและแสดงยอดจากการเชื่อมต่อจริง';}}
+function receive(data){state={total:Number(data.total)||0,per_platform:data.per_platform || {}};previews.clear();update();}
+window.BP3ViewerPreview={begin(w){if(!previews.has(w.id))previews.set(w.id,state.total);},set(w,count){previews.set(w.id,count);update();},active(w){return previews.has(w.id);},count(w){return previews.has(w.id)?previews.get(w.id):state.total;},render,reset(w){previews.delete(w.id);render(document.getElementById('widget-'+w.id),w);update();},mount:update};
+window.addEventListener('bp3:remote-event',event=>{if(event.detail?.event==='VIEWERS_UPDATE')receive(event.detail.payload || {});});
+async function poll(){if(busy || !widgets().length)return;busy=true;try{const response=await fetch('/api/status');if(response.ok){const statuses=await response.json(),next=new Set(Object.entries(statuses).filter(([,s])=>s.connected).map(([name])=>name));if([...next].some(name=>!connected.has(name)))previews.clear();connected=next;const counts=Object.fromEntries(Object.entries(statuses).map(([name,s])=>[name,s.connected?Number(s.viewers)||0:0]));state={total:Object.values(counts).reduce((sum,n)=>sum+n,0),per_platform:counts};update();}}catch{}finally{busy=false;}}
+setInterval(poll,1000);
+})();

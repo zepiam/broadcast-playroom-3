@@ -3,6 +3,9 @@ import io
 import logging
 import re
 import sys
+import socket
+import aiohttp
+from types import SimpleNamespace
 
 # Ensure UTF-8 output on Windows consoles
 if hasattr(sys.stdout, 'reconfigure'):
@@ -65,7 +68,7 @@ def resolve_voice(text: str, gender: str = 'female') -> tuple[str, str]:
 
 class TTSService:
     def __init__(self):
-        pass
+        self.dns_settings = None
 
     async def synthesize(self, text: str, gender: str = 'female', rate: str = '', pitch: str = '', volume: str = '') -> bytes:
         text = sanitize_text(text)
@@ -87,30 +90,30 @@ class TTSService:
         if c_vol and c_vol not in ['+0%', '0%', '-0%']:
             kwargs['volume'] = c_vol
 
-        try:
-            comm = edge_tts.Communicate(text, voice=voice, **kwargs)
-            buf = io.BytesIO()
-            async for chunk in comm.stream():
-                if chunk['type'] == 'audio':
-                    buf.write(chunk['data'])
-            val = buf.getvalue()
-            if len(val) > 0:
-                return val
-        except Exception as e:
-            logger.warning(f"TTS stream error with voice {voice}: {e}")
-
-        # Fallback within the EXACT same gender
-        try:
-            alt_voice = VOICES[f'{g}_en'] if voice == VOICES[f'{g}_th'] else VOICES[f'{g}_th']
-            comm_alt = edge_tts.Communicate(text, voice=alt_voice, **kwargs)
-            buf = io.BytesIO()
-            async for chunk in comm_alt.stream():
-                if chunk['type'] == 'audio':
-                    buf.write(chunk['data'])
-            return buf.getvalue()
-        except Exception as e:
-            logger.error(f"TTS fallback stream error: {e}")
-            return b""
+        # Match the legacy engine: force IPv4 and retry the selected voice.
+        # Changing to a different language on a network error corrupts pronunciation.
+        for attempt in range(2):
+            try:
+                options={'family':socket.AF_INET}
+                dns=self.dns_settings.public() if self.dns_settings else {'enabled':False}
+                if dns.get('enabled'):
+                    from network_dns import AppDnsResolver
+                    options['resolver']=AppDnsResolver(SimpleNamespace(dns_service=dns['service'],dns_custom=dns['custom']))
+                async with aiohttp.TCPConnector(**options) as connector:
+                    comm = edge_tts.Communicate(text, voice=voice, connector=connector,
+                                               connect_timeout=8, receive_timeout=20, **kwargs)
+                    buf = io.BytesIO()
+                    async for chunk in comm.stream():
+                        if chunk['type'] == 'audio':
+                            buf.write(chunk['data'])
+                    audio = buf.getvalue()
+                    if audio:
+                        return audio
+            except Exception as error:
+                logger.warning('TTS voice %s attempt %d failed: %s', voice, attempt + 1, error)
+            if attempt == 0:
+                await asyncio.sleep(0.3)
+        return b''
 
     def generate_audio_bytes(self, text: str, gender: str = 'female', rate: str = '', pitch: str = '', volume: str = '') -> bytes:
         """Synchronous wrapper to run async synthesis safely"""

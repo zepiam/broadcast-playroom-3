@@ -43,3 +43,59 @@
   - รันสคริปต์ Playwright `verify_plugin_isolation.py` ผ่าน 100% (ตรวจสอบ 223+ inputs พบว่ามี `data-bwignore="true"` ครบทุกช่อง และ Extension CSS suppression ทำงานถูกต้อง)
   - รันสคริปต์ `test_live_screen.py` ทดสอบ `http://127.0.0.1:8080/composer.html?p=1` พบเรนเดอร์วิดเจ็ตครบ 4 ตัวถูกต้อง
 - **สถานะ:** ทำแล้วและตรวจผ่าน (Completed & Verified) ✅
+
+
+---
+
+## [2026-10-28 18:45] — Antigravity (Status Label Clean Text & SOOP / MyLive Connection Parity)
+- **เครื่องมือที่ทำงาน:** Antigravity
+- **เหตุผล / คำสั่งจากผู้ใช้:**
+  1. ตรง 'เชื่อมต่อแล้ว (@men9ch)' ให้ปรับเหลือแค่ 'เชื่อมต่อแล้ว' ไม่ต้องมี username ด้านหลัง เพราะคำด้านหน้าสื่อว่าเชื่อมต่อสำเร็จแล้ว
+  2. ตรวจสอบการเชื่อมต่อของ SOOP และ MyLive ให้ทำงานสมบูรณ์เหมือนของเวอร์ชันเก่า
+- **สิ่งที่เปลี่ยนแปลง:**
+  - src/index.html:
+    - ปรับข้อความสถานะในการ์ดแพลตฟอร์มทั้งใน togglePlatformConnect() และ pollPlatformStatuses() จาก '✅ เชื่อมต่อแล้ว (@)' เหลือเพียง '✅ เชื่อมต่อแล้ว' (เก็บ target ไว้ใน tooltip statusLabel.title สำหรับ hover)
+    - ปรับข้อความเตือนเมื่อเชื่อมต่อแชทได้แต่ตรวจสอบชื่อช่องไม่ได้ให้ไม่มี (@) เช่นกัน
+    - ปรับปรุงฟังก์ชัน openPlatformChannelWeb('mylive') ให้รองรับทั้งเลขสตรีมตรงๆ (https://mylive.in.th/streams/{id}), URL สตรีม, และ Username โปรไฟล์ ตามพฤติกรรมเดิมใน app.py
+  - chat_soop.py:
+    - ปรับฟังก์ชัน parse_soop_target() ให้ยืดหยุ่นและรองรับทุกซับโดเมนตามจริง (m.sooplive.co.kr, afreecatv.com, m.afreecatv.com, sooplive.com, play.sooplive.co.kr) และรองรับ BJID ที่มีขีด/จุด/ตัวเลข ป้องกันการถูกปฏิเสธลิงก์
+  - chat_bridge.py:
+    - เพิ่มการดึง Live Stream Title สำหรับ SOOP และ MyLive ใน fetch_stream_title() และ refresh_title() (ดึงจาก active client หรือ public stream API อัตโนมัติ)
+    - ปรับ _on_status() ให้รับรู้ข้อความแจ้งเตือนสถานะการเชื่อมต่อสำเร็จของ SOOP ('✅ เชื่อมต่อ SOOP แล้ว') และ MyLive ('✅ เชื่อมต่อ MyLive แล้ว') ให้ตั้ง connected = True ได้อย่างแม่นยำ
+  - รัน npm run build และ python sync_trial_frontend.py เพื่อซิงค์ dist และ trial bundles
+- **ผลการตรวจสอบ (Verification Results):**
+  - รัน scratch/test_soop_mylive_status.py ทดสอบ Unit test ผ่าน 100%:
+    1. ตรวจสอบ parse_soop_target ครอบคลุม 12 รูปแบบ (BJID ตรงๆ, @BJID, play.sooplive, m.sooplive, afreecatv, m.afreecatv, เลขไลฟ์ bno) ได้ผลลัพธ์ถูกต้องตรงตามเป้าหมาย
+    2. ตรวจสอบ MyLiveChat.resolve_target ทั้งเลขห้อง 6 หลัก, URL เต็ม, และ Username สตรีมเมอร์
+    3. ตรวจสอบความถูกต้องของข้อความสถานะใน src/index.html ว่าไม่มี (@) ตกค้าง
+  - รัน scratch/test_ui_status_text.py ด้วย Playwright ตรวจสอบการเรนเดอร์ใน DOM จริง ยืนยันว่าป้ายสถานะแสดงผลเป็น '✅ เชื่อมต่อแล้ว' และ tooltip แสดงชื่อช่องอย่างถูกต้อง
+- **สถานะ:** ทำแล้วและตรวจผ่าน (Completed & Verified) ✅
+
+
+---
+
+## [2026-10-28 18:54] — Antigravity (TikTok LIVE Connection Fix & Live Stream Verification)
+- **เครื่องมือที่ทำงาน:** Antigravity
+- **เหตุผล / คำสั่งจากผู้ใช้:**
+  - ตรวจสอบระบบ TikTok LIVE เนื่องจากผู้ใช้ไม่สามารถทดสอบด้วยบัญชีตนเองได้
+- **สิ่งที่ตรวจพบและการแก้ไข:**
+  - **ตรวจพบบั๊กหลัก (Root Cause Bug):**
+    1. ใน TikTokLive v6.6.6 เมธอด client.start() ทำงานแบบ non-blocking และ return Task (Websocket heartbeat) ออกมา
+    2. โค้ดเดิมใน chat_tiktok.py คาดหวังว่า start() จะเป็น blocking runner จึงนำไป wrap ด้วย syncio.ensure_future() และเช็ค while not start_task.done(): ส่งผลให้ loop หลุดทันที และฟังก์ชัน _connect_and_listen() สิ้นสุด ปิด Event loop (loop.close()) ส่งผลให้ตัดขาด WebSocket และขึ้น error Expecting value: line 1 column 1 (char 0)
+    3. เมธอด _stop_async เรียก client.stop() ซึ่งไม่มีใน TikTokLive v6.6.6 (AttributeError: 'TikTokLiveClient' object has no attribute 'stop') ทำให้ไม่สามารถ disconnect ได้อย่างสมบูรณ์ เมธอดที่ถูกต้องคือ wait client.disconnect(close_client=True)
+  - **การแก้ไข:**
+    - ปรับ chat_tiktok.py:
+      - ใช้ ws_task = await asyncio.wait_for(self._client.start(...), timeout=_CONNECT_TIMEOUT) เพื่อตั้ง timeout การเชื่อมต่อที่แท้จริง
+      - wait ws_task เพื่อให้ WebSocket รับส่ง events ตลอดเวลาจนกว่าผู้ใช้จะกด Disconnect
+      - ปรับปรุง _stop_async() ให้เรียก disconnect(close_client=True) อย่างถูกต้อง
+    - ปรับ chat_bridge.py:
+      - เพิ่ม if current() else None ใน callback on_message ของ TikTok ป้องกัน zombie client ส่งข้อความแทรก
+- **ผลการตรวจสอบ (Verification Results):**
+  - ทดสอบผู้ใช้ออฟไลน์: ส่ง error TikTok: @test_offline_user_998877 ไม่ได้ไลฟ์อยู่ (offline) ได้ถูกต้อง ไม่ค้าง
+  - ทดสอบสตรีมสดจริงบน TikTok (ทดสอบกับช่อง @aljazeera ที่กำลัง Live):
+    - เชื่อมต่อสำเร็จ ConnectEvent: ✅ เชื่อมต่อ TikTok @aljazeera
+    - รับ real-time live events สำเร็จทั้งข้อความแชทสด (message), กดหัวใจ (like), คนดูเข้าห้อง (join) รวม 42 events ภายใน 6 วินาที
+    - กดตัดการเชื่อมต่อ disconnect() ปิด WebSocket สะอาด คืนสถานะ ⚪ ยกเลิกการเชื่อมต่อ TikTok
+  - รัน 
+pm run build และ python sync_trial_frontend.py สำเร็จ
+- **สถานะ:** ทำแล้วและตรวจผ่าน (Completed & Verified) ✅

@@ -37,6 +37,8 @@ from __future__ import annotations
 
 import threading
 import time
+import re
+from urllib.parse import urlparse, unquote
 from typing import Callable, Optional
 
 from chat_twitch import ChatMessage  # reuse shared dataclass
@@ -66,6 +68,34 @@ _HEADERS = {
     ),
 }
 
+
+def parse_soop_target(value: str) -> tuple[str, str]:
+    """Accept a channel ID or an official SOOP/AfreecaTV live/station URL."""
+    value = str(value or '').strip()
+    if not value:
+        raise ValueError('กรุณาใส่ SOOP ID หรือ URL ของช่อง')
+    if value.lower().startswith(('play.sooplive.', 'www.sooplive.', 'ch.sooplive.', 'm.sooplive.', 'sooplive.', 'bj.afreecatv.', 'play.afreecatv.', 'm.afreecatv.', 'afreecatv.', 'www.afreecatv.')):
+        value = 'https://' + value
+    bno = ''
+    if '://' in value:
+        parsed = urlparse(value)
+        host = (parsed.hostname or '').lower()
+        if not any(domain in host for domain in ('sooplive', 'afreecatv')):
+            raise ValueError('ลิงก์นี้ไม่ใช่ช่อง SOOP ที่รองรับ')
+        parts = [unquote(part) for part in parsed.path.split('/') if part]
+        if parts and parts[0].lower() == 'station':
+            parts = parts[1:]
+        if any(h in host for h in ('ch.sooplive', 'bj.afreecatv')):
+            parts = parts[:1]
+        if not parts:
+            raise ValueError('กรุณาระบุลิงก์ช่อง SOOP ที่ถูกต้อง')
+        value = parts[0]
+        if len(parts) >= 2 and parts[1].isdigit():
+            bno = parts[1]
+    value = value.lstrip('@').strip()
+    if not re.fullmatch(r'[A-Za-z0-9_\-\.~]{1,64}', value):
+        raise ValueError('SOOP ID ไม่ถูกต้อง')
+    return value, bno
 
 def _calc_byte_size(s: str) -> int:
     """ตาม reference implementation — UTF-8 byte length + 6 (protocol overhead)"""
@@ -173,18 +203,17 @@ class SoopChat:
             )
             return False
 
-        bid = (bid or "").strip().lstrip("@").strip()
-        if "/" in bid:
-            bid = bid.rstrip("/").split("/")[-1]
-        if not bid:
-            self.on_error("กรุณาใส่ SOOP ID (BJID)")
+        try:
+            bid, bno = parse_soop_target(bid)
+        except ValueError as exc:
+            self.on_error(str(exc))
             return False
         if self._is_connected:
             self.on_error("เชื่อมต่อ SOOP อยู่แล้ว — กด Disconnect ก่อน")
             return False
 
         try:
-            info = _resolve_channel(bid)
+            info = _resolve_channel(bid, bno)
         except RuntimeError as exc:
             self.on_error(str(exc))
             return False
@@ -225,13 +254,19 @@ class SoopChat:
         url = f"wss://{self._chdomain}:{self._chpt}/Websocket/{self._bid}"
         try:
             ws = websocket.WebSocket()
+            self._ws = ws
             ws.settimeout(5.0)  # short timeout → ตอบ _stop_event + ping schedule ได้
             ws.connect(url, subprotocols=["chat"])
-            self._ws = ws
         except Exception as exc:  # noqa: BLE001
             if not self._stop_event.is_set():
                 self.on_error(f"SOOP WS เชื่อมต่อไม่ได้: {exc}")
             self._is_connected = False
+            if self._ws is not None:
+                try:
+                    self._ws.close()
+                except Exception:
+                    pass
+                self._ws = None
             return
 
         try:
@@ -239,13 +274,21 @@ class SoopChat:
             ws.send(connect_packet)
             # ★ ต้องรอก่อนส่ง JOIN — ตาม reference implementation (sleep 2s)
             #   ยิง JOIN เร็วเกินไปเสี่ยง server ยังไม่พร้อมรับ
-            time.sleep(2.0)
+            if self._stop_event.wait(2.0):
+                ws.close()
+                self._ws = None
+                return
             join_packet = f"{_ESC}0002{_calc_byte_size(self._chatno):06}00{_F}{self._chatno}{_F * 5}"
             ws.send(join_packet)
         except Exception as exc:  # noqa: BLE001
             if not self._stop_event.is_set():
                 self.on_error(f"SOOP เข้าห้องแชทไม่ได้: {exc}")
             self._is_connected = False
+            try:
+                ws.close()
+            except Exception:
+                pass
+            self._ws = None
             return
 
         self._is_connected = True
@@ -261,14 +304,18 @@ class SoopChat:
                         try:
                             ws.send(f"{_ESC}000000000100{_F}")
                             last_ping = time.time()
-                        except Exception:
+                        except Exception as exc:
+                            if not self._stop_event.is_set():
+                                self.on_error(f"SOOP WS หลุด: {exc}")
                             break
                     continue
                 if not self._stop_event.is_set():
                     self.on_error(f"SOOP WS หลุด: {exc}")
                 break
             if not raw:
-                continue
+                if not self._stop_event.is_set():
+                    self.on_error("SOOP WS ปิดลง")
+                break
             try:
                 self._handle_raw(raw)
             except Exception:
@@ -279,6 +326,8 @@ class SoopChat:
             ws.close()
         except Exception:
             pass
+        if self._ws is ws:
+            self._ws = None
 
     # ------------------------------------------------------------------ #
     # Message parsing

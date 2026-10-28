@@ -2882,3 +2882,287 @@ body.preview-clean-mode .composer-widget.type-playroom {
   border: none !important;
   box-shadow: none !important;
 }
+
+/* Shared settings-card layout for all Composer widget types. */
+.comp-card-body .comp-field-row { gap:12px; min-height:38px; }
+.comp-card-body .comp-field-row > .comp-field-label { flex:1; min-width:0; }
+.comp-card-body .comp-field-row > :is(.cwc-input,.cwc-select) { max-width:56%; min-width:0; box-sizing:border-box; }
+.comp-card-body .comp-field-row > input[type=number] { width:90px; }
+.comp-card-body .comp-field-row-stack { flex-direction:column; align-items:stretch; }
+.comp-card-body .comp-field-row-stack > :is(.cwc-input,.cwc-select) { width:100%; max-width:none; }
+.comp-card-body .comp-field-row-stack > button { align-self:flex-end; }
+.comp-file-import-button { width:100%; margin:4px 0 12px; padding:10px; }
+.comp-platform-option { display:inline-flex; align-items:center; gap:7px; margin:5px 12px 5px 0; font-size:12px; }
+.comp-settings-hint { color:#94a3b8; font-size:11px; line-height:1.6; margin:10px 0 0; }
+.comp-chat-menu-item:focus-visible { outline:2px solid #38bdf8; background:#283246; }
+
+@keyframes bp3-np-scroll {0%,15%{transform:translateX(0)} 70%,85%{transform:translateX(var(--np-scroll-distance))} 100%{transform:translateX(0)}}
+
+/* Editor placement guides, never part of the shared OBS widget markup. */
+#win-composer:not(.preview-clean-mode) #composerCanvasStage > .composer-widget:not(.selected) {
+  outline: var(--composer-guide-width, 1px) dashed rgba(129,140,248,.5);
+  outline-offset: -1px;
+}
+
+/* Direction changes the alignment axis; scope to the actual Viewer content. */
+.widget-type-viewer.viewer-direction-horizontal{flex-direction:row;align-items:center;}
+.widget-type-viewer.viewer-direction-horizontal.viewer-align-left{justify-content:flex-start;}
+.widget-type-viewer.viewer-direction-horizontal.viewer-align-center{justify-content:center;}
+.widget-type-viewer.viewer-direction-horizontal.viewer-align-right{justify-content:flex-end;}
+.widget-type-viewer.viewer-direction-vertical{flex-direction:column;justify-content:flex-start!important;}
+.widget-type-viewer.viewer-direction-vertical.viewer-align-left{align-items:flex-start;}
+.widget-type-viewer.viewer-direction-vertical.viewer-align-center{align-items:center;}
+.widget-type-viewer.viewer-direction-vertical.viewer-align-right{align-items:flex-end;}
+
+/* Clocks already have a visible frame; no second standby outline. */
+#win-composer #composerCanvasStage > .composer-widget.type-clock:not(.selected){outline:none;}
+
+/* Composer theme cards and narrow settings rows. */
+#composerCustomizerBody { container-type:inline-size; }
+#composerCustomizerBody #cwcPresetsGrid .cwc-preset-card { min-width:0; text-align:center; }
+#composerCustomizerBody #cwcPresetsGrid .cwc-preset-card > div:first-child {
+  justify-content:center !important; gap:6px; margin-bottom:0 !important; flex-wrap:wrap;
+}
+#composerCustomizerBody #cwcPresetsGrid .cwc-preset-card > div:empty { display:none; }
+#composerCustomizerBody .cwc-row { min-width:0; }
+#composerCustomizerBody .cwc-label { white-space:normal; overflow-wrap:anywhere; }
+#composerCustomizerBody .cwc-select { min-width:0; max-width:100%; box-sizing:border-box; }
+@container (max-width:430px) {
+  #composerCustomizerBody .cwc-row:has(> .cwc-select) { flex-direction:column; align-items:stretch; gap:6px; }
+  #composerCustomizerBody .cwc-row > .cwc-select { width:100%; max-width:100%; }
+}
+
+#composerCustomizerBody #cwcPresetsGrid .cwc-preset-card > div:first-child { width:100%; box-sizing:border-box; }
+
+/* Keep pagination geometry stable when a longer theme name is shown. */
+#composerCustomizerBody #cwcPresetsGrid .cwc-preset-card > div:first-child { flex-wrap:nowrap !important; }
+#composerCustomizerBody #cwcPresetsGrid .cwc-preset-card > div:first-child > span:first-child { min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+#composerCustomizerBody #cwcPresetsGrid .cwc-preset-card > div:first-child > span:last-child { flex-shrink:0; }
+
+/* Layer cards: full-width title above a dedicated action bar, at every text size. */
+#win-composer .composer-layers-header { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; }
+#win-composer .composer-layers-caption { display:flex; flex-direction:column; min-width:0; gap:3px; }
+#win-composer #composerLayerCount { color:var(--dc-text-muted); font-size:11px; }
+#win-composer #btnToggleLayersExpand { max-width:100px; white-space:normal; padding:4px 7px; border:1px solid rgba(255,255,255,.15); border-radius:4px; background:rgba(255,255,255,.06); color:#cbd5e1; font-size:11px; cursor:pointer; }
+#win-composer .composer-layer-item { display:flex; flex-direction:column; align-items:stretch; flex:0 0 auto; gap:0; padding:0; height:auto; min-width:0; overflow:hidden; }
+#win-composer .composer-layer-main { display:flex; align-items:center; gap:10px; min-width:0; padding:10px 12px; }
+#win-composer .composer-layer-main > :is(.composer-layer-icon,.composer-layer-handle) { flex-shrink:0; }
+#win-composer .composer-layer-name { flex:1 1 0; min-width:0; white-space:normal; overflow-wrap:anywhere; text-overflow:clip; line-height:1.35; }
+#win-composer .composer-layer-actions { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:0; border-top:1px solid rgba(255,255,255,.08); }
+#win-composer .composer-layer-actions > * + * { border-left:1px solid rgba(255,255,255,.06); }
+#win-composer .composer-layer-order-controls { display:grid; grid-template-columns:1fr 1fr; min-width:0; }
+#win-composer .composer-layer-actions .composer-btn-layer-action { width:100%; min-width:0; height:28px; border:0; border-radius:0; background:transparent; }
+#win-composer .composer-layer-actions .composer-btn-layer-action:hover:not(:disabled) { background:rgba(255,255,255,.1); }
+#win-composer .composer-layer-actions .composer-btn-layer-action:disabled { opacity:.25; cursor:default; }
+
+/* Travel the viewport AND the complete text width before looping. */
+.widget-text-ticker { position:relative; container-type:inline-size; padding:0 !important; }
+.widget-text-ticker > span {
+  position:absolute; left:100%; top:var(--marquee-top,50%); width:max-content; max-width:none;
+  display:block; padding:0; margin:0; white-space:nowrap; flex-shrink:0;
+  animation:bp3MarqueeFullRun var(--marquee-duration,15s) linear infinite;
+}
+@keyframes bp3MarqueeFullRun {
+  from { transform:translate3d(0,var(--marquee-shift-y,-50%),0); }
+  to { transform:translate3d(calc(-100% - 100cqw),var(--marquee-shift-y,-50%),0); }
+}
+
+/* Clock themes and dot styles restored from the previous version. */
+  /* ── Clock themes (12 แบบ) ── */
+  .widget-type-clock.clock-theme-default { color: #fff; text-shadow: 0 1px 4px #000; }
+  .widget-type-clock.clock-theme-neon {
+    color: #00ffff; text-shadow: 0 0 5px #00ffff, 0 0 15px #00ffff, 0 0 25px #0099ff;
+    font-family: 'Courier New', monospace;
+  }
+  .widget-type-clock.clock-theme-cyberpunk {
+    color: #ff00ff; text-shadow: 0 0 5px #ff00ff, 0 0 10px #00ff88, 2px 2px 0 #00ff88;
+    font-family: 'Courier New', monospace;
+  }
+  .widget-type-clock.clock-theme-digital {
+    color: #00ff00; text-shadow: 0 0 8px #00ff00; background: #000;
+    font-family: 'Courier New', monospace; padding: 4px 12px; border: 1px solid #00ff00;
+  }
+  .widget-type-clock.clock-theme-glass {
+    color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    background: rgba(255,255,255,0.1); backdrop-filter: blur(8px);
+    padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);
+  }
+  .widget-type-clock.clock-theme-sakura {
+    color: #ff69b4; text-shadow: 0 1px 3px #fff, 0 0 8px #ffb6c1;
+    font-style: italic;
+  }
+  .widget-type-clock.clock-theme-gold {
+    color: #ffd700; text-shadow: 0 1px 2px #8b6914, 0 0 8px #ffd700;
+    font-family: Georgia, serif;
+  }
+  .widget-type-clock.clock-theme-retro {
+    color: #f4e04d; text-shadow: 2px 2px 0 #c44569, 4px 4px 0 rgba(0,0,0,0.3);
+    font-family: 'Courier New', monospace;
+  }
+  .widget-type-clock.clock-theme-pipboy {
+    color: #14ff14; text-shadow: 0 0 5px #14ff14; background: rgba(0,20,0,0.6);
+    font-family: 'Courier New', monospace; padding: 4px 10px;
+    border: 1px solid #14ff14; border-radius: 2px;
+  }
+  .widget-type-clock.clock-theme-minimal {
+    color: #fff; text-shadow: none; font-weight: 400; letter-spacing: 2px;
+  }
+  .widget-type-clock.clock-theme-outline {
+    color: transparent; -webkit-text-stroke: 1.5px #fff;
+    text-shadow: 0 0 8px rgba(255,255,255,0.4);
+  }
+  .widget-type-clock.clock-theme-shadow {
+    color: #fff; text-shadow: 3px 3px 0 #000, 5px 5px 8px rgba(0,0,0,0.6);
+  }
+  /* ── clock themes ใหม่ (8 แบบ) ── */
+  .widget-type-clock.clock-theme-digital-red {
+    color: #ff3030; text-shadow: 0 0 8px #ff3030; background: #000;
+    font-family: 'Courier New', monospace; padding: 4px 12px; border: 1px solid #ff3030;
+  }
+  .widget-type-clock.clock-theme-digital-amber {
+    color: #ffb000; text-shadow: 0 0 8px #ffb000; background: #000;
+    font-family: 'Courier New', monospace; padding: 4px 12px; border: 1px solid #ffb000;
+  }
+  .widget-type-clock.clock-theme-matrix {
+    color: #00ff41; text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+    font-family: 'Courier New', monospace;
+  }
+  .widget-type-clock.clock-theme-vaporwave {
+    color: #ff71ce; text-shadow: 0 0 8px #ff71ce, 2px 2px 0 #01cdfe;
+    font-family: 'Courier New', monospace;
+  }
+  .widget-type-clock.clock-theme-fire {
+    color: #ff6b1a; text-shadow: 0 0 8px #ff4500, 0 0 16px #ff8c00;
+  }
+  .widget-type-clock.clock-theme-ice {
+    color: #b3e5fc; text-shadow: 0 0 8px #4fc3f7, 0 1px 3px #0277bd;
+  }
+  .widget-type-clock.clock-theme-royal {
+    color: #ffd700; text-shadow: 0 1px 3px #1a237e, 0 0 8px #ffd700;
+    font-family: Georgia, serif;
+    background: rgba(26,35,126,0.4); padding: 4px 12px; border: 1px solid #ffd700;
+  }
+  .widget-type-clock.clock-theme-sunset {
+    color: #ff6b6b; text-shadow: 0 0 8px #ff9a8b, 0 1px 3px #c44569;
+  }
+  /* ── clock themes ชุดใหม่ (10 แบบ) ── */
+  .widget-type-clock.clock-theme-hologram {
+    color: #00ffff; text-shadow: 0 0 3px #ff00ff, 0 0 8px #00ffff;
+    background: linear-gradient(135deg, rgba(0,255,255,0.1), rgba(255,0,255,0.1));
+    padding: 4px 12px; border-radius: 6px; border: 1px solid rgba(0,255,255,0.4);
+  }
+  .widget-type-clock.clock-theme-led {
+    color: #ff0000; text-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
+    font-family: 'Courier New', monospace; letter-spacing: 2px;
+    background: rgba(20,0,0,0.6); padding: 4px 10px; border-radius: 2px;
+  }
+  .widget-type-clock.clock-theme-led-green {
+    color: #00ff00; text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00;
+    font-family: 'Courier New', monospace; letter-spacing: 2px;
+    background: rgba(0,20,0,0.6); padding: 4px 10px; border-radius: 2px;
+  }
+  .widget-type-clock.clock-theme-led-blue {
+    color: #0080ff; text-shadow: 0 0 5px #0080ff, 0 0 10px #0080ff;
+    font-family: 'Courier New', monospace; letter-spacing: 2px;
+    background: rgba(0,0,20,0.6); padding: 4px 10px; border-radius: 2px;
+  }
+  .widget-type-clock.clock-theme-aqua {
+    color: #7fffd4; text-shadow: 0 0 8px #40e0d0, 0 1px 2px #008080;
+  }
+  .widget-type-clock.clock-theme-coral {
+    color: #ff7f50; text-shadow: 0 0 8px #ff6347, 0 1px 3px #8b0000;
+  }
+  .widget-type-clock.clock-theme-mint {
+    color: #98ff98; text-shadow: 0 0 6px #00ff7f, 0 1px 2px #006400;
+  }
+  .widget-type-clock.clock-theme-lavender {
+    color: #e6e6fa; text-shadow: 0 0 8px #9370db, 0 1px 2px #4b0082;
+  }
+  .widget-type-clock.clock-theme-bronze {
+    color: #cd7f32; text-shadow: 0 1px 2px #8b4513, 0 0 6px #cd7f32;
+    font-family: Georgia, serif;
+  }
+  .widget-type-clock.clock-theme-platinum {
+    color: #e5e4e2; text-shadow: 0 0 4px #b8b8b8, 0 1px 2px #808080;
+  }
+  .widget-type-clock.clock-theme-neon-purple {
+    color: #bf00ff; text-shadow: 0 0 5px #bf00ff, 0 0 10px #8000ff, 0 0 20px #bf00ff;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* 🎮 Pixel RPG — กล่องบทพูดเกม RPG โบราณ (ฟอนต์ dot pixel + ฉากดำ ขอบขาว pixelate) */
+  .widget-type-clock.clock-theme-pixel-rpg {
+    /* ★ ฉากหลัง: ดำสนิท */
+    background: #000 !important;
+    /* ★ ขอบขาว pixelate: ขาวนอกหนา + ขาวในบาง (double border สไตล์ RPG) */
+    border: 4px solid #fff !important;
+    /* ★ box-shadow: ขอบดำด้านใน + เงาแบบ hard (ไม่เบลอ) */
+    box-shadow:
+      inset 0 0 0 2px #000,
+      inset 0 0 0 4px #fff,
+      4px 4px 0 #000 !important;
+    padding: 8px 14px !important;
+    border-radius: 0 !important;   /* ★ มุมตรง ไม่มน — สไตล์ pixel */
+    /* ★ ฟอนต์ dot pixel จริง (VT323 = CRT terminal, Press Start 2P = 8-bit) */
+    font-family: 'VT323', 'Press Start 2P', monospace !important;
+    color: #ffffff;
+    text-shadow: 2px 2px 0 #000 !important;
+    font-weight: 400 !important;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+  }
+  .widget-type-clock.clock-theme-pixel-rpg .clock-time {
+    /* ★ เวลา: สีขาวสว่าง + hard shadow ดำ (เหมือนเกม 8-bit)
+       ไม่ใส่ !important ที่ color เพื่อให้ color picker ใน settings ทับได้ */
+    color: #ffffff;
+    text-shadow: 2px 2px 0 #000, -1px -1px 0 #000 !important;
+    font-size: 1.4em !important;   /* ★ ใหญ่ขึ้นเพราะ VT323 เล็ก */
+    letter-spacing: 2px;
+  }
+  .widget-type-clock.clock-theme-pixel-rpg .clock-date {
+    /* ★ วันที่: สีเขียวอ่อนแบบ RPG status bar (ไม่ใส่ !important ที่ color) */
+    color: #94e44d;
+    text-shadow: 1px 1px 0 #000 !important;
+    font-size: 0.9em !important;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+
+  /* ═══ DOT CLOCK (3 designs) — Silkscreen + double border + typing + blink ═══ */
+  /* โครงสร้าง: .dot-outbox > .dot-inbox > (.dot-time + .dot-wait.blink) */
+  .widget-type-clock.clock-style-dot1,
+  .widget-type-clock.clock-style-dot2,
+  .widget-type-clock.clock-style-dot3 { justify-content: center !important; align-items: center !important; }
+  .widget-type-clock[class*="clock-style-dot"] .dot-outbox {
+    position: relative; background: #fff; border: 1.6px solid #000; border-radius: 4px;
+    display: inline-flex; box-sizing: border-box;
+  }
+  .widget-type-clock[class*="clock-style-dot"] .dot-inbox {
+    position: relative; background: #242424; border: 1.6px solid #000; border-radius: 4px;
+    display: inline-flex; align-items: center; box-sizing: border-box;
+    margin: 4px;
+  }
+  .widget-type-clock[class*="clock-style-dot"] .dot-time {
+    color: #fff; font-family: 'Silkscreen', 'Courier New', monospace; font-weight: 400;
+    line-height: 1em; white-space: nowrap; letter-spacing: 1px;
+    padding: 8px 0 8px 12px;
+  }
+  .widget-type-clock[class*="clock-style-dot"] .dot-wait {
+    color: #fff; font-family: 'Silkscreen', 'Courier New', monospace; font-weight: 400;
+    padding: 0 12px 0 8px; align-self: center;
+    animation: dot-blink 0.75s steps(2, jump-none) infinite alternate;
+  }
+  @keyframes dot-blink { 0% { opacity: 0; } 100% { opacity: 1; } }
+  /* dot1: HH:MM (narrow) */
+  .widget-type-clock.clock-style-dot1 .dot-time { font-size: 28px; }
+  .widget-type-clock.clock-style-dot1 .dot-wait { font-size: 16px; }
+  /* dot2: YYYY.MM.DD HH:MM (wide) */
+  .widget-type-clock.clock-style-dot2 .dot-time { font-size: 28px; }
+  .widget-type-clock.clock-style-dot2 .dot-wait { font-size: 16px; }
+  /* dot3: DD.MM.YYYY HH:MM (wide) + ● cursor */
+  .widget-type-clock.clock-style-dot3 .dot-time { font-size: 28px; }
+  .widget-type-clock.clock-style-dot3 .dot-wait { font-size: 16px; }
+

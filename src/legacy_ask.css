@@ -1,0 +1,570 @@
+/* ASK presentation preserved from broadcast playroom dev. */
+  /* ═══ ASK widget (โพล) — เฟรมเต็มจอ + แผงโพลเลือกทิศทาง/ยื่น% ═══ */
+  /* ★ defaults ที่ระดับ .widget (ก่อนธีมในไฟล์ → ธีม override ชนะ) — พื้นทึบ 100% */
+  .widget.type-ask {
+    --ask-accent: #7c3aed; --ask-accent2: #a78bfa;
+    --ask-win: #10b981;
+    --ask-bg: rgba(17, 22, 40, 1);
+    --ask-card: rgba(30, 41, 59, 1);
+    --ask-border: rgba(124, 58, 237, 0.45);
+    --ask-text: #ffffff; --ask-dim: #a5b0c2;
+    --ask-scale: 1;
+    --ask-extend: 20;  /* % ของจอที่โพลยื่นออกมา (จำกัด 20-30) */
+    --ask-qfs: 24; --ask-cfs: 18;
+    --ask-px: 85; --ask-py: 12;  /* ตำแหน่ง Minimal (% ของ canvas — จุดกึ่งกลางกล่อง) */
+  }
+  /* ── Themes 17 แบบ (ทึบ) ── */
+  .widget.ask-theme-violet { }
+  .widget.ask-theme-neon   { --ask-accent:#06b6d4; --ask-accent2:#67e8f9; --ask-bg:rgba(7,26,38,1);
+                             --ask-card:rgba(8,47,73,1); --ask-border:rgba(34,211,238,0.55); --ask-win:#22d3ee; }
+  .widget.ask-theme-gold   { --ask-accent:#d97706; --ask-accent2:#fbbf24; --ask-bg:rgba(38,26,7,1);
+                             --ask-card:rgba(69,45,10,1); --ask-border:rgba(251,191,36,0.55); --ask-win:#facc15; }
+  .widget.ask-theme-rose   { --ask-accent:#e11d48; --ask-accent2:#fb7185; --ask-bg:rgba(40,10,20,1);
+                             --ask-card:rgba(88,28,44,1); --ask-border:rgba(251,113,133,0.5); --ask-win:#34d399; }
+  .widget.ask-theme-emerald{ --ask-accent:#059669; --ask-accent2:#34d399; --ask-bg:rgba(5,38,30,1);
+                             --ask-card:rgba(6,59,46,1); --ask-border:rgba(52,211,153,0.5); --ask-win:#fbbf24; }
+  .widget.ask-theme-sunset { --ask-accent:#ea580c; --ask-accent2:#fdba74; --ask-bg:rgba(45,18,10,1);
+                             --ask-card:rgba(80,32,16,1); --ask-border:rgba(253,186,116,0.5); --ask-win:#f97316; }
+  .widget.ask-theme-midnight{ --ask-accent:#4338ca; --ask-accent2:#818cf8; --ask-bg:rgba(9,10,28,1);
+                             --ask-card:rgba(20,22,52,1); --ask-border:rgba(129,140,248,0.5); --ask-win:#818cf8; }
+  .widget.ask-theme-ocean    { --ask-accent:#0ea5e9; --ask-accent2:#38bdf8; --ask-bg:rgba(7,25,45,1);
+                               --ask-card:rgba(12,45,75,1); --ask-border:rgba(56,189,248,0.5); --ask-win:#7dd3fc; }
+  .widget.ask-theme-sakura   { --ask-accent:#ec4899; --ask-accent2:#f9a8d4; --ask-bg:rgba(45,10,30,1);
+                               --ask-card:rgba(80,20,55,1); --ask-border:rgba(244,114,182,0.5); --ask-win:#fda4af; }
+  .widget.ask-theme-forest   { --ask-accent:#16a34a; --ask-accent2:#86efac; --ask-bg:rgba(8,32,18,1);
+                               --ask-card:rgba(15,55,32,1); --ask-border:rgba(134,239,172,0.45); --ask-win:#fbbf24; }
+  .widget.ask-theme-ice      { --ask-accent:#38bdf8; --ask-accent2:#bae6fd; --ask-bg:rgba(15,30,50,1);
+                               --ask-card:rgba(30,55,85,1); --ask-border:rgba(186,230,253,0.5);
+                               --ask-text:#f0f9ff; --ask-dim:#bae6fd; --ask-win:#67e8f9; }
+  .widget.ask-theme-candy    { --ask-accent:#d946ef; --ask-accent2:#f0abfc; --ask-bg:rgba(40,10,50,1);
+                               --ask-card:rgba(70,20,85,1); --ask-border:rgba(232,121,249,0.5); --ask-win:#f0abfc; }
+  .widget.ask-theme-steel    { --ask-accent:#64748b; --ask-accent2:#cbd5e1; --ask-bg:rgba(20,24,32,1);
+                               --ask-card:rgba(38,44,56,1); --ask-border:rgba(148,163,184,0.45); --ask-win:#38bdf8; }
+  .widget.ask-theme-fire     { --ask-accent:#ef4444; --ask-accent2:#fb923c; --ask-bg:rgba(45,10,5,1);
+                               --ask-card:rgba(80,20,10,1); --ask-border:rgba(251,146,60,0.5); --ask-win:#fb923c; }
+  .widget.ask-theme-cyberpunk{ --ask-accent:#facc15; --ask-accent2:#22d3ee; --ask-bg:rgba(12,12,20,1);
+                               --ask-card:rgba(25,25,40,1); --ask-border:rgba(250,204,21,0.5);
+                               --ask-text:#fefce8; --ask-dim:#a1a1aa; --ask-win:#22d3ee; }
+  .widget.ask-theme-mint     { --ask-accent:#10b981; --ask-accent2:#6ee7b7; --ask-bg:rgba(5,40,35,1);
+                               --ask-card:rgba(10,60,52,1); --ask-border:rgba(110,231,183,0.45);
+                               --ask-text:#ecfdf5; --ask-dim:#a7f3d0; --ask-win:#fbbf24; }
+  .widget.ask-theme-space    { --ask-accent:#6366f1; --ask-accent2:#a5b4fc; --ask-bg:rgba(10,10,35,1);
+                               --ask-card:rgba(22,22,55,1); --ask-border:rgba(165,180,252,0.5); --ask-win:#c4b5fd; }
+  /* ═══ ธีมพรีเมียม — มีเอฟเฟคพิเศษเพิ่ม (ไม่ใช่แค่เปลี่ยนสี) ═══ */
+  /* 🌟 Aurora — ขอบไล่สีรุ้งเรืองแสง + glow ตอนโหวต */
+  .widget.ask-theme-aurora {
+    --ask-accent:#8b5cf6; --ask-accent2:#22d3ee; --ask-bg:rgba(12,12,30,1);
+    --ask-card:rgba(25,25,55,1); --ask-border:transparent; --ask-win:#34d399;
+    --ask-text:#f0fdfa; --ask-dim:#94a3b8;
+  }
+  .widget.ask-theme-aurora .ask-panel {
+    border: 2px solid transparent;
+    background: linear-gradient(160deg, rgba(12,12,30,0.97), rgba(20,20,45,0.97)) padding-box,
+                linear-gradient(135deg, #8b5cf6, #22d3ee, #34d399, #8b5cf6) border-box;
+    box-shadow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(34,211,238,0.15);
+  }
+  .widget.ask-theme-aurora .ask-choice {
+    border: 1px solid transparent;
+    background: linear-gradient(160deg, rgba(25,25,55,0.9), rgba(35,35,70,0.9)) padding-box,
+                linear-gradient(135deg, rgba(139,92,246,0.4), rgba(34,211,238,0.4)) border-box;
+  }
+  .widget.ask-theme-aurora .ask-bar {
+    background: linear-gradient(90deg, #8b5cf6, #22d3ee, #34d399);
+  }
+
+  /* 💎 Crystal — กระจกเหลี่ยมมุมแหลม + แสงสะท้อนวิ่ง */
+  .widget.ask-theme-crystal {
+    --ask-accent:#60a5fa; --ask-accent2:#93c5fd; --ask-bg:rgba(15,20,35,0.95);
+    --ask-card:rgba(30,40,65,0.85); --ask-border:rgba(147,197,253,0.6); --ask-win:#34d399;
+    --ask-text:#e0f2fe; --ask-dim:#93c5fd;
+  }
+  .widget.ask-theme-crystal .ask-panel {
+    border: 1px solid rgba(147,197,253,0.6);
+    border-radius: 0;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+    box-shadow: 0 0 15px rgba(96,165,250,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .widget.ask-theme-crystal .ask-panel::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.08) 50%, transparent 60%);
+    animation: crystal-shine 4s ease-in-out infinite;
+  }
+  @keyframes crystal-shine {
+    0%, 100% { transform: translateX(-100%); }
+    50% { transform: translateX(100%); }
+  }
+
+  /* 🌋 Magma — ขอบลุกไหม้ + สั่นเบา ๆ ตอนโหวตเข้า */
+  .widget.ask-theme-magma {
+    --ask-accent:#f97316; --ask-accent2:#fbbf24; --ask-bg:rgba(25,8,5,1);
+    --ask-card:rgba(55,18,10,1); --ask-border:rgba(249,115,22,0.7); --ask-win:#fbbf24;
+    --ask-text:#fff7ed; --ask-dim:#fdba74;
+  }
+  .widget.ask-theme-magma .ask-panel {
+    border: 2px solid rgba(249,115,22,0.7);
+    box-shadow: 0 0 15px rgba(249,115,22,0.4), 0 0 30px rgba(251,191,36,0.2),
+                inset 0 0 20px rgba(249,115,22,0.08);
+    animation: magma-pulse 3s ease-in-out infinite;
+  }
+  @keyframes magma-pulse {
+    0%, 100% { box-shadow: 0 0 15px rgba(249,115,22,0.4), 0 0 30px rgba(251,191,36,0.2), inset 0 0 20px rgba(249,115,22,0.08); }
+    50% { box-shadow: 0 0 20px rgba(249,115,22,0.6), 0 0 40px rgba(251,191,36,0.3), inset 0 0 25px rgba(249,115,22,0.12); }
+  }
+  .widget.ask-theme-magma .ask-bar {
+    background: linear-gradient(90deg, #dc2626, #f97316, #fbbf24);
+  }
+
+  /* 🕶️ Neon Frame — กรอบนีออนสว่างวาบ + เรืองแสงตอนโหวต */
+  .widget.ask-theme-neonframe {
+    --ask-accent:#ec4899; --ask-accent2:#f0abfc; --ask-bg:rgba(8,8,18,1);
+    --ask-card:rgba(20,20,40,1); --ask-border:#ec4899; --ask-win:#22d3ee;
+    --ask-text:#fdf4ff; --ask-dim:#c084fc;
+  }
+  .widget.ask-theme-neonframe .ask-panel {
+    border: 2px solid #ec4899;
+    box-shadow: 0 0 8px #ec4899, 0 0 20px rgba(236,72,153,0.5),
+                inset 0 0 10px rgba(236,72,153,0.15);
+  }
+  .widget.ask-theme-neonframe .ask-choice {
+    border: 1px solid rgba(236,72,153,0.5);
+    box-shadow: inset 0 0 6px rgba(236,72,153,0.1);
+  }
+  .widget.ask-theme-neonframe .ask-choice.winner {
+    border-color: #22d3ee;
+    box-shadow: 0 0 12px #22d3ee, inset 0 0 8px rgba(34,211,238,0.2);
+  }
+  .widget.ask-theme-neonframe .ask-bar {
+    background: linear-gradient(90deg, #ec4899, #8b5cf6, #22d3ee);
+  }
+
+  /* 🎭 Vintage — กรอบไม้/กระดาษเก่า + มุมโค้งใหญ่ */
+  .widget.ask-theme-vintage {
+    --ask-accent:#92400e; --ask-accent2:#d97706; --ask-bg:linear-gradient(165deg,#f5f0e1,#e8dcc5);
+    --ask-card:rgba(180,160,120,0.3); --ask-border:#92400e; --ask-win:#059669;
+    --ask-text:#3e2723; --ask-dim:#78716c;
+  }
+  .widget.ask-theme-vintage .ask-panel {
+    border: 3px double #92400e;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(62,39,35,0.3), inset 0 0 0 1px rgba(146,64,14,0.2);
+  }
+  .widget.ask-theme-vintage .ask-choice {
+    border: 1px solid rgba(146,64,14,0.4);
+    border-radius: 4px;
+    box-shadow: inset 0 1px 2px rgba(146,64,14,0.15);
+  }
+  .widget.ask-theme-vintage .ask-choice-key {
+    border-radius: 2px;
+    box-shadow: 1px 1px 2px rgba(62,39,35,0.3);
+  }
+  .widget.ask-theme-vintage .ask-bar {
+    background: linear-gradient(90deg, #92400e, #d97706);
+  }
+
+  /* ⚡ Electric — ขอบสายฟ้า + จุดวิบวับ */
+  .widget.ask-theme-electric {
+    --ask-accent:#facc15; --ask-accent2:#a3e635; --ask-bg:rgba(10,12,8,1);
+    --ask-card:rgba(25,30,18,1); --ask-border:#facc15; --ask-win:#a3e635;
+    --ask-text:#fefce8; --ask-dim:#d9f99d;
+  }
+  .widget.ask-theme-electric .ask-panel {
+    border: 2px solid #facc15;
+    box-shadow: 0 0 10px #facc15, 0 0 25px rgba(250,204,21,0.4),
+                inset 0 0 8px rgba(250,204,21,0.1);
+    animation: electric-flicker 4s linear infinite;
+  }
+  @keyframes electric-flicker {
+    0%, 92%, 96%, 100% { opacity: 1; }
+    94% { opacity: 0.92; }
+    95% { opacity: 0.97; }
+  }
+  .widget.ask-theme-electric .ask-choice-key {
+    box-shadow: 0 0 6px #facc15, 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .widget.ask-theme-electric .ask-bar {
+    background: linear-gradient(90deg, #facc15, #a3e635, #22d3ee);
+    box-shadow: 0 0 6px rgba(250,204,21,0.5);
+  }
+
+  /* ★ เฟรมเต็ม canvas โปร่งใส (ล็อคขนาด) */
+  .widget.type-ask .widget-inner {
+    position: absolute; inset: 0;
+    display: block;
+    background: transparent; border: none; padding: 0; gap: 0;
+    font-family: "Kanit","Leelawadee UI","Segoe UI",sans-serif;
+    color: var(--ask-text);
+    overflow: hidden;
+  }
+  /* ── .ask-panel = แผงโพลจริง ── */
+  .ask-panel {
+    position: absolute;
+    display: flex; flex-direction: column;
+    opacity: var(--ask-opacity, 1);
+    background: var(--ask-bg);
+    border: 1px solid var(--ask-border);
+    border-radius: calc(14px * var(--ask-scale));
+    padding: calc(12px * var(--ask-scale)) calc(14px * var(--ask-scale));
+    gap: calc(10px * var(--ask-scale));
+    overflow: hidden;
+    min-width: 0; min-height: 0;
+  }
+  /* เสาแนวตั้ง — สูงตามเนื้อหา ชิดบน กว้างตาม % */
+  .widget.ask-mode-vleft  .ask-panel {
+    top: 0; bottom: auto; max-height: 100%; left: 0; width: calc(var(--ask-extend) * 1%);
+    transform: translate(calc(var(--ask-ox, 0) * 1px), calc(var(--ask-oy, 0) * 1px));
+  }
+  .widget.ask-mode-vright .ask-panel {
+    top: 0; bottom: auto; max-height: 100%; right: 0; width: calc(var(--ask-extend) * 1%);
+    transform: translate(calc(var(--ask-ox, 0) * 1px), calc(var(--ask-oy, 0) * 1px));
+  }
+  /* แถบแนวนอน — เต็มกว้าง สูงตาม % + บน/ล่าง */
+  .widget.ask-mode-hband .ask-panel {
+    left: 0; right: 0; height: calc(var(--ask-extend) * 1%);
+    transform: translate(calc(var(--ask-ox, 0) * 1px), calc(var(--ask-oy, 0) * 1px));
+  }
+  .widget.ask-anchor-top    .ask-panel.hband-anchor { top: 0; }
+  .widget.ask-anchor-bottom .ask-panel.hband-anchor { bottom: 0; }
+  /* ★ Minimal & Lite — ย้ายอิสระ + ★ความกว้าง FIX ตามที่ user ตั้ง (ไม่ตามเนื้อหา —
+     เดิม max-content ทำให้คำถามสั้น = กล่องหด ตำแหน่งทดสอบใน composer ไม่ตรงของจริง) */
+  .widget.ask-mode-minimal .ask-panel,
+  .widget.ask-mode-lite .ask-panel {
+    top: calc(var(--ask-py) * 1%); left: calc(var(--ask-px) * 1%);
+    transform: translate(calc(-50% + var(--ask-ox, 0) * 1px), calc(-50% + var(--ask-oy, 0) * 1px));
+    width: calc(var(--ask-minw, 340) * 1px);
+    max-width: 95%;
+    max-height: 95%;
+  }
+  /* ตอน JS วัดแล้วจะ override ด้วย px (--ask-min-fixed = จุดกึ่งกลางที่ clamp แล้ว) */
+  .widget.ask-mode-minimal .ask-panel.ask-min-fixed,
+  .widget.ask-mode-lite .ask-panel.ask-min-fixed {
+    left: var(--ask-min-x); top: var(--ask-min-y);
+    transform: translate(calc(-50% + var(--ask-ox, 0) * 1px), calc(-50% + var(--ask-oy, 0) * 1px));
+  }
+
+  /* ═══ Lite Layout Styling (✨ แถบกระทัดรัดประหยัดพื้นที่ จิ๋วพิเศษ) ═══ */
+  .widget.ask-mode-lite .ask-panel {
+    padding: calc(6px * var(--ask-scale)) calc(10px * var(--ask-scale));
+    gap: calc(5px * var(--ask-scale));
+    border-radius: calc(10px * var(--ask-scale));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+  }
+  .widget.ask-mode-lite .ask-question {
+    font-size: calc((var(--ask-qfs, 24) * 0.75) * 1px);
+    padding-bottom: calc(4px * var(--ask-scale));
+    border-bottom: 1px solid var(--ask-border);
+  }
+  .widget.ask-mode-lite .ask-choices {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    gap: calc(5px * var(--ask-scale));
+    align-content: flex-start;
+  }
+  .widget.ask-mode-lite .ask-choice {
+    padding: calc(4px * var(--ask-scale)) calc(7px * var(--ask-scale));
+    gap: calc(3px * var(--ask-scale));
+    border-radius: calc(6px * var(--ask-scale));
+    flex: 1 1 calc(50% - calc(5px * var(--ask-scale)));
+    min-width: calc(100px * var(--ask-scale));
+  }
+  .widget.ask-mode-lite .ask-choice-top {
+    gap: calc(5px * var(--ask-scale));
+  }
+  .widget.ask-mode-lite .ask-choice-key {
+    font-size: calc(11px * var(--ask-scale));
+    padding: calc(1px * var(--ask-scale)) calc(5px * var(--ask-scale));
+    border-radius: calc(4px * var(--ask-scale));
+  }
+  .widget.ask-mode-lite .ask-choice-label {
+    font-size: calc((var(--ask-cfs, 18) * 0.8) * 1px);
+    line-height: 1.2;
+  }
+  .widget.ask-mode-lite .ask-choice-count {
+    font-size: calc(11px * var(--ask-scale));
+  }
+  .widget.ask-mode-lite .ask-bar-wrap {
+    height: calc(5px * var(--ask-scale));
+    border-radius: calc(3px * var(--ask-scale));
+  }
+  .widget.ask-mode-lite .ask-bar {
+    border-radius: calc(3px * var(--ask-scale));
+  }
+  .widget.ask-mode-lite .ask-footer {
+    padding-top: calc(4px * var(--ask-scale));
+    font-size: calc(11px * var(--ask-scale));
+    gap: 4px;
+  }
+  .widget.ask-mode-lite .ask-timebar {
+    height: calc(4px * var(--ask-scale));
+    margin-top: calc(2px * var(--ask-scale));
+  }
+  /* ── ส่วนประกอบ ── */
+  .ask-question {
+    color: var(--ask-text);
+    font-size: calc(var(--ask-qfs, 24) * 1px); font-weight: 700; text-align: center;
+    line-height: 1.25; text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+    border-bottom: 1px solid var(--ask-border);
+    padding-bottom: calc(8px * var(--ask-scale));
+    /* ★ ยาวเกิน → JS marquee เลื่อน (เหมือน Now Playing) — สั้นพอก็จัดกึ่งกลางปกติ */
+    white-space: nowrap; overflow: hidden;
+  }
+  .ask-question-text { display: inline-block; white-space: nowrap; will-change: transform; }
+  .ask-choices { flex: 1; min-height: 0; align-content: center; overflow: hidden auto; }
+  .widget.ask-mode-vleft .ask-choices, .widget.ask-mode-vright .ask-choices {
+    display: flex; flex-direction: column; justify-content: center;
+    gap: calc(10px * var(--ask-scale));
+  }
+  .widget.ask-mode-hband .ask-choices {
+    display: flex; flex-direction: row; align-items: stretch;
+    gap: calc(10px * var(--ask-scale));
+  }
+  .widget.ask-mode-minimal .ask-choices {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: calc(8px * var(--ask-scale));
+  }
+  .ask-choice {
+    background: var(--ask-card);
+    border: 1px solid var(--ask-border);
+    border-radius: calc(10px * var(--ask-scale));
+    padding: calc(10px * var(--ask-scale)) calc(12px * var(--ask-scale));
+    display: flex; flex-direction: column; gap: calc(6px * var(--ask-scale));
+    min-width: 0; flex: 1;
+  }
+  .widget.ask-mode-hband .ask-choice { justify-content: center; }
+  .ask-choice-top { display: flex; align-items: center; gap: calc(8px * var(--ask-scale)); min-width: 0; }
+  .ask-choice-key {
+    background: var(--ask-accent); color: #fff; font-weight: 700;
+    font-size: calc(14px * var(--ask-scale));
+    white-space: nowrap;
+    border-radius: calc(6px * var(--ask-scale));
+    padding: calc(2px * var(--ask-scale)) calc(9px * var(--ask-scale)); flex-shrink: 0;
+    /* ★ เงาดำฟุ้งๆ ด้านหลังตัวหนังสือ — กันกลืนกับฉาก (ไม่ยกตัวลอย) */
+    text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  .ask-choice-label {
+    color: var(--ask-text);
+    font-size: calc(var(--ask-cfs, 18) * 1px); font-weight: 600;
+    line-height: 1.3;
+    white-space: normal; overflow-wrap: break-word; word-break: break-word;
+  }
+  .ask-bar-wrap { background: rgba(0,0,0,0.45); border-radius: calc(4px * var(--ask-scale)); height: calc(11px * var(--ask-scale)); overflow: hidden; }
+  .ask-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--ask-accent), var(--ask-accent2));
+    transition: width 1.6s cubic-bezier(0.33, 1, 0.68, 1);  /* ★ easeOutCubic ยาว — ไหลต่อเนื่องระหว่างโหวต */ border-radius: calc(4px * var(--ask-scale)); }
+  .ask-choice-count { color: var(--ask-accent2); font-size: calc(14px * var(--ask-scale)); font-weight: 700; margin-left: auto; }
+  .ask-choice.winner { border-color: var(--ask-win); box-shadow: 0 0 calc(14px * var(--ask-scale)) var(--ask-win); }
+  .ask-choice.winner .ask-choice-key { background: var(--ask-win); }
+  .ask-choice.winner .ask-bar { background: linear-gradient(90deg, var(--ask-win), color-mix(in srgb, var(--ask-win) 60%, #fff)); }
+  .ask-footer {
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    border-top: 1px solid var(--ask-border);
+    padding-top: calc(8px * var(--ask-scale));
+    color: var(--ask-dim); font-size: calc(14px * var(--ask-scale)); font-weight: 600;
+    flex-shrink: 0;
+  }
+  .ask-countdown { color: #f59e0b; font-variant-numeric: tabular-nums; }
+  .ask-timebar {
+    height: calc(10px * var(--ask-scale));
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: calc(999px * var(--ask-scale));
+    overflow: hidden; margin-top: calc(4px * var(--ask-scale));
+    flex-shrink: 0;
+  }
+  .ask-timebar-fill { height: 100%; width: 100%; border-radius: calc(999px * var(--ask-scale));
+    transition: background-color 0.5s ease;  /* ★ width ไม่ transition — rAF อัปเดตทุกเฟรม สมูทสุด */ }
+  .ask-timebar-fill.tb-green  { background: linear-gradient(90deg, #059669, #34d399); }
+  .ask-timebar-fill.tb-yellow { background: linear-gradient(90deg, #d97706, #fbbf24); }
+  .ask-timebar-fill.tb-red    { background: linear-gradient(90deg, #dc2626, #f87171); }
+  .ask-badge-ended {
+    background: var(--ask-win); color: #fff; font-size: calc(12px * var(--ask-scale));
+    font-weight: 700; border-radius: calc(4px * var(--ask-scale));
+    padding: calc(1px * var(--ask-scale)) calc(8px * var(--ask-scale));
+    margin-right: calc(6px * var(--ask-scale));
+    /* ★ เงาดำฟุ้งๆ รอบกล่อง — กันกลืนกับฉาก (เหมือน ask-choice-key) */
+    text-shadow: 0 0 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.6);
+    box-shadow: 0 0 6px rgba(0,0,0,0.5), 0 1px 3px rgba(0,0,0,0.4);
+  }
+  .ask-empty { color: #64748b; font-size: 13px; text-align: center; }
+
+  /* ═══ Bar Styles — หลอดโหวต 6 แบบ (แยกจากธีม ผสมกันได้อิสระ) ═══ */
+  .widget.ask-bar-classic .ask-bar-wrap { border-radius: 999px; }
+  .widget.ask-bar-striped .ask-bar-wrap { border-radius: 4px; }
+  .widget.ask-bar-striped .ask-bar {
+    background-image: repeating-linear-gradient(-45deg, rgba(255,255,255,0.2) 0 6px, transparent 6px 12px);
+    background-size: 200% 100%;
+    animation: bar-stripes 2s linear infinite;
+  }
+  @keyframes bar-stripes { 0% { background-position: 0 0; } 100% { background-position: 24px 0; } }
+  .widget.ask-bar-segmented .ask-bar-wrap {
+    border-radius: 4px;
+    -webkit-mask-image: repeating-linear-gradient(90deg, #000 0 14px, transparent 14px 18px);
+    mask-image: repeating-linear-gradient(90deg, #000 0 14px, transparent 14px 18px);
+  }
+  .widget.ask-bar-glow .ask-bar-wrap { border-radius: 999px; background: rgba(0,0,0,0.35); }
+  .widget.ask-bar-glow .ask-bar {
+    border-radius: 999px;
+    box-shadow: 0 0 8px var(--ask-accent), 0 0 16px var(--ask-accent2);
+  }
+  .widget.ask-bar-thin .ask-bar-wrap { border-radius: 999px; height: calc(5px * var(--ask-scale)) !important; }
+  .widget.ask-bar-thin .ask-bar { border-radius: 999px; }
+  .widget.ask-bar-blocks .ask-bar-wrap {
+    border-radius: 0; background: transparent; height: calc(14px * var(--ask-scale)) !important;
+    display: flex; gap: 2px; overflow: hidden;
+  }
+  .widget.ask-bar-blocks .ask-bar {
+    border-radius: 2px;
+    background-image: repeating-linear-gradient(90deg, var(--ask-accent) 0 16px, var(--ask-accent2) 16px 32px);
+  }
+
+  /* ── Bar styles เพิ่มเติม ── */
+  /* wavy — คลื่นไหวตอนขยับ */
+  .widget.ask-bar-wavy .ask-bar-wrap { border-radius: 999px; overflow: hidden; }
+  .widget.ask-bar-wavy .ask-bar {
+    border-radius: 999px;
+    clip-path: polygon(0 20%, 3% 0, 6% 20%, 9% 0, 12% 20%, 15% 0, 18% 20%, 21% 0, 24% 20%, 27% 0, 30% 20%, 33% 0, 36% 20%, 39% 0, 42% 20%, 45% 0, 48% 20%, 51% 0, 54% 20%, 57% 0, 60% 20%, 63% 0, 66% 20%, 69% 0, 72% 20%, 75% 0, 78% 20%, 81% 0, 84% 20%, 87% 0, 90% 20%, 93% 0, 96% 20%, 100% 0, 100% 100%, 0 100%);
+  }
+  /* dots — จุดกลมเรียงแถว */
+  .widget.ask-bar-dots .ask-bar-wrap {
+    border-radius: 0; background: transparent; height: calc(14px * var(--ask-scale)) !important;
+    display: flex; gap: 3px; overflow: hidden; align-items: center;
+  }
+  .widget.ask-bar-dots .ask-bar {
+    border-radius: 0; height: 100%;
+    background-image: radial-gradient(circle, var(--ask-accent) 3px, var(--ask-accent2) 3px, transparent 4px);
+    background-size: 12px 100%;
+    background-repeat: repeat-x;
+  }
+  /* neon-line — เส้นนีออนบางสว่าง */
+  .widget.ask-bar-neonline .ask-bar-wrap {
+    border-radius: 999px; background: rgba(0,0,0,0.3);
+    height: calc(7px * var(--ask-scale)) !important;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .widget.ask-bar-neonline .ask-bar {
+    border-radius: 999px;
+    box-shadow: 0 0 6px var(--ask-accent), 0 0 14px var(--ask-accent), 0 0 20px var(--ask-accent2);
+    filter: saturate(1.4) brightness(1.2);
+  }
+  /* gradient-flow — ไล่สีไหลย้อนกลับ */
+  .widget.ask-bar-gradientflow .ask-bar-wrap { border-radius: 999px; }
+  .widget.ask-bar-gradientflow .ask-bar {
+    border-radius: 999px;
+    background-size: 200% 100%;
+    animation: gradient-flow 3s ease infinite;
+  }
+  @keyframes gradient-flow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  /* chunky — บล็อกเหลี่ยมหนาช่องกว้าง */
+  .widget.ask-bar-chunky .ask-bar-wrap {
+    border-radius: 0; background: transparent; height: calc(16px * var(--ask-scale)) !important;
+    display: flex; gap: 4px; overflow: hidden;
+  }
+  .widget.ask-bar-chunky .ask-bar {
+    border-radius: 0;
+    background-image: repeating-linear-gradient(90deg,
+      var(--ask-accent) 0 20px, rgba(0,0,0,0.3) 20px 24px);
+  }
+  /* pulse — เต้นเป็นจังหวะ */
+  .widget.ask-bar-pulse .ask-bar-wrap { border-radius: 999px; }
+  .widget.ask-bar-pulse .ask-bar {
+    border-radius: 999px;
+    animation: bar-pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes bar-pulse-glow {
+    0%, 100% { box-shadow: 0 0 4px var(--ask-accent); }
+    50% { box-shadow: 0 0 12px var(--ask-accent), 0 0 20px var(--ask-accent2); }
+  }
+
+  /* ═══ Frame Styles — กรอบแผง 5 แบบ ═══ */
+  .widget.ask-frame-sharp .ask-panel { border-radius: 0 !important; }
+  .widget.ask-frame-sharp .ask-choice { border-radius: 0 !important; }
+  .widget.ask-frame-sharp .ask-choice-key { border-radius: 0 !important; }
+  .widget.ask-frame-floating .ask-panel {
+    border: none !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .widget.ask-frame-floating .ask-choice { border: none; }
+  .widget.ask-frame-glow .ask-panel {
+    border: 2px solid var(--ask-accent) !important;
+    box-shadow: 0 0 12px var(--ask-accent), 0 0 30px rgba(0,0,0,0.4);
+  }
+  .widget.ask-frame-emboss .ask-panel {
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5), inset 0 -1px 2px rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .widget.ask-frame-emboss .ask-choice { box-shadow: inset 0 1px 3px rgba(0,0,0,0.3); }
+
+  /* ── Frame styles เพิ่มเติม ── */
+  /* double — ขอบคู่เส้นบาง */
+  .widget.ask-frame-double .ask-panel {
+    border: 3px double var(--ask-border) !important;
+    outline: 1px solid var(--ask-border);
+    outline-offset: 2px;
+  }
+  /* rounded-lg — มุมโค้งใหญ่ */
+  .widget.ask-frame-roundedlg .ask-panel { border-radius: 20px !important; }
+  .widget.ask-frame-roundedlg .ask-choice { border-radius: 12px !important; }
+  .widget.ask-frame-roundedlg .ask-choice-key { border-radius: 8px !important; }
+  /* ticket — ขอบมีรอยปรุ๊น (แบบตั๋ว) */
+  .widget.ask-frame-ticket .ask-panel {
+    border-radius: 0 !important;
+    -webkit-mask-image: radial-gradient(circle at 0 50%, transparent 8px, #000 8px),
+                         radial-gradient(circle at 100% 50%, transparent 8px, #000 8px);
+    -webkit-mask-composite: source-in;
+    mask-image: radial-gradient(circle at 0 50%, transparent 8px, #000 8px),
+                 radial-gradient(circle at 100% 50%, transparent 8px, #000 8px);
+    mask-composite: intersect;
+  }
+  /* hologram — ขอบเรืองรุ้ง */
+  .widget.ask-frame-hologram .ask-panel {
+    border: 2px solid transparent !important;
+    background: linear-gradient(160deg, var(--ask-bg), rgba(15,15,30,0.95)) padding-box,
+                linear-gradient(135deg, #ff0080, #ff8c00, #40e0d0, #ff0080) border-box !important;
+    box-shadow: 0 0 15px rgba(255,0,128,0.2), 0 0 25px rgba(64,224,208,0.15);
+  }
+  /* carbon — ลายเส้นทแยงเข้ม */
+  .widget.ask-frame-carbon .ask-panel {
+    background: linear-gradient(160deg, #1a1a1a, #0d0d0d) !important;
+    border: 1px solid #333 !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.5);
+  }
+  .widget.ask-frame-carbon .ask-panel::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+    background: repeating-linear-gradient(-45deg, transparent 0 6px, rgba(255,255,255,0.03) 6px 8px);
+  }
+  .widget.ask-frame-carbon .ask-choice {
+    background: linear-gradient(160deg, #222, #151515) !important;
+    border-color: #444 !important;
+  }
+  /* idle — overlay หายทั้งแผง / editor = เส้นประเต็มจอ + ป้าย */
+  .widget.type-ask .widget-inner.ask-idle .ask-panel { display: none; }
+  body.edit-mode .widget.type-ask .widget-inner { border: 1px dashed rgba(148, 163, 184, 0.3); }
+  /* ── Animations (keyframes t-* ชุด Image Timer) ── */
+  .widget.type-ask .widget-inner.a-anim-in,
+  .widget.type-ask .widget-inner.a-anim-out {
+    animation-duration: var(--ask-anim-dur, 1.2s);
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .widget.type-ask .widget-inner.a-anim-in-fade   { animation-name: t-fade-in; }
+  .widget.type-ask .widget-inner.a-anim-in-slide-up    { animation-name: t-slide-up-in; }
+  .widget.type-ask .widget-inner.a-anim-in-slide-down  { animation-name: t-slide-down-in; }
+  .widget.type-ask .widget-inner.a-anim-in-slide-left  { animation-name: t-slide-left-in; }
+  .widget.type-ask .widget-inner.a-anim-in-slide-right { animation-name: t-slide-right-in; }
+  .widget.type-ask .widget-inner.a-anim-in-corner-tl   { animation-name: t-corner-tl-in; }
+  .widget.type-ask .widget-inner.a-anim-in-corner-tr   { animation-name: t-corner-tr-in; }
+  .widget.type-ask .widget-inner.a-anim-in-corner-bl   { animation-name: t-corner-bl-in; }
+  .widget.type-ask .widget-inner.a-anim-in-corner-br   { animation-name: t-corner-br-in; }
+  .widget.type-ask .widget-inner.a-anim-out-fade   { animation-name: t-fade-out; }
+  .widget.type-ask .widget-inner.a-anim-out-slide-up    { animation-name: t-slide-up-out; }
+  .widget.type-ask .widget-inner.a-anim-out-slide-down  { animation-name: t-slide-down-out; }
+  .widget.type-ask .widget-inner.a-anim-out-slide-left  { animation-name: t-slide-left-out; }
+  .widget.type-ask .widget-inner.a-anim-out-slide-right { animation-name: t-slide-right-out; }
+  .widget.type-ask .widget-inner.a-anim-out-corner-tl   { animation-name: t-corner-tl-out; }
+  .widget.type-ask .widget-inner.a-anim-out-corner-tr   { animation-name: t-corner-tr-out; }
+  .widget.type-ask .widget-inner.a-anim-out-corner-bl   { animation-name: t-corner-bl-out; }
+  .widget.type-ask .widget-inner.a-anim-out-corner-br   { animation-name: t-corner-br-out; }
+
+  /* ═══ Giveaway (แจกรางวัล) widget ═══ */

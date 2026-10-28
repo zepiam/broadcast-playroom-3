@@ -1,0 +1,60 @@
+/* Reflow app controls for larger text; never loaded by OBS/Overlay entry points. */
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(.topbar,.topbar-left,.topbar-right,.chat-header-actions,.floating-actions,.floating-footer) { flex-wrap:wrap; height:auto; min-height:0; gap:8px; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .topbar { min-height:50px; padding:8px 12px; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .topbar-left { min-width:0; flex:1 1 340px; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .topbar-right { min-width:0; max-width:100%; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .app-body { min-height:0; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(button,.settings-nav-item,.modal-tab-btn):not(:where(#composerCanvasStage *,#cwcPreviewStage *,#chatPreviewBox *)) { height:auto !important; max-height:none !important; min-height:2em; line-height:1.35; white-space:normal; overflow-wrap:anywhere; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(.topbar-single-btn,.btn-topbar-action,.btn-chat-header,.composer-btn-tool,.composer-btn-sub) { padding-top:6px; padding-bottom:6px; flex-shrink:0; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select,textarea):not(:where(#composerCanvasStage *,#cwcPreviewStage *,#chatPreviewBox *)) { height:auto !important; min-height:2.2em; line-height:1.4; max-width:100%; box-sizing:border-box; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(.floating-header,.composer-header,.composer-subbar-pages,.composer-subbar-widgets) { height:auto; min-height:44px; flex-shrink:0; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .floating-header { gap:10px; padding-top:10px; padding-bottom:10px; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(.floating-title-box,.floating-title-box>div,.settings-section-pane,.settings-content,.comp-field-row,.modal-form-group) { min-width:0; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(.settings-nav-item,.modal-form-label,.comp-field-label,.settings-section-desc,.floating-title-box) { white-space:normal; overflow-wrap:anywhere; line-height:1.5; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .modal-grid-2 { grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .modal-grid-3 { grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr)); }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .comp-field-row { flex-wrap:wrap; row-gap:8px; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .comp-field-row>.comp-field-label { flex-basis:40%; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .comp-widget-label { max-width:none; overflow:visible; text-overflow:clip; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .composer-layer-item { min-height:48px; height:auto; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .composer-layer-name { white-space:normal; overflow-wrap:anywhere; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .composer-layer-actions { flex-wrap:wrap; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .chat-body-msg { overflow-wrap:anywhere; word-break:break-word; line-height:1.65; }
+.ui-readability-card { margin-bottom:16px; }
+.ui-readability-card select { width:100%; margin:8px 0; }
+@media(max-width:1000px){html[data-ui-text-size]:not([data-ui-text-size="normal"]) .brand-tag { display:none; } html[data-ui-text-size]:not([data-ui-text-size="normal"]) .settings-sidebar { max-width:30%; }}
+
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .chat-panel-header { flex-wrap:wrap; height:auto; min-height:52px; padding-top:8px; padding-bottom:8px; gap:8px; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .chat-header-title { flex-wrap:wrap; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .btn-chat-header { width:auto !important; min-width:2.4em; white-space:nowrap; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .floating-actions-right { display:flex; flex-wrap:wrap; gap:6px; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .chat-body-msg { white-space:normal; }
+
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) :is(.settings-nav-item,.settings-nav-header) { flex-shrink:0; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) #chatAddBtnWrapper { flex:0 0 auto; min-width:max-content; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) #btnCompAddChatMenu { min-width:88px; white-space:nowrap; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .comp-demo-actions { display:flex; flex-wrap:wrap; }
+html[data-ui-text-size]:not([data-ui-text-size="normal"]) .comp-demo-actions > button { flex:1 1 105px !important; }
+html[data-ui-text-size="xlarge"]:not([data-ui-text-size="normal"]) .modal-grid-2 { grid-template-columns:1fr; }
+html[data-ui-text-size="xlarge"] .composer-customizer-body .comp-field-row { flex-direction:column; align-items:stretch; }
+html[data-ui-text-size="xlarge"] .composer-customizer-body .comp-field-row > :is(.cwc-input,.cwc-select) { width:100%; max-width:none; }
+html[data-ui-text-size="xlarge"] .composer-customizer-body .comp-field-row > .cwc-switch { align-self:flex-end; }
+
+html[data-ui-text-size="xlarge"] .composer-customizer-body .comp-field-row > .comp-field-label { flex:0 0 auto; }
+
+/* Keep multiline lists usable at every text size. */
+html :is(#sec-ng, #sec-secret) textarea, html textarea#randItemsText { height:180px !important; min-height:180px !important; width:100% !important; resize:vertical !important; }
+
+/* Per-user blacklist controls remain readable with the largest app text size. */
+html[data-ui-text-size="xlarge"] #sec-block .tool-table,
+html[data-ui-text-size="xlarge"] #sec-block .tool-table tbody { display:block; width:100%; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table thead { display:none; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table tr { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; margin:10px 0; padding:8px; border:1px solid var(--dc-border); border-radius:6px; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td { display:flex; flex-direction:column; align-items:center; gap:6px; min-width:0; padding:4px; border:0; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td:first-child { grid-column:1/-1; align-items:flex-start; overflow-wrap:anywhere; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td:last-child { grid-column:1/-1; align-items:flex-end; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td:nth-child(2)::before { content:'Replie'; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td:nth-child(3)::before { content:'Overlay'; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td:nth-child(4)::before { content:'TTS'; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td:nth-child(5)::before { content:'ทุกส่วน'; }
+html[data-ui-text-size="xlarge"] #sec-block .tool-table td::before { font-size:.85em; text-align:center; overflow-wrap:anywhere; }

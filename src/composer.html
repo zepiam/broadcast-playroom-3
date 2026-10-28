@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th" class="notranslate" translate="no">
-<head>
+<head><script src="/app_presence.js"></script>
+  <script src="./overlay_transport.js"></script>
   <!-- Browser Extension & Password Manager Suppression (Bitwarden, 1Password, LastPass, etc.) -->
   <style>
     div[id*="bitwarden"],
@@ -149,16 +150,38 @@
   </div>
 
   <script src="./cwc_themes_data.js"></script>
-  <script src="./composer_studio.js"></script>
+  <script src="./widget_patch.js"></script><script src="./composer_studio.js"></script>
+  <script src="./live_overlay.js"></script><script src="./viewer_connections.js"></script>
+  <script src="./legacy_emotes.js"></script>
+  <link rel="stylesheet" href="./legacy_ask.css">
+  <script src="./legacy_ask.js"></script>
+  <link rel="stylesheet" href="./legacy_giveaway.css">
+  <script src="./legacy_giveaway.js"></script>
+  <script src="./randomizer_visual.js"></script>
+  <link rel="stylesheet" href="./legacy_replie.css">
+  <script src="./legacy_replie.js"></script>
+  <link rel="stylesheet" href="./legacy_image.css">
+  <script src="./legacy_image.js"></script>
+  <script src="./legacy_video.js"></script>
+  <script src="./now_playing_renderer.js"></script>
+  <script src="./legacy_text.js"></script>
+  <script src="./legacy_avatar.js"></script>
+  <script src="./legacy_goal.js"></script>
+  <link rel="stylesheet" href="./legacy_goal.css">
+  <link rel="stylesheet" href="./legacy_avatar.css">
+  <link rel="stylesheet" href="./legacy_text.css">
   <script>
   (function() {
     const stage = document.getElementById('obsCanvasStage');
     const notice = document.getElementById('obsStatusNotice');
     const params = new URLSearchParams(window.location.search);
-    const targetPageParam = params.get('p') || params.get('page') || '1';
+    const targetPageParam = params.get('p') || params.get('page') || null;
+    const legacyView = window.BP3LegacyView || 'composer';
+    let canvasWidth = 1920, canvasHeight = 1080;
     const isBrowserTest = params.has('test') || window.location.protocol === 'http:';
 
     let lastConfigHash = '';
+    const liveStates = {};
     let clockTimer = null;
 
     // Show temporary notice in browser test
@@ -175,11 +198,12 @@
       let pages = Array.isArray(data) ? data : (data.pages || []);
       if (!pages.length) return null;
 
-      const num = parseInt(targetPageParam, 10);
+      if (!targetPageParam) return pages.find(p=>String(p.id)===String(data.activePageId)) || pages[0];
+      const num = /^\d+$/.test(targetPageParam) ? Number(targetPageParam) : NaN;
       if (!isNaN(num) && num >= 1 && num <= pages.length) {
         return pages[num - 1];
       }
-      const byId = pages.find(p => p.id === targetPageParam || p.name === targetPageParam);
+      const byId = pages.find(p => String(p.id).toLowerCase() === targetPageParam.toLowerCase() || String(p.name).toLowerCase() === targetPageParam.toLowerCase());
       if (byId) return byId;
 
       return pages[0];
@@ -189,15 +213,34 @@
     function renderWidgets(page) {
       if (!stage || !page || !Array.isArray(page.widgets)) return;
 
+      if (legacyView !== 'composer') {
+        canvasWidth = window.innerWidth; canvasHeight = window.innerHeight;
+        const requestedId = params.get('id') || params.get('widget_id');
+        let chosen = page.widgets.filter(w=>w.type===legacyView && (!requestedId || String(w.id)===requestedId));
+        if (!chosen.length && !requestedId) chosen = [{id:'legacy-'+legacyView,type:legacyView}];
+        page = {...page,widgets:chosen.map(w=>({...w,x:0,y:0,width:canvasWidth,height:canvasHeight,hidden:false}))};
+      }
+      stage.style.width = canvasWidth+'px';stage.style.height=canvasHeight+'px';
+      document.documentElement.style.width=canvasWidth+'px';document.documentElement.style.height=canvasHeight+'px';
+      document.body.style.width=canvasWidth+'px';document.body.style.height=canvasHeight+'px';
       const renderer = window.renderWidgetInnerHtml || (window.ComposerStudio && window.ComposerStudio.renderWidgetInnerHtml);
       const isFullFn = window.isFullscreenWidget || (window.ComposerStudio && window.ComposerStudio.isFullscreenWidget);
 
-      stage.innerHTML = '';
+      const previous=new Map([...stage.children].filter(el=>el.dataset.id).map(el=>[el.dataset.id,el]));
+      window._overlayWidgets = page.widgets;
 
       page.widgets.forEach(w => {
         if (w.hidden) return;
 
-        const el = document.createElement('div');
+        const old=previous.get(String(w.id));previous.delete(String(w.id));
+        const signature=JSON.stringify(w);
+        if(old && w.type==='chat'){
+          Object.assign(old.style,{left:(w.x || 0)+'px',top:(w.y || 0)+'px',width:(w.width || w.w || 300)+'px',height:(w.height || w.h || 200)+'px',zIndex:w.z || 1,opacity:w.opacity ?? 1});
+          if(old._bpSignature!==signature)old.querySelector('iframe')?.contentWindow?.postMessage({type:'bp3-chat-widget',widget:w},location.origin);
+          old._bpSignature=signature;return;
+        }
+        if(old && old._bpSignature===signature)return;
+        const el = document.createElement('div');el._bpSignature=signature;
         const isFull = isFullFn ? isFullFn(w) : (
           (w.type === 'chat' && w.chatMode === 'danmaku') ||
           w.type === 'ask' ||
@@ -210,11 +253,11 @@
         
         let classes = ['composer-widget', 'widget', 'type-' + w.type];
         if (isFull) classes.push('widget-fullscreen-fixed', 'widget-danmaku-full');
-        if (w.clockTheme) classes.push('clock-theme-' + w.clockTheme);
-        if (w.clockStyle && w.clockStyle !== 'none') classes.push('clock-style-set', 'clock-style-' + w.clockStyle);
+        // Theme decoration belongs to actual clock content only.
+        if ((w.clockMode || (w.clockStyle && w.clockStyle !== 'none' ? 'style' : 'theme')) === 'style' && w.clockStyle && w.clockStyle !== 'none') classes.push('clock-style-set', 'clock-style-' + w.clockStyle);
         if (w.viewerTheme) classes.push('viewer-theme-' + w.viewerTheme);
         if (w.webcamTheme) classes.push('webcam-theme-' + w.webcamTheme);
-        if (w.chatTheme) classes.push('chat-theme-' + w.chatTheme);
+        if (w.chatTheme) classes.push('theme-' + w.chatTheme);
         if (w.chatMode) classes.push('chat-mode-' + w.chatMode);
 
         el.className = classes.join(' ');
@@ -223,48 +266,45 @@
 
         el.style.left = (isFull ? 0 : (w.x || 0)) + 'px';
         el.style.top = (isFull ? 0 : (w.y || 0)) + 'px';
-        el.style.width = (isFull ? 1920 : (w.width || 300)) + 'px';
-        el.style.height = (isFull ? 1080 : (w.height || 200)) + 'px';
+        el.style.width = (isFull ? canvasWidth : (w.width || w.w || 300)) + 'px';
+        el.style.height = (isFull ? canvasHeight : (w.height || w.h || 200)) + 'px';
         el.style.zIndex = w.z || 1;
         el.style.opacity = w.opacity ?? 1;
 
+        if(w.type==='chat'){
+          const frame=document.createElement('iframe');frame.dataset.legacyChat='true';frame.id='legacyChat_'+w.id;frame.src='/legacy-chat.html?id='+encodeURIComponent(w.id)+'&p='+encodeURIComponent(page.id);frame.style.cssText='border:0;width:100%;height:100%;background:transparent';el.append(frame);stage.append(el);return;
+        }
         if (typeof renderer === 'function') {
           el.innerHTML = renderer(w);
         } else {
           el.innerHTML = `<div class="composer-widget-inner">${w.title || w.type}</div>`;
         }
 
-        stage.appendChild(el);
+        if(old){window.BP3PatchWidget(old,el);old._bpSignature=signature;}else stage.appendChild(el);
       });
 
+      for(const el of previous.values())el.remove();
+      window.BP3LegacyVideos?.mount();
+      if(window.BP3LegacyImages)window.BP3LegacyImages.mount();
+      window.BP3LegacyText?.mount();
+      window.BP3LegacyAvatar?.mount();
+      window.BP3LegacyGoals?.mount();
+      if (window.BP3Live) window.BP3Live.restore();
+      if (liveStates.ASK_UPDATE) handleAskUpdate(liveStates.ASK_UPDATE);
+      if (liveStates.GIVEAWAY_UPDATE) handleGwUpdate(liveStates.GIVEAWAY_UPDATE);
       startClockTicker();
     }
 
     // Live Clock Ticker
     function startClockTicker() {
-      if (clockTimer) clearInterval(clockTimer);
+      if (clockTimer) return;
       clockTimer = setInterval(() => {
-        const now = new Date();
-        const h = String(now.getHours()).padStart(2, '0');
-        const m = String(now.getMinutes()).padStart(2, '0');
-        const s = String(now.getSeconds()).padStart(2, '0');
-        const yr = now.getFullYear();
-        const mo = String(now.getMonth() + 1).padStart(2, '0');
-        const dy = String(now.getDate()).padStart(2, '0');
-
-        document.querySelectorAll('.composer-widget.type-clock').forEach(el => {
-          const dotTime = el.querySelector('.dot-time');
-          if (dotTime) dotTime.textContent = `${h}:${m}`;
-          const ltTime = el.querySelector('.lt-time');
-          if (ltTime) ltTime.innerHTML = `${h}<span class="lt-colon">:</span>${m}`;
-          const ltSec = el.querySelector('.lt-sec');
-          if (ltSec) ltSec.textContent = s;
-          const clockTime = el.querySelector('.clock-time');
-          if (clockTime) {
-            clockTime.textContent = clockTime.textContent.includes(':') ? (clockTime.textContent.split(':').length === 3 ? `${h}:${m}:${s}` : `${h}:${m}`) : `${h}:${m}`;
-          }
+        const now=new Date();
+        document.querySelectorAll('.composer-widget.type-clock').forEach(el=>{
+          const widget=(window._overlayWidgets || []).find(w=>String(w.id)===el.dataset.id);
+          window.BP3UpdateClock?.(el,widget,now);
         });
-      }, 1000);
+      },1000);
     }
 
     // Fetch layout from Server or fallback to localStorage
@@ -290,8 +330,9 @@
       }
 
       if (data) {
+        canvasWidth=Number(data.canvasWidth || data.canvas_w) || 1920;canvasHeight=Number(data.canvasHeight || data.canvas_h) || 1080;
         const page = resolvePage(data);
-        const hash = JSON.stringify(page);
+        const hash = JSON.stringify([page,canvasWidth,canvasHeight]);
         if (hash !== lastConfigHash) {
           lastConfigHash = hash;
           renderWidgets(page);
@@ -312,33 +353,6 @@
 
     function handleRandomizerSpin(data) {
       if (!data) return;
-
-      // 1. Update canvas widget if exists
-      document.querySelectorAll('.widget.type-randomizer').forEach(widgetEl => {
-        const wid = widgetEl.dataset.id;
-        const card = document.getElementById(`compRandomizerCard_${wid}`);
-        const res = document.getElementById(`compRandomizerResult_${wid}`);
-        const hint = document.getElementById(`compRandomizerHint_${wid}`);
-        if (card && res) {
-          card.style.display = 'block';
-          const items = (data.items && data.items.length) ? data.items : ['1', '2'];
-          let count = 0;
-          const spinInt = setInterval(() => {
-            count++;
-            res.textContent = items[Math.floor(Math.random() * items.length)];
-            res.style.color = '#fbbf24';
-            if (count > 16) {
-              clearInterval(spinInt);
-              res.textContent = data.winner || items[0];
-              res.style.color = '#38bdf8';
-              if (hint) hint.textContent = '🎉 สุ่มเสร็จสิ้น';
-              setTimeout(() => {
-                card.style.display = 'none';
-              }, (data.duration || 5) * 1000);
-            }
-          }, 80);
-        }
-      });
 
       // 2. On-Demand Dynamic Modal Overlay (Matches Old Version Dev exactly)
       const existing = document.getElementById('on-demand-randomizer-overlay');
@@ -483,26 +497,29 @@
         overlay.style.opacity = '1';
       });
 
+      const palette = {pastel:['#c4b5fd','#f9a8d4'], neon:['#d946ef','#22d3ee'], gold:['#f59e0b','#fbbf24'], mint:['#10b981','#6ee7b7']}[st.color_theme] || ['#c4b5fd','#f9a8d4'];
+      overlay.firstElementChild.style.borderColor = palette[0];
+      overlay.firstElementChild.querySelector('div span:nth-child(2)').style.color = palette[1];
       const rollerText = overlay.querySelector('#randomizer-roller-text');
       const rollerBox = overlay.querySelector('#randomizer-roller-box');
       const footerPill = overlay.querySelector('#randomizer-footer-pill');
+      const randomVisual = window.BP3RandomizerVisual?.mount(overlay.firstElementChild, data, Math.max(2, Math.min(7, Number(st.spin_duration) || 4)));
 
       let ticks = 0;
       const maxTicks = 26;
-      let delay = 50;
+      const delay = Math.max(2, Math.min(7, Number(st.spin_duration) || 4)) * 1000 / maxTicks;
 
       function runTick() {
+        if (!overlay.isConnected) return;
         ticks++;
         const cand = items[Math.floor(Math.random() * items.length)];
         if (rollerText) rollerText.textContent = cand;
 
         if (ticks < maxTicks) {
-          if (ticks > maxTicks - 8) {
-            delay += 35;
-          }
           setTimeout(runTick, delay);
         } else {
           if (rollerText) rollerText.textContent = winner;
+          randomVisual?.finish();
           if (rollerBox) {
             rollerBox.style.borderColor = '#f59e0b';
             rollerBox.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
@@ -526,10 +543,11 @@
     }
 
     function handleAskUpdate(data) {
+      if (window.BP3LegacyAsk) {window.BP3LegacyAsk.render(data);return;}
       document.querySelectorAll('.widget.type-ask').forEach(widgetEl => {
         const wid = widgetEl.dataset.id;
         const panel = document.getElementById(`compAskPanel_${wid}`);
-        const isAskActive = data && data.active === true && (data.phase === 'voting' || data.phase === 'ended');
+        const isAskActive = data && data.active === true && (data.phase === 'voting' || data.phase === 'paused' || data.phase === 'ended');
         if (panel) {
           panel.style.display = isAskActive ? 'block' : 'none';
         }
@@ -538,16 +556,17 @@
           if (qEl) qEl.textContent = data.phase === 'ended' ? `🏆 สรุปผล: ${data.question}` : `📊 ${data.question}`;
           const timerEl = document.getElementById(`compAskTimer_${wid}`);
           if (timerEl) {
-            timerEl.textContent = data.phase === 'ended' ? '🏆 สรุปผล' : (data.remainingSec != null ? `⏱ ${data.remainingSec}s` : '🗳️ โหวตสด');
+            timerEl.textContent = data.phase === 'ended' ? '🏆 สรุปผล' : data.phase === 'paused' ? '⏸ พักโหวต' : (data.remainingSec != null ? `⏱ ${data.remainingSec}s` : '🗳️ โหวตสด');
           }
           const listEl = document.getElementById(`compAskChoicesList_${wid}`);
           if (listEl && data.choices) {
-            listEl.innerHTML = data.choices.map(c => `
-              <div style="background:rgba(255,255,255,0.05); border-radius:6px; padding:6px 10px; position:relative; overflow:hidden;">
-                <div style="position:absolute; inset:0; width:${c.pct}%; background:${c.color || '#38bdf8'}; opacity:0.25; border-radius:6px;"></div>
+            const choices = data.phase === 'ended' ? [...data.choices].sort((a,b)=>(b.votes||0)-(a.votes||0)) : data.choices;
+            listEl.innerHTML = choices.map((c,index) => `
+              <div style="background:${data.phase==='ended' && index===0 && c.votes>0 ? 'rgba(251,191,36,.18)' : 'rgba(255,255,255,.05)'}; border-radius:6px; padding:6px 10px; position:relative; overflow:hidden;">
+                <div style="position:absolute; inset:0; width:${data.phase==='ended' || data.realtime!==false ? c.pct : 0}%; background:${c.color || '#38bdf8'}; opacity:0.25; border-radius:6px;"></div>
                 <div style="position:relative; z-index:1; display:flex; justify-content:space-between; font-size:12px; font-weight:600; color:#ffffff;">
-                  <span>${c.label}: ${c.text}</span>
-                  <span style="color:${c.color || '#38bdf8'}; font-weight:700;">${c.pct}% (${c.votes || 0})</span>
+                  <span>${data.phase==='ended' && index===0 && c.votes>0 ? '👑 ' : ''}${escapeHtml(c.label)}: ${escapeHtml(c.text)}</span>
+                  <span style="color:${c.color || '#38bdf8'}; font-weight:700;">${data.phase==='ended' || data.realtime!==false ? `${c.pct}% (${c.votes || 0})` : ''}</span>
                 </div>
               </div>
             `).join('');
@@ -557,6 +576,7 @@
     }
 
     function handleGwUpdate(data) {
+      if (window.BP3LegacyGiveaway) {window.BP3LegacyGiveaway.render(data);return;}
       document.querySelectorAll('.widget.type-giveaway').forEach(widgetEl => {
         const wid = widgetEl.dataset.id;
         const panel = document.getElementById(`compGwPanel_${wid}`);
@@ -613,28 +633,29 @@
       });
     }
 
-    // BroadcastChannel real-time sync
-    if ('BroadcastChannel' in window) {
-      try {
-        const bus = new BroadcastChannel('bp3_system_channel');
-        bus.onmessage = (e) => {
-          const { event, payload } = e.data || {};
-          if (event === 'CANVAS_LAYOUT_SAVED') {
-            updateLayout();
-          } else if (event === 'RANDOMIZER_SPIN') {
-            handleRandomizerSpin(payload);
-          } else if (event === 'ASK_UPDATE') {
-            window._liveAskState = payload;
-            handleAskUpdate(payload);
-          } else if (event === 'GIVEAWAY_UPDATE') {
-            window._liveGwState = payload;
-            handleGwUpdate(payload);
-          } else if (event === 'PLAYROOM_ACTION') {
-            handlePlayroomAction(payload);
-          }
-        };
-      } catch (e) {}
+    function receiveLiveEvent(item) {
+      const {event,payload} = item || {};
+      const allowed={chat:['CHAT_MESSAGE','CHAT_CLEAR'],giveaway:['GIVEAWAY_UPDATE'],playroom:['PLAYROOM_PLAY_CLIP'],viewer:['VIEWERS_UPDATE']};
+      if (legacyView!=='composer' && event!=='CANVAS_LAYOUT_SAVED' && !(allowed[legacyView] || []).includes(event)) return;
+      if (event === 'CANVAS_LAYOUT_SAVED') updateLayout();
+      else if (event === 'RANDOMIZER_SPIN') handleRandomizerSpin(payload);
+      else if (event === 'ASK_UPDATE') {
+        if (payload?.demo && liveStates.ASK_UPDATE?.active) return;
+        if (!payload?.demo) {liveStates.ASK_UPDATE = payload; window._liveAskState = payload;}
+        handleAskUpdate(payload);
+      } else if (event === 'GIVEAWAY_UPDATE') {
+        if (payload?.demo && liveStates.GIVEAWAY_UPDATE?.active) return;
+        if (!payload?.demo) {liveStates.GIVEAWAY_UPDATE = payload; window._liveGwState = payload;}
+        handleGwUpdate(payload);
+      }
+      if (window.BP3Live) window.BP3Live.receive(item);
     }
+    window.addEventListener('bp3:remote-event', e => receiveLiveEvent(e.detail));
+    if (!window.BP3Transport && 'BroadcastChannel' in window) {
+      const bus = new BroadcastChannel('bp3_system_channel');
+      bus.onmessage = e => receiveLiveEvent(e.data);
+    }
+
   })();
   </script>
 </body>

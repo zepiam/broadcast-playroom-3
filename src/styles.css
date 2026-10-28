@@ -643,21 +643,25 @@ body {
 }
 
 .plat-go-btn {
-  background: rgba(34, 197, 94, 0.12);
+  background: transparent;
   color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.35);
+  border: none;
   border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 1px 6px;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 4px;
   cursor: pointer;
   transition: all 0.15s ease;
   text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .plat-go-btn:hover {
-  background: rgba(34, 197, 94, 0.28);
+  background: rgba(255, 255, 255, 0.1);
   color: #ffffff;
+  transform: scale(1.15);
 }
 
 .plat-viewers {
@@ -2295,17 +2299,18 @@ select option {
 
 /* ── Mobile-Style Drag & Drop Reordering ── */
 .sortable-item {
-  cursor: grab !important;
+  cursor: pointer !important;
   user-select: none;
   -webkit-user-select: none;
   transition: transform 0.18s cubic-bezier(0.2, 0, 0, 1), box-shadow 0.18s ease, opacity 0.18s ease, border-color 0.18s ease;
 }
 
 .sortable-item:active {
-  cursor: grabbing !important;
+  cursor: pointer !important;
 }
 
 .sortable-item.is-dragging {
+  cursor: grabbing !important;
   opacity: 0.55 !important;
   transform: scale(1.1) !important;
   box-shadow: 0 10px 24px rgba(88, 101, 242, 0.5), 0 0 12px rgba(88, 101, 242, 0.4) !important;
@@ -2325,6 +2330,9 @@ select option {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding-inline: 12px;
+  min-width: 24px;
+  min-height: 32px;
 }
 
 .chat-header-actions.sortable-container {
@@ -2675,3 +2683,15 @@ select option {
 #win-settings .section-card {
   overflow: visible !important;
 }
+
+/* Keep long connected channel URLs inside their platform card. */
+.plat-brand-info, .plat-title-box { min-width: 0; }
+.plat-brand-info { flex: 1 1 auto; overflow: hidden; }
+.plat-status-text { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Saved visibility overrides the compact topbar display rule. */
+.topbar-single-btn[hidden] { display: none !important; }
+
+/* Keep the unused standalone customizer out of the tool rail. */
+#btnRailChatWidget[hidden] { display:none !important; }
+#topbarSortable { min-width:28px; min-height:28px; }
