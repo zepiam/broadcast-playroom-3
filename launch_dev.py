@@ -36,6 +36,7 @@ from legacy_compat import start_servers as start_legacy_servers
 from chat_bridge import chat_bridge
 from dictionary_manager import dict_manager
 from tts_service import tts_service
+from updater import check_for_update, get_current_version, get_build_type
 
 PORT = 8801
 LEGACY_STATUS = []
@@ -1019,6 +1020,10 @@ class QuietHandler(SimpleHTTPRequestHandler):
         elif path == '/api/dictionary/delete':
             word = qs.get('word', [''])[0]
             response_data = dict_manager.delete_word(word)
+        elif path == '/api/version':
+            response_data = {'version': get_current_version(), 'product': 'broadcast-playroom-3', 'build_type': get_build_type()}
+        elif path == '/api/check-update':
+            response_data = check_for_update()
         else:
             response_data = {'error': 'Unknown endpoint'}
 

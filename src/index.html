@@ -4420,9 +4420,22 @@
 
             <img src="./assets/icon.png" style="width:72px; height:72px; border-radius:18px; margin-bottom:12px; box-shadow: 0 8px 24px rgba(0,0,0,0.5);">
 
-            <div style="font-size:20px; font-weight:800; color:#f2f3f5;">Broadcast Playroom</div>
+            <div style="font-size:22px; font-weight:800; color:#f2f3f5; letter-spacing:-0.3px;">Broadcast Playroom</div>
 
-            <div style="font-size:13px; color:var(--dc-blurple); font-weight:700; margin:2px 0 10px 0;">v3.0.0</div>
+            <div style="margin: 6px 0 14px 0; display:flex; align-items:center; justify-content:center; gap:8px;">
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.0.0</span>
+              <span id="appUpdateStatusBadge" style="font-size:12px; color:#23a55a; font-weight:600; background:rgba(35,165,90,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(35,165,90,0.25);">✅ วาร์ชันล่าสุด</span>
+            </div>
+
+            <div style="margin-bottom: 16px; display:flex; gap:8px; justify-content:center;">
+              <button id="btnCheckUpdate" class="btn btn-secondary btn-sm" onclick="checkAppUpdate(true)" style="font-size:12.5px; padding:6px 14px; border-radius:8px; cursor:pointer;">
+                🔄 ตรวจสอบการอัปเดต
+              </button>
+              <button id="btnOpenGitHub" class="btn btn-secondary btn-sm" onclick="openExternalUrl('https://github.com/zepiam/broadcast-playroom-3')" style="font-size:12.5px; padding:6px 14px; border-radius:8px; cursor:pointer;">
+                🌐 GitHub
+              </button>
+            </div>
+            <div id="updateCheckDetail" style="font-size:12px; color:var(--dc-text-muted); margin-bottom:12px;"></div>
 
             <p style="font-size:12.5px; color:var(--dc-text-muted); max-width:480px; margin:0 auto; line-height:1.6;">
 
@@ -16421,6 +16434,71 @@
           showToast('⏹ สิ้นสุดการแสดงตัวอย่าง DEMO');
         }
       }, 10000);
+    }
+
+    async function checkAppUpdate(manual = false) {
+      const btn = document.getElementById('btnCheckUpdate');
+      const badge = document.getElementById('appUpdateStatusBadge');
+      const detail = document.getElementById('updateCheckDetail');
+
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ กำลังตรวจสอบ...';
+      }
+      if (badge) {
+        badge.textContent = '⏳ ตรวจสอบ...';
+        badge.style.color = 'var(--dc-text-muted)';
+        badge.style.background = 'rgba(255,255,255,0.06)';
+        badge.style.borderColor = 'rgba(255,255,255,0.1)';
+      }
+
+      try {
+        const res = await fetch('/api/check-update');
+        const data = await res.json();
+
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '🔄 ตรวจสอบการอัปเดต';
+        }
+
+        if (data.has_update) {
+          if (badge) {
+            badge.textContent = `⚡ มีเวอร์ชันใหม่ v${data.latest_version}`;
+            badge.style.color = '#f59e0b';
+            badge.style.background = 'rgba(245,158,11,0.15)';
+            badge.style.borderColor = 'rgba(245,158,11,0.3)';
+          }
+          if (detail) {
+            detail.innerHTML = `พบเวอร์ชันใหม่ <strong>v${data.latest_version}</strong><br><small style="color:var(--dc-text-muted);">${data.changelog ? data.changelog.replace(/\n/g, '<br>') : ''}</small>`;
+          }
+          if (manual) {
+            showToast(`🚀 พบเวอร์ชันใหม่ v${data.latest_version}! สามารถดูรายละเอียดได้ใน Settings > เกี่ยวกับโปรแกรม`);
+          }
+        } else if (data.status === 'up_to_date') {
+          if (badge) {
+            badge.textContent = '✅ เวอร์ชันล่าสุด';
+            badge.style.color = '#23a55a';
+            badge.style.background = 'rgba(35,165,90,0.12)';
+            badge.style.borderColor = 'rgba(35,165,90,0.25)';
+          }
+          if (detail) {
+            detail.textContent = `คุณกำลังใช้งานเวอร์ชันล่าสุด (v${data.current_version}) แล้วครับ`;
+          }
+          if (manual) {
+            showToast(`✅ คุณกำลังใช้งานเวอร์ชันล่าสุด (v${data.current_version}) แล้วครับ`);
+          }
+        } else {
+          if (detail) detail.textContent = data.message || 'ไม่สามารถตรวจสอบการอัปเดตได้';
+          if (manual) showToast(`⚠️ ${data.message || 'ไม่สามารถตรวจสอบอัปเดตได้'}`);
+        }
+      } catch (err) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '🔄 ตรวจสอบการอัปเดต';
+        }
+        if (detail) detail.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+        if (manual) showToast('⚠️ เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์อัปเดต');
+      }
     }
 
     window.addEventListener('resize', handleWindowResize);

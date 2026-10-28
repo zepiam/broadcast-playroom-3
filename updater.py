@@ -123,7 +123,21 @@ def fetch_remote_manifest(timeout: int = 8) -> Optional[dict]:
             except Exception as e:
                 logger.debug(f"fetch_remote_manifest failed ({url}, {ctx_mode}): {e}")
 
-    # Fallback to GitHub API
+    # Fallback to GitHub Contents API or Releases API
+    contents_url = f"https://api.github.com/repos/{REPO_OWNER}/{REPO_NAME}/contents/version.json"
+    try:
+        import base64
+        req = urllib.request.Request(contents_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=timeout) as response:
+            if response.status == 200:
+                data = json.loads(response.read().decode("utf-8"))
+                if "content" in data:
+                    raw_content = base64.b64decode(data["content"]).decode("utf-8")
+                    return json.loads(raw_content)
+    except Exception as e:
+        logger.debug(f"GitHub Contents API fallback failed: {e}")
+
+    # Fallback to GitHub Releases API
     try:
         req = urllib.request.Request(GITHUB_API_URL, headers=headers)
         with urllib.request.urlopen(req, timeout=timeout) as response:

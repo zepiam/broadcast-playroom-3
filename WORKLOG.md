@@ -117,3 +117,21 @@ pm run build และ python sync_trial_frontend.py สำเร็จ
   - ตรวจสอบ git remote -v: ชี้ไปยัง https://github.com/zepiam/broadcast-playroom-3.git ถูกต้อง
   - ตรวจสอบ gh repo view zepiam/broadcast-playroom-3: เข้าถึงได้สมบูรณ์และแสดงผล README ถูกต้อง
 - **สถานะ:** ทำแล้วและตรวจผ่าน (Completed & Verified) ✅
+
+
+## [2026-10-28 19:25] Antigravity (Broadcast Playroom 3 v3.0.0 Baseline & In-App Update Architecture)
+- **ผู้ดำเนินงาน/ทีม:** Antigravity
+- **เป้าหมาย / คำสั่งของผู้ใช้:**
+  - สร้าง GitHub repository ใหม่ชื่อ `broadcast-playroom-3` สำหรับเวอร์ชันใหม่ของโปรแกรม เริ่มต้นที่ 3.0.0
+  - เตรียมระบบและสถาปัตยกรรมอัปเดตผ่านตัวโปรแกรม (In-App Update) ให้พร้อมไว้ก่อน โดยจะยังไม่มีการปล่อยอัปเดตอัตโนมัติจริง
+- **สิ่งที่ได้ดำเนินการ:**
+  - กำหนด Version Manifest Specification (`version.json`) สำหรับ Release 3.0.0 พร้อม Schema สำหรับช่องทาง Lite และ Full
+  - พัฒนาระบบ `updater.py`: ตรวจสอบเวอร์ชันผ่าน Semver, คำนวณ SHA-256 Checksum, ระบบ Fallback (GitHub Raw CDN + GitHub Contents API Base64 + GitHub Releases API), ป้องกัน Zip Path-traversal
+  - เชื่อมต่อ Backend Endpoints ใน `launch_dev.py` (`GET /api/version`, `GET /api/check-update`)
+  - อัปเดตหน้าต่างตั้งค่า UI ใน `src/index.html` (Sec-About): ป้ายสถานะ `v3.0.0`, ป้ายกำกับ `✅ เวอร์ชันล่าสุด`, ปุ่ม `🔄 ตรวจสอบการอัปเดต` (interactive check) และปุ่ม `🌐 GitHub`
+  - เขียนคู่มือสถาปัตยกรรมและแผนการอัปเดตอย่างละเอียดใน `UPDATER_DESIGN.md`
+  - ทำการ Rebuild Frontend (`npm run build`) และซิงค์ Trial Builds (`python sync_trial_frontend.py`)
+- **ผลการทดสอบ (Verification Results):**
+  - รันการทดสอบ Unit Test (`scratch/test_updater_system.py`) ตรวจสอบความถูกต้องของ Semver Logic, Build Detection, และการเช็คอัปเดตกับ GitHub API คืนค่า `up_to_date` ถูกต้อง 100%
+  - ทดสอบการกดปุ่มเช็คอัปเดตใน UI ตอบสนองและแสดงผลถูกต้อง
+- **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀

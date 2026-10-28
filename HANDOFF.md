@@ -430,3 +430,13 @@ Current next work: user acceptance on actual OBS/live accounts and their own lon
 - Restored Settings section right-click Pin to Server Rail feature: added context menu event listeners to popup tool documents (`pop.document`), cross-window DOM synchronization (`window.opener` & `_popoutWindows`), metadata for all sections (including networking & defender), and unpin handlers. Verified pin/unpin roundtrip from child OS window to main rail.
 - Live stream title & Edit button parity: added `/api/stream-title` endpoint in `launch_dev.py` and `ChatBridge.fetch_stream_title` method, fixed Title display (resolved Twitch GraphQL offline/online broadcastSettings title, tested with real channel `men9ch` returning `NTE 1.4 เที่ยวปูก้าแลนด์`), wired Edit button to actual platform live dashboards (Twitch popout edit stream info, YouTube Live Studio, Kick stream-info, Soop, TikTok, MyLive) matching legacy v2 parity, and cleaned `.plat-go-btn` to borderless icon-only display.
 - Verified build and trial distribution synchronization: `npm run build` and `python sync_trial_frontend.py` completed cleanly.
+
+
+## 2026-10-28 — Broadcast Playroom 3 v3.0.0 Baseline & In-App Update Architecture (Antigravity)
+- Created public GitHub repository `zepiam/broadcast-playroom-3` tracking branch `master` as the official repository for v3.0.0+.
+- Defined root `version.json` release manifest specification with version `"3.0.0"` and schema for separate `lite` and `full` binary channels.
+- Implemented `updater.py` with semver comparison, 3-tier fallback fetching (GitHub Releases, CDN, Contents API Base64), SSL context fallbacks, SHA-256 checksum verification, and safe directory extraction.
+- Added backend endpoints `GET /api/version` and `GET /api/check-update` in `launch_dev.py`.
+- Updated Settings "About" section in `src/index.html`: added `v3.0.0` badge, dynamic `appUpdateStatusBadge`, interactive "🔄 ตรวจสอบการอัปเดต" button calling `/api/check-update`, and GitHub link.
+- Authored `UPDATER_DESIGN.md` detailing the update architecture, data safety guarantees (user data never touched), channel isolation, and separation from legacy v2 (`broadcast-playroom-ex`).
+- Ran `npm run build` and `python sync_trial_frontend.py` to ensure all dist and trial directories remain fully synchronized.
