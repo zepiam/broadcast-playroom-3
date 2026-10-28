@@ -16448,12 +16448,70 @@
       }, 10000);
     }
 
+    let _latestUpdateInfo = null;
+
     function handleRailUpdateClick() {
-      openToolWindow('settings');
-      switchSettingsSection('about');
-      const sec = document.getElementById('sec-about');
-      if (sec) {
-        sec.scrollIntoView({ behavior: 'smooth' });
+      // เมื่อคลิกปุ่มอัปเดตที่แถบซ้ายสุด: เปิดหน้าต่างถามว่าจะอัปเดตทันทีหรือไม่ (ไม่มี changelog ให้อ่าน)
+      showFastUpdateModal();
+    }
+
+    function showFastUpdateModal() {
+      const modal = document.getElementById('modal-fast-update');
+      const badge = document.getElementById('fastUpdateVersionBadge');
+      const promptBox = document.getElementById('fastUpdatePromptBox');
+      const progressBox = document.getElementById('fastUpdateProgressBox');
+      const footer = document.getElementById('fastUpdateFooter');
+
+      if (badge && _latestUpdateInfo && _latestUpdateInfo.latest_version) {
+        badge.textContent = `v${_latestUpdateInfo.latest_version}`;
+      } else if (badge) {
+        badge.textContent = 'เวอร์ชันใหม่';
+      }
+
+      if (promptBox) promptBox.style.display = 'block';
+      if (progressBox) progressBox.style.display = 'none';
+      if (footer) footer.style.display = 'flex';
+
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeFastUpdateModal() {
+      const modal = document.getElementById('modal-fast-update');
+      if (modal) modal.style.display = 'none';
+      // ถ้ากดย้อนกลับ ค้างปุ่มอัปเดตทิ้งไว้ที่แถบซ้ายสุดตามคำสั่ง
+      const railBtn = document.getElementById('btnRailUpdate');
+      if (railBtn) {
+        railBtn.style.display = 'flex';
+      }
+    }
+
+    async function startFastUpdateProcess() {
+      const promptBox = document.getElementById('fastUpdatePromptBox');
+      const progressBox = document.getElementById('fastUpdateProgressBox');
+      const footer = document.getElementById('fastUpdateFooter');
+      const statusText = document.getElementById('fastUpdateStatusText');
+
+      if (promptBox) promptBox.style.display = 'none';
+      if (footer) footer.style.display = 'none';
+      if (progressBox) progressBox.style.display = 'block';
+      if (statusText) statusText.textContent = 'กำลังดาวน์โหลดและติดตั้งอัปเดต...';
+
+      try {
+        const res = await fetch('/api/apply-update', { method: 'POST' });
+        const data = await res.json();
+        if (statusText) {
+          statusText.textContent = data.message || 'กำลังรีสตาร์ทโปรแกรม...';
+        }
+        setTimeout(() => {
+          location.reload();
+        }, 2200);
+      } catch (err) {
+        if (statusText) {
+          statusText.textContent = 'กำลังรีสตาร์ทโปรแกรม...';
+        }
+        setTimeout(() => {
+          location.reload();
+        }, 2200);
       }
     }
 
@@ -16486,6 +16544,7 @@
         }
 
         if (data.has_update) {
+          _latestUpdateInfo = data;
           // แสดงปุ่มชี้ลงพร้อมเอฟเฟค Glow บน Server Rail เหนือเฟือง Setting
           if (railBtn) {
             railBtn.style.display = 'flex';
@@ -16589,6 +16648,59 @@
 
 </script>
 <div id="topbarContextMenu" class="custom-context-menu"></div>
+
+<!-- Modal ยืนยันการอัปเดตด่วน (Zero GPU Lockup: clean semi-solid dark, contain: strict) -->
+<div id="modal-fast-update" class="fast-update-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(2, 6, 23, 0.88); z-index: 999999; align-items: center; justify-content: center; contain: strict; isolation: isolate;">
+  <div class="fast-update-dialog">
+    <div class="fast-update-header">
+      <div class="fast-update-icon-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v13"/>
+          <path d="m6 11 6 6 6-6"/>
+          <path d="M19 21H5"/>
+        </svg>
+      </div>
+      <div>
+        <h3 id="fastUpdateTitle" style="margin:0; font-size:15px; font-weight:800; color:#f2f3f5;">อัปเดต Broadcast Playroom</h3>
+        <span id="fastUpdateVersionBadge" class="badge-version">v3.x.x</span>
+      </div>
+      <button class="fast-update-close" onclick="closeFastUpdateModal()" title="ปิด (ยังไม่อัปเดต)">✕</button>
+    </div>
+
+    <div class="fast-update-body" id="fastUpdateBody">
+      <div id="fastUpdatePromptBox">
+        <p id="fastUpdatePromptText" style="font-size:13.5px; color:#dbdee1; line-height:1.6; margin:0 0 8px 0;">
+          ต้องการเริ่มอัปเดตเป็นเวอร์ชันใหม่ทันทีหรือไม่?
+        </p>
+        <div style="font-size:12px; color:var(--dc-text-muted); line-height:1.5;">
+          โปรแกรมจะทำการดาวน์โหลด ติดตั้ง และรีสตาร์ทให้อัตโนมัติทันที
+        </div>
+      </div>
+
+      <!-- แถบแสดงสถานะขณะกำลังอัปเดต -->
+      <div id="fastUpdateProgressBox" style="display: none; margin-top: 10px;">
+        <div style="font-size:13px; font-weight:700; color:#23a55a; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+          <span>⏳ กำลังดำเนินการอัปเดต...</span>
+        </div>
+        <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+          <div id="fastUpdateProgressBar" style="width: 100%; height:100%; background:#23a55a;"></div>
+        </div>
+        <div id="fastUpdateStatusText" style="font-size:11.5px; color:var(--dc-text-muted); margin-top:6px;">
+          โปรดรอสักครู่ โปรแกรมจะรีสตาร์ททันทีเมื่อเสร็จสิ้น
+        </div>
+      </div>
+    </div>
+
+    <div class="fast-update-footer" id="fastUpdateFooter">
+      <button class="btn btn-secondary btn-sm" id="btnCancelFastUpdate" onclick="closeFastUpdateModal()" style="padding: 7px 16px; border-radius:8px; font-weight:600; font-size:12.5px; cursor:pointer;">
+        ย้อนกลับ
+      </button>
+      <button class="btn btn-primary btn-sm" id="btnConfirmFastUpdate" onclick="startFastUpdateProcess()" style="padding: 7px 18px; border-radius:8px; background:#23a55a; border-color:#23a55a; font-weight:700; font-size:12.5px; color:#fff; cursor:pointer;">
+        ⚡ อัปเดตทันที
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 
 </html>

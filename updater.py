@@ -304,6 +304,62 @@ def apply_update_patch(patch_zip: str) -> bool:
         return False
 
 
+def restart_application():
+    """สั่งรีสตาร์ทกระบวนการโปรแกรมใหม่"""
+    import subprocess
+    import threading
+
+    def _do_restart():
+        time.sleep(1.0)
+        try:
+            if getattr(sys, "frozen", False):
+                subprocess.Popen([sys.executable], close_fds=True)
+            else:
+                subprocess.Popen([sys.executable] + sys.argv, close_fds=True)
+        except Exception as e:
+            logger.error(f"Restart failed: {e}")
+        finally:
+            os._exit(0)
+
+    t = threading.Thread(target=_do_restart, daemon=True)
+    t.start()
+
+
+def perform_update_and_restart(build_type: Optional[str] = None) -> dict:
+    """ดาวน์โหลด ติดตั้งแพตช์อัปเดต และรีสตาร์ทโปรแกรมอัตโนมัติ"""
+    info = check_for_update(build_type)
+
+    if info.get("has_update"):
+        download_url = info.get("download_url", "")
+        expected_sha = info.get("sha256", "")
+        if download_url and download_url.endswith(".zip"):
+            import tempfile
+            temp_dir = tempfile.gettempdir()
+            dest_zip = os.path.join(temp_dir, f"bp3_update_{info.get('latest_version')}.zip")
+            downloaded = download_update_file(download_url, dest_zip, expected_sha256=expected_sha)
+            if not downloaded:
+                return {
+                    "success": False,
+                    "message": "ดาวน์โหลดไฟล์อัปเดตไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+                    "restarting": False,
+                }
+            applied = apply_update_patch(dest_zip)
+            if not applied:
+                return {
+                    "success": False,
+                    "message": "ติดตั้งแพตช์อัปเดตไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+                    "restarting": False,
+                }
+
+    # สั่งรีสตาร์ทโปรแกรมอัตโนมัติ
+    restart_application()
+    return {
+        "success": True,
+        "message": "กำลังรีสตาร์ทโปรแกรมเพื่อเริ่มใช้งานเวอร์ชันใหม่...",
+        "restarting": True,
+    }
+
+
 if __name__ == "__main__":
     print(f"Broadcast Playroom 3 Updater Module")
     print(f"Current version: {get_current_version()}")

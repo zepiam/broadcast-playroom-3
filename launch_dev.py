@@ -36,7 +36,7 @@ from legacy_compat import start_servers as start_legacy_servers
 from chat_bridge import chat_bridge
 from dictionary_manager import dict_manager
 from tts_service import tts_service
-from updater import check_for_update, get_current_version, get_build_type
+from updater import check_for_update, get_current_version, get_build_type, perform_update_and_restart
 
 PORT = 8801
 LEGACY_STATUS = []
@@ -517,6 +517,14 @@ class QuietHandler(SimpleHTTPRequestHandler):
                     self.send_json({'ok':bool(ok),'latency_ms':round(latency),'message':'เชื่อมต่อบริการเสียงสำเร็จ' if ok else 'ทดสอบการเชื่อมต่อไม่สำเร็จ'})
             except (ValueError,TypeError,AttributeError):self.send_json({'error':'ข้อมูล DNS ไม่ถูกต้อง'},400)
             except Exception:self.send_json({'error':'ไม่สามารถทำรายการ DNS ได้'},500)
+            return
+
+        if path == '/api/apply-update':
+            try:
+                res = perform_update_and_restart()
+                self.send_json(res)
+            except Exception as e:
+                self.send_json({'success': False, 'message': str(e)}, 500)
             return
 
         if path == '/api/chatbot/blocklist':
@@ -1024,6 +1032,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
             response_data = {'version': get_current_version(), 'product': 'broadcast-playroom-3', 'build_type': get_build_type()}
         elif path == '/api/check-update':
             response_data = check_for_update()
+        elif path == '/api/apply-update':
+            response_data = perform_update_and_restart()
         else:
             response_data = {'error': 'Unknown endpoint'}
 

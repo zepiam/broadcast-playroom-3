@@ -447,3 +447,10 @@ Current next work: user acceptance on actual OBS/live accounts and their own lon
 - Implemented non-intrusive update notification: background update checks reveal the button silently without showing any toast or popup alerts to the user.
 - Wired click handler `handleRailUpdateClick()` to open `win-settings` and focus the `sec-about` pane displaying changelog and update actions for manual user trigger.
 - Verified via Playwright test `scratch/test_rail_update_ui.py` (DOM hierarchy, silent detection, zero toasts, click navigation, up-to-date hiding). Synced across build trials.
+
+## 2026-10-28 — Fast Update Confirmation Prompt & Auto-Restart Flow (Antigravity)
+- Revamped update trigger flow from `#btnRailUpdate`: clicking the button now directly displays a dedicated fast confirmation prompt (`#modal-fast-update`) asking "ต้องการเริ่มอัปเดตเป็นเวอร์ชันใหม่ทันทีหรือไม่?" without changelog display.
+- Implemented zero GPU lockup overlay adhering to performance rules (semi-solid dark background, `contain: strict; isolation: isolate;`).
+- Cancelling or clicking back dismisses the modal while persistently keeping the glowing update button visible on the left rail ("ค้างปุ่มอัพเดททิ้งไว้").
+- Confirming triggers `/api/apply-update`, showing progress and invoking `perform_update_and_restart()` in `updater.py` / `launch_dev.py` for automated patch apply and process restart.
+- Verified all flows via Playwright test `scratch/test_fast_update_flow.py`. Rebuilt and synced all packages.

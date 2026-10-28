@@ -159,3 +159,29 @@ pm run build และ python sync_trial_frontend.py สำเร็จ
     - ไม่พบ Toast หรือ Dialog เด้งขึ้นมาขัดจังหวะการทำงาน (0 toasts created)
     - เมื่อคลิกปุ่ม: หน้าต่าง `win-settings` และแท็บ `sec-about` เปิดขึ้นมาพร้อมใช้งาน
 - **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀
+
+## [2026-10-28 19:48] Antigravity (Fast Update Confirmation Prompt & Auto Restart Flow)
+- **ผู้ดำเนินงาน/ทีม:** Antigravity
+- **เป้าหมาย / คำสั่งของผู้ใช้:**
+  - เมื่อคลิกปุ่มอัปเดตที่แถบซ้ายสุด ให้ขึ้นถามว่าจะอัปเดตทันทีไหม
+  - ถ้ากดยืนยัน ให้เริ่มอัปเดตและรีสตาร์ทโปรแกรมให้ทันที (ไม่มี changelog ให้อ่านแล้ว)
+  - ถ้ากดย้อนกลับ ให้ค้างปุ่มอัปเดตทิ้งไว้ที่แถบซ้ายสุด
+- **สิ่งที่ได้ดำเนินการ:**
+  - สร้าง Modal ยืนยันการอัปเดตด่วน `#modal-fast-update` ใน `src/index.html` ออกแบบตามกฎ Zero GPU Lockup (พื้นหลัง semi-solid dark ไม่มี backdrop blur, contain: strict)
+  - เพิ่มสไตล์ CSS ใน `src/styles.css` สำหรับ `.fast-update-overlay` และ `.fast-update-dialog`
+  - ปรับการทำงานของ `handleRailUpdateClick()`:
+    - ไม่เปิดหน้าต่าง Settings และไม่แสดง changelog
+    - แสดงป็อปอัปถามว่า "ต้องการเริ่มอัปเดตเป็นเวอร์ชันใหม่ทันทีหรือไม่? โปรแกรมจะทำการดาวน์โหลด ติดตั้ง และรีสตาร์ทให้อัตโนมัติทันที"
+    - ปุ่ม "ย้อนกลับ" (`closeFastUpdateModal()`): ปิดหน้าต่าง แต่คงสถานะ `#btnRailUpdate` ให้แสดงค้างไว้บน Rail
+    - ปุ่ม "⚡ อัปเดตทันที" (`startFastUpdateProcess()`): แสดงแถบความคืบหน้า ส่งคำขอไปยัง `/api/apply-update` และรีสตาร์ทโปรแกรม
+  - อัปเดต Backend ใน `updater.py` และ `launch_dev.py`:
+    - เพิ่มฟังก์ชัน `restart_application()` และ `perform_update_and_restart()`
+    - เพิ่ม Route `POST /api/apply-update` และ `GET /api/apply-update`
+  - ทำการ Rebuild Frontend (`npm run build`) และซิงค์ Trial Builds (`python sync_trial_frontend.py`)
+- **ผลการทดสอบ (Verification Results):**
+  - รันการทดสอบ Playwright E2E (`scratch/test_fast_update_flow.py`):
+    - เมื่อตรวจพบอัปเดต: ปุ่ม Rail แสดงผล
+    - เมื่อคลิกปุ่ม Rail: Modal ถามยืนยันเปิดขึ้นมาทันทีโดยไม่มี Settings Window และไม่มี Changelog
+    - เมื่อกดย้อนกลับ: Modal ปิด และปุ่ม Rail ยังคงค้างแสดงอยู่ (`is_rail_still_visible: True`)
+    - เมื่อกดยืนยันอัปเดต: แถบสถานะแสดงผล และเรียก `/api/apply-update` สำเร็จ
+- **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀
