@@ -5,6 +5,35 @@
 
 ---
 
+## [2026-10-28 22:00] — Antigravity (Fix Game Overlay Settings Not Opening on Edit Mode Click)
+
+- **เครื่องมือที่ทำงาน:** Antigravity (Google DeepMind)
+- **เหตุผล / คำสั่งจากผู้ใช้:**
+  - ผู้ใช้แจ้งว่าเมื่อกดปุ่ม "⚙️ ตั้งค่า" ในโหมดแก้ไข (Edit Mode) ของ Game Overlay แล้วไม่มีอะไรเกิดขึ้น
+- **สาเหตุที่พบ:**
+  1. ตัวแปร `_autoPopoutWindows = true` สั่งให้เครื่องมือทุกตัวพยายามเปิดหน้าต่างแบบ `window.open` (Popout Window) แต่เนื่องจากสัญญาณ `DESKTOP_OVERLAY_SETTINGS` มาจาก Event Polling (HTTP Polling) ซึ่งไม่ใช่ Direct User Gesture บนเบราว์เซอร์ จึงถูก Popup Blocker บล็อก
+  2. เมื่อถูกบล็อก ระบบตกกลับมาเปิดแบบ In-App Window แต่ในแท็ก `<div id="win-game-overlay">` มีการใส่ inline style `display: none;` ไว้อยู่ ทำให้คลาส `.active` ไม่สามารถแสดงผลหน้าต่างได้
+  3. ขณะผู้ใช้กดปุ่มตั้งค่าบน Game Overlay (Desktop Qt Window) หน้าต่างแอปหลัก (Chrome/Edge) มักจะอยู่ในสถานะ Background/Minimized ทำให้ผู้ใช้มองไม่เห็นหน้าต่างที่เปิดขึ้น
+  4. ฟังก์ชัน `loadGameOverlaySettings` และ `switchGameOverlayTab` อ้างอิงผ่าน `document.getElementById` โดยตรง ซึ่งไม่ครอบคลุมกรณีที่หน้าต่างถูก Popout ไปยังเอกสารลูก (`pop.document`)
+- **สิ่งที่เปลี่ยนแปลง:**
+  1. `desktop_overlay_service.py`:
+     - เพิ่มฟังก์ชัน `_bring_app_to_front()` โดยใช้ Win32 API (`EnumWindows`, `ShowWindow(SW_RESTORE)`, `SetForegroundWindow`) เพื่อยกหน้าต่าง Broadcast Playroom 3 ขึ้นมาข้างหน้าผู้ใช้ทันทีเมื่อมีคำสั่ง `open_settings`
+  2. `src/modal.css`:
+     - กำหนด `.floating-window.active { display: flex !important; }` เพื่อให้คลาส active แสดงผลหน้าต่างได้เสมอ
+  3. `src/index.html`:
+     - ลบ inline `display: none;` ออกจาก `<div class="floating-window" id="win-game-overlay">`
+     - เพิ่ม `'game-overlay'` ในตาราง `defaultSizes` (760x620) และ `titles` ('ตั้งค่า Game Overlay') ของ `popoutToolWindow`
+     - ปรับปรุง fallback ใน `popoutToolWindow` ให้เซ็ต `display = 'flex'` และ `zIndex = ++highestZ` ชัดเจน
+     - สร้าง `getGameOverlayDoc()` เชื่อมต่อ `getToolDocument('game-overlay')` ครอบคลุมการอ่าน/เขียน Element ในทุกกรณี (ทั้ง Docked ในหน้าต่างหลัก และ Detached Popout)
+  4. `src/desktop_overlay_controls.js`:
+     - ปรับ `openDesktopOverlaySettings()` ให้ปลด `minimized`, สลับ `display: flex`, ดึงหน้าต่างมาแสดง และเรียก `window.focus()`
+- **ผลการตรวจสอบ (Verification Results):**
+  - รัน `scratch/verify_unified_tts_and_overlay.py` ผ่าน 100%
+  - รันการทดสอบจำลองเหตุการณ์ `DESKTOP_OVERLAY_SETTINGS` ใน Playwright ยืนยันว่าหน้าต่างเปิดและ visible = True (`display: 'flex'`, ขนาด 760x620) สมบูรณ์
+  - บิลด์และซิงค์ `dist/` เรียบร้อย
+
+---
+
 ## [2026-10-28 21:10] — Antigravity (Unified Voice TTS Settings, Female Pitch Bug Fix & Floating Game Overlay Window)
 
 - **เครื่องมือที่ทำงาน:** Antigravity (Google DeepMind)

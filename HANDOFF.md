@@ -30,6 +30,12 @@ User clarified Esc was their own attempt to stop apparently inactive screen cont
 - Other live-platform/account/reconnect/event types remain open; six constructor/callback fixtures are not live proof. Do not send viewer/chat messages.
 - Main installed OBS may be open: CUA launch_app unexpectedly normalized portable executable launch to installed OBS (Untitled/21:9 Layout). No scene/settings/stream/record controls touched. Do not close blindly if user is now using it. Explicitly owned portable OBS/Qt test processes were closed.
 
+## Latest completed task — Fix Game Overlay Settings Not Opening on Edit Mode Click (2026-10-28)
+- Root Cause Identified: Browser popup blocker blocked window.open for remote polling events; in-app fallback was overridden by inline display:none; background browser window was not raised by Windows; and DOM queries did not use getToolDocument for popouts.
+- Win32 Bring to Front: Added _bring_app_to_front in desktop_overlay_service.py on open_settings command, restoring and focusing the main Broadcast Playroom window.
+- UI & CSS Fixes: Removed inline display:none from win-game-overlay, enforced .floating-window.active { display: flex !important; }, registered game-overlay in popoutToolWindow defaultSizes and titles, and refactored switchGameOverlayTab/loadGameOverlaySettings/saveGameOverlaySettings to use getGameOverlayDoc().
+- Verification: End-to-end event dispatch test confirmed window opens and becomes visible: True (760x620 flex). Dist rebuilt and trial folders updated.
+
 ## Latest completed task — Unified Voice TTS Settings, Female Pitch Fix & Game Overlay Window (2026-10-28)
 - Unified Voice TTS UI: Aligned Settings > เสียงอ่าน (#sec-tts) and Sidebar window (#win-voice-settings) into matching cards: Female/Male buttons without model labels, Master Volume, Speed (-50% to +50%), Pitch (-24 to +24 st; hidden on Lite edition via [data-feature="pitch"]), RVC Model Selection (FULL edition), Test Voice input & button, and Read Author Name checkbox (#chkReadAuthorName / #winChkReadAuthorName). Both windows are 100% two-way synchronized.
 - Female Voice Pitch Bug Fix: Solved Azure Edge-TTS pitch syntax error where prosody cleaner generated invalid '+50%Hz' on pitch changes. Fixed clean_prosody to isolate raw digits before appending units. Verified female audio synthesis at +50% rate and +50% pitch yielding 10,224 bytes cleanly without triggering fallback to male Niwat voice.

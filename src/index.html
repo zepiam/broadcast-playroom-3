@@ -5683,7 +5683,7 @@
        WINDOW: GAME OVERLAY SETTINGS (🎮 ตั้งค่า Game Overlay & จอแสดงผล)
        Full parity with legacy GameOverlaySettingsDialog (Qt / In-App Window)
        ======================================================== -->
-  <div class="floating-window" id="win-game-overlay" style="width: 760px; top: 60px; left: 300px; display: none;">
+  <div class="floating-window" id="win-game-overlay" style="width: 760px; top: 60px; left: 300px;">
     <!-- Drag Handle Header -->
     <div class="floating-header" id="drag-game-overlay">
       <div class="floating-title-box">
@@ -8137,7 +8137,8 @@
 
         'chat-widget': { w: 900, h: 680 },
 
-        'author-profile': { w: 660, h: 580 }
+        'author-profile': { w: 660, h: 580 },
+        'game-overlay': { w: 760, h: 620 }
 
       };
 
@@ -8163,7 +8164,8 @@
 
         'playroom': 'Playroom Studio ไลฟ์ซาวด์ & คลิปสั้น',
 
-        'author-profile': 'โปรไฟล์ผู้ชม'
+        'author-profile': 'โปรไฟล์ผู้ชม',
+        'game-overlay': 'ตั้งค่า Game Overlay (Game Overlay Settings)'
 
       };
 
@@ -10824,327 +10826,133 @@
     // ========================================================
 
 
+    function getGameOverlayDoc() {
+      if (typeof getToolDocument === 'function') {
+        return getToolDocument('game-overlay');
+      }
+      return document;
+    }
+
     function switchGameOverlayTab(tabName) {
-
-
-      document.querySelectorAll('#tabGoGame, #tabGoViewer, #tabGoMore').forEach(b => b.classList.remove('active'));
-
-
-      document.querySelectorAll('.go-pane').forEach(p => p.style.display = 'none');
-
+      const doc = getGameOverlayDoc();
+      doc.querySelectorAll('#tabGoGame, #tabGoViewer, #tabGoMore').forEach(b => b.classList.remove('active'));
+      doc.querySelectorAll('.go-pane').forEach(p => p.style.display = 'none');
 
       if (tabName === 'game') {
-
-
-        document.getElementById('tabGoGame')?.classList.add('active');
-
-
-        const p = document.getElementById('paneGoGame'); if (p) p.style.display = 'flex';
-
-
+        doc.getElementById('tabGoGame')?.classList.add('active');
+        const p = doc.getElementById('paneGoGame'); if (p) p.style.display = 'flex';
       } else if (tabName === 'viewer') {
-
-
-        document.getElementById('tabGoViewer')?.classList.add('active');
-
-
-        const p = document.getElementById('paneGoViewer'); if (p) p.style.display = 'flex';
-
-
+        doc.getElementById('tabGoViewer')?.classList.add('active');
+        const p = doc.getElementById('paneGoViewer'); if (p) p.style.display = 'flex';
       } else if (tabName === 'more') {
-
-
-        document.getElementById('tabGoMore')?.classList.add('active');
-
-
-        const p = document.getElementById('paneGoMore'); if (p) p.style.display = 'flex';
-
-
+        doc.getElementById('tabGoMore')?.classList.add('active');
+        const p = doc.getElementById('paneGoMore'); if (p) p.style.display = 'flex';
       }
-
-
     }
-
-
     window.switchGameOverlayTab = switchGameOverlayTab;
 
-
-
-
-
     async function loadGameOverlaySettings() {
-
-
       try {
-
-
         const res = await fetch('/api/desktop-overlays');
-
-
         if (!res.ok) return;
-
-
         const data = await res.json();
-
-
         const s = data.settings || {};
-
-
-
-
+        const doc = getGameOverlayDoc();
 
         // Game overlay fields
-
-
-        if (document.getElementById('goGameWidth')) document.getElementById('goGameWidth').value = s.game_overlay_width ?? 360;
-
-
-        if (document.getElementById('goGameHeight')) document.getElementById('goGameHeight').value = s.game_overlay_height ?? 500;
-
-
-        if (document.getElementById('goGameAlpha')) {
-
-
+        if (doc.getElementById('goGameWidth')) doc.getElementById('goGameWidth').value = s.game_overlay_width ?? 360;
+        if (doc.getElementById('goGameHeight')) doc.getElementById('goGameHeight').value = s.game_overlay_height ?? 500;
+        if (doc.getElementById('goGameAlpha')) {
           const alpha = s.game_overlay_alpha ?? 0.85;
-
-
-          document.getElementById('goGameAlpha').value = alpha;
-
-
-          if (document.getElementById('lblGoGameAlpha')) document.getElementById('lblGoGameAlpha').textContent = Math.round(alpha * 100) + '%';
-
-
+          doc.getElementById('goGameAlpha').value = alpha;
+          if (doc.getElementById('lblGoGameAlpha')) doc.getElementById('lblGoGameAlpha').textContent = Math.round(alpha * 100) + '%';
         }
-
-
-        if (document.getElementById('goGameFontSize')) document.getElementById('goGameFontSize').value = s.game_overlay_font_size ?? 14;
-
-
-        if (document.getElementById('goGameTextColor')) document.getElementById('goGameTextColor').value = s.game_overlay_text_color || '#ffffff';
-
-
-
-
+        if (doc.getElementById('goGameFontSize')) doc.getElementById('goGameFontSize').value = s.game_overlay_font_size ?? 14;
+        if (doc.getElementById('goGameTextColor')) doc.getElementById('goGameTextColor').value = s.game_overlay_text_color || '#ffffff';
 
         // Viewer overlay fields
-
-
-        if (document.getElementById('goViewerMode')) document.getElementById('goViewerMode').value = s.viewer_overlay_mode || 'total';
-
-
-        if (document.getElementById('goViewerAlign')) document.getElementById('goViewerAlign').value = s.viewer_overlay_align || 'center';
-
-
-        if (document.getElementById('goViewerWidth')) document.getElementById('goViewerWidth').value = s.viewer_overlay_width ?? 400;
-
-
-        if (document.getElementById('goViewerHeight')) document.getElementById('goViewerHeight').value = s.viewer_overlay_height ?? 80;
-
-
-        if (document.getElementById('goViewerAlpha')) document.getElementById('goViewerAlpha').value = s.viewer_overlay_alpha ?? 1.0;
-
-
-        if (document.getElementById('goViewerFontSize')) document.getElementById('goViewerFontSize').value = s.viewer_overlay_font_size ?? 18;
-
-
-        if (document.getElementById('goViewerIconSize')) document.getElementById('goViewerIconSize').value = s.viewer_overlay_icon_size ?? 24;
-
-
-        if (document.getElementById('goViewerFontColor')) document.getElementById('goViewerFontColor').value = s.viewer_overlay_font_color || '#ffffff';
-
-
-        if (document.getElementById('goViewerTextStroke')) document.getElementById('goViewerTextStroke').checked = s.viewer_overlay_text_stroke !== false;
-
-
-        if (document.getElementById('goViewerTextStrokeColor')) document.getElementById('goViewerTextStrokeColor').value = s.viewer_overlay_text_stroke_color || '#000000';
-
-
-        if (document.getElementById('goViewerTextStrokeWidth')) document.getElementById('goViewerTextStrokeWidth').value = s.viewer_overlay_text_stroke_width ?? 2;
-
-
-        if (document.getElementById('goViewerTextShadow')) document.getElementById('goViewerTextShadow').checked = s.viewer_overlay_text_shadow !== false;
-
-
-        if (document.getElementById('goViewerTextShadowColor')) document.getElementById('goViewerTextShadowColor').value = s.viewer_overlay_text_shadow_color || '#000000';
-
-
-        if (document.getElementById('goViewerTextShadowBlur')) document.getElementById('goViewerTextShadowBlur').value = s.viewer_overlay_text_shadow_blur ?? 3;
-
-
-
-
+        if (doc.getElementById('goViewerMode')) doc.getElementById('goViewerMode').value = s.viewer_overlay_mode || 'total';
+        if (doc.getElementById('goViewerAlign')) doc.getElementById('goViewerAlign').value = s.viewer_overlay_align || 'center';
+        if (doc.getElementById('goViewerWidth')) doc.getElementById('goViewerWidth').value = s.viewer_overlay_width ?? 400;
+        if (doc.getElementById('goViewerHeight')) doc.getElementById('goViewerHeight').value = s.viewer_overlay_height ?? 80;
+        if (doc.getElementById('goViewerAlpha')) doc.getElementById('goViewerAlpha').value = s.viewer_overlay_alpha ?? 1.0;
+        if (doc.getElementById('goViewerFontSize')) doc.getElementById('goViewerFontSize').value = s.viewer_overlay_font_size ?? 18;
+        if (doc.getElementById('goViewerIconSize')) doc.getElementById('goViewerIconSize').value = s.viewer_overlay_icon_size ?? 24;
+        if (doc.getElementById('goViewerFontColor')) doc.getElementById('goViewerFontColor').value = s.viewer_overlay_font_color || '#ffffff';
+        if (doc.getElementById('goViewerTextStroke')) doc.getElementById('goViewerTextStroke').checked = s.viewer_overlay_text_stroke !== false;
+        if (doc.getElementById('goViewerTextStrokeColor')) doc.getElementById('goViewerTextStrokeColor').value = s.viewer_overlay_text_stroke_color || '#000000';
+        if (doc.getElementById('goViewerTextStrokeWidth')) doc.getElementById('goViewerTextStrokeWidth').value = s.viewer_overlay_text_stroke_width ?? 2;
+        if (doc.getElementById('goViewerTextShadow')) doc.getElementById('goViewerTextShadow').checked = s.viewer_overlay_text_shadow !== false;
+        if (doc.getElementById('goViewerTextShadowColor')) doc.getElementById('goViewerTextShadowColor').value = s.viewer_overlay_text_shadow_color || '#000000';
+        if (doc.getElementById('goViewerTextShadowBlur')) doc.getElementById('goViewerTextShadowBlur').value = s.viewer_overlay_text_shadow_blur ?? 3;
 
         // Overlay+ fields
-
-
         const entries = s.more_overlays || [];
-
-
         for (let i = 0; i < 3; i++) {
-
-
           const entry = entries[i] || {};
-
-
-          if (document.getElementById(`goMoreEnabled${i}`)) document.getElementById(`goMoreEnabled${i}`).checked = entry.enabled !== false;
-
-
-          if (document.getElementById(`goMoreUrl${i}`)) document.getElementById(`goMoreUrl${i}`).value = entry.url || '';
-
-
+          if (doc.getElementById('goMoreEnabled' + i)) doc.getElementById('goMoreEnabled' + i).checked = entry.enabled !== false;
+          if (doc.getElementById('goMoreUrl' + i)) doc.getElementById('goMoreUrl' + i).value = entry.url || '';
         }
-
-
       } catch (err) {
-
-
         console.error('Failed to load desktop overlay settings:', err);
-
-
       }
-
-
     }
-
-
     window.loadGameOverlaySettings = loadGameOverlaySettings;
 
-
-
-
-
     async function saveGameOverlaySettings() {
-
-
       try {
-
-
+        const doc = getGameOverlayDoc();
         const overlays = [0, 1, 2].map(i => ({
-
-
-          url: (document.getElementById(`goMoreUrl${i}`)?.value || '').trim(),
-
-
-          enabled: Boolean(document.getElementById(`goMoreEnabled${i}`)?.checked)
-
-
+          url: (doc.getElementById('goMoreUrl' + i)?.value || '').trim(),
+          enabled: Boolean(doc.getElementById('goMoreEnabled' + i)?.checked)
         }));
 
-
-
-
-
         const game = {
-
-
-          game_overlay_width: Number(document.getElementById('goGameWidth')?.value || 360),
-
-
-          game_overlay_height: Number(document.getElementById('goGameHeight')?.value || 500),
-
-
-          game_overlay_alpha: Number(document.getElementById('goGameAlpha')?.value || 0.85),
-
-
-          game_overlay_font_size: Number(document.getElementById('goGameFontSize')?.value || 14),
-
-
-          game_overlay_text_color: document.getElementById('goGameTextColor')?.value || '#ffffff'
-
-
+          game_overlay_width: Number(doc.getElementById('goGameWidth')?.value || 360),
+          game_overlay_height: Number(doc.getElementById('goGameHeight')?.value || 500),
+          game_overlay_alpha: parseFloat(doc.getElementById('goGameAlpha')?.value || 0.85),
+          game_overlay_font_size: Number(doc.getElementById('goGameFontSize')?.value || 14),
+          game_overlay_text_color: doc.getElementById('goGameTextColor')?.value || '#ffffff'
         };
-
-
-
-
 
         const viewer = {
-
-
-          mode: document.getElementById('goViewerMode')?.value || 'total',
-
-
-          align: document.getElementById('goViewerAlign')?.value || 'center',
-
-
-          width: Number(document.getElementById('goViewerWidth')?.value || 400),
-
-
-          height: Number(document.getElementById('goViewerHeight')?.value || 80),
-
-
-          alpha: Number(document.getElementById('goViewerAlpha')?.value || 1.0),
-
-
-          font_size: Number(document.getElementById('goViewerFontSize')?.value || 18),
-
-
-          icon_size: Number(document.getElementById('goViewerIconSize')?.value || 24),
-
-
-          font_color: document.getElementById('goViewerFontColor')?.value || '#ffffff',
-
-
-          text_stroke: Boolean(document.getElementById('goViewerTextStroke')?.checked),
-
-
-          text_stroke_color: document.getElementById('goViewerTextStrokeColor')?.value || '#000000',
-
-
-          text_stroke_width: Number(document.getElementById('goViewerTextStrokeWidth')?.value || 2),
-
-
-          text_shadow: Boolean(document.getElementById('goViewerTextShadow')?.checked),
-
-
-          text_shadow_color: document.getElementById('goViewerTextShadowColor')?.value || '#000000',
-
-
-          text_shadow_blur: Number(document.getElementById('goViewerTextShadowBlur')?.value || 3)
-
-
+          viewer_overlay_mode: doc.getElementById('goViewerMode')?.value || 'total',
+          viewer_overlay_align: doc.getElementById('goViewerAlign')?.value || 'center',
+          viewer_overlay_width: Number(doc.getElementById('goViewerWidth')?.value || 400),
+          viewer_overlay_height: Number(doc.getElementById('goViewerHeight')?.value || 80),
+          viewer_overlay_alpha: parseFloat(doc.getElementById('goViewerAlpha')?.value || 1.0),
+          viewer_overlay_font_size: Number(doc.getElementById('goViewerFontSize')?.value || 18),
+          viewer_overlay_icon_size: Number(doc.getElementById('goViewerIconSize')?.value || 24),
+          viewer_overlay_font_color: doc.getElementById('goViewerFontColor')?.value || '#ffffff',
+          viewer_overlay_text_stroke: Boolean(doc.getElementById('goViewerTextStroke')?.checked),
+          viewer_overlay_text_stroke_color: doc.getElementById('goViewerTextStrokeColor')?.value || '#000000',
+          viewer_overlay_text_stroke_width: Number(doc.getElementById('goViewerTextStrokeWidth')?.value || 2),
+          viewer_overlay_text_shadow: Boolean(doc.getElementById('goViewerTextShadow')?.checked),
+          viewer_overlay_text_shadow_color: doc.getElementById('goViewerTextShadowColor')?.value || '#000000',
+          viewer_overlay_text_shadow_blur: Number(doc.getElementById('goViewerTextShadowBlur')?.value || 3)
         };
 
-
-
-
-
         const res = await fetch('/api/desktop-overlays', {
-
-
           method: 'POST',
-
-
           headers: { 'Content-Type': 'application/json' },
-
-
-          body: JSON.stringify({ action: 'configure', overlays, game, viewer })
-
-
+          body: JSON.stringify({
+            action: 'configure',
+            overlays,
+            game,
+            viewer
+          })
         });
 
-
-        const result = await res.json();
-
-
-        if (!res.ok) throw new Error(result.error || 'บันทึกไม่สำเร็จ');
-
-
-        showToast('💾 บันทึกการตั้งค่า Game Overlay เรียบร้อยแล้ว');
-
-
+        if (res.ok) {
+          showToast('💾 บันทึกการตั้งค่า Game Overlay เรียบร้อยแล้ว');
+          closeToolWindow('game-overlay');
+        } else {
+          showToast('❌ เกิดข้อผิดพลาดในการบันทึก');
+        }
       } catch (err) {
-
-
-        showToast('❌ ' + err.message);
-
-
+        showToast('❌ เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
       }
-
-
     }
-
-
     window.saveGameOverlaySettings = saveGameOverlaySettings;
 
 

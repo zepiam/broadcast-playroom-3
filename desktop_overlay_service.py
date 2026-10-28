@@ -33,9 +33,25 @@ class DesktopOverlays:
       if item.get('demo_stop'):item['demo_stop'].set();item['demo_stop']=None;self.command(item,'demo_state',running=False)
       elif command=='toggle_demo':
        item['demo_stop']=threading.Event();self.command(item,'demo_state',running=True);threading.Thread(target=self._demo,args=(item,item['demo_stop']),daemon=True).start()
-     elif command=='open_settings':self.publish({'event':'DESKTOP_OVERLAY_SETTINGS','payload':{'kind':item['kind']}})
+     elif command=='open_settings':self._bring_app_to_front();self.publish({'event':'DESKTOP_OVERLAY_SETTINGS','payload':{'kind':item['kind']}})
   with self.lock:
    if item['id'] in self.instances and item['process'].poll() is not None:self._close(item)
+ def _bring_app_to_front(self):
+  try:
+   import ctypes
+   u=ctypes.windll.user32
+   def _cb(h,_):
+    if u.IsWindowVisible(h):
+     l=u.GetWindowTextLengthW(h)
+     if l>0:
+      b=ctypes.create_unicode_buffer(l+1)
+      u.GetWindowTextW(h,b,l+1)
+      if 'Broadcast Playroom' in b.value:
+       u.ShowWindow(h,9);u.SetForegroundWindow(h)
+    return True
+   CMP=ctypes.WINFUNCTYPE(ctypes.c_bool,ctypes.c_int,ctypes.c_int)
+   u.EnumWindows(CMP(_cb),0)
+  except Exception:pass
  def _demo(self,item,stop):
   while not stop.is_set() and item['process'].poll() is None:
    self.publish({'event':'DESKTOP_CHAT_MESSAGE','payload':{'kind':item['kind'],'message':{'username':'ทดสอบ Overlay','author':'ทดสอบ Overlay','text':'ข้อความทดสอบ Game Overlay','platform':'Twitch'}}})
