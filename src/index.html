@@ -11255,7 +11255,7 @@
         else url = `https://mylive.in.th/${raw.replace(/^@/, '')}`;
       }
 
-      if (url) window.open(url, '_blank');
+      if (url) openExternalUrl(url);
 
     }
 
@@ -11557,6 +11557,22 @@
 
 
 
+    function openExternalUrl(url) {
+      if (!url) return;
+      try {
+        fetch('/api/open-external', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: url })
+        }).catch(() => {
+          window.open(url, '_blank');
+        });
+      } catch (_) {
+        window.open(url, '_blank');
+      }
+    }
+    window.openExternalUrl = openExternalUrl;
+
     function editPlatformStreamInfo(key) {
       const target = getPlatformChannel(key) || _platformStates[key]?.target || '';
       const slug = (target || '').trim().replace(/^@/, '');
@@ -11575,7 +11591,7 @@
         url = 'https://mylive.in.th/';
       }
       if (url) {
-        window.open(url, '_blank');
+        openExternalUrl(url);
         showToast(`🔗 เปิดหน้าแก้ไขข้อมูลสตรีม ${key.toUpperCase()}`);
       } else {
         openToolWindow('settings');

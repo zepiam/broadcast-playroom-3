@@ -185,3 +185,21 @@ pm run build และ python sync_trial_frontend.py สำเร็จ
     - เมื่อกดย้อนกลับ: Modal ปิด และปุ่ม Rail ยังคงค้างแสดงอยู่ (`is_rail_still_visible: True`)
     - เมื่อกดยืนยันอัปเดต: แถบสถานะแสดงผล และเรียก `/api/apply-update` สำเร็จ
 - **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀
+
+## [2026-10-28 20:03] Antigravity (External Browser Links Routed to Default System Browser)
+- **ผู้ดำเนินงาน/ทีม:** Antigravity
+- **เป้าหมาย / คำสั่งของผู้ใช้:**
+  - ชี้แจงและแก้ไขสาเหตุที่เวลากดปุ่ม Edit Title หรือเปิดลิงก์เชื่อมต่อต่างๆ โปรแกรมเปิดเป็นหน้าต่างคล้าย Incognito (โหมดไม่ระบุตัวตน) ทำให้ต้องล็อกอินใหม่ตลอดเวลา
+- **สาเหตุที่พบ (Root Cause Analysis):**
+  - ตัวโปรแกรมหลักรันผ่าน Chromium ด้วยแฟล็ก Desktop App (`--app=...`) พร้อมแยกโปรไฟล์เดี่ยวไว้ที่ `%LOCALAPPDATA%\BroadcastPlayroom3\browser_profile` (ปิดปลั๊กอิน/ส่วนขยายทั้งหมดเพื่อความเร็วและเบา)
+  - โค้ดเดิมใช้ `window.open(url, '_blank')` เมื่อกดปุ่ม เช่น Edit Title ซึ่งทำให้ Chromium สั่งเปิดหน้าต่างใหม่**ภายใต้โปรไฟล์แยก (Sandbox) ตัวเดิมของโปรแกรม**
+  - ส่งผลให้หน้าต่างนั้นไม่มีคุกกี้, ไม่มีประวัติการล็อกอิน Twitch/YouTube/Kick, ไม่มีส่วนขยายของผู้ใช้ ทำให้มีลักษณะเหมือนโหมด Incognito ทุกประการ
+- **สิ่งที่ได้ดำเนินการแก้ไข:**
+  - เพิ่ม Backend Endpoint `/api/open-external` ใน `launch_dev.py` (รองรับทั้ง GET และ POST ตรวจสอบ Origin และ URL scheme ให้ปลอดภัย) โดยใช้ `webbrowser.open(url)` ส่งคำขอให้ระบบปฏิบัติการ Windows เปิดลิงก์ด้วย Default Browser หลักของเครื่อง
+  - เพิ่มฟังก์ชัน `openExternalUrl(url)` ใน `src/index.html` พร้อม fallback ไปยัง `window.open` หาก API ไม่ตอบสนอง
+  - ปรับ `editPlatformStreamInfo(key)` และ `openPlatformChannelWeb(key, target)` ให้เรียกผ่าน `openExternalUrl(url)` แทน `window.open(url, '_blank')`
+  - ทำการ Rebuild Frontend (`npm run build`) และซิงค์ Trial Builds (`python sync_trial_frontend.py`)
+- **ผลการทดสอบ (Verification Results):**
+  - รันการทดสอบ Playwright (`scratch/test_external_url.py`): ตรวจสอบการคลิกปุ่ม Edit ของ Twitch, YouTube และ GitHub ลิงก์ถูกส่งไปยัง `/api/open-external` อย่างถูกต้อง
+  - เมื่อเปิดผ่านระบบปฏิบัติการ ลิงก์จะถูกเปิดด้วยเบราว์เซอร์จริงที่ผู้ใช้ล็อกอินบัญชีสตรีมเมอร์ค้างไว้อยู่แล้วทันที
+- **สถานะ:** เสร็จสมบูรณ์ (Completed & Verified) 🚀

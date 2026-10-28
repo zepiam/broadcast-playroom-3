@@ -454,3 +454,10 @@ Current next work: user acceptance on actual OBS/live accounts and their own lon
 - Cancelling or clicking back dismisses the modal while persistently keeping the glowing update button visible on the left rail ("ค้างปุ่มอัพเดททิ้งไว้").
 - Confirming triggers `/api/apply-update`, showing progress and invoking `perform_update_and_restart()` in `updater.py` / `launch_dev.py` for automated patch apply and process restart.
 - Verified all flows via Playwright test `scratch/test_fast_update_flow.py`. Rebuilt and synced all packages.
+
+## 2026-10-28 — External Links Routed to System Default Browser (Antigravity)
+- Investigated user issue where clicking Edit Title or external links opened an "incognito-like" window requiring re-login.
+- Identified root cause: the app runs inside an isolated Chromium sandbox profile (`--app=... --user-data-dir=...`). Invoking `window.open(url, '_blank')` inside Chromium spawned popups inside that same isolated profile lacking user cookies, saved credentials, and extensions.
+- Added `/api/open-external` backend endpoint in `launch_dev.py` using Python `webbrowser.open()` to delegate URL opening directly to Windows OS and the user's primary default browser profile.
+- Implemented `openExternalUrl(url)` in `src/index.html` and migrated `editPlatformStreamInfo` and `openPlatformChannelWeb` to use it.
+- Verified through Playwright test `scratch/test_external_url.py`. Rebuilt and synced all builds.

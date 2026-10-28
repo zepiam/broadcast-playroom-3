@@ -519,6 +519,24 @@ class QuietHandler(SimpleHTTPRequestHandler):
             except Exception:self.send_json({'error':'ไม่สามารถทำรายการ DNS ได้'},500)
             return
 
+        if path == '/api/open-external':
+            try:
+                origin = urllib.parse.urlparse(self.headers.get('Origin', ''))
+                if origin.scheme != 'http' or origin.hostname not in ('localhost', '127.0.0.1') or origin.port != self.server.server_port:
+                    self.send_json({'error': 'Invalid origin'}, 403); return
+                size = int(self.headers.get('Content-Length', 0))
+                if not 0 < size <= 4096: raise ValueError('invalid size')
+                data = json.loads(self.rfile.read(size))
+                url = str(data.get('url', '')).strip()
+                if not (url.startswith('http://') or url.startswith('https://')):
+                    self.send_json({'error': 'Invalid URL scheme'}, 400); return
+                import webbrowser
+                webbrowser.open(url)
+                self.send_json({'ok': True})
+            except Exception as e:
+                self.send_json({'error': str(e)}, 500)
+            return
+
         if path == '/api/apply-update':
             try:
                 res = perform_update_and_restart()
@@ -1034,6 +1052,15 @@ class QuietHandler(SimpleHTTPRequestHandler):
             response_data = check_for_update()
         elif path == '/api/apply-update':
             response_data = perform_update_and_restart()
+        elif path == '/api/open-external':
+            query = urllib.parse.parse_qs(parsed.query)
+            url = query.get('url', [''])[0].strip()
+            if url.startswith('http://') or url.startswith('https://'):
+                import webbrowser
+                webbrowser.open(url)
+                response_data = {'ok': True}
+            else:
+                response_data = {'error': 'Invalid URL scheme'}
         else:
             response_data = {'error': 'Unknown endpoint'}
 
