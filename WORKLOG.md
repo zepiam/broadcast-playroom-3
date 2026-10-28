@@ -99,3 +99,21 @@
   - รัน 
 pm run build และ python sync_trial_frontend.py สำเร็จ
 - **สถานะ:** ทำแล้วและตรวจผ่าน (Completed & Verified) ✅
+
+
+---
+
+## [2026-10-28 19:07] — Antigravity (New GitHub Repository Created: broadcast-playroom-3)
+- **เครื่องมือที่ทำงาน:** Antigravity
+- **เหตุผล / คำสั่งจากผู้ใช้:**
+  - สร้าง GitHub repository ใหม่สำหรับ Broadcast Playroom 3 (เริ่มต้นที่เวอร์ชัน 3.0.0) แยกจาก repository เดิม (roadcast-playroom-ex)
+- **สิ่งที่ดำเนินการ:**
+  - อัปเดต .gitignore เพิ่มการละเว้น __pycache__/, *.pyc, scratch/, และ .pytest_cache/
+  - ลบไฟล์แคช __pycache__ ออกจาก git tracking
+  - ทำการ Commit โครงสร้างและโค้ดทั้งหมดเป็น Initial Baseline: Broadcast Playroom 3.0.0 Release Baseline
+  - ใช้ GitHub CLI (gh) สร้าง Public Repository ใหม่: https://github.com/zepiam/broadcast-playroom-3
+  - ตั้งค่า remote origin เชื่อมต่อไปยัง repo ใหม่ และ Push branch master ขึ้น GitHub เรียบร้อย
+- **ผลการตรวจสอบ (Verification Results):**
+  - ตรวจสอบ git remote -v: ชี้ไปยัง https://github.com/zepiam/broadcast-playroom-3.git ถูกต้อง
+  - ตรวจสอบ gh repo view zepiam/broadcast-playroom-3: เข้าถึงได้สมบูรณ์และแสดงผล README ถูกต้อง
+- **สถานะ:** ทำแล้วและตรวจผ่าน (Completed & Verified) ✅

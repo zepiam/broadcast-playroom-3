@@ -1,6 +1,6 @@
 # HANDOFF — Broadcast Playroom 3
 
-Updated 2026-10-28 by Antigravity. Branch master, baseline HEAD 6acbca4. All work UNCOMMITTED. Single active modifier Antigravity. Read AGENTS.md and latest WORKLOG before editing. Legacy reference sibling broadcast playroom dev is READ ONLY. Never claim full parity/GPU0/release readiness without proof.
+Updated 2026-10-28 by Antigravity. Branch master, GitHub Repo: https://github.com/zepiam/broadcast-playroom-3 (Baseline 3.0.0 commit a6ed4d4). Single active modifier Antigravity. Read AGENTS.md and latest WORKLOG before editing. Legacy reference sibling broadcast playroom dev is READ ONLY. Never claim full parity/GPU0/release readiness without proof.
 
 ## User intent and exceptions
 Clone original runtime/Overlay behavior and preserve legacy OBS URLs/profiles/media. Embedded Composer and redesigned Widget Settings can differ visually. Remove Event list/RVC mocks; suppress configured viewer commands from TTS; FULL actual RVC select/import/download, Lite no RVC. User is AFK and authorizes autonomous fixes/tests using old app as reference. Twitch target ateliersage, no chat messages sent.
