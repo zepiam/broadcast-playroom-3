@@ -15,7 +15,7 @@
    const spoken=state.tts==='remove'?remove(speech).replace(/\s+/g,' ').trim():'';
    if(state.display==='hide')return {display:msg,hide:true,speech:spoken,matched:true};
    const segments=window.BP3ChatContent.parts(msg).map(part=>part.type==='text'?{...part,content:mask(part.content)}:part.type==='emoji'?{type:'emoji',char:part.content}:part);
-   const display={...msg,segments,text:mask(msg.text),raw_text:mask(msg.raw_text),original_text:mask(msg.original_text),is_translated:false};
+   const display={...msg,segments,text:mask(msg.text),raw_text:mask(msg.raw_text),original_text:mask(msg.original_text),is_translated:!!msg.is_translated};
    return {display,hide:false,speech:spoken,matched:true};
   },
   importLegacy(tools){

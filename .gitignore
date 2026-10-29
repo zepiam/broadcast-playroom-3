@@ -42,3 +42,6 @@ __pycache__/
 *.pyc
 scratch/
 .pytest_cache/
+
+build/
+dist_releases/

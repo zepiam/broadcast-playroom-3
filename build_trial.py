@@ -20,7 +20,8 @@ command = [sys.executable, '-m', 'PyInstaller', '--onedir', '--name', name,
            '--icon', str(root / 'src' / 'assets' / ('icon_' + args.edition + '.ico')),
            '--collect-all', 'edge_tts']
 for module in ('desktop_overlay_qt', 'edge_tts', 'chat_twitch', 'chat_kick', 'chat_soop',
-               'chat_mylive', 'PySide6.QtWebEngineWidgets', 'PySide6.QtWebChannel'):
+               'chat_mylive', 'PySide6.QtWebEngineWidgets', 'PySide6.QtWebChannel',
+               'app_window_frame', 'win32crypt', 'psutil', 'win32gui', 'win32process', 'win32con'):
     command += ['--hidden-import', module]
 for module in ('tensorflow', 'matplotlib', 'IPython'):
     command += ['--exclude-module', module]
@@ -42,4 +43,26 @@ for folder in ('dist/assets', 'src/assets'):
     for imported in (output / 'dist' / name / '_internal' / folder).glob('shout_*'):
         if imported.is_file():
             imported.unlink()
+
+# Patch PE subsystem to Windows GUI (2)
+def patch_pe_subsystem_to_gui(exe_path):
+    import struct
+    try:
+        with open(exe_path, "r+b") as f:
+            f.seek(0x3C)
+            pe_offset = struct.unpack("<I", f.read(4))[0]
+            sub_offset = pe_offset + 0x5C
+            f.seek(sub_offset)
+            current_sub = struct.unpack("<H", f.read(2))[0]
+            if current_sub == 3:
+                f.seek(sub_offset)
+                f.write(struct.pack("<H", 2))
+                print(f"Patched {exe_path.name} to Windows GUI (no console) successfully!")
+    except Exception as e:
+        print(f"Error patching PE subsystem: {e}")
+
+exe_file = output / 'dist' / name / (name + '.exe')
+if exe_file.exists():
+    patch_pe_subsystem_to_gui(exe_file)
+
 print('LOCAL TRIAL ONLY:', output / 'dist' / name)

@@ -12,7 +12,17 @@ class RVCService:
         data_root=Path(os.environ.get('BP3_DATA_DIR', ROOT))
         self.model_dir=Path(model_dir or data_root/'rvc_models')
         self.state_file=Path(state_file or data_root/'rvc_settings.json')
-        self.roots=list(roots or [self.model_dir,ROOT.parent/'broadcast playroom dev'/'rvc_models',Path.home()/'.tts-for-livestream'/'voices'])
+        app_local = Path(os.environ.get('LOCALAPPDATA', '')) / 'BroadcastPlayroom3'
+        self.roots = list(roots or [
+            self.model_dir,
+            ROOT / 'rvc_models',
+            ROOT.parent / 'rvc_models',
+            ROOT.parent / 'data' / 'rvc_models',
+            app_local / 'data' / 'rvc_models',
+            app_local / 'rvc_models',
+            ROOT.parent / 'broadcast playroom dev' / 'rvc_models',
+            Path.home() / '.tts-for-livestream' / 'voices'
+        ])
         self.lock=threading.RLock();self.model_lock=threading.Lock()
         self.engine_factory=engine_factory;self.downloader=downloader
         self.engine=None;self.cancel_event=threading.Event();self.worker=None
@@ -90,6 +100,17 @@ class RVCService:
                     self.engine=engine
                     matching=[p for p in model['path'].parent.glob('*.index') if model['path'].stem.lower() in p.stem.lower()]
                     self.index_path=str(matching[0]) if matching else ''
+                    # Warm up the engine with a brief silent buffer so the first real user message converts instantly
+                    try:
+                        import numpy as np
+                        dummy = np.zeros(8000, dtype=np.float32)
+                        if self.engine_factory:
+                            self.engine.convert_array(dummy, 16000)
+                        else:
+                            from rvc_engine import RVCParams
+                            self.engine.convert_array(dummy, 16000, RVCParams(index_path=self.index_path))
+                    except Exception as warmup_err:
+                        logging.getLogger(__name__).debug('RVC warmup notice: %s', warmup_err)
                 with self.lock:self.data.update(state='ready',enabled=True,loaded=True,progress=100,error='')
                 self._save()
             except Exception as error:
@@ -145,6 +166,15 @@ class RVCService:
 
     def convert(self,audio_bytes):
         if self.edition!='full':return audio_bytes,'audio/mpeg'
+
+        # If RVC model is currently loading, wait for worker thread to complete instead of discarding RVC
+        with self.lock:
+            is_loading = (self.data.get('state') == 'loading')
+            worker = self.worker
+        if is_loading and worker and worker.is_alive():
+            logging.getLogger(__name__).info('RVC model is still loading; waiting for initialization to finish...')
+            worker.join(timeout=10.0)
+
         with self.lock:enabled=self.data['enabled'] and self.data['loaded']
         if not enabled:return audio_bytes,'audio/mpeg'
         import numpy as np

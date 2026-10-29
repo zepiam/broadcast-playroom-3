@@ -37,15 +37,30 @@ class Translator:
     _rate_limiter = RateLimiter(max_requests=120, window_seconds=300)
     _cache: dict[str, tuple[str, str]] = {}  # cache_key -> (translated_text, detected_lang)
 
-    def __init__(self, provider: str = "google", api_key: str = "", target_lang: str = "th"):
+    def __init__(self, provider: str = "google", api_key: str = "", host: str = "", target_lang: str = "th", supported_langs: list = None, **kwargs):
         self.provider = provider or "google"
         self.api_key = api_key or ""
+        self.host = host or ""
         self.target_lang = target_lang or "th"
+        self.supported_langs = supported_langs or []
+
+    def translate_text(self, text: str, source_lang: str = "auto") -> Optional[str]:
+        """Convenience method returning only the translated text or None."""
+        translated, _ = self.translate(text, source_lang)
+        return translated
 
     def translate(self, text: str, source_lang: str = "auto") -> tuple[Optional[str], Optional[str]]:
         """Returns (translated_text, detected_source_lang) or (None, None)."""
         clean = (text or "").strip()
         if not clean or len(clean) > 500:
+            return None, None
+
+        # Ignore bot commands, symbols and triggers (!command, -voice, etc.)
+        if clean.startswith(('!', '/', '-', '#', '$', '~')):
+            return None, None
+
+        # Skip text without any alphabetic letters (only digits, punctuation, emojis)
+        if not any(ch.isalpha() for ch in clean):
             return None, None
 
         # Check if already purely Thai or punctuation/digits
@@ -56,12 +71,35 @@ class Translator:
         if has_thai and not has_latin_or_cjk:
             return None, "th"
 
-        cache_key = f"{self.target_lang}:{clean}"
+        cache_key = f"{self.provider}:{self.target_lang}:{clean}"
         if cache_key in self._cache:
             return self._cache[cache_key]
 
         if not self._rate_limiter.can_request():
             return None, None
+
+        # 0. DeepL API if provider is deepl and API key is provided
+        if self.provider == "deepl" and self.api_key:
+            try:
+                base = (self.host or "https://api-free.deepl.com").rstrip("/")
+                url = f"{base}/v2/translate"
+                params = urllib.parse.urlencode({
+                    "auth_key": self.api_key,
+                    "text": clean,
+                    "target_lang": self.target_lang.upper() if self.target_lang != "th" else "TH",
+                }).encode("utf-8")
+                req = urllib.request.Request(url, data=params, headers={"User-Agent": "BroadcastPlayroom/3.0"})
+                with urllib.request.urlopen(req, timeout=5) as res:
+                    raw = res.read().decode("utf-8")
+                    data = json.loads(raw)
+                    trans = data.get("translations", [{}])[0].get("text", "").strip()
+                    detected = (data.get("translations", [{}])[0].get("detected_source_language", "auto") or "auto").lower()
+                    if trans and trans.lower() != clean.lower():
+                        self._cache[cache_key] = (trans, detected)
+                        return trans, detected
+                    return None, detected
+            except Exception as exc:
+                _log.debug("DeepL translate error: %s", exc)
 
         try:
             # 1. Primary: Google GTX Translation API (free, reliable, built-in)

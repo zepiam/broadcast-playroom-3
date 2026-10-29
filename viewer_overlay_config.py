@@ -9,6 +9,7 @@ def snapshot(layout,statuses):
 def configure(settings,values):
  import re
  for key,value in values.items():
+  if key.startswith('viewer_overlay_'):key=key[len('viewer_overlay_'):]
   if key in ('mode','align'):
    if value not in ({'off','total','per_platform'} if key=='mode' else {'left','center','right','flex-start','flex-end'}):raise ValueError('Invalid viewer option')
   elif key in ('text_stroke','text_shadow'):value=bool(value)

@@ -170,7 +170,7 @@
   }
   function updateViewers(data) {
     viewerState=data;
-    document.querySelectorAll('.widget.type-viewer').forEach(el=>{
+    document.querySelectorAll('.widget.type-viewer, .widget-type-viewer').forEach(el=>{
       el.querySelectorAll('.viewer-total .viewer-ticker').forEach(node=>node.textContent=String(data.total || 0));
       el.querySelectorAll('[data-platform-ticker]').forEach(node=>node.textContent=String(data.per_platform?.[node.dataset.platformTicker] || 0));
     });

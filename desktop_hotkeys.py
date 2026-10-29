@@ -3,6 +3,7 @@ import ctypes,threading
 from ctypes import wintypes
 class DesktopHotkey:
  def __init__(self,chord,callback):
+  self.chord=chord.lower()
   parts=chord.lower().replace('control','ctrl').split('+');mods=0
   for part in parts[:-1]:
    if part not in {'ctrl':2,'shift':4,'alt':1,'win':8}:raise ValueError('Unsupported hotkey modifier')

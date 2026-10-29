@@ -1260,6 +1260,11 @@ def main():
 
             demo_btn.style().polish(demo_btn)
 
+        elif cmd == "set_size":
+            width = max(80, min(3840, int(msg.get("width", win.width()))))
+            height = max(40, min(2160, int(msg.get("height", win.height()))))
+            win.resize(width, height)
+
         elif cmd == "set_alpha":
 
             # ★ alpha คุม webview content ผ่าน body opacity (ไม่ใช้ QGraphicsOpacityEffect)

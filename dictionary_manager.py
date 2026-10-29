@@ -57,22 +57,64 @@ class DictionaryManager:
             
             incoming = data.get("replace_words", {})
             if isinstance(incoming, dict) and incoming:
-                # Merge into existing words
+                added_count = 0
                 for k, v in incoming.items():
                     if isinstance(v, dict):
                         read_word = v.get('read', '') or v.get('display', '') or k
-                        self._words[k] = read_word
                     elif isinstance(v, str):
-                        self._words[k] = v
+                        read_word = v
+                    else:
+                        read_word = str(v)
+                    
+                    if k not in self._words:
+                        added_count += 1
+                        self._words[k] = read_word
+                    elif self._words[k] != read_word:
+                        self._words[k] = read_word
+
                 import time
                 self._last_sync_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
                 self.save_local()
-                print(f"[DICT] Successfully synced {len(incoming)} words from men9ch.com! Total: {len(self._words)}")
-                return {'success': True, 'count': len(self._words), 'last_sync': self._last_sync_time}
+                print(f"[DICT] Successfully synced {len(incoming)} words from men9ch.com! Added: {added_count}, Total: {len(self._words)}")
+                return {'success': True, 'added': added_count, 'total': len(self._words), 'count': len(self._words), 'last_sync': self._last_sync_time}
+            return {'success': True, 'added': 0, 'total': len(self._words), 'count': len(self._words), 'last_sync': self._last_sync_time}
         except Exception as e:
             print(f"[DICT] Sync failed: {e}")
             return {'success': False, 'error': str(e)}
 
+    def import_dict(self, data):
+        """Import dictionary entries from parsed JSON data (dict or list)."""
+        if not isinstance(data, dict):
+            return {'success': False, 'error': 'ข้อมูล JSON ไม่ถูกต้อง'}
+        
+        # Support both {"replace_words": {...}} and flat {"word": "rep"}
+        incoming = data.get("replace_words", data)
+        if not isinstance(incoming, dict):
+            return {'success': False, 'error': 'ไม่พบคลังคำศัพท์ในไฟล์'}
+        
+        added_count = 0
+        skipped_count = 0
+        for k, v in incoming.items():
+            k_str = str(k).strip()
+            if not k_str:
+                continue
+            if isinstance(v, dict):
+                read_word = v.get('read', '') or v.get('display', '') or k_str
+            else:
+                read_word = str(v).strip()
+            
+            if k_str not in self._words:
+                self._words[k_str] = read_word
+                added_count += 1
+            else:
+                skipped_count += 1
+                
+        if added_count > 0:
+            import time
+            self._last_sync_time = time.strftime('%d/%m/%Y %H:%M:%S', time.localtime())
+            self.save_local()
+            
+        return {'success': True, 'added': added_count, 'skipped': skipped_count, 'total': len(self._words)}
     def get_all(self):
         return {
             'replace_words': self._words,

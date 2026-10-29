@@ -24,7 +24,7 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: #1e1f22;
+  background: var(--dc-bg-rail, #1e1f22);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   overflow-x: auto;
   flex-shrink: 0;

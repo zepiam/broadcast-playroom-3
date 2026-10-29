@@ -25,6 +25,9 @@ When you start a session or pick up a task in this project, **you must read `HAN
 6. **Detailed Handoff Points**: Explicitly state stopping point, resumption steps, and exact terminal commands. Never log secrets or tokens.
 7. **Single Active Modifier**: One AI modifies code at a time to prevent conflicts.
 
+## Mandatory completion reminder — applies to every AI
+Before reporting work finished or handing it to another AI, update **both `HANDOFF.md` and `WORKLOG.md`**. This is an explicit user requirement, including small UI/text changes. Record what changed, actual verification results, remaining work and how to resume. Keep WORKLOG append-only; never claim an unrun test passed. Updating only one file is incomplete. Do not wait for the user to remind you.
+
 ---
 
 ## Quality & Performance Constraints:
@@ -32,3 +35,4 @@ When you start a session or pick up a task in this project, **you must read `HAN
 - **Zero GPU Lockup**: No full-screen `backdrop-filter: blur(...)`. Use CSS containment `contain: layout style paint; isolation: isolate;`. Settle to 0% GPU idle when viewing.
 - **Standby Transparency**: All overlays (Ask, Giveaway, Randomizer, Replie) must be 100% transparent and cleanly dismissed when not actively in use.
 - **Tone**: Polite, friendly Thai ending with "ครับ". Never use the "ใบเตย" persona.
+- **No Parenthetical Explanations / Multilingual Descriptions**: Never append parenthetical descriptions or explanations after option/button/theme names (e.g. omit `(...)`, keep clean concise names only without appending Thai/multilingual descriptions in parentheses).

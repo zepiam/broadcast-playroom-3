@@ -5,7 +5,7 @@ class DesktopOverlays:
  def __init__(self,get_layout,save_layout,publish):
   self.get_layout=get_layout;self.save_layout=save_layout;self.publish=publish;self.instances={};self.hotkeys={};self.lock=threading.RLock();atexit.register(self.stop)
  def snapshot(self):
-  with self.lock:return {'instances':[{key:value for key,value in item.items() if key in ('id','kind','index','hwnd','ready','editing','click_through','error')} for item in self.instances.values() if item['process'].poll() is None]}
+  with self.lock:return {'instances':[{**{key:value for key,value in item.items() if key in ('id','kind','index','hwnd','ready','editing','click_through','error')},'demo_running':bool(item.get('demo_stop'))} for item in self.instances.values() if item['process'].poll() is None]}
  def command(self,item,cmd,**values):
   item['process'].stdin.write(json.dumps({'cmd':cmd,**values})+'\n');item['process'].stdin.flush()
  def _read(self,item):
@@ -55,7 +55,10 @@ class DesktopOverlays:
  def _demo(self,item,stop):
   while not stop.is_set() and item['process'].poll() is None:
    self.publish({'event':'DESKTOP_CHAT_MESSAGE','payload':{'kind':item['kind'],'message':{'username':'ทดสอบ Overlay','author':'ทดสอบ Overlay','text':'ข้อความทดสอบ Game Overlay','platform':'Twitch'}}})
-   stop.wait(5)
+   settings=(self.get_layout() or {}).get('legacyTools') or {}
+   try: interval=max(1,min(60,float(settings.get('game_overlay_demo_interval',5))))
+   except (TypeError,ValueError): interval=5
+   stop.wait(interval)
  def _ensure_hotkeys(self,kind,base):
   if kind not in ('game','overlay+'):return
   settings=(self.get_layout() or {}).get('legacyTools') or {}
@@ -69,6 +72,14 @@ class DesktopOverlays:
      binding=settings.get(prefix+'_hotkey'+suffix) or default
      self.hotkeys[key]=DesktopHotkey(binding,lambda action=action,kind=kind:self.act(action,kind,base))
   except Exception:pass
+ def rebind_game_hotkey(self,action,chord,base):
+  if action not in ('toggle','edit'):raise ValueError('Invalid hotkey action')
+  from desktop_hotkeys import DesktopHotkey
+  key=('game',action);previous=self.hotkeys.get(key)
+  if previous and getattr(previous,'chord',None)==chord:return
+  replacement=DesktopHotkey(chord,lambda:self.act(action,'game',base))
+  self.hotkeys[key]=replacement
+  if previous:previous.close()
  def _start(self,kind,index,url,config):
   ident='bp3-'+uuid.uuid4().hex;folder=tempfile.TemporaryDirectory(prefix=ident+'-');log=open(Path(folder.name)/'stderr.log','w',encoding='utf-8')
   args=([sys.executable,'--desktop-overlay'] if getattr(sys,'frozen',False) else [sys.executable,str(Path(__file__).with_name('desktop_overlay_qt.py'))])+['--id',ident,'--mode',kind,'--url',url]
@@ -83,6 +94,13 @@ class DesktopOverlays:
    if action=='edit':
     if kind=='game':running += [item for item in self.instances.values() if item['kind']=='viewer' and item['process'].poll() is None]
     for item in running:item['editing']=not item['editing'];self.command(item,'edit_on' if item['editing'] else 'edit_off')
+   elif action=='demo' and kind=='game':
+    if not running:raise ValueError('กรุณาเปิด Game Overlay ก่อนเริ่ม Demo')
+    for item in running:
+     if item.get('demo_stop'):
+      item['demo_stop'].set();item['demo_stop']=None;self.command(item,'demo_state',running=False)
+     else:
+      item['demo_stop']=threading.Event();self.command(item,'demo_state',running=True);threading.Thread(target=self._demo,args=(item,item['demo_stop']),daemon=True).start()
    elif action=='stop' or (action=='toggle' and running):
     for item in running:self._close(item)
    elif action=='toggle':

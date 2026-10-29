@@ -13,7 +13,7 @@
   width: 760px;
   max-width: calc(100vw - 100px);
   max-height: calc(100vh - 100px);
-  background-color: #232428;
+  background-color: var(--dc-bg-card, #232428);
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: var(--radius-lg);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
@@ -33,7 +33,7 @@
 .floating-header {
   height: 48px;
   padding: 0 16px;
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-rail, #1e1f22);
   border-bottom: 1px solid var(--dc-border);
   display: flex;
   align-items: center;
@@ -131,14 +131,14 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  background-color: #2b2d31;
+  background-color: var(--dc-bg-main, #2b2d31);
 }
 
 /* Stepper Bar (ก้าวการทำงานของ Giveaway) */
 .stepper-bar {
   display: flex;
   align-items: center;
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-rail, #1e1f22);
   border-radius: var(--radius-sm);
   padding: 4px;
   gap: 6px;
@@ -177,7 +177,7 @@
 /* Nav Tabs ภายในหน้าต่าง */
 .win-tabs {
   display: flex;
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-rail, #1e1f22);
   padding: 4px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--dc-border);
@@ -200,7 +200,7 @@
 }
 
 .win-tab-btn.active {
-  background-color: #35373c;
+  background-color: var(--dc-bg-card-hover, #35373c);
   color: var(--dc-text-primary);
   box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
@@ -214,7 +214,7 @@
 }
 
 .tool-table th {
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-rail, #1e1f22);
   color: var(--dc-text-dim);
   font-weight: 600;
   padding: 8px 12px;
@@ -235,7 +235,7 @@
 .floating-footer {
   height: 52px;
   padding: 0 18px;
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-rail, #1e1f22);
   border-top: 1px solid var(--dc-border);
   display: flex;
   align-items: center;
@@ -273,7 +273,7 @@
 
 .pos-btn {
   height: 32px;
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-rail, #1e1f22);
   border: 1px solid var(--dc-border);
   border-radius: 4px;
   color: var(--dc-text-muted);
@@ -299,7 +299,7 @@
 
 /* Section Card inside Tool Windows */
 .section-card {
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-card, #1e1f22);
   border: 1px solid var(--dc-border);
   border-radius: var(--radius-md);
   padding: 14px 16px;
@@ -351,9 +351,9 @@
 .floating-window select,
 .modal-input,
 .voice-select-box {
-  background-color: #1e1f22 !important;
-  color: #f2f3f5 !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background-color: var(--dc-bg-input, #1e1f22) !important;
+  color: var(--dc-text-primary, #f2f3f5) !important;
+  border: 1px solid var(--dc-border, rgba(255, 255, 255, 0.14)) !important;
   border-radius: var(--radius-sm);
   padding: 8px 12px;
   font-family: var(--font-family);
@@ -394,8 +394,8 @@ select,
 .floating-window select:focus,
 .modal-input:focus,
 .voice-select-box:focus {
-  border-color: var(--dc-blurple) !important;
-  background-color: #18191c !important;
+  border-color: var(--app-accent, var(--dc-blurple)) !important;
+  background-color: var(--dc-bg-input, #18191c) !important;
   box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.28);
 }
 
@@ -404,7 +404,7 @@ select,
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-input, #1e1f22);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   padding: 4px 8px;
@@ -437,7 +437,7 @@ select,
 
 /* Modal Mode Cards (e.g. Gachapon / Slot / Shuffle) */
 .modal-mode-card {
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-card, #1e1f22);
   border: 1px solid var(--dc-border);
   border-radius: var(--radius-sm);
   padding: 12px;
@@ -447,7 +447,7 @@ select,
 }
 
 .modal-mode-card:hover {
-  background-color: #2b2d31;
+  background-color: var(--dc-bg-card-hover, #2b2d31);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
@@ -464,12 +464,12 @@ select,
   display: flex;
   height: 100%;
   overflow: hidden;
-  background-color: #2b2d31;
+  background-color: var(--dc-bg-main, #2b2d31);
 }
 
 .settings-sidebar {
   width: 220px;
-  background-color: #1e1f22;
+  background-color: var(--dc-bg-sidebar, #1e1f22);
   border-right: 1px solid var(--dc-border);
   display: flex;
   flex-direction: column;
@@ -503,13 +503,14 @@ select,
 }
 
 .settings-nav-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--dc-bg-card-hover, rgba(255, 255, 255, 0.05));
   color: var(--dc-text-primary);
 }
 
 .settings-nav-item.active {
-  background-color: #35373c;
+  background-color: var(--dc-bg-card, #35373c);
   color: var(--dc-text-primary);
+  border-left: 3px solid var(--app-accent, var(--dc-blurple));
 }
 
 .settings-content-area {
@@ -519,7 +520,7 @@ select,
   display: flex;
   flex-direction: column;
   gap: 18px;
-  background-color: #2b2d31;
+  background-color: var(--dc-bg-main, #2b2d31);
 }
 
 .settings-section-title {
@@ -610,6 +611,55 @@ body.win-is-resizing {
 .dictionary-test-row button { flex:none; }
 #addWordFormContainer > div:nth-child(2) { grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr)) !important; align-items:end !important; }
 
+/* Dictionary replacement action and preview buttons */
+.btn-contribute-dict {
+  background-color: #059669;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #10b981;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-contribute-dict:hover {
+  background-color: #10b981;
+  border-color: #34d399;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+}
+.btn-contribute-dict:active {
+  background-color: #047857;
+}
+.btn-dict-preview {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  font-size: 13px;
+  padding: 0;
+  border-radius: 4px;
+  background: var(--dc-bg-rail, #1e1f22);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f2f3f5;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+.btn-dict-preview:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+.btn-dict-preview:active {
+  transform: scale(0.95);
+}
+
 .bot-editor-form { display:flex; flex-wrap:wrap; align-items:end; gap:8px; margin:10px 0; padding:12px; background:#171a21; border-radius:8px; }
 .bot-editor-form[hidden] { display:none !important; }
 .bot-editor-form label { display:grid; gap:4px; flex:1 1 140px; min-width:0; }
@@ -659,3 +709,25 @@ body.win-is-resizing {
 .support-method button { flex:0 0 auto; }
 .support-method,.support-promptpay { box-sizing:border-box; min-width:0; }
 #win-settings .support-slip-link { white-space:normal !important; line-height:1.4 !important; overflow-wrap:anywhere; }
+
+
+/* Theme-Adaptive Helpers for Settings & Floating Windows */
+.clean-row {
+  background-color: var(--dc-bg-card) !important;
+  border: 1px solid var(--dc-border) !important;
+  border-radius: var(--radius-sm);
+}
+
+.voice-setting-card {
+  background-color: var(--dc-bg-card) !important;
+  border: 1px solid var(--dc-border) !important;
+  border-radius: 8px;
+}
+
+.voice-settings-body {
+  background-color: var(--dc-bg-main) !important;
+}
+
+.game-overlay-body {
+  background-color: var(--dc-bg-main) !important;
+}

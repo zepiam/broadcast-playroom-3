@@ -18,4 +18,8 @@ if errorlevel 1 (
     echo.
     echo [ERROR] An error occurred while launching.
     pause
+) else (
+    echo.
+    echo [INFO] Broadcast Playroom 3 session ended.
+    pause
 )

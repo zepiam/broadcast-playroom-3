@@ -227,11 +227,13 @@ html, body {
 
 }
 
+.msg:has(> .time) { flex-wrap:wrap; }
+
 .msg .time {
 
-  opacity: 0.55; font-size: 0.78em; flex-shrink: 0;
+  color: var(--text-color); font-size: 0.72em; flex-shrink: 0;
 
-  margin-left: auto; padding-left: 8px;
+  display:block; flex-basis:100%; width:100%; margin:3px 0 0; padding:0; line-height:1.3;
 
   -webkit-text-stroke: 0;
 
@@ -373,7 +375,7 @@ html, body {
 
 #chat.mode-balloon .msg .time {
 
-  display: none;         /* balloon = แค่ข้อความ */
+  display: block;
 
 }
 
@@ -1093,6 +1095,7 @@ function applyConfig(c) {
 
   // เก็บค่าเก่าก่อน override เพื่อตรวจการเปลี่ยนแปลง (auto-hide retroactive + glow retroactive + mode switch clear)
 
+  const previousConfig = { ...config };
   const oldAutoHide = config.auto_hide;
 
   const oldHideAfter = config.hide_after;
@@ -1104,8 +1107,10 @@ function applyConfig(c) {
   const oldCharacterMode = config.character_mode;
 
   const oldBalloonMode = config.balloon_mode;
+  const oldAnimatedEmotes = config.game_animated_emotes;
 
   config = Object.assign(config, c);
+  if (oldAnimatedEmotes !== config.game_animated_emotes) reloadEmoteImages();
 
   // ── apply theme + custom CSS ทันที ──
 
@@ -1249,7 +1254,7 @@ function applyConfig(c) {
 
   root.setProperty('--box-width', config.box_width === 'wide' ? '100%' : 'fit-content');
 
-  root.setProperty('--msg-gap', (config.msg_spacing || 4) + 'px');
+  root.setProperty('--msg-gap', (config.msg_spacing ?? 4) + 'px');
 
   // font family (dynamic Google Font load)
 
@@ -1271,24 +1276,17 @@ function applyConfig(c) {
 
   chatEl.classList.toggle('mode-character', config.character_mode === true);
 
-  // ★ เคลียร์ตัวละคร/balloon ทันทีเมื่อสลับออกจาก mode นั้น (กันค้างบนจอจนกว่าจะหมดเวลา)
-
-  if (oldCharacterMode && !config.character_mode) {
-
-    // ออกจาก character mode → ลบตัวละครทั้งหมดทันที
-
-    charSlots.slice().forEach(s => removeCharSlot(s));
-
-  }
-
-  if (oldBalloonMode && !config.balloon_mode) {
-
-    // ออกจาก balloon mode → ลบ balloon messages ทั้งหมดทันที + clear slot tracking
-
+  // Preserve messages when changing display modes.
+  const modeChanged = oldCharacterMode !== config.character_mode || oldBalloonMode !== config.balloon_mode;
+  let modeMessages = [];
+  if (modeChanged) {
+    modeMessages = oldCharacterMode
+      ? charSlots.map(slot => slot.message).filter(Boolean)
+      : Array.from(chatEl.querySelectorAll('.msg:not(.exiting)')).map(el => el._gameMessage).filter(Boolean);
+    charSlots.forEach(slot => { if (slot.timer) clearTimeout(slot.timer); slot.el.remove(); });
+    charSlots = [];
+    chatEl.querySelectorAll('.msg').forEach(el => { if (el._hideTimer) clearTimeout(el._hideTimer); el.remove(); });
     balloonSlots = [];
-
-    chatEl.querySelectorAll('.msg:not(.exiting)').forEach(el => removeMessage(el));
-
   }
 
   root.setProperty('--char-size', (config.character_size || 120) + 'px');
@@ -1327,6 +1325,47 @@ function applyConfig(c) {
 
     else clearAllAutoHide();
 
+  }
+
+  if (modeChanged) {
+    if (previousConfig.direction === 'top' && !oldCharacterMode) modeMessages.reverse();
+    modeMessages.forEach(msg => config.character_mode ? addCharacterMessage(msg) : addMessage(msg));
+  }
+
+  // Update existing message bodies in place when their content or layout depends on settings.
+  const bodyKeys = ['layout', 'show_logo', 'show_timestamp', 'emote_size', 'max_msg_length', 'show_redeem', 'show_original'];
+  if (bodyKeys.some(key => previousConfig[key] !== config[key])) {
+    chatEl.querySelectorAll('.msg:not(.exiting)').forEach(el => {
+      if (el._gameMessage) renderMessageBody(el, el._gameMessage);
+    });
+  }
+  if (previousConfig.max_messages !== config.max_messages) capMessages();
+  if (previousConfig.character_max_on_screen !== config.character_max_on_screen) capCharacterSlots();
+  if (previousConfig.character_hide_after !== config.character_hide_after) {
+    charSlots.forEach(slot => {
+      if (slot.timer) clearTimeout(slot.timer);
+      slot.timer = setTimeout(() => removeCharSlot(slot), (config.character_hide_after || 6) * 1000);
+    });
+  }
+  if (previousConfig.game_character_image_url !== config.game_character_image_url) {
+    charSlots.forEach(slot => {
+      if (!slot.job || slot.job === 'default') {
+        const img = slot.el.querySelector('.char-img');
+        if (img) img.src = config.game_character_image_url || '/character/default?t=' + Date.now();
+      }
+    });
+  }
+  if (previousConfig.character_random_pos !== config.character_random_pos) {
+    charSlots.forEach(slot => {
+      if (config.character_random_pos) randomizeCharPosition(slot);
+      else { slot.el.style.left = ''; slot.el.style.position = ''; }
+    });
+  }
+  if (previousConfig.character_size !== config.character_size || previousConfig.character_bubble_width !== config.character_bubble_width || previousConfig.character_random_pos !== config.character_random_pos) {
+    requestAnimationFrame(() => charSlots.forEach(slot => {
+      const bubble = slot.el.querySelector('.char-bubble');
+      if (bubble) positionCharBubble(slot.el, bubble);
+    }));
   }
 
   // glow retroactive: ถ้า box_glow toggle → apply/remove class บนข้อความที่แสดงอยู่ทั้งหมด
@@ -1397,7 +1436,7 @@ function loadFont(family) {
 
   // ★ เสมอ reload — กันปัญหา font เดิมค้างเมื่อสลับไปกลับระหว่าง fonts
 
-  if (!family) return;
+  if (!family || loadedFont === family) return;
 
   loadedFont = family;
 
@@ -1450,24 +1489,18 @@ function connectWs(){
    else if(config.character_mode)addCharacterMessage(message);else addMessage(message);
   }else if(item.event==='CHAT_CLEAR'){
    charSlots.slice().forEach(slot=>removeCharSlot(slot));chatEl.replaceChildren();
-  }else if(item.event==='CANVAS_LAYOUT_SAVED')loadConfig();
+  }else if(item.event==='CANVAS_LAYOUT_SAVED' || item.event==='DESKTOP_OVERLAY_STATE')loadConfig();
  };
  for(const item of window._legacyChatBacklog || [])window.BP3LegacyChatReceive(item);window._legacyChatBacklog=[];
 }
 
-function addMessage(msg) {
-
-  const el = document.createElement('div');
-
-  el.className = 'msg anim-' + (config.animation || 'fade').replace(/_/g, '-');
-
-  if (config.box_glow) el.classList.add('box-glow-on');
-
+function renderMessageBody(el, msg) {
+  el.replaceChildren();
   // layout: stacked สองบรรทัด
 
   const layout = config.layout || 'inline';
 
-  if (layout === 'stacked' || layout === 'stacked_no_logo') el.classList.add('layout-stacked');
+  el.classList.toggle('layout-stacked', (layout === 'stacked' || layout === 'stacked_no_logo') && !config.balloon_mode);
 
 
 
@@ -1619,17 +1652,33 @@ function addMessage(msg) {
 
 
 
-  if (!hideMeta && config.show_timestamp && msg.timestamp) {
+  if (config.show_timestamp && msg.timestamp) {
 
     const t = document.createElement('span');
 
     t.className = 'time'; t.textContent = msg.timestamp;
 
-    parent0.appendChild(t);
+    el.appendChild(t);
 
   }
 
 
+
+  return textEl;
+}
+
+function addMessage(msg) {
+  msg = { ...msg, timestamp: msg.timestamp || new Date().toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit', second:'2-digit'}) };
+
+  const el = document.createElement('div');
+
+  el.className = 'msg anim-' + (config.animation || 'fade').replace(/_/g, '-');
+
+  if (config.box_glow) el.classList.add('box-glow-on');
+
+  el._gameMessage = msg;
+  const isBalloon = config.balloon_mode;
+  const textEl = renderMessageBody(el, msg);
 
   // ── balloon mode: หาที่ว่าง (ไม่ทับบอลลูนอื่น) ถ้าไม่มีค่อยทับ ──
 
@@ -1911,7 +1960,7 @@ function makeImg(url, cls, size, alt) {
 
   const img = document.createElement('img');
 
-  img.className = cls; img.src = url;
+  img.className = cls; img.src = cls === 'emote' && /^\/emote\//.test(url) ? url.replace(/^\/emote\//,'/game-emote/') : url;
 
   img.style.width = size + 'px'; img.style.height = size + 'px';
 
@@ -1993,16 +2042,9 @@ function stripHtml(h) { const d = document.createElement('div'); d.innerHTML = h
 
 function capMessages() {
 
-  const msgs = chatEl.querySelectorAll('.msg:not(.exiting)');
-
+  const msgs = Array.from(chatEl.querySelectorAll('.msg:not(.exiting)'));
   while (msgs.length > config.max_messages) {
-
-    const old = config.direction === 'top' ? msgs[msgs.length - 1] : msgs[0];
-
-    removeMessage(old);
-
-    break;
-
+    removeMessage(config.direction === 'top' ? msgs.pop() : msgs.shift());
   }
 
 }
@@ -2059,6 +2101,8 @@ function addCharacterMessage(msg) {
 
   }
 
+  slot.message = msg;
+  slot.job = job;
   capCharacterSlots();
 
   if (slot.timer) clearTimeout(slot.timer);
@@ -2161,7 +2205,7 @@ function createCharSlot(author, job) {
 
   img.className = 'char-img';
 
-  img.src = '/character/' + encodeURIComponent(job || 'default') + '?t=' + Date.now();
+  img.src = ((!job || job === 'default') && config.game_character_image_url) ? config.game_character_image_url : '/character/' + encodeURIComponent(job || 'default') + '?t=' + Date.now();
 
   img.onerror = () => { img.style.opacity = '0.3'; };
 
@@ -2175,7 +2219,7 @@ function createCharSlot(author, job) {
 
   el.appendChild(nameEl);
 
-  return { el, author, timer: null };
+  return { el, author, job, timer: null };
 
 }
 

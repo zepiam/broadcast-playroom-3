@@ -79,6 +79,9 @@
     window.BP3_BUS?.emit('REPLIE_ACTION',{...command,...replieSettings(),cmd,text:text || command.text,emotion:emotion || command.emotion});
   };
   window.checkRealReplieCommand=function(msg,effectiveName){
+    const userKey=String(msg?.username || msg?.author || effectiveName || '').toLowerCase().trim();
+    const blClass=window.BP3Blacklist?.classify(msg);
+    if(blClass?.blockAll || blClass?.replie || (window._blockedUsers && (window._blockedUsers[userKey]?.all || window._blockedUsers[userKey]?.replie)))return;
     const clean=String(msg.text || '').trim().toLowerCase();
     const cmd=Object.keys(window._replieCommands).sort((a,b)=>b.length-a.length).find(key=>clean===key.toLowerCase() || clean.startsWith(key.toLowerCase()+' '));
     const rule=window._replieCommands[cmd];if(!rule || rule.enabled===false)return;

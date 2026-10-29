@@ -1,8 +1,10 @@
 """defender_helper.py — โมดูลจัดการ Windows Defender Exclusion อัตโนมัติในคลิกเดียว (พร้อมระบบตรวจจับการย้ายโฟลเดอร์)
 """
+import json
 import os
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Tuple, Optional
 
@@ -27,6 +29,58 @@ class DefenderExclusionManager:
             if not exe_name.lower().endswith(".exe"):
                 exe_name = f"{app_dir.name}.exe"
         return app_dir, exe_name
+
+    @staticmethod
+    def get_state_file() -> Path:
+        """ตำแหน่งไฟล์บันทึกสถานะ exclusion ใน LocalAppData"""
+        base = Path(os.environ.get('LOCALAPPDATA') or Path.home() / 'AppData' / 'Local') / 'BroadcastPlayroom3'
+        base.mkdir(parents=True, exist_ok=True)
+        return base / 'defender_state.json'
+
+    @classmethod
+    def get_status_info(cls) -> dict:
+        """อ่านสถานะ Exclusion ปัจจุบัน พร้อมตรวจสอบว่าตรงกับตำแหน่งที่รันอยู่หรือไม่"""
+        app_dir, exe_name = cls.get_app_info()
+        state_file = cls.get_state_file()
+        saved_path = None
+        applied_at = None
+
+        if state_file.is_file():
+            try:
+                with open(state_file, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    saved_path = data.get('excluded_path')
+                    applied_at = data.get('applied_at')
+            except Exception:
+                pass
+
+        status = cls.check_relocation_status(saved_path)
+        is_excluded = (status == 'active')
+        return {
+            'is_excluded': is_excluded,
+            'status': status,
+            'current_dir': str(app_dir),
+            'saved_path': str(saved_path) if saved_path else None,
+            'applied_at': applied_at,
+            'exe_name': exe_name,
+        }
+
+    @classmethod
+    def save_exclusion_state(cls, path: Optional[Path] = None):
+        """บันทึกสถานะว่าโฟลเดอร์ปัจจุบันได้รับการเพิ่มในข้อยกเว้นแล้ว"""
+        if path is None:
+            path, _ = cls.get_app_info()
+        state_file = cls.get_state_file()
+        data = {
+            'excluded_path': str(path),
+            'applied_at': datetime.now().isoformat(),
+            'status': 'active'
+        }
+        try:
+            with open(state_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Error saving exclusion state: {e}")
 
     @staticmethod
     def check_relocation_status(saved_path: Optional[str]) -> str:
@@ -74,6 +128,7 @@ class DefenderExclusionManager:
                 f'-Verb RunAs'
             )
             subprocess.Popen(["powershell", "-Command", runner_cmd], shell=False)
+            DefenderExclusionManager.save_exclusion_state(app_dir)
             return True
         except Exception as e:
             print(f"Error launching elevation: {e}")

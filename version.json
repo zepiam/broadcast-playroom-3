@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.0.0",
+  "version": "3.1",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom 3.0.0 Initial Release\n- New Discord Dark UI & Canvas Studio\n- Multi-platform live chat & streaming tools (Twitch, YouTube, Kick, TikTok, SOOP, MyLive)\n- Standby Transparency & 0% GPU idle optimization",
+  "changelog": "- Broadcast Playroom v3.1\n- Simplified versioning (v3.1, v3.2 ... v3.100)\n- Background auto-download for updates\n- Update restart prompt (OK / Later) & startup auto-apply\n- Accidental close protection & confirmation modal\n- Stable font scaling for RVC and UI badges\n- 0% GPU idle optimization",
   "published_at": "2026-10-28",
   "lite": {
     "type": "standalone",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.0.0/BroadcastPlayroom3-Lite.zip",
-    "size": 0,
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Lite.zip",
+    "size": 344392019,
     "sha256": ""
   },
   "full": {
     "type": "standalone",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.0.0/BroadcastPlayroom3-Full.zip",
-    "size": 0,
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Full.zip",
+    "size": 4266218110,
     "sha256": ""
   }
 }

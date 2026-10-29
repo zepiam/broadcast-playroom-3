@@ -241,20 +241,58 @@ class ChatBridge:
             self.translator = None
 
         self.translate_mode = 'translate'
-
+        self._translate_mode = 'translate'
         self._stream_titles = {}
+
+    def set_translate_mode(self, mode: str):
+        with self._lock:
+            self.translate_mode = mode
+            self._translate_mode = mode
+
+    def get_translate_mode(self) -> str:
+        with self._lock:
+            return getattr(self, 'translate_mode', 'translate')
 
 
 
     def _on_message(self, platform_name: str, msg: ChatMessage):
+        author = getattr(msg, 'author', '') or getattr(msg, 'username', 'ผู้ชม')
+        text = getattr(msg, 'text', '')
+        extra = getattr(msg, 'extra', {}) or {}
+
+        # Translation handling outside lock (avoids blocking platform worker threads)
+        original_text = ""
+        is_translated = False
+        translated_text = text
+        source_lang = "th"
+
+        mode = getattr(self, 'translate_mode', 'translate')
+        if mode == 'translate' and getattr(self, 'translator', None) and text:
+            clean = text.strip()
+            if not clean.startswith(('!', '/', '-', '#', '$', '~')):
+                try:
+                    trans_res, detected_lang = self.translator.translate(clean)
+                    if trans_res and trans_res.strip() and trans_res.strip().lower() != clean.lower():
+                        original_text = text
+                        translated_text = trans_res.strip()
+                        is_translated = True
+                        source_lang = detected_lang or "auto"
+                except Exception:
+                    pass
 
         with self._lock:
-
             self._msg_id_counter += 1
-
-            author = getattr(msg, 'author', '') or getattr(msg, 'username', 'ผู้ชม')
-
-            text = getattr(msg, 'text', '')
+            if is_translated:
+                try:
+                    msg.text = translated_text
+                    if getattr(msg, 'extra', None) is None:
+                        msg.extra = {}
+                    msg.extra['original_text'] = original_text
+                    msg.extra['is_translated'] = True
+                    msg.extra['translated_text'] = translated_text
+                    msg.extra['source_lang'] = source_lang
+                except Exception:
+                    pass
 
             avatar = getattr(msg, 'avatar_url', '') or (getattr(msg, 'extra', {}) or {}).get('avatar_url', '') or f"https://api.dicebear.com/7.x/bottts/svg?seed={author}"
 
@@ -292,7 +330,7 @@ class ChatBridge:
 
                 'own_message': bool(extra.get('_own_message')),
 
-                'text': text,
+                'text': translated_text,
 
                 'avatar': avatar,
 
@@ -310,9 +348,10 @@ class ChatBridge:
 
                 'raw_text': extra.get('raw_text', text),
 
-                'original_text': extra.get('original_text', ''),
-
-                'is_translated': extra.get('is_translated', extra.get('translated',False)),
+                'raw_text': original_text if is_translated else extra.get('raw_text', text),
+                'original_text': original_text or extra.get('original_text', ''),
+                'is_translated': is_translated or extra.get('is_translated', extra.get('translated', False)),
+                'source_lang': source_lang,
 
                 'sticker_url': extra.get('sticker_url', ''),
 
@@ -330,7 +369,10 @@ class ChatBridge:
 
                 self._messages = self._messages[-1000:]
 
-            print(f"[{platform_name}] {author}: {text}", flush=True)
+            if is_translated:
+                print(f"[{platform_name}] {author}: {translated_text} (ต้นฉบับ: {text})", flush=True)
+            else:
+                print(f"[{platform_name}] {author}: {text}", flush=True)
 
         with self._lock: blocked_for_bot=author.strip().lower() in self._bot_blocked_names or any(word in text.lower() for word in self._bot_banned_words)
 

@@ -11,10 +11,43 @@
  function showStatus(status){
   latest=status;
   const busy=['loading','downloading'].includes(status.state);
-  const labels={idle:'ยังไม่ได้เปิดใช้โมเดล',loading:'กำลังโหลดโมเดล',downloading:`กำลังดาวน์โหลด ${status.progress || 0}%`,ready:'พร้อมใช้งาน',error:'ไม่สำเร็จ: '+(status.error || '')};
+  const labels={idle:'ยังไม่ได้เปิดใช้โมเดล',loading:'กำลังโหลดโมเดล...',downloading:'กำลังดาวน์โหลด...',ready:'พร้อมใช้งาน',error:'ไม่สำเร็จ: '+(status.error || '')};
+  const isReady = (status.state === 'ready' && status.enabled && status.loaded);
+  const badgeClass = isReady ? 'ready' : ((status.state === 'loading' || status.state === 'downloading') ? 'loading' : (status.state === 'error' ? 'error' : 'idle'));
+  const labelText = labels[status.state] || status.state;
   for(const d of allDocs()){
-   d.querySelectorAll('#rvcStatusLabel,#secRvcStatusLabel,#rvcDownloadStatus').forEach(el=>el.textContent=labels[status.state] || status.state);
-   d.querySelectorAll('#chkEnableRvc,#chkEnableRvcSettings').forEach(el=>{el.checked=Boolean(status.enabled && status.loaded);el.disabled=busy;});
+   d.querySelectorAll('#rvcStatusLabel,#secRvcStatusLabel').forEach(el=>{
+    if(el.textContent !== labelText) el.textContent = labelText;
+    const targetClass = 'badge rvc-status-badge ' + badgeClass;
+    if(el.className !== targetClass) el.className = targetClass;
+    if(el.style.fontSize) el.style.fontSize = '';
+    if(el.style.padding) el.style.padding = '';
+   });
+   d.querySelectorAll('#rvcDownloadStatus').forEach(el=>el.textContent=labels[status.state] || status.state);
+   d.querySelectorAll('#chkEnableRvc,#chkEnableRvcSettings').forEach(el=>{
+    if(status.state==='loading'){
+     el.checked=true;
+     el.disabled=true;
+    }else{
+     el.checked=Boolean(status.enabled && status.loaded);
+     el.disabled=busy;
+    }
+   });
+   d.querySelectorAll('.rvc-loading-progress-box').forEach(box=>{
+    if(status.state==='loading'){
+     box.style.display='block';
+     const text=box.querySelector('.rvc-loading-text');if(text)text.textContent='กำลังโหลดโมเดลเข้าหน่วยความจำ (GPU/RAM)...';
+     const pct=box.querySelector('.rvc-loading-pct');if(pct)pct.textContent='กรุณารอสักครู่';
+     const fill=box.querySelector('.rvc-progress-bar-fill');if(fill){fill.style.width='100%';fill.style.animation='rvc-shimmer 1.5s infinite linear';}
+    }else if(status.state==='downloading'){
+     box.style.display='block';
+     const text=box.querySelector('.rvc-loading-text');if(text)text.textContent='กำลังดาวน์โหลดโมเดลจากคลาวด์...';
+     const pct=box.querySelector('.rvc-loading-pct');if(pct)pct.textContent=(status.progress || 0) + '%';
+     const fill=box.querySelector('.rvc-progress-bar-fill');if(fill){fill.style.width=(status.progress || 0) + '%';fill.style.animation='none';}
+    }else{
+     box.style.display='none';
+    }
+   });
    d.querySelectorAll('#rvcDeviceLabel,#secRvcDeviceLabel').forEach(device=>{device.textContent=!status.loaded?'ยังไม่ได้โหลดโมเดล':status.device?(status.device.startsWith('cuda')?'GPU':'CPU'):'โมเดลพร้อมใช้';});
    d.querySelectorAll('#winRvcSelect,#secRvcSelect').forEach(select=>{
     select.disabled=busy;
@@ -24,8 +57,31 @@
    const download=d.getElementById('btnRvcDownload');if(download)download.disabled=busy;
   }
   if(window.updateVoiceSummary)window.updateVoiceSummary();
+ 
+  updateTopbarBadge(status);
  }
- async function refresh(){
+ function updateTopbarBadge(status){
+  const badge=document.getElementById('topbarRvcBadge');
+  if(!badge)return;
+  const textEl=badge.querySelector('.rvc-badge-text') || badge;
+  badge.classList.remove('rvc-loading','rvc-ready','rvc-off');
+  if(status.state==='loading' || status.state==='downloading'){
+   badge.classList.add('rvc-loading');
+   badge.title='กำลังเตรียมโมเดล RVC';
+   if(textEl)textEl.textContent='RVC โหลด...';
+  }else if(status.state==='ready' && status.enabled && status.loaded){
+   badge.classList.add('rvc-ready');
+   const curModel=models.find(m=>m.id===status.selected);
+   const modelName=curModel?curModel.name:(status.selected || '');
+   badge.title=modelName ? ('RVC พร้อมใช้งาน: ' + modelName) : 'RVC พร้อมใช้งาน';
+   if(textEl)textEl.textContent=modelName ? ('RVC: ' + modelName) : 'RVC: พร้อม';
+  }else{
+   badge.classList.add('rvc-off');
+   badge.title='RVC ปิดใช้งาน (คลิกเพื่อตั้งค่า)';
+   if(textEl)textEl.textContent='RVC: ปิด';
+  }
+ }
+  async function refresh(){
   const result=await api('/api/rvc/models');models=result.models || [];
   for(const d of allDocs()){
    d.querySelectorAll('#winRvcSelect,#secRvcSelect').forEach(select=>{
@@ -49,8 +105,19 @@
    d.querySelectorAll('#chkEnableRvc,#chkEnableRvcSettings').forEach(c=>{c.checked=enabled;});
   }
   const select=doc().getElementById('winRvcSelect') || document.getElementById('secRvcSelect');
-  const id=select?.value;
-  if(enabled && (!id || id==='none')){message('กรุณาเลือกโมเดลก่อนเปิดใช้');if(latest)showStatus(latest);return;}
+  let id=select?.value;
+  if(enabled && (!id || id==='none')){
+   const validModel=models.find(m=>m.id && m.id!=='none');
+   if(validModel){
+    id=validModel.id;
+    for(const d of allDocs()){d.querySelectorAll('#winRvcSelect,#secRvcSelect').forEach(s=>{s.value=id;});}
+   }else{
+    message('ยังไม่มีโมเดลเสียง RVC ในเครื่อง กำลังเปิดหน้าต่างดาวน์โหลดโมเดลเสียง...');
+    if(latest)showStatus(latest);
+    if(window.openRvcDownloader)window.openRvcDownloader();
+    return;
+   }
+  }
   try{pendingRefresh=true;showStatus(await api('/api/rvc/select',{id,enabled}));}catch(error){message(error.message);}
  };
  window.openRvcModelFolder=()=>api('/api/rvc/open-folder',{}).catch(error=>message(error.message));
@@ -106,7 +173,8 @@
    setInterval(async()=>{
     if(polling)return;
     const visible=doc().getElementById('rvcVoiceCard')?.getClientRects().length || doc().getElementById('rvcDownloadDialog')?.open || document.getElementById('secRvcVoiceCard')?.getClientRects().length;
-    if(!visible)return;
+    const isRvcBusy=['loading','downloading'].includes(latest?.state);
+   if(!visible && !isRvcBusy)return;
     polling=true;
     try{const state=await api('/api/rvc/status');showStatus(state);if((pendingRefresh || state.state!==lastState) && !['loading','downloading'].includes(state.state)){await refresh();pendingRefresh=false;}lastState=state.state;}catch(error){message(error.message);}finally{polling=false;}
    },400);

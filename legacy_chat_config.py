@@ -481,7 +481,7 @@ def build_game_chat_config(settings=None) -> dict:
         "max_messages": mc_get("max_rows", "game_overlay_max_rows", 15),
         "direction": getattr(s, "game_overlay_direction", "bottom"),
         "show_logo": mc_get("show_logo", "game_overlay_show_logo", True),
-        "show_timestamp": mc_get("show_timestamp", "game_overlay_show_timestamp", False),
+        "show_timestamp": False,
         "auto_hide": mc_get("auto_hide", "game_overlay_auto_hide", True),
         "hide_after": mc_get("hide_after", "game_overlay_hide_after", 10.0),
         "font_family": mc_get("font_family", "game_overlay_font_family", "Kanit"),
@@ -523,6 +523,8 @@ def build_game_chat_config(settings=None) -> dict:
         "balloon_bg_opacity": mc_get("balloon_bg_opacity", "game_overlay_balloon_bg_opacity", 0.95),
         # Character Talk
         "character_mode": character_mode,
+        "game_character_image_url": getattr(s, "game_overlay_default_image_url", ""),
+        "game_animated_emotes": getattr(s, "game_overlay_animated_emotes", False),
         "character_hide_after": getattr(s, "character_hide_after", 6.0),
         "character_size": getattr(s, "character_size", 120),
         "character_max_on_screen": getattr(s, "character_max_on_screen", 8),

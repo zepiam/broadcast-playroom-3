@@ -7,7 +7,7 @@ src_dir = str(project_dir / 'src')
 dist_dir = str(project_dir / 'dist')
 
 files_to_copy = [
-    'supporters_ui.js','dns_controls.js','banned_words.js','blacklist.js','secret_codes.js','secret_sounds.js','randomizer_visual.js','obs_links.js','bot_settings.js','chat_content.js','app_presence.js','replie_command_editor.js','dock_controls.js','widget_patch.js','chat_widget_controls.js','viewer_connections.js','live_chat_scroll.js',
+    'game_overlay_chat_controls.js','supporters_ui.js','dns_controls.js','banned_words.js','blacklist.js','secret_codes.js','secret_sounds.js','randomizer_visual.js','obs_links.js','bot_settings.js','chat_content.js','app_presence.js','replie_command_editor.js','dock_controls.js','widget_patch.js','chat_widget_controls.js','viewer_connections.js','live_chat_scroll.js',
     'composer_studio.js', 'composer_legacy_controls.js',
     'overlay_transport.js',
     'live_overlay.js', 'legacy_emotes.js',
@@ -40,7 +40,10 @@ files_to_copy = [
     'widget_customizer.css',
     'composer.html',
     'overlay.html',
-    'dock.html'
+    'dock.html',
+    'favicon.ico',
+    'favicon.png',
+    'manifest.json'
 ]
 
 os.makedirs(dist_dir, exist_ok=True)

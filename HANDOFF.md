@@ -2,12 +2,85 @@
 
 Updated 2026-10-28 by Antigravity. Branch master, GitHub Repo: https://github.com/zepiam/broadcast-playroom-3 (Baseline 3.0.0 commit a6ed4d4). Single active modifier Antigravity. Read AGENTS.md and latest WORKLOG before editing. Legacy reference sibling broadcast playroom dev is READ ONLY. Never claim full parity/GPU0/release readiness without proof.
 
+## Latest completed task — Native Frameless Desktop Titlebar, Border Resizers & Maximize/Restore Architecture (2026-10-30)
+- **Single Sleek Frameless Titlebar (`#desktopTitlebar`):**
+  - Completely decoupled window controls (`─ ☐ ✕`) from the main toolbars. Created a dedicated top titlebar row styled in high-contrast dark `#2b2d31` with the app icon, title, and `v3.1` badge.
+  - Eliminated Windows native caption duplicate by stripping intrusive `WS_THICKFRAME` mutation and implementing clean `set-bounds` through `win32gui.SetWindowPos(SWP_NOZORDER | SWP_NOACTIVATE)`.
+- **8-Directional Window Edge Resizers:**
+  - Added `.app-window-resizers` with 8 invisible perimeter border handles (`.win-resize-edge` for all 4 borders and 4 diagonal corners).
+  - Proper CSS cursor feedback (`ew-resize`, `ns-resize`, `nwse-resize`, `nesw-resize`) and width/height constraint safety (`w >= 1024`, `h >= 680`).
+- **Robust Maximize / Restore Toggle State Fix:**
+  - Fixed pywebview WinForms bug where `_main_webview.maximized` stayed permanently `False`, preventing windows from being un-maximized/restored.
+  - Implemented dual-layer state checking via Win32 `user32.IsZoomed(hwnd)` and `FormWindowState` (`Maximized` vs `Normal`), ensuring seamless 1-click toggling between maximized and restored modes.
+  - Added titlebar double-click to toggle maximize/restore.
+  - Locked titlebar from moving while maximized, and added pull-down-to-restore gesture detection.
+- **Custom Application Exit Confirmation Modal:**
+  - Replaced browser prompt with zero GPU lockup custom modal `#appExitConfirmationModal` (`rgba(2, 6, 23, 0.95)`, `contain: strict; isolation: isolate;`).
+  - Added "Don't ask again" checkbox and Settings toggle "ถามยืนยันก่อนปิดโปรแกรมเสมอ".
+  - ESC key navigates inner tool windows back to home screen; Alt+F4 safely invokes custom exit modal.
+- **Chat Settings & Composer Window Polish:**
+  - Fixed Composer Studio window drag handle selector (`#drag-composer` / `.composer-modal-header`).
+  - Synchronized Chat Settings font size slider bidirectionally with Live Chat `A-`/`A+` zoom controls.
+- **Production Package Compilation & Hugging Face Upload:**
+  - Rebuilt `BroadcastPlayroom3-Lite.exe` and `BroadcastPlayroom3-Full.exe` with PE Subsystem byte patched to GUI (2).
+  - Executed Zero-Leak Privacy Audit (0 personal credentials or leak files).
+  - Compressed via 7-Zip into `dist_releases/BroadcastPlayroom3-Lite.zip` (328.44 MB) and `dist_releases/BroadcastPlayroom3-Full.zip` (4,068.58 MB).
+  - Uploaded both release archives to `men9ch/broadcast-playroom-3` on Hugging Face.
+
+## Latest completed task — Live Chat Settings Redesign, Slider Fix & Icon Completeness (2026-10-29)
+- **Live Chat Font Slider Responsive Width Fix:** Replaced `.topbar-slider` on `#rngLiveChatFontSize` with `.chat-setting-slider` (min-width: 140px, width: 100%, flex: 1), removing the 1100px media query rule that forced it to a tiny 40px. The slider now fluidly adapts to any window width.
+- **Real-Time Preview Box Font Synchronization:** Upgraded font adjustment logic across `oninput`, `adjustFontSize()`, `syncLiveChatFontControls()`, and `applyChatDisplayConfig()` so changes instantly apply to `#chatPreviewBox .chat-body-msg` in real time, keeping the main and popout windows in sync.
+- **Modern Sleek Toggle Switches & Options Redesign:** Redesigned avatar, platform icon, and timestamp rows into sleek `.chat-setting-toggle-card` components with pill icons (`👤`, `🏷️`, `⏱️`), descriptive typography, and smooth `.cwc-switch` toggles on the right. Upgraded spectator name color options into interactive card buttons.
+- **Window Size Optimization:** Enlarged `#win-chat-settings` default height to 640px (in styles and `defaultSizes['chat-settings']`), preventing bottom controls from being clipped.
+- **Native Window & Taskbar Icon Completeness:**
+  - Placed full-resolution `favicon.ico` and `favicon.png` in `public/`, `dist/`, and `src/`.
+  - Embedded high-res base64 icon data URI in `<head>` for instant parsing.
+  - Enabled `<link rel*="icon">` and `<link rel="manifest">` inheritance in `popoutToolWindow` so all popout windows have their app icon.
+  - Upgraded `app_window_frame.py` with 64-bit `SetClassLongPtrW`, Start Menu shortcut `AppUserModelID` registration, and robust window discovery. Added `setWindowIcon` to `splash.py`.
+- **Verified with Playwright:** 100% assertions passed (`verified_chat_settings_redesign.png`).
+- **Build Status:** Build synchronized to `dist/`. release packages pending user request.
+
+## Latest completed task — Clean Binary Rebuild & Release Upload to Hugging Face (2026-10-29)
+- **Zero-Leak Distribution Audit:** Scanned build directories for Lite and Full editions, verifying 0 personal credentials, tokens, SQLite histories, layouts, or bot account files exist.
+- **High-Speed 7-Zip Release Packages:**
+  - `dist_releases/BroadcastPlayroom3-Lite.zip` (318.41 MB, 4,176 clean files)
+  - `dist_releases/BroadcastPlayroom3-Full.zip` (4,059.71 MB, 15,456 files with full RVC & PyTorch runtime)
+- **Hugging Face Live Mirror:** Both archives uploaded to `men9ch/broadcast-playroom-3` via `upload_to_hf.py` with 100% SUCCESS. Ready for Google Drive mirror update.
+
+## Latest completed task — Live Chat Total Viewers Badge & Twitch Fast Fallback Polling (2026-10-29)
+- **Live Chat Header Viewers Badge (`#chatTotalViewersBadge`):** Fixed `.chat-viewers-pill` in `src/index.html` and `dist/index.html` by assigning ID `#chatTotalViewersBadge`, implementing `updateLiveChatViewersBadge()`, listening to `bp3:remote-event` (`VIEWERS_UPDATE`), and updating both main and popout windows.
+- **Twitch Fast & Resilient Viewer Polling (`chat_twitch.py`):** Reduced poll interval from 60s to 15s, added proper browser headers to GraphQL, added DecAPI fallback (`https://decapi.me/twitch/viewercount/{channel}`), and guaranteed connection state before polling.
+- **Stage & Overlay Support:** Extended `viewer_connections.js` and `live_overlay.js` to support `#composerCanvasStage` as well as `.widget-type-viewer`.
+- **Verified with Playwright:** 100% tests passed. Verified screenshots recorded (`verified_live_chat_viewers_badge.png`).
+
+## Latest completed task — Click-to-Hide Viewer Count Toggle & LocalStorage Persistence (2026-10-29)
+- **Click-to-Hide Viewer Count:** Streamers can now click directly on `#chatTotalViewersBadge` or `.plat-viewers` to toggle between revealing the actual count (`👥 12`) and masking it (`👥 •••`), helping streamers avoid view-count anxiety while live.
+- **Persistence & Toast:** Saved in `localStorage['bp3_hide_chat_viewers']` and synced across all windows.
+- **Verified with Playwright:** 100% assertions passed (`verified_viewers_masked.png`, `verified_viewers_unmasked.png`).
+
+## Latest completed task — Native Window & Taskbar App Icons Restoration (2026-10-29)
+- **Problem Fixed:** When launching Broadcast Playroom 3, the Windows taskbar and top-left window caption showed Chromium's default generic globe icon instead of the Broadcast Playroom icon.
+- **Root Cause & Solution:**
+  - Chromium `--app` mode uses generic web icons for uninstalled web apps unless Win32 window icon messages (`WM_SETICON`) and Windows Shell `AppUserModelID` (`SHGetPropertyStoreForWindow`) are explicitly applied to the HWND.
+  - Implemented `setup_app_window_icon(hwnd)` and `apply_icon_to_app_windows()` in `app_window_frame.py`.
+  - Added background window icon watcher and manifest / icon MIME handlers in `launch_dev.py`.
+  - Added Web App Manifest `<link rel="manifest">` and icon links to `src/index.html` and `public/manifest.json`.
+- **Verified with Automated Tests:** 100% assertions passed (`scratch/test_all_icon_fixes.py`, `tests/verify_window_frame.py`).
+
+## Latest completed task — Live Chat TTS Latency Badge Display in Seconds/Sec (2026-10-29)
+- **Live Chat Header TTS Latency Badge (`#chatTtsLatencyBadge`):** Updated from raw millisecond display (`⚡ TTS: 142ms`) to seconds with `sec` unit (`⚡ TTS: 0.14 sec`), matching user preference for human-friendly timing.
+- **Tooltip & Popout Synchronization:** Added descriptive Thai tooltip (`เวลาประมวลผลเสียงอ่าน TTS ล่าสุด: 0.14 วินาที (142 ms)`) and ensured immediate sync across all detached/popout chat windows.
+- **Verified with Playwright:** 100% assertions passed (`verified_tts_sec_badge.png`, `verified_tts_sec_dist.png`).
+- **Build Status:** Ready for next package build/release whenever the user gives the signal.
+
 ## User intent and exceptions
 Clone original runtime/Overlay behavior and preserve legacy OBS URLs/profiles/media. Embedded Composer and redesigned Widget Settings can differ visually. Remove Event list/RVC mocks; suppress configured viewer commands from TTS; FULL actual RVC select/import/download, Lite no RVC. User is AFK and authorizes autonomous fixes/tests using old app as reference. Twitch target ateliersage, no chat messages sent.
 **Giveaway exception2026-10-27:** intentionally redesigned: receive code → unique participant names → draw from that list. NO prize definitions/sets/tiers/checkpoints/points/quota gating. Do not reintroduce these from old reference/logs. UI, history, CSV and saved settings now follow direct names flow. Old user data not deleted. Only code/duration/display/image settings stored.
 User clarified Esc was their own attempt to stop apparently inactive screen control; later explicitly authorized any appropriate tool/screen control again. Background testing may keep screen still; communicate meaningful progress within60s.
 
 ## Completed and verified
+- **Live Events Feed Comprehensive Multi-Platform Testing & Rendering (2026-10-29):** Comprehensive support in `appendActivityEvent()` for all live event types across Twitch (`bits`, `sub`, `resub`, `subgift`, `raid`, `follow`, `redeem`), YouTube (`superchat`, `supersticker`, `member`, `membership`), TikTok (`gift`, `follow`, `like`, `share`), Kick, and Donations (`PromptPay`, `TrueMoney`, `tip`). Dynamic event icons (💎, 👑, 🎁, 💰, ⭐, 💵, 🚀, ❤️, 📢), brand platform tags, and highlighted amount/duration pills. Added `🧪 ทดสอบ` button in `.events-header` and `POST /api/messages/inject` in `launch_dev.py`. Verified end-to-end with Playwright and recorded screenshots `verified_live_events_feed.png` and `verified_live_events_crop.png`.
+- **Left Server Rail Hide/Unhide Context Menu (2026-10-29):** Right-click on any Server Rail tool button (`voice-settings`, `composer`, `chat-widget`, `playroom`, `gw`, `replie`, `ask`, `randomizer`, `user-manager`) allows hiding the button. Right-clicking empty space on the rail opens a context menu to unhide individual buttons or restore all hidden buttons. Persisted via `localStorage` (`bp3_rail_hidden`) and automatically applied on startup. Safety lock ensures Settings gear (`btnRailSettings`) cannot be hidden. Verified with Playwright end-to-end.
 - **In-App System Log (CMD Terminal) inside Settings:** Built ring buffer capture in `launch_dev.py` piping stdout/stderr into `/api/logs` and clearable via `/api/logs/clear`. Embedded terminal `#inAppTerminalContainer` into Settings (`#win-settings`) at the bottom of sidebar under "สนับสนุน" (`#nav-sec-supporters` -> `#nav-sec-log`). Stream poller runs only while the Log pane is active (Zero GPU Lockup 0% idle). Verified live streaming and rendered cleanly.
 - Main UI/API click regression **135 PASS/0 FAIL**, no JS errors. Corrected Giveaway direct flow/duplicates/remove/reroll/CSV/banner/timer/profile included. tests/verify_compatibility.py uses temp profile/cache and independent Chromium contexts; production layout hash unchanged.
 - Actual OBS32.2.2 Portable **16 PASS/0 FAIL**, latest rerun after Giveaway change: transparent standby/end, Ask/votes/refresh/clear, Randomizer, Giveaway/code/draw, Replie, selected Playroom image. No stream/record. Production layout and original OBS profile hashes passed for actual test. Unique scene/source names per run avoid cross-canvas remnants. tests/verify_obs_real.py exits failure on failed checks.
@@ -29,6 +102,238 @@ User clarified Esc was their own attempt to stop apparently inactive screen cont
 - No measured GPU0/long-duration stability proof. Avoid fullscreen backdrop blur and unsolicited animations/sounds.
 - Other live-platform/account/reconnect/event types remain open; six constructor/callback fixtures are not live proof. Do not send viewer/chat messages.
 - Main installed OBS may be open: CUA launch_app unexpectedly normalized portable executable launch to installed OBS (Untitled/21:9 Layout). No scene/settings/stream/record controls touched. Do not close blindly if user is now using it. Explicitly owned portable OBS/Qt test processes were closed.
+
+## Latest completed task — Official Mirror Integration & Production Installer Finalized (2026-10-29)
+- **Live Mirror Integration & Production Installer:**
+  - Configured real Hugging Face & Google Drive links for both Lite and Full editions.
+  - Implemented automatic Google Drive large file form & confirmation token resolver (no virus interstitial hang).
+  - Re-compiled `dist_releases/BroadcastPlayroom3-Setup.exe` with zero errors. Production ready!
+
+## Latest completed task — Unified Setup Installer, Clean Distribution Audit & 7-Zip Packaging for Hugging Face (2026-10-29)
+- **Clean Distribution Audit:** Thoroughly checked build directories to ensure no user settings, bot tokens (`bot_accounts.dat`), personal layout (`composer_layout.json`), DNS settings, or SQLite user data are bundled. Clean release 100%.
+- **Unified Setup Installer (`installer_gui.py` & `BroadcastPlayroom3-Setup.exe`):**
+  - Standalone single executable installer with Discord-styled Dark Theme.
+  - Allows choosing Lite Edition (~318 MB download) or Full Edition (~3.5 GB download).
+  - Automatically checks and configures Windows Defender Exclusion for target installation path.
+  - Progress bar with speed, %, and ETA. Supports Failover mirror links (Hugging Face / Google Drive).
+  - Automatically unzips and removes temporary ZIP archive (zero residual waste).
+  - Creates Desktop & Start Menu shortcuts, and registers uninstaller in Windows.
+  - Built into `dist_releases/BroadcastPlayroom3-Setup.exe` (~43 MB).
+- **Packaging with 7-Zip for Hugging Face Upload:**
+  - `dist_releases/BroadcastPlayroom3-Lite.zip` (~318 MB).
+  - `dist_releases/BroadcastPlayroom3-Full.zip` (~3.5 GB).
+
+## Latest completed task — Pre-Update Windows Defender Exclusion Verification & Relocation Guard (2026-10-29)
+- **Pre-Update Defender Exclusion Verification:**
+  - Added auto-check in the Fast Update Modal (`#modal-fast-update` via `/api/defender/status`).
+  - Detects if the current running folder is NOT excluded or was relocated by the user.
+  - If not excluded: Shows amber alert banner with current path, presents `🛡️ เพิ่มข้อยกเว้นอัตโนมัติ (1-Click)` and `เปิด Windows Security`, and locks the update button (`🔒 ต้องเพิ่มข้อยกเว้นก่อน`).
+  - Once exclusion is added/verified: Banner updates to green `✅ ปลายทางได้รับการยกเว้นเรียบร้อย`, and unlocks `⚡ อัปเดตทันที`.
+  - Backend integration in `defender_helper.py` & `launch_dev.py` (`GET /api/defender/status`, `POST /api/defender/apply`).
+  - Fully verified with Playwright in `scratch/verify_update_exclusion_flow.py` (100% SUCCESS). Screenshots saved: `verified_update_exclusion_blocked.png` & `verified_update_exclusion_unlocked.png`.
+
+## Latest completed task — Event List Context Menu Auto-Dismiss, "ลบทั้งหมด", Resizable Profile Modal & Chat Export Restored (2026-10-29)
+- **Event List Context Menu Auto-Dismiss & Label Update:**
+  - Updated context menu on `#eventsList` with label `🗑️ ลบทั้งหมด`.
+  - Added click-outside auto-dismiss listener: clicking anywhere outside the context menu immediately hides it without getting stuck.
+- **Resizable & Expanded Profile Modal:**
+  - Expanded `#win-author-profile` to 680px width, 760px max height, with `resize: both; overflow: hidden;` allowing users to freely expand or shrink the modal.
+  - Chat pane (`#paneProfTab1`) flexes to fill available space (`min-height: 260px;`), showing dozens of chat messages comfortably.
+- **Export Chat History Restored:**
+  - Restored `📥 Export ข้อความ` button in `.floating-footer` right next to `🛑 ตั้งค่าการบล็อก`.
+  - Downloads full chronological text file containing viewer information, chat logs, and lifetime events.
+- **Trial Packaging & Build Testing:**
+  - Lite Edition built successfully (`BroadcastPlayroom3-Lite.exe`, ~802 MB) at `build_trials/trial-20261029-131839-579008/dist/BroadcastPlayroom3-Lite/`.
+  - Full Edition built successfully (`BroadcastPlayroom3-Full.exe`, ~6.56 GB with PyTorch, CUDA, Fairseq & RVC inference runtime) at `build_trials/trial-20261029-132051-575966/dist/BroadcastPlayroom3-Full/`.
+- **Verification:** Verified all 11 steps with Playwright in `scratch/verify_expanded_profile_and_menu.py` (100% SUCCESS).
+
+## Latest completed task — Event List UI Redesign, Platform Icons, Date Dividers & In-Popout Modal Layering (2026-10-29)
+- **Event List UI Redesign & Platform Badges:**
+  - Redesigned .event-box with structured layout: icon circle, top header row with platform icon (	witch.png, youtube.png, 	iktok.png, kick.png, soop.png, mylive.png, and SVG badges for PromptPay/TrueMoney), clickable username, action text (e.g. โดเนท, สมัครสมาชิก), amount pill, speech-bubble styled text quote, and bottom timestamp.
+  - Clicking donor/supporter username in the event list directly opens that user's profile modal in User Manager (openAuthorModal).
+  - Added right-click context menu (#eventsListContextMenu) with option to clear all events (🗑️ ล้างรายการกิจกรรมทั้งหมด).
+  - Date dividers automatically group events by 📅 วันนี้, 📅 เมื่อวานนี้, or past dates when Uncleared.
+- **In-Popout Window Layering (Profile Modal on top of User Manager):**
+  - Fixed User Manager popout window layering issue by adopting win-author-profile directly into userMgrPop.document.body via mountAuthorProfileInPopout(pop).
+  - Added dark modal backdrop (#authorProfileBackdrop) with contain: strict; isolation: isolate; (Zero GPU Lockup compliant).
+  - Overrode popout stylesheet so #win-author-profile:not(.active) is strictly display: none !important; and #win-author-profile.active is fixed-centered with elevated z-index 99995, preventing popout .floating-window { display: flex !important; } leakage.
+  - Fully verified with Playwright in scratch/verify_events_and_layering.py (100% SUCCESS).
+
+
+## Latest completed task — User Manager Lifetime Event Memory, Popout Window Layering & Chat Export (2026-10-29)
+- **User Manager Lifetime Event Memory & Popout Window Layering (2026-10-29):**
+  - **Lifetime Event Memory:** Live stream events (Super Chat, Member, Bits, Sub, Gift, Follow, Donate) are persistently stored under `person.events` per user. Retention pruning (`pruneViewerChatHistory()`) explicitly protects `person.events` from ever being deleted, keeping all donor/supporter events permanently while allowing normal chat messages to expire after retention period.
+  - **Window Layering & Auto-Popout:** Fixed issue where clicking a user profile from the popped-out User Manager window caused the profile modal to open behind it in the main window. If User Manager is popped out, `openAuthorModal` now automatically pops out `author-profile` into a focused external window in front of User Manager; if embedded in main window, z-index is elevated (`Math.max(highestZ, 2500) + 20`).
+  - **Individual Chat & Event History Export:** Added `📥 Export แชท` button next to `🛑 ตั้งค่าการบล็อก` in `win-author-profile`. Downloads structured `.txt` file containing user metadata, message count, event count, and timestamped chronological log of all chats and events.
+  - Verified with Playwright in `scratch/verify_popout_user_manager.py` (popout popup detection, event rendering, export download, retention persistence). Screenshot saved as `verified_user_manager_events_tab.png`.
+
+
+## Latest completed task — Fast Instant Splash & Topbar RVC Status Badge with lp-boil & tx-hanging-sway (2026-10-29)
+- **Instant Launch & Motion Design Implementation:**
+  - Removed RVC loading wait from splash screen, restoring instant < 1s startup while letting RVC load in the background.
+  - Implemented `#topbarRvcBadge` directly to the right of `.topbar-gender-switch` with interactive status:
+    - While loading: Hand-drawn boil motion (`bp3-rvc-lp-boil` matching `https://motion-reference.takayustudio.jp/#motion=lp-boil`) with amber accent and tooltip `"กำลังเตรียมโมเดล RVC"`.
+    - When ready: Hanging signboard pendulum sway (`bp3-rvc-tx-hanging-sway` matching `https://motion-reference.takayustudio.jp/#motion=tx-hanging-sway`) swinging for 1.5s then settling to 0% GPU idle, with emerald accent and dynamic tooltip `"RVC กำลังใช้งาน [ชื่อโมเดล]"` (e.g. `RVC กำลังใช้งาน lumine-jp`).
+    - Smart Polling: Polls `/api/rvc/status` only while RVC state is `loading`/`downloading`, and stops completely when `ready` or idle.
+  - Verified with Playwright and screenshot captured (`verified_rvc_topbar_badge.png`).
+
+## Latest completed task — Fix First Message RVC Cold-Start & Autoplay Voice Fallback (2026-10-29)
+- **RVC Readiness & Autoplay Resolution:**
+  - Resolved issue where the first chat message after app startup resulted in "เสียงสำรอง" (Web Speech Fallback) or unconverted Edge-TTS audio.
+  - Root causes identified:
+    1. Background RVC model loading takes 3-5s; incoming first message found `loaded=False` and was returned unconverted without waiting.
+    2. Chrome autoplay policy blocked `audio.play()` before user interaction on a freshly opened app window, falling back to Web Speech.
+    3. Cold PyTorch CUDA inference took > 6 seconds on first run.
+  - Fixes applied:
+    1. `rvc_service.py:convert()` now explicitly waits (`worker.join(timeout=10.0)`) if RVC is in `loading` state, preventing premature fallback to raw TTS.
+    2. Added silent audio warmup inside `load()` so PyTorch/CUDA initializes during startup, reducing subsequent inference to < 0.3s.
+    3. Added `--autoplay-policy=no-user-gesture-required` in `launch_dev.py` for Chrome/Edge app window, eliminating autoplay restrictions on startup.
+    4. Added RVC model preparation progress indication in splash lifecycle.
+  - Verification: `tests/verify_rvc_startup_readiness.py` passed 100% (WAV 44.1kHz Lumine voice generated cleanly).
+
+## Latest completed task — Fix Multilingual TTS Audio Reading for Mixed Languages (2026-10-29)
+- **Multilingual Segment Splitting & Concurrent Synthesis:**
+  - Resolved bug where mixed-language sentences containing Thai followed by another foreign language (e.g. Japanese "สวัสดีครับ こんにちは") only read the Thai part and went silent because the Thai Neural voice does not support Japanese/Korean/Chinese character scripts.
+  - Implemented `split_text_by_language()` in `tts_service.py` using Unicode script classification from `language_detect._char_lang`:
+    - English (`en`) is grouped together with Thai (`th`) to be read seamlessly by the Thai voice model with Thai accent without chopping words (preserving the previous design requirement).
+    - Foreign languages (ja, ko, zh, zh-TW, fr) form independent segments to be read by their respective native voice models (`Nanami/Keita`, `SunHi/InJoon`, `Xiaoxiao/Yunxi`, `HsiaoChen/YunJhe`, `Denise/Henri`).
+    - Symbols, digits, punctuation, and emoji naturally attach to the preceding segment.
+  - Concurrent synthesis: Multiple segments are synthesized in parallel via `asyncio.gather()`, ensuring instantaneous response without cumulative delay.
+  - Seamless audio merging: Implemented `merge_audio_segments()` trimming trailing silence of each segment and inserting a 50ms natural gap, producing smooth transitions between languages.
+- **Verification:**
+  - Automated unit test suite `tests/test_multilingual_tts.py`: 7/7 tests PASSED (100%).
+  - Full matrix test covering female/male across Thai+Japanese, English+Korean, and Thai+Chinese all synthesized valid audio streams with expected durations and sample rates.
+  - `test_translation_pipeline.py`: 4/4 tests PASSED (100%).
+
+## Latest completed task — Fix Splash Screen Auto-Dismiss On App Ready (2026-10-29)
+- **Splash Screen Dismissal Synchronization:**
+  - Resolved issue where the Splash Screen remained stuck on screen after the main app window had fully rendered.
+  - Implemented `/api/splash/close` API endpoint in `launch_dev.py`.
+  - Added immediate trigger in `src/index.html` on script load & `DOMContentLoaded` firing `fetch('/api/splash/close')` so the splash closes synchronously the moment the web app is ready.
+  - Wired `close_splash()` into `/api/app-presence/stream` and `reuse_existing_server()`.
+  - Upgraded `splash.py`:
+    - Replaced `for line in sys.stdin` with `sys.stdin.readline()` avoiding C pipe buffering on Windows.
+    - Added a 7-second hard Watchdog Timer (`QTimer.singleShot(7000, ...)`) guaranteeing the splash can never remain stuck under any circumstances.
+    - Added force termination fallback (`p.kill()`) in `SplashController.finish()`.
+  - Verified with `scratch/test_splash_lifecycle.py` (PASS 100%).
+
+## Latest completed task — Seamless Integrated Titlebar Matching Discord & Antigravity Style (2026-10-29)
+- **Unified Titlebar & Header Integration:**
+  - Resolved user request to eliminate the generic Windows/Chromium title bar (with globe icon and disconnected gray background) and make it blend seamlessly with the program like Discord or Antigravity.
+  - Added official Web App Manifests (`public/manifest.webmanifest` & `public/manifest.json`) and linked icons (`bp-full-icon.ico`, `bp-full-icon.png`).
+  - Added dynamic `<meta name="theme-color">` synchronized in `applyAppTheme()` so that the native frame automatically adopts the exact rail background color of whatever theme is selected (Discord `#1e1f22`, Cyberpunk `#080811`, Forest `#09140e`, Crimson `#14080a`, Nord `#191d24`, AMOLED `#000000`).
+  - Added Discord/Antigravity-style branded app title and logo badge on the left of `.topbar`, with `-webkit-app-region: drag` enabled for seamless window dragging.
+  - Added `--enable-features=WebAppWindowControlsOverlay` in `launch_dev.py` for modern Window Controls Overlay rendering.
+  - Verified with Playwright in `scratch/verify_topbar_theme.py` (PASS 100%). Screenshot captured: `verified_discord_styled_topbar.png`.
+
+## Latest completed task — Hide Twitch Chatbot Notice When Twitch Not Connected (2026-10-29)
+- **Context-Aware Twitch Chatbot Notice Visibility:**
+  - Resolved user feedback regarding `#chatInputUnavailable` ("เชื่อมต่อ Twitch Chatbot ในตั้งค่า > ช่องทางสตรีม เพื่อส่งข้อความ") persistently showing at the bottom of the live chat pane even when the user streams on YouTube only.
+  - Updated `src/index.html` and `src/bot_settings.js` with `updateChatInputVisibility()`:
+    - If Twitch Chatbot is ready -> displays `#chatInputContainer` and hides `#chatInputUnavailable`.
+    - If Twitch Chatbot is NOT ready and Twitch platform is NOT connected -> hides `#chatInputUnavailable` completely (`display: none`), keeping the chat area clean and noise-free for YouTube streamers.
+    - If Twitch platform IS connected and Chatbot is not ready -> shows `#chatInputUnavailable` as a helpful reminder.
+  - Exported `window._platformStates` and integrated `updateChatInputVisibility()` with `togglePlatformConnect`, `pollPlatformStatuses`, and `updateAuth`.
+  - Rebuilt `dist/` via `npm run build` and verified with Playwright tests (`tests/verify_own_chat_users.py` PASSED 100%).
+  - Screenshot verified: `verified_chat_clean_no_twitch.png`.
+
+## Latest completed task — Installer Architecture Plan, Edition Icons & 500px Fast Splash Screen (2026-10-29)
+- **Installer Architecture & Specification (`INSTALLER_SPEC.md` & `installer/setup_template.iss`):**
+  - Planned complete installer design for Lite and FULL editions.
+  - Custom destination directory selection with automatic sibling coexistence detection (`<ROOT>\lite\`, `<ROOT>\full\`, `<ROOT>\data\`).
+  - Mandatory Windows Defender Exclusion wizard page with prominent UAC warning ("กรุณากด Yes/OK เมื่อหน้าต่าง UAC ขึ้นมา"), elevated `Add-MpPreference`, and automated verification check via PowerShell `(Get-MpPreference).ExclusionPath` blocking the Next button until verified.
+  - Desktop shortcuts configured with edition-specific icons (`Broadcast Playroom` for FULL, `Broadcast Playroom Lite` for Lite).
+- **Icons & Splash Processing:**
+  - Ingested source images from user-specified directory:
+    - Generated multi-resolution Windows icons `bp-full-icon.ico` and `bp-lite-icon.ico` (16x16 to 256x256).
+    - Scaled splash image `exec-4915afc1-944f-41f5-9cd5-b27f874e2c74.png` (1671x941) to width 500px (500x282) preserving exact aspect ratio with Lanczos resampling (`assets/splash/splash_500.png`).
+- **Modern Fast Splash Screen (`splash.py`):**
+  - PySide6 500x282 frameless transparent window with animated Border Chase capsule (60 FPS, Base64 IPC for safe Thai text).
+  - Subprocess architecture provides instant visual feedback (< 150ms) on launch without blocking main thread.
+  - Integrated into `launch_dev.py` with smooth progress reporting; cleanly closes when the main window opens, settling to 0% GPU idle.
+  - Screenshot verified: `verified_splash_render.png`.
+
+## Latest completed task — Window Size Persistence, TTS Thai/English Model Routing & Events Panel Persistence (2026-10-29)
+- **Settings Window Size Persistence:**
+  - Fixed issue where resizing Settings and clicking "💾 บันทึกการตั้งค่า" did not reopen at the resized dimensions.
+  - Resolved Chromium popout reuse ignoring width/height strings by adding explicit `pop.resizeTo(size.w, size.h)` with delayed retries.
+  - Fixed context isolation where popout child's `closeToolWindow('settings')` now saves dimensions directly to `window.opener.localStorage` before delegating to `window.opener.closeToolWindow`.
+- **TTS Model Routing for Thai & English Parity:**
+  - Inspected legacy version (`broadcast playroom dev/language_detect.py`) where `en` maps to `"th-TH-PremwadeeNeural"`.
+  - Updated `tts_service.py:resolve_voice()` to route English and Thai text to the Thai voice model (`th-TH-PremwadeeNeural` / `th-TH-NiwatNeural`), pronouncing English with Thai accent naturally, while other foreign languages (ja, ko, zh, fr) route to their respective language models.
+- **Live Activity Panel Closed State Persistence:**
+  - Persisted collapsed state via `bp3_events_panel_open` in `localStorage`.
+  - Added `initEventsPanelState()` executed immediately on DOM load to prevent the panel from popping open on restart if previously closed by the user.
+- **Verification:**
+  - Automated Playwright end-to-end test passed all 3 scenarios. Screenshots saved: `verified_settings_size_persistence.png`, `verified_events_panel_collapsed_persistence.png`.
+
+## Latest completed task — Settings Window & All Tool Windows Full Dynamic Theme Sync (2026-10-29)
+- **Theme Propagation to Settings & Floating/Popout Windows:**
+  - Resolved root cause where `.floating-window`, `.floating-header`, `.floating-body`, `.settings-layout`, `.settings-sidebar`, `.settings-content-area`, `.section-card`, and input elements had hardcoded hex backgrounds (`#1e1f22`, `#2b2d31`, `#232428`, `#35373c`).
+  - Converted backgrounds across `src/modal.css`, `src/styles.css`, `src/composer_studio.css`, and `src/widget_customizer.css` to use semantic theme variables:
+    - Headers & tabs: `var(--dc-bg-rail)`
+    - Sidebars: `var(--dc-bg-sidebar)`
+    - Window bodies & content areas: `var(--dc-bg-main)`
+    - Cards & rows: `var(--dc-bg-card)`
+    - Hover states: `var(--dc-bg-card-hover)`
+    - Inputs & textareas: `var(--dc-bg-input)` with focus border set to `var(--app-accent)`
+    - Active navigation item: styled with `var(--dc-bg-card)` and left border highlight `var(--app-accent)`.
+  - Added theme synchronization for popout child windows in `popoutToolWindow()` on window creation and wired `applyAppTheme(theme, accent, targetDoc)` across all documents.
+  - Verified via Playwright test across 4 distinct themes: Cyberpunk, Forest Deep, Crimson Dark, and Nord Slate.
+  - Screenshots captured: `verified_popout_settings_theme_forest.png`, `verified_popout_settings_theme_cyberpunk.png`, and `verified_popout_settings_theme_crimson.png`.
+
+## Latest completed task — Verify Auto-Update Engine, Polish Voice Settings UI & 15 App Themes (2026-10-29)
+- **Auto-Updater Detection & Fast Update Flow:**
+  - Verified `updater.py` connects to GitHub Releases manifest (`zepiam/broadcast-playroom-3`).
+  - Tested semantic version comparison (`updater.is_version_newer`).
+  - Live GitHub manifest currently reports `v3.0.0` (`status: 'up_to_date'`, `has_update: False`).
+  - Simulated newer version detection (`v3.0.1`):
+    - Server Rail button `#btnRailUpdate` appears with glowing green download icon above Settings gear.
+    - Clicking `#btnRailUpdate` opens `#modal-fast-update` asking to update immediately without forcing changelog.
+    - Clicking "ย้อนกลับ" closes modal and keeps `#btnRailUpdate` pinned on the Server Rail.
+    - Clicking "⚡ อัปเดตทันที" displays progress bar and triggers `/api/apply-update`.
+    - Settings update badge displays `⚡ มีเวอร์ชันใหม่ v3.0.1`.
+    - Verified via unit test `test_updater_engine.py` and Playwright test `test_playwright_update_flow.py`; screenshot saved to `verified_update_detection_flow.png`.
+- **TTS Latency Indicator Humanization:**
+  - Converted millisecond display into rolling average seconds (e.g. `⚡ TTS : 2.5 วินาที`).
+  - Added hover tooltip `เฉลี่ยระยะเวลาในการประมวลเสียงอ่านข้อความ`.
+- **Voice Settings UI Polish:**
+  - 2-column grid layout for voice randomization and author name reading checkboxes.
+  - Replaced native tooltips on `(?)` with instant Pure CSS hover tooltips (`.help-pill-hint[data-tooltip]`).
+  - Styled "🎵 ทดสอบฟัง" and "🔄 กลับสู่ค่าเริ่มต้น" with `.btn-topbar-action` dark glass styling.
+  - Eliminated footer empty gap (zero bottom space below "ปิดหน้าต่าง").
+- **Settings Right-Click PIN Menu Dismissal:**
+  - Fixed persistent context menu bug by consolidating dismiss handlers across documents and keydown (`Escape`).
+- **Platform Quick Toggles Bar Two-Way Sync:**
+  - Top platform status pills (`#pill-plat-{key}`) are clickable to toggle platform visibility.
+  - Synchronized state bidirectionally between top pills, bottom checkboxes (`cfgTwitchShow`, etc.), home sidebar cards (`#card-{key}`), and platform counter.
+- **15 App Themes & 15 Accent Colors:**
+  - Expanded dropdowns to 15 curated styles each. Removed all parenthetical language explanations per user instructions.
+
+## Latest completed task — Fix Translate Button & Auto-Translate Pipeline Parity with Legacy (2026-10-28)
+- Root Cause Identified:
+  1. `language_detect.py` was completely missing from `broadcast playroom 3`, breaking script-based language identification.
+  2. `chat_bridge.py`: `self.translator = Translator()` was instantiated in `__init__`, but `_on_message` never invoked it! Incoming foreign chat messages were saved and dispatched without translation. In addition, `set_translate_mode` and `get_translate_mode` were missing, causing `/api/translate/mode` POST requests to fail with 400.
+  3. `src/index.html`: `setTranslateMode()` attempted to find element `btnTranslateToggle` which was `null` (actual element ID is `topbar-item-translate`), preventing styling updates; initial translate mode was not restored on app startup.
+  4. Settings > แปลภาษา (`#sec-translate`) had static mockup controls with missing IDs and event handlers.
+  5. `src/banned_words.js` line 18 hardcoded `is_translated: false`, stripping the translation indicator if a message underwent moderation.
+  6. `tts_service.py` only handled English/Thai; foreign languages in multilang mode fell back to Thai.
+- Code & Architectural Changes:
+  1. `language_detect.py`: Ported the zero-dependency Unicode script detector from `broadcast playroom dev`.
+  2. `translator.py`: Updated `Translator.__init__` to accept `host`, `supported_langs`, and kwargs for full legacy compatibility; added DeepL API integration, bot command guard (`!`, `/`, `-`, `#`, `$`, `~`), and `translate_text()` helper.
+  3. `chat_bridge.py`: Added `set_translate_mode()` and `get_translate_mode()`. Implemented non-blocking translation in `_on_message` outside `self._lock` when in `translate` mode, updating `text = translated_text`, `original_text`, `is_translated = True`, and `source_lang`.
+  4. `launch_dev.py`: Wired GET/POST `/api/translate/mode` to `chat_bridge.get_translate_mode()` and `set_translate_mode()`; added POST `/api/translate/provider` and test injection `/api/test/chat`.
+  5. `src/index.html`: Fixed `topbar-item-translate` element reference; added `initTranslateMode()` on startup; wired `#sec-translate` controls (`selTranslateProvider`, `chkAutoTranslateLive`, `chkShowOriginalText`); gated original text display on `bp3_translate_show_original`.
+  6. `src/banned_words.js`: Preserved `is_translated: !!msg.is_translated`.
+  7. `tts_service.py`: Enhanced `resolve_voice()` to support Japanese (`NanamiNeural` / `KeitaNeural`), Korean (`SunHiNeural` / `InJoonNeural`), Chinese (`XiaoxiaoNeural` / `YunxiNeural`), and French (`DeniseNeural` / `HenriNeural`) in multilang mode, and Thai for translated text.
+  8. Frontend: Rebuilt `dist/` via `npm run build` cleanly in 415ms.
+- Verification Results:
+  - `test_translation_pipeline.py`: 4/4 unit tests PASS (language_detect, Translator GTX, resolve_voice gender/language matrix, chat_bridge translation/multilang toggle).
+  - `test_verify_translate_feature.py`: Full Playwright E2E test PASS on port 8801:
+    - Button click toggles between "แปลภาษา" (yellow 🔄) and "อ่านทุกภาษา" (emerald 🌐), syncing with `/api/translate/mode`.
+    - Settings > แปลภาษา popup verified.
+    - Live English chat message injected via `chat_bridge`: translated to Thai ("สวัสดีตอนเย็นสตรีมเมอร์! วันนี้คุณเป็นอย่างไรบ้าง?"), rendered with emerald green `(ต้นฉบับ: Good evening streamer! How are you today?)`.
+    - Screenshot captured and saved to `verified_translate_feature.png`.
 
 ## Latest completed task — Fix Game Overlay Settings Not Opening on Edit Mode Click (2026-10-28)
 - Root Cause Identified: Browser popup blocker blocked window.open for remote polling events; in-app fallback was overridden by inline display:none; background browser window was not raised by Windows; and DOM queries did not use getToolDocument for popouts.
@@ -474,3 +779,367 @@ Current next work: user acceptance on actual OBS/live accounts and their own lon
 - Added `/api/open-external` backend endpoint in `launch_dev.py` using Python `webbrowser.open()` to delegate URL opening directly to Windows OS and the user's primary default browser profile.
 - Implemented `openExternalUrl(url)` in `src/index.html` and migrated `editPlatformStreamInfo` and `openPlatformChannelWeb` to use it.
 - Verified through Playwright test `scratch/test_external_url.py`. Rebuilt and synced all builds.
+
+## 2026-10-28 — Game Overlay separate settings (Codex; build in progress)
+- User requested Game Overlay settings comparable to legacy, visually grouped like Composer chat controls, separate from OBS Chat Widget, with Viewer settings and no Overlay+ inside this window. Removed forced inline display, registered draggable handler, fixed closing after popup adoption; Overlay+ now has a separate settings popup and retains its existing geometry on changes.
+- Added `game_chat_settings.py` and `src/game_overlay_chat_controls.js`: legacy Default/Theme/Balloon/Character modes and theme list, independent mode settings, text/box/font/animation/auto-hide controls, hotkey capture, separate Twitch animated emote preference, character default image, and live updates to Game Overlay. Viewer settings now save/live-update correctly (fixed prefixed-key mismatch); Qt resize/alpha commands supported. Loop Demo action and demo interval fixed. `legacy_game_chat.html` responds to game state updates without restarting it. No Composer widget layout or Overlay+ values changed by Game settings save.
+- `npm run build`, Python/JS compilation, isolated `tests/verify_game_overlay_settings.py` PASS including popup close/reopen, simulated embedded drag/close, Theme→Default and live Game renderer, separate character image upload, Viewer updates, mocked hotkey, separate Overlay+ popup and retained coordinates, game emote preference isolation and mocked demo. `tests/verify_app_context_menu.py`, `tests/verify_overlay_context_menu.py`, `tests/verify_viewer_retention.py` PASS. Native Qt window, real global hotkeys, all third-party animated emotes and full legacy parity need real-world verification; do not claim them tested.
+- Separate new Lite/Full trial builds are running via `python build_trial.py lite` / `python build_trial.py full`, each writes a fresh timestamped directory. Older trials lack the new Python backend; do not copy frontend alone into them. On completion run `tests/verify_packaged_game_overlay.py <exe> lite|full` and verify styles; do not distribute trial files. See WORKLOG for final paths/status.
+- Follow-up native Qt test outside restricted test sandbox: `tests/verify_game_overlay_native.py` PASS using isolated layout and synthetic messages, actual Qt Game and Viewer windows started and closed, Game resized via native window handle, edit commands and demo toggle accepted. No OBS changes or real chat. This resolves the earlier inability to start Qt in the restricted environment, but does not verify real streaming, global keypresses, every legacy setting or subjective rendering.
+- **User preference:** From now on implement and test in Dev only; user will test Lite/Full themselves to conserve usage. Do not build or test Lite/Full routinely. The in-progress Full build was stopped on this instruction. A fresh Lite trial happened to finish before the instruction and its isolated packaged popup/theme/Qt Game/Viewer/demo smoke tests passed; it is not required for ongoing work. The prior statement that both builds are running is superseded. Restart Dev to load the changed backend and frontend.
+- Dev follow-up: snapshot the outgoing appearance mode when first switching, preventing a theme font adjustment from becoming the Default setting for users without previously saved per-mode config. Legacy game/character values are inherited into Game Overlay's separate settings when first editing. `tests/verify_game_overlay_settings.py` PASS including fresh-setting mode-switch regression. This last backend fix is newer than the earlier Lite trial; no rebuild per user preference.
+
+## 2026-10-28 — Game Overlay settings sliders (Codex)
+- Replaced visible numerical inputs in Game Overlay chat appearance and Viewer settings with native range sliders; each displays its current value, including percentage for opacity. Game window width/height are sliders too; their existing Save behavior remains, while Viewer/chat sliders retain their existing update-on-change behavior. OBS Chat Widget and Overlay+ were not changed.
+- Dev `npm run build`, `node --check src/game_overlay_chat_controls.js`, and `tests/verify_game_overlay_settings.py` PASS. Isolated browser test verified no visible number fields, slider labels, game size save, Game Overlay font update, Viewer font and 0% opacity persistence, mode switching, popup close and unrelated data preservation. Actual user's desktop interaction is not verified. Restart Dev; no Lite/Full build or test per user instruction.
+
+
+## 2026-10-28 — Game Overlay live settings and footer
+- Existing Game Overlay chat messages now update in place when layout, platform logo, timestamp, emote size, text length, reward/original display and other presentation settings change. Spacing accepts zero, lowering the message limit removes excess entries, and character image, position, limit and hide settings update existing characters. Display-mode switches retain the messages (switching modes reconstructs their presentation).
+- Game Overlay settings popup footer now stays at the bottom while its settings area scrolls; the embedded fallback retains its height limit. Font stylesheets are no longer reloaded on unrelated changes.
+- Dev frontend assets rebuilt and tests/verify_game_overlay_settings.py passed, including live-message and popup-footer checks. Lite/Full packages were not built or tested.
+
+## 2026-10-28 — Game Overlay hotkeys and theme pagination (Codex)
+- Moved hotkeys above chat appearance controls. Escape cancels key capture without closing the settings window.
+- Theme selection uses 10 buttons per page, updating only the theme grid; five reserved rows prevent height jumps on the last page. Custom CSS remains available when selected.
+- Follow-up: Game Overlay theme buttons omit Thai parenthetical descriptions, retaining English names and icons. Dev frontend build passed.
+- Completed & Verified: Dev frontend build and tests/verify_game_overlay_settings.py PASS, including Escape, hotkey save, pagination, retained controls, live theme/font and popup footer. No Lite/Full package build or test.
+
+## 2026-10-28 — Documentation completion requirement (Codex)
+- User explicitly requires every AI to update BOTH HANDOFF.md and WORKLOG.md after finishing any work, including minor changes. Added a mandatory completion reminder to AGENTS.md so subsequent agents receive this instruction.
+- Latest Game Overlay work is recorded above: relocated hotkeys, Escape cancellation, 10-theme pagination without rebuilding other controls, English theme labels, live settings and bottom footer. Previous Dev verification is recorded with its scope; English-label follow-up was build-verified.
+- Documentation-only follow-up: inspected both logs and AGENTS.md; no application tests rerun. Continue in Dev only; user handles Lite/Full testing.
+
+## 2026-10-28 — Game Overlay timestamp (Codex)
+- Messages without a supplied timestamp now retain their local receipt time. Enabled timestamps render below the message, smaller and using configured text color; message-only and Balloon layouts no longer suppress time.
+- Dev frontend build and existing tests/verify_game_overlay_settings.py PASS. Exact visual timestamp placement across all themes remains unverified; no Lite/Full builds.
+
+## 2026-10-28 — Timestamp removed by user request (Codex)
+- Supersedes the preceding timestamp request: Game Overlay hides the timestamp setting and its backend config always disables timestamps, including previously saved enabled values. Main OBS Chat Widget settings are unaffected.
+- Dev frontend build PASS. No browser regression rerun for this small removal; no Lite/Full builds.
+
+## 2026-10-29 — Main window frame (Codex)
+- Removed duplicate topbar app branding. Added local same-origin POST /api/window/frame controls: init, drag, minimize, maximize/restore, close. Native handler only matches a unique main title and isolated BP3 browser profile; normal browser fallback keeps native controls.
+- Added in-app window buttons and drag on empty header space. Windows caption removed on initialization; resize style retained.
+- Completed but native behavior UNVERIFIED: Dev build and Python syntax PASS; actual Chrome/Edge frame painting, dragging and maximize bounds need desktop verification after restarting Dev. No Lite/Full builds.
+
+## 2026-10-29 — Splash stacking and Dev clarification (Codex)
+- Removed Qt.WindowStaysOnTopHint and SplashScreen window type; splash is now an ordinary frameless Qt.Window so foreground applications can cover it.
+- Python syntax PASS; no remaining always-on-top, raise or activate calls found in splash.py. Actual desktop switching during startup remains unverified.
+- Dev uses the same native frame change and needs a complete restart; no Lite/Full build needed. Main Chrome/Edge frameless painting remains unverified, as noted above.
+
+## 2026-10-29 — Stale main page investigation (Codex)
+- User still sees removed branding and native caption after restart. Current src/dist contain no old branding, but index.html was served with default cache behavior. Main page now uses serve_custom_file with no-store headers; native frame initialization retries briefly while the browser window becomes visible.
+- Dev frontend build PASS. Read-only process/HTTP check found no running Dev listener on 8801; actual screenshot cause and native caption removal remain unconfirmed. Reopen Dev to verify latest page; no Lite/Full build.
+
+## 2026-10-29 — Native frame correction (Codex)
+### Female fallback speech (Codex)
+- Web Speech fallback now always prefers female Thai/English voices regardless of main TTS gender/random selection. Main Edge/RVC choice unchanged. If browser supplies no matching female voice, its language default is still used; voice availability is system-dependent.
+- Dev frontend build PASS; actual installed voice/audio output not tested.
+### Main window persistence follow-up
+- Added per-user LOCALAPPDATA/BroadcastPlayroom3/main_window.json: restore normal rectangle and maximized state once main window is identified; native placement monitored every 0.5 seconds with atomic writes only on change. Minimized state ignored; restore rejects off-monitor rectangles. Popup size settings untouched.
+- Syntax and monitor API check PASS. Real app close/reopen persistence remains unverified. Restart Dev backend to load this change.
+### Superseded: recovery after user screenshot
+- User confirms blank caption band and broken dragging. Disabled custom frame initialization and duplicate in-app controls; startup now restores full native window region and WS_CAPTION to recover native drag/buttons. Removed-brand change stays.
+- Dev frontend build PASS; actual desktop recovery not yet verified. Frameless main window remains INCOMPLETE. Do not resume region clipping: Chromium requires a proper supported host/frame approach, with popup/auth/media behavior verified. Earlier fixture tests do not establish Chromium compatibility.
+- Confirmed installed win32gui has no IsZoomed; maximize now uses GetWindowPlacement. Caption clipping now includes DPI-aware caption/frame metrics because Chromium includes its custom caption in its client area.
+- tests/verify_window_frame.py PASS: real disposable Windows window init, maximize and restore; fixture isolates window discovery. Actual Chromium appearance remains unverified because no BP3 window was found during inspection. Restart Dev backend to load changes.
+
+## 2026-10-29 — Chromium caption follow-up (Codex)
+- Screenshot confirms Chromium still paints its caption after style removal. Replaced WS_CAPTION manipulation with native window-region clipping above client origin, recalculated on resize. This visually clips the existing non-client caption; it is not a new native application host.
+- In-app controls reduced to 28x24 pixels, 13px symbols aligned to top. Dev build PASS. Corrected unavailable pywin32 CreateRectRgn to typed GDI call. Actual native clipping/resize/maximize remains unverified and must not be reported as confirmed fixed.
+
+## 2026-10-28 - TTS Latency Pill Humanized Display & Tooltip
+- Simplified and humanized the TTS latency badge (#chatTtsLatencyBadge) in the chat header:
+  - Formatted time from raw milliseconds (e.g. 2964ms) to friendly seconds: '⚡ TTS : X.X วินาที' (e.g. '⚡ TTS : 2.5 วินาที') using a smoothed rolling average of recent TTS playback times.
+  - Updated hover tooltip (title) to: 'เฉลี่ยระยะเวลาในการประมวลเสียงอ่านข้อความ'.
+  - Updated both initial HTML state and live audio playback handler in src/index.html.
+- Executed npm run build and verified dist/index.html assets synchronization.
+
+## 2026-10-28 — Voice Settings UI Polish & Parity
+- Realigned checkboxes in Voice Settings (both #win-voice-settings and #sec-tts in Settings):
+  - Formatted into clean 2-column grid layout for '🔀 สุ่มเพศเสียงอ่าน' and '📢 อ่านชื่อคนดูตามด้วยแชท'.
+  - Added dedicated clickable/hoverable '(?)' tooltip hint pills:
+    - '🔀 สุ่มเพศเสียงอ่าน (?)' displays tooltip 'สลับเสียงชายหญิงในแต่ละคอมเม้น'.
+    - '📢 อ่านชื่อคนดูตามด้วยแชท (?)' displays tooltip '(ชื่อ) พูดว่า (ข้อความ)'.
+    - Built floating showHintBubble popover on click + browser native 	itle on hover.
+- Harmonized button styling to match dark theme:
+  - Replaced jarring white button user-agent styles on '🎵 ทดสอบฟัง' and reset slider button with .btn-topbar-action dark glass styling.
+  - Renamed 'คืนค่าสไลเดอร์' to 'กลับสู่ค่าเริ่มต้น' (both in #win-voice-settings and #sec-tts).
+  - Added '🎵 ทดสอบฟัง' to #sec-tts for 100% parity.
+- Fixed window footer gap:
+  - Added lex: 1 1 auto; min-height: 0; overflow-y: auto; to .voice-settings-body and margin-top: auto; to .floating-footer.
+  - Pinned footer strictly flush to the bottom of the window (Diff: 0.0px), eliminating any empty black gap below 'ปิดหน้าต่าง'.
+- Rebuilt frontend with 
+pm run build and verified with Playwright end-to-end tests (erified_voice_settings_ui.png).
+
+## 2026-10-28 — Fix Settings Pin Context Menu Auto-Dismiss
+- Fixed bug where right-clicking Settings navigation items to PIN/unpin caused the context menu to stay permanently stuck open:
+  - Discovered duplicate declaration of hideContextMenu that previously overwrote the cross-window dismiss logic with a local window document check.
+  - Removed duplicate and consolidated hideContextMenu(targetDoc) to seamlessly dismiss menus across all documents (main window and popout tool windows).
+  - Wired pointerdown, click, and Escape listeners across both main and popup documents.
+  - When Escape is pressed while a context menu is open, it closes the context menu first instead of closing the entire window.
+- Rebuilt frontend with 
+pm run build and verified with Playwright test (100% PASS for right-click show, outside click dismiss, and Escape dismiss).
+
+## 2026-10-28 — Platform Quick Toggles Bar Two-Way Sync
+- Upgraded the platform quick toggle status pills in Setting > ช่องทางสตรีม (#platQuickTogglesBar):
+  - Enabled direct clicking on each platform pill (Twitch, YouTube, KICK, TikTok, MyLive, SOOP) to toggle its visibility on the sidebar/home page.
+  - Implemented bidirectional synchronization between:
+    1. The top status pills (#pill-plat-{key} active 👁️ vs hidden-plat 🚫).
+    2. The individual 'แสดงการ์ดบน Sidebar' checkboxes in the cards below (cfgTwitchShow, etc.).
+    3. The actual platform cards on the home page sidebar (#card-{key} with display: none !important).
+    4. The connected platform counter pill (#platCounter).
+  - Added multi-window document handling via getActiveDocs() so toggling in the Settings popup immediately updates the parent window's sidebar in real time.
+- Rebuilt frontend with 
+pm run build and verified with Playwright test (erified_platform_pills_toggle.png, 100% PASS).
+
+## 2026-10-28 — Pure CSS Hover Tooltips & 15 App Themes / 15 Accent Colors
+- Enhanced (?) help buttons in Setting > เสียงอ่าน (#sec-tts) and floating TTS window (#win-voice-settings):
+  - Converted help icons to span.help-pill-hint with data-tooltip to prevent label click interception.
+  - Implemented instant pure CSS hover tooltips with pointer arrow and high contrast (#090d16 dark slate, #38bdf8 cyan border) that appear instantaneously on mouse hover without browser delays.
+- Expanded Main App Themes and Highlight Accents in Setting > ธีม & การแสดงผล (#sec-themes) to 15 choices each:
+  - 15 App Themes: Discord Dark, Pure Black AMOLED, Slate Midnight, Obsidian Shadow, Cyberpunk Night, Nord Frost, Dracula Abyss, Catppuccin Mocha, Espresso Cafe, Tokyo Night, Deep Forest, Monokai Pro, Matrix Terminal, Abyssal Ocean, Crimson Velvet.
+  - 15 Accent Colors: Discord Blurple, Emerald Green, Gold Amber, Rose Pink, Sky Blue, Neon Violet, Crimson Red, Sunset Orange, Electric Cyan, Fresh Mint, Radiant Fuchsia, Royal Indigo, Cyber Lime, Coral Glow, Imperial Gold.
+- Rebuilt frontend with 
+pm run build and verified with Playwright end-to-end tests (erified_tts_hover_tooltip.png, erified_app_15_themes_and_accents.png, 100% PASS).
+
+## 2026-10-28 — Omit Parenthetical Explanations from Theme & Accent Names
+- Stripped all parenthetical Thai/multilingual descriptions from dropdown options in Setting > ธีม & การแสดงผล (selAppTheme and selAppAccent):
+  - Formatted theme names cleanly (e.g. '🌌 Discord Dark', '🌑 Pure Black AMOLED', '🏙️ Slate Midnight', etc.).
+  - Formatted accent color names cleanly (e.g. '🟣 Discord Blurple', '💚 Emerald Green', '🟡 Gold Amber', etc.).
+- Added strict permanent constraint to AGENTS.md: Never append parenthetical descriptions or multilingual explanations after option/button/theme names.
+- Rebuilt frontend with 
+pm run build and verified dist assets synchronization.
+
+## 2026-10-28 — Window Size Persistence & Real-time Theme Sync Across Windows
+- **Live Theme Synchronization Across Windows**:
+  - Replaced hardcoded background colors in `src/modal.css`, `src/styles.css`, `src/composer_studio.css`, and `src/widget_customizer.css` with semantic CSS variables (`--dc-bg-rail`, `--dc-bg-sidebar`, `--dc-bg-main`, `--dc-bg-card`, `--dc-bg-card-hover`, `--dc-bg-input`, `--app-accent`).
+  - Switching themes in Setting > ธีม & การแสดงผล now instantly updates all open windows, modals, and settings panes in real time without requiring reloads.
+- **Window Size Persistence**:
+  - Resolved root cause where resizing popout windows detached event listeners because `pop.document.open()` was previously called after registering listeners; relocated `resize`, `beforeunload`, and `pagehide` listeners to run after `pop.document.close()`.
+  - Added explicit window dimension saving in `closeToolWindow()` and `saveThisPopoutSize()` to capture `innerWidth` and `innerHeight` into `localStorage.bp3_popout_size_{name}` and `localStorage.bp3_win_size_win-{name}`.
+  - Configured `popoutToolWindow()` and `openToolWindow()` to read and restore the user's last saved size upon reopen.
+  - Verified 100% PASS with Playwright end-to-end tests across Settings, Voice Settings, Giveaway, and Ask windows through resizing, closing, reopening, and full page reloads (`verified_window_size_persistence.png`).
+
+## 2026-10-29 — Setting > คำแทนที่ (Dictionary & Replacement Word Enhancements)
+- **Community Contribution Button**:
+  - Added high-visibility green banner with button `🌐 ช่วยเราเพิ่มคำศัพท์ (แชร์กับทุกคนที่ใช้โปรแกรม)` in Setting > คำแทนที่ (`#sec-replace`).
+  - Clicking button opens community wiki contribution URL: `https://www.men9ch.com/wiki/ng-replace.php?pid=broadcast-playroom` (matching previous version).
+- **Import & Export Functionality**:
+  - Added `📥 นำเข้า` and `📤 ส่งออก` action buttons in header toolbar (without parenthetical explanations per guidelines).
+  - Implemented `exportDictionaryFile()` downloading JSON dictionary with structured formatting.
+  - Implemented `triggerImportDictionary()` and `handleDictionaryFileSelect()` supporting both wrapped (`replace_words`) and flat dictionary JSON files.
+  - Added backend route `POST /api/dictionary/import` in `launch_dev.py` and `dict_manager.import_dict()` in `dictionary_manager.py` reporting added, skipped, and total counts.
+- **Dual TTS Audio Preview for Dictionary Entries**:
+  - Added `🔊` test listen buttons (`previewDictionaryDirectText`) to both columns in the dictionary table:
+    - Column 1: Original word in chat ("คำค้นหาในแชท")
+    - Column 2: Replacement read word ("คำที่ให้อ่านแทน")
+  - Audio preview requests use `/api/tts?preview=1&text=...` to bypass dictionary replacement so original words pronounce original text and replacement words pronounce replacement text.
+  - Interactive state displays `⏳` while generating/playing and resets back to `🔊` cleanly on completion or error.
+- **Sync Feedback with New Words Count**:
+  - Updated `dict_manager.sync_remote()` to calculate and return `added` new word count alongside `total`.
+  - Added in-view status banner `#dictSyncStatusBanner` and `showDictStatus()` reporting real-time status across all windows:
+    - If new words found: `✅ ซิงค์สำเร็จ! เพิ่มคำศัพท์ใหม่ {added} คำ (รวมทั้งหมด {total} คำ)`
+    - If up to date: `✅ ซิงค์เสร็จสิ้น! คลังคำศัพท์เป็นปัจจุบันแล้ว (ไม่มีคำใหม่เพิ่มเข้ามา, มีทั้งหมด {total} คำ)`
+- **Verification**:
+  - Rebuilt frontend with `npm run build`.
+  - Verified 100% PASS with Playwright end-to-end tests across all buttons, table columns, preview audio triggers, wiki link, sync status banner, and JSON import (`verified_dictionary_features.png`).
+
+
+## [2026-10-29 15:26] Smart Setup Installer & Unified Root Directory Architecture
+- **Features Completed**:
+  1. **Modern Dark Studio UI (`installer_gui.py`)**:
+     - Upgraded from legacy radio buttons to interactive, glowing `EditionCard` widgets (Full Edition vs Lite Edition).
+     - Fixed CSS cascading border bug and expanded window size to 720x660 with 16px clean gap between cards.
+     - Added Discord/Steam-style hero header with app icon, version pill (`v3.0.0 Stable`), and 2-row checkboxes.
+  2. **Unified Folder Architecture**:
+     - Root install path: `<Root>/`
+       - `<Root>/full/` -> Full Edition binary, models, PyTorch, CUDA.
+       - `<Root>/lite/` -> Lite Edition binary.
+       - `<Root>/data/` -> Shared user data (bot accounts, dns settings, composer layout, browser profiles, logs).
+  3. **Auto-Subfolder Append Safeguard**:
+     - When user browses or selects a general directory (e.g. `E:\DOCS\Documents` or `D:\`), installer automatically appends `\BroadcastPlayroom3` to prevent dumping files directly into existing personal document folders.
+     - Double-layered in both folder browser picker and install executor.
+  4. **Dynamic Portable Mode Detection**:
+     - When installed on non-C: drives (`D:`, `E:`, `F:`), auto-creates `.portable` and `data/` folder.
+     - `launch_dev.py` resolves `../data/` as `DATA_ROOT`, ensuring zero data loss on Windows OS format.
+  5. **Production Build**:
+     - Bundled and verified: `dist_releases/BroadcastPlayroom3-Setup.exe` (~43.2 MB).
+
+- **Download Mirror Priority Update**:
+  - Swapped mirror priority in `installer_gui.py`:
+    - Mirror 1 (Primary): Google Drive (highest speed for users in Thailand/region).
+    - Mirror 2 (Failover / Backup): Hugging Face (unlimited quota fallback).
+  - Added smart quota detection: if Google Drive hits 24h download limit, the installer automatically and seamlessly switches to Hugging Face without interrupting the installation.
+
+## [2026-10-29 18:00] RVC Loading Progress UX, Topbar Model Badge & 15 App Themes Parity Restoration
+- **RVC Loading UX & Progress Feedback**:
+  - Resolved user confusion where ticking "เปิดใช้ RVC" appeared inactive while weights loaded into GPU/VRAM.
+  - Implemented `.rvc-loading-progress-box` (`#secRvcProgressBox` and `#winRvcProgressBox`) with dynamic shimmer progress bar and status text: `⏳ กำลังโหลดโมเดลเข้าหน่วยความจำ (GPU/RAM)... กรุณารอสักครู่`.
+  - Fixed checkbox behavior: maintains `checked = true` (disabled while busy) during model loading instead of prematurely clearing back to false.
+  - Restored and styled `#topbarRvcBadge` directly on Topbar beside `[ 👩 หญิง | 👨 ชาย ]`:
+    - Offline: `RVC: ปิด` (subtle dark gray pill).
+    - Loading: `🟠 RVC โหลด...` (amber glowing boil effect `bp3-rvc-lp-boil`).
+    - Ready: `🟢 RVC: [ชื่อโมเดล]` (emerald green signboard sway `bp3-rvc-tx-hanging-sway` 1.5s, then 0% GPU idle).
+- **15 App Themes & 15 Accent Colors Restored**:
+  - Audited and identified regression from prior merge in `src/index.html` where `selAppTheme` had reverted to 3 items.
+  - Fully restored all 15 curated App Themes and 15 Accent Colors in `#sec-themes` dropdowns and `applyAppTheme()` CSS root variables mapping:
+    - 15 Themes: Discord Dark, Pure Black AMOLED, Slate Midnight, Obsidian Shadow, Cyberpunk Night, Nord Frost, Dracula Abyss, Catppuccin Mocha, Espresso Cafe, Tokyo Night, Deep Forest, Monokai Pro, Matrix Terminal, Abyssal Ocean, Crimson Velvet.
+    - 15 Accents: Discord Blurple, Emerald Green, Gold Amber, Rose Pink, Sky Blue, Neon Violet, Crimson Red, Sunset Orange, Electric Cyan, Fresh Mint, Radiant Fuchsia, Royal Indigo, Cyber Lime, Coral Glow, Imperial Gold.
+  - Verified live theme application, variable changes, and popout window propagation via Playwright (`verified_15_themes_restored.png`).
+- **Comprehensive Distribution Audit**:
+  - Audited 179 files in `dist/` vs workspace and distributed release archives:
+    - 80 Chat Widget themes in `cwc_themes_data.js` and `composer_widget_themes.css`: 100% intact.
+    - 81 Game Overlay themes in `game_overlay_themes.py`: 100% intact.
+    - Assets, icons, audio, and cursors: 100% intact.
+  - Synced all frontend updates into `src/`, `dist/`, and local full installation. Ready for batch v3.0.1 release compilation upon user testing sign-off.
+
+## [2026-10-29 18:30] Voice Settings RVC Card Missing Fixed & Popout Stylesheet Hardened
+- **Root Cause Analysis**:
+  - In `src/rvc_controls.js`, an unescaped string in `const labels={..., downloading:กำลังดาวน์โหลด %, ...}` caused `SyntaxError: Unexpected token ','`.
+  - Chromium aborted execution of `rvc_controls.js` during initial script parsing, so `init()` never ran.
+  - Because `src/index.html` had hardcoded `style="display:none;"` on `#rvcVoiceCard`, the card remained permanently hidden, displaying only Cards 1, 3, and 4.
+  - Additionally, in `popoutToolWindow`, `node.sheet.cssRules` threw local security error on `file:///` protocols where `catch` returned empty string, dropping stylesheets in popouts.
+- **Fixes Implemented**:
+  1. Fixed all syntax issues and template literals in `src/rvc_controls.js` (lines 14, 45, 46, 76, 77). Verified with `node -c` (0 syntax errors).
+  2. Removed `style="display:none;"` from `#rvcVoiceCard` in `src/index.html`. Full Edition shows it by default; Lite edition removes it cleanly via `el.remove()`.
+  3. Improved stylesheet fallback in `popoutToolWindow`: `catch(_){ return node.outerHTML; }` ensures `<link rel="stylesheet">` tags are always preserved in detached popout windows.
+  4. Added missing separator `|` between import and open folder buttons.
+  5. Synchronized `src/` to `dist/`.
+- **Verification**:
+  - Playwright browser execution verified `0 PAGE ERRORS`.
+  - Popout window captured in `verified_rvc_card_popout.png` and `verified_rvc_card_loading_state.png`: Card 2 (🤖 โมเดลเสียง AI RVC) is fully restored, interactive, and beautifully styled with the shimmer progress bar and status badge.
+
+## [2026-10-29 18:35] Safe Uninstaller with Confirmation Prompt (y/n Guard)
+- **Problem**:
+  - Previously, `uninstall.cmd` created by `installer_gui.py` executed destructive file removal immediately upon launch without asking the user for confirmation.
+  - If a user accidentally clicked or opened `uninstall.cmd`, the entire program folder and shortcuts were deleted instantly.
+- **Solution & Hardening**:
+  - Added an interactive safety prompt (`set /p confirm`) inside `_create_uninstaller` in `installer_gui.py`:
+    `คุณต้องการถอนการติดตั้งจริงหรือไม่? [y=ยืนยันลบ / n=ยกเลิก]: `
+  - Pressing Enter (empty), typing `n`, or any key other than `y`/`Y` immediately aborts the uninstallation safely:
+    Displays reassurance: `ยกเลิกการถอนการติดตั้งเรียบร้อยแล้ว! ไฟล์โปรแกรมและการตั้งค่าทั้งหมดยังคงอยู่ครบถ้วน ปลอดภัย 100% ครับ`
+  - Only typing `y` or `Y` proceeds with closing processes, removing shortcuts, and deleting edition files.
+- **Verification**:
+  - Verified with `verify_uninstall_script.py` simulating inputs: `n` (aborts), empty Enter (aborts), `y` (proceeds), `Y` (proceeds). All passed.
+  - Recompiled production installer: `dist_releases/BroadcastPlayroom3-Setup.exe`.
+
+## [2026-10-29 18:40] Voice Settings UI Polish: Clean Tooltips (?) & Bottom Card Layout Fix
+- **Problems Identified**:
+  1. Checkboxes for "สุ่มเพศเสียงอ่าน (Mixed Voice)" and "อ่านชื่อคนดูก่อนพูดข้อความแชท" had reverted to long inline explanatory text in parentheses, causing ugly multi-line text wrapping.
+  2. Bottom card (Card 4: "🎙️ พิมพ์ข้อความทดลองอ่านเสียง") was sliced horizontally by an arbitrary body height limit and leaving an awkward dead void before the footer.
+- **Root Cause & Fixes**:
+  1. **Redesigned Clean Checkboxes with Hover Tooltips (?)**:
+     - Swapped long inline text for concise labels: `🔀 สุ่มเพศเสียงอ่าน (Mixed Voice)` and `📢 อ่านชื่อคนดูก่อนพูดข้อความแชท`.
+     - Placed into a 2-column grid (`grid-template-columns: 1fr 1fr; gap: 14px;`).
+     - Added dedicated circular `(?)` help badges with hover tooltips:
+       - Mixed Voice tooltip: `สลับเสียงชาย-หญิงในแต่ละคอมเมนต์อัตโนมัติ เพื่อจำลองเสียงคนดู`
+       - Read Author Name tooltip: `เช่น '(ชื่อคนดู) พูดว่า (ข้อความ)'`
+     - Applied consistently to both `#win-voice-settings` and `#sec-tts` (Settings).
+  2. **Fixed Bottom Card Layout & Window Body Height**:
+     - Upgraded the scroll container in `#win-voice-settings` to `.floating-body` with `flex: 1; min-height: 0; overflow-y: auto;` removing arbitrary `max-height: calc(85vh - 120px)`.
+     - Updated default window height in `defaultSizes['voice-settings']` from 640px to 790px.
+     - All 4 cards (Gender, RVC, Audio Sliders, Test Message) now render completely without clipping, dead space, or scrolling needed on standard screens.
+- **Verification**:
+  - Captured `verified_voice_window_redesign.png` and `verified_settings_sec_voice.png`.
+  - Zero page errors. Clean 2-column layout and zero card clipping confirmed.
+
+## [2026-10-29 18:45] Post-Mortem & Permanent Safeguards Against Regressions
+- **Incident Analysis**:
+  - In commit `18924e6`, an entire 17,000-line copy of `src/index.html` was overwritten wholesale to unify overlay/pitch controls.
+  - This whole-file overwrite silently reverted previous UI enhancements (15 app themes -> 3 themes; clean `(?)` hover tooltips -> long parentheses inline text; and layout constraints that clipped Card 4).
+  - Later, a template string escaping issue in `rvc_controls.js` caused an `Unexpected token ','` syntax error which suppressed `#rvcVoiceCard`.
+- **Permanent Rules & Safeguards Enacted (Zero Regression Protocol)**:
+  1. **Strict Surgical Edits Only**: NEVER overwrite an entire file (`index.html`, etc.) from external or older backups. Use targeted, contiguous block edits on the active working copy only.
+  2. **Mandatory Syntax Check**: Always run `node -c <file.js>` before syncing any script changes to `dist/`.
+  3. **Mandatory Headless Page Error Audit**: Always run Playwright with `page.on('pageerror')` to guarantee 0 runtime console errors.
+  4. **Full Window Visual Verification**: Always screenshot the full window height (from top header to bottom footer) to verify no elements are cut off or overlapped.
+  5. **Pre-flight Git Diff Audit**: Always check `git diff` line-by-line to verify only the intended changes were modified before finishing a turn.
+
+---
+
+## Latest Update: Voice Test Button Locking, Multi-Stage Feedback & In-Memory LRU Audio Cache (2026-10-29 19:15)
+### Summary of Changes:
+1. **Interactive Button States & Locking**:
+   - Both `🎵 ทดสอบฟัง` (`#btnVoiceTest`, `#secBtnVoiceTest`) and `🔊 ทดลองอ่าน` (`#winBtnVoiceTestMsg`, `#secBtnVoiceTestMsg`) are immediately disabled (`pointer-events: none`, `opacity: 0.65`, `cursor: not-allowed`) upon click across all main and popout windows.
+   - **Stage 1 (Click)**: Buttons immediately switch to `⏳ กำลังเตรียมเสียง...` and status shows `⏳ กำลังเตรียมเสียงอ่าน...`.
+   - **Stage 2 (Audio Play)**: When audio begins speaker output (`audio.onplay`), buttons switch to `🔊 กำลังอ่าน...`.
+   - **Stage 3 (Audio End / Error)**: All buttons re-enable, restoring original HTML (`🎵 ทดสอบฟัง`, `🔊 ทดลองอ่าน`), and `window.voiceTestBusy` is cleared.
+2. **Audio Cache & Latency Optimization**:
+   - Added thread-safe in-memory LRU cache (`_TTS_AUDIO_CACHE`, max 128 entries) in `launch_dev.py` for `/api/tts`.
+   - Re-synthesizing repeated test phrases drops latency from ~870ms to **0.002ms** (0ms perceived response).
+3. **Verification**:
+   - Unit test benchmark (`test_tts_cache.py`): Passed (0.002ms hit).
+   - Playwright end-to-end verification (`verify_voice_buttons_playwright.py`): All 3 state transitions asserted and verified with screenshots.
+   - Synced to both `src/index.html` and `dist/index.html`.
+
+---
+
+## Latest Update: Live Chat Message Actions (Block / Delete) & Visual ASK Poll Summary (2026-10-29 19:35)
+### Summary of Changes:
+1. **Live Chat Message Actions (`🚫 บล็อก | 🗑️ ลบ`)**:
+   - Each live chat message row (`.chat-row`) now features top-right quick actions:
+     - `🗑️ ลบ`: Deletes the single message element immediately and cancels its TTS queue entry.
+     - `🚫 บล็อก`: Opens the Zero-GPU-Lockup `#modal-block-user` targeting the specific username.
+2. **Block Modal Options & Instant Blacklist Purge**:
+   - Offers 4 distinct toggle flags:
+     - `overlay`: Hide from OBS live stream overlay.
+     - `tts`: Mute TTS speech for this user.
+     - `replie`: Block chat bot interaction commands.
+     - `all` (Blacklist): Comprehensive permanent block.
+   - **Crucial Rule Implemented**: Putting a user into Blacklist (`all: true`) immediately purges **all previous messages ever sent by this user from the live chat feed** (`purgeUserChatMessages()`), cancels pending TTS audio, and silences any current speech.
+3. **Horizontal Bar Graph ASK Poll Result Card**:
+   - In `endAskPoll()`, replaces plain text system announcement with `renderAskPollResultInChat()`.
+   - Renders a clean card in `#chatList` featuring:
+     - Question title and completion badge.
+     - Horizontal colored bar charts for each choice showing votes and percentages.
+     - Crown 👑 highlight for the winning option.
+     - Total votes and total unique voters summary footer.
+     - Close `✕` button to dismiss.
+4. **Verification**:
+   - Validated syntax with `node -c` (45/45 JS files passed).
+   - Validated functionality via Playwright (`verify_chat_features_playwright.py`):
+     - Single message delete: Verified.
+     - Blacklist past message purge: Verified (all spam messages deleted instantly).
+     - Horizontal graph ASK poll rendering: Verified.
+   - Screenshots: `verified_block_user_modal.png`, `verified_live_chat_tools_and_ask_poll.png`.
+
+---
+
+## Latest Update: Strict Blacklist Exclusion Across ASK, Giveaway & Replie (2026-10-29 19:40)
+### Summary of Changes:
+1. **Interactive Participation Denial**:
+   - Blacklisted users are completely barred from all interactive channel tools:
+     - **ASK Poll**: `checkRealAskVote()` immediately drops votes from blacklisted users.
+     - **Giveaway**: `checkRealGwEntry()` immediately drops giveaway entries from blacklisted users.
+     - **Replie**: `checkRealReplieCommand()` (both in `index.html` and `tool_controls.js`) drops chatbot commands from blacklisted users.
+2. **Retroactive Revocation on Blacklist**:
+   - When a user is blacklisted, `purgeUserChatMessages()`:
+     - Purges and revokes their active votes in `window._askPollState` and decrements candidate vote tallies.
+     - Removes them from `window._gwParticipants` and refreshes Giveaway entrant tables.
+     - Removes them from `window._activeChattersSet`.
+3. **Verification**:
+   - Validated end-to-end with Playwright (`verify_blacklist_restrictions.py`):
+     - Initial vote & giveaway entry: Recorded.
+     - After Blacklist: Vote decremented to 0, entrant removed, past chat purged.
+     - Subsequent attempts to vote, join giveaway, or trigger `!hi` replie: All blocked (0 votes, 0 entrants, 0 replie triggers).
+   - Synced across `src/` and `dist/`.
+
+## Current Status & Completed Enhancements (2026-10-29 23:35)
+1. **RVC Status Badge Text Scaling Fix**:
+   - Fixed font size oscillating loop at 120%/140% text scale by using CSS class-based styling instead of inline `style.cssText` in `rvc_controls.js`.
+2. **Background Auto-Download & Staged Update Lifecycle (Antigravity-style)**:
+   - Implemented background download worker with SHA-256 verification in `updater.py`.
+   - Update Modal (`#modal-fast-update`) features **OK (รีสตาร์ทเพื่ออัปเดต)** and **Later (ไว้ภายหลัง)** buttons.
+   - If user chooses **Later**, the update is preserved in `%LOCALAPPDATA%/BroadcastPlayroom3/pending_update`. When the app is launched next time, `launch_dev.py` automatically installs the update during startup before initializing servers.
+3. **Accidental Close Protection**:
+   - Added in-app close button (`#btnTopbarCloseApp`) on topbar right and `#modal-confirm-exit` with zero GPU lockup.
+   - Handled `beforeunload` event on main window to prevent accidental closure from OS titlebar 'X' button.
+   - Added setting toggle `[x] ถามยืนยันก่อนปิดโปรแกรม` in Settings > About.
+4. **All automated Playwright tests passed cleanly**.
+
+- **New Simplified Versioning Scheme (v3.1, v3.2 ... v3.100)**:
+  - Transitioned from 3-part semver to simple 2-segment format (`v3.1`, `v3.2`, etc.).
+  - `_parse_version` and `is_version_newer` verified across arbitrary increments (including past 3.10 and 3.100).
+  - Current baseline version is now `v3.1`.

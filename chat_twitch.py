@@ -350,13 +350,14 @@ class TwitchChat:
         )
         self._thread.start()
 
-        # เริ่ม viewer count poll thread (GraphQL API ทุก 60s)
+        self.on_status(f"✅ เชื่อมต่อ Twitch #{channel}")
+
+        # เริ่ม viewer count poll thread (GraphQL API ทุก 15s)
         self._viewer_thread = threading.Thread(
             target=self._viewer_poll_loop, name="TwitchViewerPoll", daemon=True,
         )
         self._viewer_thread.start()
 
-        self.on_status(f"✅ เชื่อมต่อ Twitch #{channel}")
         return True
 
     def _connect_socket(self, nick: str, token: str) -> None:
@@ -397,28 +398,36 @@ class TwitchChat:
         self.on_status("⚪ ยกเลิกการเชื่อมต่อ Twitch")
 
     def _viewer_poll_loop(self) -> None:
-        """poll Twitch GraphQL API สำหรับ viewer count ทุก 60s + reward metadata ทุก 10 นาที"""
+        """poll Twitch GraphQL API สำหรับ viewer count ทุก 15s + reward metadata ทุก 10 นาที"""
         # poll ครั้งแรกทันที
         self._poll_viewer_count()
         self._fetch_reward_metadata()  # ดึง reward metadata ครั้งแรก
-        reward_counter = 0  # นับรอบ (10 รอบ = 10 นาที)
+        reward_counter = 0  # นับรอบ (40 รอบ = 10 นาที)
         while not self._stop_event.is_set():
             slept = 0.0
-            while slept < 60.0 and not self._stop_event.is_set():
+            while slept < 15.0 and not self._stop_event.is_set():
                 time.sleep(1.0)
                 slept += 1.0
             if self._stop_event.is_set():
                 break
             self._poll_viewer_count()
             reward_counter += 1
-            if reward_counter >= 10:  # refresh reward metadata ทุก ~10 นาที
+            if reward_counter >= 40:  # refresh reward metadata ทุก ~10 นาที
                 self._fetch_reward_metadata()
                 reward_counter = 0
 
     def _poll_viewer_count(self) -> None:
-        """ดึง viewer count จาก Twitch GraphQL API (ไม่ต้อง OAuth)"""
+        """ดึง viewer count จาก Twitch GraphQL API พร้อม Fallback ไปยัง DecAPI"""
         if not self._channel:
             return
+        count = None
+        headers = {
+            "Client-ID": TWITCH_GQL_CLIENT_ID,
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+            "Accept": "*/*",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Referer": f"https://www.twitch.tv/{self._channel}",
+        }
         try:
             import requests as _req
             query = (
@@ -428,18 +437,42 @@ class TwitchChat:
             r = _req.post(
                 TWITCH_GQL_URL,
                 json={"query": query},
-                headers={"Client-ID": TWITCH_GQL_CLIENT_ID},
-                timeout=10,
+                headers=headers,
+                timeout=8,
             )
             if r.status_code == 200:
                 data = r.json()
                 stream = (
                     data.get("data", {}).get("user", {}).get("stream")
                 )
-                count = stream.get("viewersCount", 0) if stream else 0
-                self.on_viewer_count("twitch", int(count))
-        except Exception:
-            pass
+                if stream and "viewersCount" in stream:
+                    count = int(stream.get("viewersCount", 0))
+                elif stream is None and data.get("data", {}).get("user"):
+                    # GQL might report null during early live ingestion
+                    pass
+        except Exception as e:
+            logger.debug(f"Twitch GQL poll warning: {e}")
+
+        # Fallback to DecAPI if GQL returned 0, null, or failed
+        if count is None or count == 0:
+            try:
+                import requests as _req
+                dec_resp = _req.get(
+                    f"https://decapi.me/twitch/viewercount/{self._channel}",
+                    headers={"User-Agent": headers["User-Agent"]},
+                    timeout=5,
+                )
+                if dec_resp.status_code == 200:
+                    raw_txt = dec_resp.text.strip()
+                    if raw_txt.isdigit():
+                        count = int(raw_txt)
+                    elif "offline" in raw_txt.lower():
+                        count = 0
+            except Exception as e:
+                logger.debug(f"DecAPI fallback warning: {e}")
+
+        if count is not None:
+            self.on_viewer_count("twitch", int(count))
 
     def _fetch_reward_metadata(self) -> None:
         """ดึง Channel Points reward metadata (title, cost) จาก GraphQL (anonymous)
