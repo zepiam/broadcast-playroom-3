@@ -12,8 +12,8 @@
     widgets('chat').forEach(w=>{
       const mode=w.chatMode || w.chat_mode || 'default';
       const duration=Math.max(.1,Number(w.hideTimeout ?? w.hide_timeout ?? 8));
+      if(!remember && (mode==='danmaku' || mode==='balloon' || mode==='character')) return;
       if(mode==='danmaku'){
-        if(!remember)return;
         const feed=document.getElementById(`widget-danmaku-feed-${w.id}`);if(!feed)return;
         const row=textNode('danmaku-bullet-item',msg.text);
         const speed=Math.max(.1,Number(w.speed)||6);

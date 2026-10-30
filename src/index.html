@@ -819,7 +819,7 @@
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.1</span>
+      <span class="desktop-titlebar-tag">v3.2</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -18296,7 +18296,7 @@
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.1</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.2</span>
 
 
 
@@ -19411,6 +19411,30 @@
             
 
 
+
+            <!-- 👤 Slider: ขนาดชื่อคนแชท (Username Font Size) -->
+            <div style="margin-bottom: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 14px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px; margin-bottom:8px;">
+                <span style="font-weight:600; color:#f1f5f9;">ขนาดชื่อคนแชท (Username):</span>
+                <span class="badge-accent" id="lblChatSettingsUsernameSize" style="background:rgba(239,68,68,0.18); color:#f87171; font-weight:700; padding:2px 8px; border-radius:10px; font-size:12px;">13.5px</span>
+              </div>
+              <input type="range" class="chat-setting-slider" id="rngLiveChatUsernameSize" min="11" max="28" step="0.5" value="13.5"
+                oninput="
+                  const v = Number(this.value);
+                  const fn = window.setLiveChatUsernameSize || (window.opener && window.opener.setLiveChatUsernameSize);
+                  if (typeof fn === 'function') fn(v, false);
+                "
+                onchange="
+                  const v = Number(this.value);
+                  const fn = window.setLiveChatUsernameSize || (window.opener && window.opener.setLiveChatUsernameSize);
+                  if (typeof fn === 'function') fn(v, false);
+                ">
+              <div style="display:flex; justify-content:space-between; font-size:10.5px; color:var(--dc-text-dim); margin-top:4px;">
+                <span>11px (เล็ก)</span>
+                <span>13.5px (มาตรฐาน)</span>
+                <span>28px (ใหญ่พิเศษ)</span>
+              </div>
+            </div>
 
             <div style="margin-bottom: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 8px; padding: 10px 14px;">
 
@@ -33086,7 +33110,7 @@
 
 
 
-    const _autoPopoutWindows = false; // All tools open in separate windows.
+    const _autoPopoutWindows = true; // All tools open in separate windows.
 
 
 
@@ -46766,7 +46790,67 @@
 
     let _chatFontSize = Math.max(10,Math.min(CHAT_FONT_MAX,Number(localStorage.getItem('bp3_live_chat_font_size')) || defaultChatFontSize()));
 
-    window.setLiveChatFontSize = function(val, showToastMsg = false) {
+        let _chatUsernameSize = Math.max(11, Math.min(28, Number(localStorage.getItem('bp3_live_chat_username_size')) || 13.5));
+
+    window.setLiveChatUsernameSize = function(val, showToastMsg = false) {
+      val = Math.max(11, Math.min(28, Math.round(Number(val) * 10) / 10 || 13.5));
+      _chatUsernameSize = val;
+      try { localStorage.setItem('bp3_live_chat_username_size', String(val)); } catch(_) {}
+
+      const applyToDoc = (doc) => {
+        if (!doc) return;
+        try {
+          let styleEl = doc.getElementById('dynamic-chat-username-style');
+          if (!styleEl) {
+            styleEl = doc.createElement('style');
+            styleEl.id = 'dynamic-chat-username-style';
+            (doc.head || doc.body).appendChild(styleEl);
+          }
+          styleEl.textContent = `
+            #chatList .chat-username,
+            #chatPreviewBox .chat-username,
+            .chat-msg-row .chat-username,
+            .chat-username {
+              font-size: ${val}px !important;
+            }
+          `;
+          doc.querySelectorAll('#chatList .chat-username, #chatPreviewBox .chat-username, .chat-username').forEach(el => {
+            el.style.fontSize = `${val}px`;
+          });
+          const slider = doc.getElementById('rngLiveChatUsernameSize');
+          if (slider && Math.abs(Number(slider.value) - val) > 0.01) {
+            slider.value = String(val);
+          }
+          const label = doc.getElementById('lblChatSettingsUsernameSize');
+          if (label) {
+            label.textContent = `${val}px`;
+          }
+        } catch (_) {}
+      };
+
+      applyToDoc(document);
+      if (window._popoutWindows) {
+        for (const pop of Object.values(window._popoutWindows)) {
+          if (pop && !pop.closed && pop.document) {
+            try { applyToDoc(pop.document); } catch (_) {}
+          }
+        }
+      }
+      if (window.opener && window.opener.document) {
+        try {
+          if (typeof window.opener.setLiveChatUsernameSize === 'function') {
+            window.opener.setLiveChatUsernameSize(val, false);
+          } else {
+            applyToDoc(window.opener.document);
+          }
+        } catch (_) {}
+      }
+      if (showToastMsg && typeof showToast === 'function') {
+        showToast(`👤 ขนาดชื่อคนแชท: ${val}px`);
+      }
+    };
+
+window.setLiveChatFontSize = function(val, showToastMsg = false) {
       const maxFs = typeof CHAT_FONT_MAX !== 'undefined' ? CHAT_FONT_MAX : 27;
       val = Math.max(10, Math.min(maxFs, Math.round(Number(val) * 10) / 10 || 13.5));
       _chatFontSize = val;
@@ -46817,6 +46901,9 @@
     function syncLiveChatFontControls() {
       if (typeof window.setLiveChatFontSize === 'function') {
         window.setLiveChatFontSize(_chatFontSize, false);
+      }
+      if (typeof window.setLiveChatUsernameSize === 'function') {
+        window.setLiveChatUsernameSize(_chatUsernameSize, false);
       }
     }
     window.syncLiveChatFontControls = syncLiveChatFontControls;
@@ -48331,117 +48418,42 @@
 
 
     function getPlatformChannel(key) {
-
-
-
-
-
-
-
       const inputId = PLATFORM_INPUT_IDS[key];
-
-
-
-
-
-
-
-      const input = document.getElementById(inputId);
-
-
-
-
-
-
-
-      if (input && input.value.trim()) {
-
-
-
-
-
-
-
-        return input.value.trim();
-
-
-
-
-
-
-
+      let input = document.getElementById(inputId);
+      if (!input && window._popoutWindows) {
+        for (const pop of Object.values(window._popoutWindows)) {
+          if (pop && !pop.closed && pop.document) {
+            input = pop.document.getElementById(inputId);
+            if (input) break;
+          }
+        }
       }
-
-
-
-
-
-
-
+      if (input && input.value.trim()) {
+        return input.value.trim();
+      }
       return localStorage.getItem(`bp3_channel_${key}`) || '';
-
-
-
-
-
-
-
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     function setPlatformChannel(key, val) {
-
-
-
-
-
-
-
       const inputId = PLATFORM_INPUT_IDS[key];
-
-
-
-
-
-
-
-      const input = document.getElementById(inputId);
-
-
-
-
-
-
-
+      let input = document.getElementById(inputId);
       if (input) input.value = val;
-
-
-
-
-
-
-
+      if (window._popoutWindows) {
+        for (const pop of Object.values(window._popoutWindows)) {
+          if (pop && !pop.closed && pop.document) {
+            const pInput = pop.document.getElementById(inputId);
+            if (pInput) pInput.value = val;
+          }
+        }
+      }
       localStorage.setItem(`bp3_channel_${key}`, val);
-
-
-
-
-
-
-
+      try {
+        fetch('/api/platform/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ['channel_' + key]: val })
+        }).catch(() => {});
+      } catch(_) {}
     }
 
 
@@ -48459,105 +48471,75 @@
 
 
     function initPlatformSettingsInputs() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('bp3_platform_audio') || '{}');
+        for (const [key, value] of Object.entries(saved)) {
+          if (!_platformStates[key]) continue;
+          _platformStates[key].muted = !!value.muted;
+          _platformStates[key].volume = Math.max(0, Math.min(100, Number(value.volume ?? 100)));
+          const button = document.getElementById('btn-mute-' + key);
+          if (button) {
+            button.textContent = value.muted ? '🔇' : '🔊';
+            button.classList.toggle('muted', !!value.muted);
+          }
+          const slider = document.getElementById('vol-' + key);
+          if (slider) slider.value = _platformStates[key].volume;
+        }
+      } catch {}
 
-
-
-      try{const saved=JSON.parse(localStorage.getItem('bp3_platform_audio') || '{}');for(const [key,value] of Object.entries(saved)){if(!_platformStates[key])continue;_platformStates[key].muted=!!value.muted;_platformStates[key].volume=Math.max(0,Math.min(100,Number(value.volume ?? 100)));const button=document.getElementById('btn-mute-'+key);if(button){button.textContent=value.muted?'🔇':'🔊';button.classList.toggle('muted',!!value.muted);}const slider=document.getElementById('vol-'+key);if(slider)slider.value=_platformStates[key].volume;}}catch{}
-
-
-
-      document.getElementById('topbarMasterVol')?.addEventListener('input',updateCurrentTtsVolume);
-
-
-
-
-
-
-
-
-
-
+      document.getElementById('topbarMasterVol')?.addEventListener('input', updateCurrentTtsVolume);
 
       for (const [key, inputId] of Object.entries(PLATFORM_INPUT_IDS)) {
-
-
-
-
-
-
-
         const input = document.getElementById(inputId);
-
-
-
-
-
-
-
         if (input) {
-
-
-
-
-
-
-
           const saved = localStorage.getItem(`bp3_channel_${key}`);
-
-
-
-
-
-
-
           if (saved) input.value = saved;
-
-
-
-
-
-
-
-          input.addEventListener('input', (e) => {
-
-
-
-
-
-
-
-            localStorage.setItem(`bp3_channel_${key}`, e.target.value.trim());
-
-
-
-
-
-
-
-          });
-
-
-
-
-
-
-
+          const saveVal = (e) => {
+            const v = e.target.value.trim();
+            localStorage.setItem(`bp3_channel_${key}`, v);
+            try {
+              fetch('/api/platform/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ['channel_' + key]: v })
+              }).catch(() => {});
+            } catch(_) {}
+          };
+          input.addEventListener('input', saveVal);
+          input.addEventListener('change', saveVal);
+          input.addEventListener('blur', saveVal);
         }
-
-
-
-
-
-
-
       }
 
-
-
-
-
-
-
+      // Restore from persistent backend file
+      fetch('/api/platform/settings')
+        .then(res => res.json())
+        .then(data => {
+          if (!data || typeof data !== 'object') return;
+          for (const key of Object.keys(PLATFORM_INPUT_IDS)) {
+            const serverVal = data['channel_' + key];
+            if (serverVal && typeof serverVal === 'string' && serverVal.trim()) {
+              const cur = localStorage.getItem(`bp3_channel_${key}`);
+              if (!cur) {
+                setPlatformChannel(key, serverVal.trim());
+              }
+            }
+          }
+          if (Array.isArray(data.hidden_platforms)) {
+            let changed = false;
+            for (const p of data.hidden_platforms) {
+              if (!_hiddenPlatforms.includes(p)) {
+                _hiddenPlatforms.push(p);
+                changed = true;
+              }
+            }
+            if (changed) {
+              localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
+              applyPlatformHiddenState();
+            }
+          }
+        })
+        .catch(() => {});
     }
 
 
@@ -48891,54 +48873,15 @@
 
 
         let target = getPlatformChannel(key);
-
-
-
-
-
-
-
         if (!target) {
-
-
-
-
-
-
-
           const promptVal = prompt(`กรุณาใส่ชื่อแชนแนล / Username ของ ${name || key} เพื่อเชื่อมต่อ:`, '');
-
-
-
-
-
-
-
           if (promptVal && promptVal.trim()) {
-
-
-
-
-
-
-
             target = promptVal.trim();
-
-
-
-
-
-
-
-            setPlatformChannel(key, target);
-
-
-
-
-
-
-
           }
+        }
+        if (target) {
+          setPlatformChannel(key, target);
+        }
 
 
 
@@ -53903,293 +53846,47 @@
 
 
     function applyPlatformHiddenState() {
-
-
-
-
-
-
-
-      for (const key in _platformMeta) {
-
-
-
-
-
-
-
-        const isHidden = _hiddenPlatforms.includes(key);
-
-
-
-
-
-
-
-        const card = document.getElementById(`card-${key}`);
-
-
-
-
-
-
-
-        if (card) {
-
-
-
-
-
-
-
-          if (isHidden) {
-
-
-
-
-
-
-
-            card.classList.add('hidden-card');
-
-
-
-
-
-
-
-            card.style.setProperty('display', 'none', 'important');
-
-
-
-
-
-
-
-          } else {
-
-
-
-
-
-
-
-            card.classList.remove('hidden-card');
-
-
-
-
-
-
-
-            card.style.removeProperty('display');
-
-
-
-
-
-
-
-            card.style.display = '';
-
-
-
-
-
-
-
-          }
-
-
-
-
-
-
-
+      const docs = [document];
+      if (window._popoutWindows) {
+        for (const pop of Object.values(window._popoutWindows)) {
+          if (pop && !pop.closed && pop.document) docs.push(pop.document);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        const chk = document.getElementById(_platformMeta[key].chkId);
-
-
-
-
-
-
-
-        if (chk) {
-
-
-
-
-
-
-
-          chk.checked = !isHidden;
-
-
-
-
-
-
-
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        const pill = document.getElementById(`pill-plat-${key}`);
-
-
-
-
-
-
-
-        if (pill) {
-
-
-
-
-
-
-
-          if (isHidden) {
-
-
-
-
-
-
-
-            pill.classList.remove('active');
-
-
-
-
-
-
-
-            pill.classList.add('hidden-plat');
-
-
-
-
-
-
-
-            const eye = pill.querySelector('.pill-eye');
-
-
-
-
-
-
-
-            if (eye) eye.textContent = '🚫';
-
-
-
-
-
-
-
-          } else {
-
-
-
-
-
-
-
-            pill.classList.add('active');
-
-
-
-
-
-
-
-            pill.classList.remove('hidden-plat');
-
-
-
-
-
-
-
-            const eye = pill.querySelector('.pill-eye');
-
-
-
-
-
-
-
-            if (eye) eye.textContent = '👁️';
-
-
-
-
-
-
-
-          }
-
-
-
-
-
-
-
-        }
-
-
-
-
-
-
-
       }
-
-
-
-
-
-
-
+      for (const key in _platformMeta) {
+        const isHidden = _hiddenPlatforms.includes(key);
+        for (const doc of docs) {
+          const card = doc.getElementById(`card-${key}`);
+          if (card) {
+            if (isHidden) {
+              card.classList.add('hidden-card');
+              card.style.setProperty('display', 'none', 'important');
+            } else {
+              card.classList.remove('hidden-card');
+              card.style.removeProperty('display');
+              card.style.display = '';
+            }
+          }
+          const chk = doc.getElementById(_platformMeta[key].chkId);
+          if (chk) {
+            chk.checked = !isHidden;
+          }
+          const pill = doc.getElementById(`pill-plat-${key}`);
+          if (pill) {
+            if (isHidden) {
+              pill.classList.remove('active');
+              pill.classList.add('hidden-plat');
+              const eye = pill.querySelector('.pill-eye');
+              if (eye) eye.textContent = '🚫';
+            } else {
+              pill.classList.add('active');
+              pill.classList.remove('hidden-plat');
+              const eye = pill.querySelector('.pill-eye');
+              if (eye) eye.textContent = '👁️';
+            }
+          }
+        }
+      }
       updatePlatformCounter();
-
-
-
-
-
-
-
     }
 
 
@@ -54238,7 +53935,14 @@
 
 
 
-        applyPlatformHiddenState();
+        try {
+      fetch('/api/platform/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hidden_platforms: _hiddenPlatforms })
+      }).catch(() => {});
+    } catch(_) {}
+    applyPlatformHiddenState();
 
 
 
@@ -54326,7 +54030,14 @@
 
 
 
-        applyPlatformHiddenState();
+        try {
+      fetch('/api/platform/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hidden_platforms: _hiddenPlatforms })
+      }).catch(() => {});
+    } catch(_) {}
+    applyPlatformHiddenState();
 
 
 

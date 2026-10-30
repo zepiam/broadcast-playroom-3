@@ -5317,6 +5317,27 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+        if path == '/api/platform/settings':
+            try:
+                size = int(self.headers.get('Content-Length', 0))
+                data = json.loads(self.rfile.read(size).decode('utf-8'))
+                settings_path = os.path.join(str(DATA_ROOT), 'platform_settings.json')
+                existing = {}
+                if os.path.exists(settings_path):
+                    try:
+                        with open(settings_path, 'r', encoding='utf-8') as sf:
+                            existing = json.load(sf)
+                    except Exception:
+                        existing = {}
+                if isinstance(data, dict):
+                    existing.update(data)
+                with open(settings_path, 'w', encoding='utf-8') as sf:
+                    json.dump(existing, sf, ensure_ascii=False, indent=2)
+                self.send_json({'success': True})
+            except Exception as e:
+                self.send_json({'success': False, 'error': str(e)})
+            return
+
         if path == '/api/messages/inject':
 
 
@@ -11009,6 +11030,17 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+        elif path == '/api/platform/settings':
+            settings_path = os.path.join(str(DATA_ROOT), 'platform_settings.json')
+            if os.path.exists(settings_path):
+                try:
+                    with open(settings_path, 'r', encoding='utf-8') as sf:
+                        response_data = json.load(sf)
+                except Exception:
+                    response_data = {}
+            else:
+                response_data = {}
+
         elif path == '/api/version':
 
 
@@ -11577,7 +11609,7 @@ def open_app_window(main_url):
                 url=main_url,
                 width=1600,
                 height=950,
-                min_size=(1024, 680),
+                min_size=(760, 500),
                 frameless=True,
                 easy_drag=False
             )

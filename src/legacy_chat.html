@@ -1082,7 +1082,20 @@ function connectWs(){
    clearAllCharSlots();chatEl.replaceChildren();balloonSlots=[];sliderLanes=[];
   }else if(item.event==='CANVAS_LAYOUT_SAVED')loadConfig();
  };
- for(const item of window._legacyChatBacklog || [])window.BP3LegacyChatReceive(item);window._legacyChatBacklog=[];
+ const _nowSec = Date.now() / 1000;
+// Ephemeral chat modes (Danmaku / Slider, Balloon, Character) must NEVER replay past historical messages
+if (config.slider_mode || config.balloon_mode || config.character_mode) {
+  window._legacyChatBacklog = [];
+} else {
+  const maxAge = config.auto_hide ? Math.max(1, Number(config.hide_after) || 8) : 60;
+  for (const item of (window._legacyChatBacklog || [])) {
+    const itemTime = Number(item.time || (item.payload && (item.payload.timestamp || item.payload.time))) || 0;
+    // Skip historical messages that have already expired past their display lifespan
+    if (itemTime > 0 && (_nowSec - itemTime) > maxAge) continue;
+    window.BP3LegacyChatReceive(item);
+  }
+  window._legacyChatBacklog = [];
+}
 }
 
 function addMessage(msg) {
