@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.3",
+  "version": "3.4",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.3\n- แก้ปุ่มและหน้าตั้งค่าใช้งานไม่ได้\n- จำค่าช่องและแพลตฟอร์มที่ซ่อน\n- ป้องกันข้อความเก่าเล่นซ้ำเมื่อเพิ่ม Chat Widget\n- ปรับการส่งบันทึก Composer ขณะปิดหน้า\n- แพตช์ซ่อมสำหรับผู้ใช้ 3.1 และ 3.2",
+  "changelog": "- Broadcast Playroom v3.4\n- แก้ปุ่มและหน้าตั้งค่าใช้งานไม่ได้\n- จำค่าช่องและแพลตฟอร์มที่ซ่อน\n- ป้องกันข้อความเก่าเล่นซ้ำเมื่อเพิ่ม Chat Widget\n- ปรับการส่งบันทึก Composer ขณะปิดหน้า\n- แก้บันทึกการเชื่อมต่ออัตโนมัติจาก Settings แยกหน้าต่าง\n- รอโหลดชื่อช่องก่อนเริ่มเชื่อมต่อ\n- แพตช์ซ่อมสำหรับผู้ใช้ 3.1–3.3",
   "published_at": "2026-10-31",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.3/BroadcastPlayroom3-Lite-Patch-3.3.zip",
-    "size": 58855191,
-    "sha256": "b26c30c4ae51d02c53dd8f27e2b3b2db53b8c96c0a20fdca8647ef385f099b9f"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.4/BroadcastPlayroom3-Lite-Patch-3.4.zip",
+    "size": 58855401,
+    "sha256": "380bcfccbf8c09221560155907bf7ea6027f157739d36ea560cb0d7a04a5a483"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.3/BroadcastPlayroom3-Full-Patch-3.3.zip",
-    "size": 108420258,
-    "sha256": "415e66b0f2c1c0417bbf539978d18fcb14f6bfbef6b867801dbe5a7f2fb5833e"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.4/BroadcastPlayroom3-Full-Patch-3.4.zip",
+    "size": 108420468,
+    "sha256": "00d6216d0d1f61e5e21a042dd5705b1513eae8c7086a29250abbfdfae7e07090"
   }
 }
