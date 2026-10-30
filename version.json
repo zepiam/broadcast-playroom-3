@@ -3,17 +3,17 @@
   "version": "3.2",
   "repo": "zepiam/broadcast-playroom-3",
   "changelog": "- Broadcast Playroom v3.2\n- เพิ่มฟีเจอร์ตัวปรับขนาดตัวอักษรชื่อคนแชท (Username Font Size Slider) ในหน้าต่างตั้งค่าแชทสด\n- ปรับปรุงการบันทึกช่องทางและสถานะการซ่อนแพลตฟอร์มอย่างถาวร (Platform Persistence) ข้ามการรีสตาร์ท\n- แก้ไขปัญหาข้อความแชทประวัติเก่าเล่นซ้ำเมื่อเพิ่ม/เปลี่ยนวิดเจ็ตแชท เช่น Danmaku, Balloon\n- ปรับลดขนาดหน้าต่างขั้นต่ำลง (หดความกว้าง/ความสูงได้มากขึ้น 20%+) รองรับหน้าจอ 1080x720\n- เปิดหน้าต่างเครื่องมือต่างๆ แบบหน้าต่างแยกภายนอกอัตโนมัติ (Auto Popout Windows) สะดวกต่อการใช้งานบนจอขนาดเล็ก\n- 0% GPU idle optimization",
-  "published_at": "2026-10-28",
+  "published_at": "2026-10-31",
   "lite": {
     "type": "standalone",
     "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Lite.zip",
-    "size": 344392019,
-    "sha256": ""
+    "size": 359858767,
+    "sha256": "16a0596c06dc2f20ad789e8f0301452acdb1ed8106425110f4b0443e9d2ea9da"
   },
   "full": {
     "type": "standalone",
     "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Full.zip",
-    "size": 4266218110,
-    "sha256": ""
+    "size": 4281452928,
+    "sha256": "277d1d3d2e8c68313421fa589636c2e080adb5bfda4aad1adff2892495858f51"
   }
 }
