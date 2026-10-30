@@ -7,13 +7,13 @@
   "lite": {
     "type": "patch",
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.2/BroadcastPlayroom3-Lite-Patch-3.2.zip",
-    "size": 42993569,
-    "sha256": "1cc0f36b0dac7233d161902e3d71d4901e2559b28c1e5863425dc03a4f217aae"
+    "size": 58868669,
+    "sha256": "3ffb0fb93db2e60ecc6cc78e9473b3741a0b632812c70881105cec2f5904b9e5"
   },
   "full": {
     "type": "patch",
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.2/BroadcastPlayroom3-Full-Patch-3.2.zip",
-    "size": 84161848,
-    "sha256": "9a064fe39a00e1670212b2871d8b37eb0d39251b4d02a84b94a47aa8c2d08572"
+    "size": 108433736,
+    "sha256": "88a8a7000fb36273ba7047c4d3dbf4f7009d694a4b108c4c241b41dc194b6000"
   }
 }
