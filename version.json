@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.2",
+  "version": "3.3",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.2\n- เพิ่มฟีเจอร์ตัวปรับขนาดตัวอักษรชื่อคนแชท (Username Font Size Slider) ในหน้าต่างตั้งค่าแชทสด\n- ปรับปรุงการบันทึกช่องทางและสถานะการซ่อนแพลตฟอร์มอย่างถาวร (Platform Persistence) ข้ามการรีสตาร์ท\n- แก้ไขปัญหาข้อความแชทประวัติเก่าเล่นซ้ำเมื่อเพิ่ม/เปลี่ยนวิดเจ็ตแชท เช่น Danmaku, Balloon\n- ปรับลดขนาดหน้าต่างขั้นต่ำลง (หดความกว้าง/ความสูงได้มากขึ้น 20%+) รองรับหน้าจอ 1080x720\n- เปิดหน้าต่างเครื่องมือต่างๆ แบบหน้าต่างแยกภายนอกอัตโนมัติ (Auto Popout Windows) สะดวกต่อการใช้งานบนจอขนาดเล็ก\n- 0% GPU idle optimization",
+  "changelog": "- Broadcast Playroom v3.3\n- แก้ปุ่มและหน้าตั้งค่าใช้งานไม่ได้\n- จำค่าช่องและแพลตฟอร์มที่ซ่อน\n- ป้องกันข้อความเก่าเล่นซ้ำเมื่อเพิ่ม Chat Widget\n- ปรับการส่งบันทึก Composer ขณะปิดหน้า\n- แพตช์ซ่อมสำหรับผู้ใช้ 3.1 และ 3.2",
   "published_at": "2026-10-31",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.2/BroadcastPlayroom3-Lite-Patch-3.2.zip",
-    "size": 58868924,
-    "sha256": "688943e560be0eab25476e7760f438689055d3f1739269831a868f356403619a"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.3/BroadcastPlayroom3-Lite-Patch-3.3.zip",
+    "size": 58855191,
+    "sha256": "b26c30c4ae51d02c53dd8f27e2b3b2db53b8c96c0a20fdca8647ef385f099b9f"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.2/BroadcastPlayroom3-Full-Patch-3.2.zip",
-    "size": 108433991,
-    "sha256": "31c1e9f08868c7e965c1af53511fc24a55bd07cda04c925d877867690f9b69db"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.3/BroadcastPlayroom3-Full-Patch-3.3.zip",
+    "size": 108420258,
+    "sha256": "415e66b0f2c1c0417bbf539978d18fcb14f6bfbef6b867801dbe5a7f2fb5833e"
   }
 }
