@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.4",
+  "version": "3.5",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.4\n- แก้ปุ่มและหน้าตั้งค่าใช้งานไม่ได้\n- จำค่าช่องและแพลตฟอร์มที่ซ่อน\n- ป้องกันข้อความเก่าเล่นซ้ำเมื่อเพิ่ม Chat Widget\n- ปรับการส่งบันทึก Composer ขณะปิดหน้า\n- แก้บันทึกการเชื่อมต่ออัตโนมัติจาก Settings แยกหน้าต่าง\n- รอโหลดชื่อช่องก่อนเริ่มเชื่อมต่อ\n- แพตช์ซ่อมสำหรับผู้ใช้ 3.1–3.3",
-  "published_at": "2026-10-31",
+  "changelog": "- Broadcast Playroom v3.5\n- เฟรมหน้าต่างสไตล์ Discord/Spotify พร้อม Snap Assist & Snap Layouts ของ Windows 11\n- เพิ่มความเร็วในการเปิดโปรแกรมเร็วขึ้นกว่า 13 เท่า (จาก 13.1 วินาที เหลือ 0.96 วินาที)\n- หน้าต่างเครื่องมือแยกเปิดตรงเข้าสู่เครื่องมือทันที ไม่แวบหน้าแรก และไม่มีแถบ address bar\n- แก้ปัญหาลากหน้าต่างแล้วหลุดค้างตามเมาส์ และรองรับการขยายขอบหน้าต่างแบบ Native\n- ป้องกันการเปิดหน้าต่างเครื่องมือซ้ำซ้อน สลับไปยังหน้าต่างเดิมที่เปิดอยู่ทันที\n- ปรับปรุงความเสถียรและประสิทธิภาพระบบโดยรวม",
+  "published_at": "2026-11-01",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.4/BroadcastPlayroom3-Lite-Patch-3.4.zip",
-    "size": 58855401,
-    "sha256": "380bcfccbf8c09221560155907bf7ea6027f157739d36ea560cb0d7a04a5a483"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.5/BroadcastPlayroom3-Lite-Patch-3.5.zip",
+    "size": 27748829,
+    "sha256": "3c2104ed21603948c04f43f02da7c46c06a5bd060583e63381ee6be22b554144"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.4/BroadcastPlayroom3-Full-Patch-3.4.zip",
-    "size": 108420468,
-    "sha256": "00d6216d0d1f61e5e21a042dd5705b1513eae8c7086a29250abbfdfae7e07090"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.5/BroadcastPlayroom3-Full-Patch-3.5.zip",
+    "size": 68288951,
+    "sha256": "c2dd745ffdf0488dd54d3319d640b9aabc879befc3194eefe6a3379b38335b0c"
   }
 }
