@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.5",
+  "version": "3.6",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.5\n- เฟรมหน้าต่างสไตล์ Discord/Spotify พร้อม Snap Assist & Snap Layouts ของ Windows 11\n- เพิ่มความเร็วในการเปิดโปรแกรมเร็วขึ้นกว่า 13 เท่า (จาก 13.1 วินาที เหลือ 0.96 วินาที)\n- หน้าต่างเครื่องมือแยกเปิดตรงเข้าสู่เครื่องมือทันที ไม่แวบหน้าแรก และไม่มีแถบ address bar\n- แก้ปัญหาลากหน้าต่างแล้วหลุดค้างตามเมาส์ และรองรับการขยายขอบหน้าต่างแบบ Native\n- ป้องกันการเปิดหน้าต่างเครื่องมือซ้ำซ้อน สลับไปยังหน้าต่างเดิมที่เปิดอยู่ทันที\n- ปรับปรุงความเสถียรและประสิทธิภาพระบบโดยรวม",
+  "changelog": "- Broadcast Playroom v3.6\n- แก้ไขปัญหาปุ่มควบคุมหัวหน้าต่างในหน้าต่างเครื่องมือแยก (Popout Tool Windows) ซ้อนกัน 2 ชั้น\n- แก้ไขการซ่อน/แสดงการ์ดแพลตฟอร์มบน Sidebar ในหน้าแรกให้ซิงค์แบบ Real-time ทันทีเมื่อตั้งค่าในหน้าต่างแยก\n- ปรับปรุงการกดปุ่ม Quick Pills ในหน้าตั้งค่าช่องทางสตรีมให้แม่นยำและเสถียรยิ่งขึ้น\n- รวมการอัปเกรดความเร็วเปิดโปรแกรม 13 เท่า และเฟรมหน้าต่าง Windows 11 Snap Assist จาก v3.5 ครบถ้วน",
   "published_at": "2026-11-01",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.5/BroadcastPlayroom3-Lite-Patch-3.5.zip",
-    "size": 27748829,
-    "sha256": "3c2104ed21603948c04f43f02da7c46c06a5bd060583e63381ee6be22b554144"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.6/BroadcastPlayroom3-Lite-Patch-3.6.zip",
+    "size": 28222391,
+    "sha256": "621ef3ca0ddb0b573d0051144235dd2736e21fa5386c475afebcfdb3f1406c40"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.5/BroadcastPlayroom3-Full-Patch-3.5.zip",
-    "size": 68288951,
-    "sha256": "c2dd745ffdf0488dd54d3319d640b9aabc879befc3194eefe6a3379b38335b0c"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.6/BroadcastPlayroom3-Full-Patch-3.6.zip",
+    "size": 225948,
+    "sha256": "328d0106fb2b3986cfdd1153931feacc805e83774ce2096594781206957eab09"
   }
 }
