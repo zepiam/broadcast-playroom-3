@@ -28,8 +28,22 @@
    window.updateChatTargetChipsUi?.();
   }catch(_){}
  }
- async function authAction(platform,action){try{const response=await fetch('/api/chatbot/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform,action})});if(!response.ok){const result=await response.json().catch(()=>({}));throw Error(result.error || 'ไม่สามารถเริ่มเชื่อมบัญชีได้');}await updateAuth();if(action==='start')showToast('เปิดหน้าล็อกอินในเบราว์เซอร์แล้ว');}catch(error){showToast(error.message);}}
+ async function authAction(platform,action){
+  const d=doc(),label=platform==='twitch'?'Twitch':'KICK';
+  const connect=d?.getElementById(platform+'BotConnect'),badge=d?.getElementById(platform==='twitch'?'twitchBotBadge':'kickBotBadge');
+  if(action==='start'){if(connect){connect.disabled=true;connect.textContent='กำลังเปิดเบราว์เซอร์…';}if(badge){badge.textContent=label+': กำลังเปิดหน้าล็อกอิน...';}}
+  try{
+   const response=await fetch('/api/chatbot/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform,action})});
+   if(!response.ok){const result=await response.json().catch(()=>({}));throw Error(result.error || 'ไม่สามารถเริ่มเชื่อมบัญชีได้');}
+   await updateAuth();
+  }catch(error){
+   if(connect){connect.disabled=false;connect.textContent='เชื่อมต่อ Chatbot';}
+   if(badge){badge.textContent=label+': '+error.message;}
+   if(typeof alert==='function'){alert('ไม่สามารถเชื่อมต่อ '+label+' Chatbot ได้: '+error.message);}
+  }
+ }
  window.refreshBotAuthStatus=updateAuth;
+ window.startBotAuth=platform=>authAction(platform,'start');
  window.toggleTwitchBotAuth=()=>authAction('twitch','start');window.toggleKickBotAuth=()=>authAction('kick','start');window.disconnectBotAccount=platform=>authAction(platform,'disconnect');
  window.BP3BotPostAskResult=async poll=>{
   if(!state.enabled || !state.platforms.includes('twitch') || state.postAsk!==true || !window._botAuthStatuses?.twitch?.ready)return;
