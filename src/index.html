@@ -6,7 +6,7 @@
 
 
 
-<html lang="th" class="notranslate" translate="no">
+<html lang="th" class="notranslate" translate="no" style="background:#1e1f22!important;color:#f2f3f5!important;">
 
 
 
@@ -15,6 +15,91 @@
 
 
 <head>
+  <!-- Critical Popout Suppression (Guarantees 0ms Flash on Native Tool Windows) -->
+  <script>
+  (() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get('popout');
+      if (p) {
+        let target = p;
+        if (target === 'voice') target = 'voice-settings';
+        document.documentElement.classList.add('popout-standalone-window');
+        const style = document.createElement('style');
+        style.id = 'critical-popout-style';
+        style.textContent = `
+          html.popout-standalone-window,
+          html.popout-standalone-window body {
+            background: #1e1f22 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow: hidden !important;
+            color: #f2f3f5 !important;
+          }
+          html.popout-standalone-window #desktopTitlebar,
+          html.popout-standalone-window .desktop-titlebar,
+          html.popout-standalone-window .topbar,
+          html.popout-standalone-window .layout,
+          html.popout-standalone-window .left-rail,
+          html.popout-standalone-window .chat-column,
+          html.popout-standalone-window .content-area,
+          html.popout-standalone-window .snap-layouts-flyout,
+          html.popout-standalone-window .app-window-resizers,
+          html.popout-standalone-window #sidebar,
+          html.popout-standalone-window header,
+          html.popout-standalone-window nav,
+          html.popout-standalone-window aside,
+          html.popout-standalone-window footer {
+            display: none !important;
+          }
+          html.popout-standalone-window .floating-window {
+            display: none !important;
+          }
+          html.popout-standalone-window #win-${target} {
+            display: flex !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-width: none !important;
+            max-height: none !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            transform: none !important;
+            z-index: 999999 !important;
+            background: #1e1f22 !important;
+            flex-direction: column !important;
+          }
+          html.popout-standalone-window #win-${target} .floating-header {
+            border-radius: 0 !important;
+            cursor: default !important;
+          }
+          html.popout-standalone-window #win-${target} .floating-actions-right,
+          html.popout-standalone-window #win-${target} .btn-win-action,
+          html.popout-standalone-window .floating-actions-right,
+          html.popout-standalone-window .btn-win-action {
+            display: none !important;
+          }
+          html.popout-standalone-window #win-${target} .floating-body {
+            flex: 1 1 auto !important;
+            height: calc(100vh - 46px) !important;
+            max-height: calc(100vh - 46px) !important;
+            overflow-y: auto !important;
+          }
+          html.popout-standalone-window #win-${target} .resizer,
+          html.popout-standalone-window #win-${target} .win-resize-handle {
+            display: none !important;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+    } catch (_) {}
+  })();
+  </script>
 
 
 
@@ -754,6 +839,53 @@
 
 
 
+<script>
+document.addEventListener('DOMContentLoaded',async()=>{
+  try { const response=await fetch('/api/version',{cache:'no-store'});const info=await response.json();if(response.ok && info.version)document.querySelectorAll('.desktop-titlebar-tag, #appVersionBadge').forEach(node=>node.textContent='v'+info.version); } catch (_) {}
+});
+</script>
+<script>
+(() => {
+  const params = new URLSearchParams(window.location.search);
+  const popout = params.get('popout');
+  if (popout) {
+    let targetName = popout;
+    if (targetName === 'voice') targetName = 'voice-settings';
+    
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('popout-standalone-window');
+      const win = document.getElementById('win-' + targetName);
+      if (win) {
+        win.classList.add('active', 'popout-target');
+        win.classList.remove('minimized');
+        win.style.display = 'flex';
+        
+        const doClose = (e) => {
+          if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+          }
+          fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetName), { method: 'POST' }).catch(() => {});
+          try { window.close(); } catch (_) {}
+        };
+
+        const closeBtns = win.querySelectorAll('.btn-win-action.win-close, .btn-win-action.close-red, [title*="ปิด"], [id^="btnClose"]');
+        closeBtns.forEach(btn => {
+          btn.onclick = doClose;
+        });
+      }
+
+      // Hide all other floating windows
+      document.querySelectorAll('.floating-window').forEach(w => {
+        if (w !== win) {
+          w.classList.remove('active');
+          w.style.display = 'none';
+        }
+      });
+    });
+  }
+})();
+</script>
 </head>
 
 
@@ -775,6 +907,7 @@
     <div class="win-resize-edge edge-bottom-left" data-dir="bottom-left"></div>
     <div class="win-resize-edge edge-bottom-right" data-dir="bottom-right"></div>
   </div>
+
 
 
 
@@ -815,11 +948,11 @@
 
 
     <!-- 0. DESKTOP TITLE BAR (Native Frameless Title Bar: ไอคอน + ชื่อแอป + ย่อ/ขยาย/ปิด) -->
-  <div class="desktop-titlebar pywebview-drag-region" id="desktopTitlebar">
+  <div class="desktop-titlebar" id="desktopTitlebar">
     <div class="desktop-titlebar-left">
-      <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" alt="BP3" onerror="this.src='./favicon.png'">
+      <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.2</span>
+      <span class="desktop-titlebar-tag">v3.7</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -831,6 +964,29 @@
       <button type="button" class="app-win-btn win-close" title="ปิดโปรแกรม" onclick="requestAppExit()">
         <svg width="10" height="10" viewBox="0 0 10 10"><path fill="currentColor" d="M1 0L0 1l4 4-4 4 1 1 4-4 4 4 1-1-4-4 4-4-1-1-4 4-4-4z"/></svg>
       </button>
+    </div>
+  </div>
+
+  <!-- Windows Snap Layouts Flyout -->
+  <div class="snap-layouts-flyout" id="snapLayoutsFlyout">
+    <div class="snap-flyout-label">Windows Snap</div>
+    <div class="snap-flyout-grid">
+      <div class="snap-tile" onclick="window.windowFrameAction('snap', { direction: 'left' }); hideSnapFlyout();" title="Snap ชิดซ้าย 50%">
+        <div class="snap-tile-preview left-half"></div>
+        <span>ชิดซ้าย</span>
+      </div>
+      <div class="snap-tile" onclick="window.windowFrameAction('snap', { direction: 'right' }); hideSnapFlyout();" title="Snap ชิดขวา 50%">
+        <div class="snap-tile-preview right-half"></div>
+        <span>ชิดขวา</span>
+      </div>
+      <div class="snap-tile" onclick="window.windowFrameAction('maximize'); hideSnapFlyout();" title="ขยายเต็มจอ">
+        <div class="snap-tile-preview full"></div>
+        <span>เต็มจอ</span>
+      </div>
+      <div class="snap-tile" onclick="window.windowFrameAction('snap', { direction: 'restore' }); hideSnapFlyout();" title="ย่อคืนขนาดเดิม">
+        <div class="snap-tile-preview restore"></div>
+        <span>คืนขนาด</span>
+      </div>
     </div>
   </div>
 
@@ -11512,7 +11668,7 @@
 
 
 
-            <button type="button" class="plat-quick-pill active" id="pill-plat-twitch" onclick="togglePlatformVisibility('twitch', _hiddenPlatforms.includes('twitch'))">
+            <button type="button" class="plat-quick-pill active" id="pill-plat-twitch" onclick="togglePlatformVisibility('twitch')">
 
 
 
@@ -11536,7 +11692,7 @@
 
 
 
-            <button type="button" class="plat-quick-pill active" id="pill-plat-youtube" onclick="togglePlatformVisibility('youtube', _hiddenPlatforms.includes('youtube'))">
+            <button type="button" class="plat-quick-pill active" id="pill-plat-youtube" onclick="togglePlatformVisibility('youtube')">
 
 
 
@@ -11560,7 +11716,7 @@
 
 
 
-            <button type="button" class="plat-quick-pill active" id="pill-plat-kick" onclick="togglePlatformVisibility('kick', _hiddenPlatforms.includes('kick'))">
+            <button type="button" class="plat-quick-pill active" id="pill-plat-kick" onclick="togglePlatformVisibility('kick')">
 
 
 
@@ -11584,7 +11740,7 @@
 
 
 
-            <button type="button" class="plat-quick-pill active" id="pill-plat-tiktok" onclick="togglePlatformVisibility('tiktok', _hiddenPlatforms.includes('tiktok'))">
+            <button type="button" class="plat-quick-pill active" id="pill-plat-tiktok" onclick="togglePlatformVisibility('tiktok')">
 
 
 
@@ -11608,7 +11764,7 @@
 
 
 
-            <button type="button" class="plat-quick-pill active" id="pill-plat-mylive" onclick="togglePlatformVisibility('mylive', _hiddenPlatforms.includes('mylive'))">
+            <button type="button" class="plat-quick-pill active" id="pill-plat-mylive" onclick="togglePlatformVisibility('mylive')">
 
 
 
@@ -11632,7 +11788,7 @@
 
 
 
-            <button type="button" class="plat-quick-pill active" id="pill-plat-soop" onclick="togglePlatformVisibility('soop', _hiddenPlatforms.includes('soop'))">
+            <button type="button" class="plat-quick-pill active" id="pill-plat-soop" onclick="togglePlatformVisibility('soop')">
 
 
 
@@ -18296,7 +18452,7 @@
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.2</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.6</span>
 
 
 
@@ -33138,34 +33294,51 @@
 
 
 
-    function popoutToolWindow(name) {
-
-
-
+        function popoutToolWindow(name) {
       if (name === 'voice') name = 'voice-settings';
 
-
+      if (window.pywebview) {
+        fetch('/api/window/popout?tool=' + encodeURIComponent(name), { method: 'POST' })
+          .then(r => r.json())
+          .then(res => {
+            if (res && res.ok) {
+              const titles = {
+                'giveaway': 'Giveaway Tool สุ่มแจกรางวัล',
+                'ask': 'ASK Widget ตั้งคำถามโหวต',
+                'replie': 'Replie Tools ข้อความตอบกลับ',
+                'randomizer': 'Quick Randomizer สุ่มชื่อ / เลข',
+                'user-manager': 'จัดการผู้ชม (User Manager)',
+                'settings': 'ตั้งค่าระบบ (Settings)',
+                'voice-settings': 'ตั้งค่าเสียงอ่าน (Voice Settings)',
+                'chat-widget': 'Chat Widget Customizer',
+                'playroom': 'Playroom Studio ไลฟ์ซาวด์ & คลิปสั้น',
+                'author-profile': 'โปรไฟล์ผู้ชม',
+                'game-overlay': 'ตั้งค่า Game Overlay',
+                'composer': 'Composer Studio จัดฉากถ่ายทอดสด'
+              };
+              const title = titles[name] || name;
+              if (res.focused) {
+                showToast(`⧉ สลับมายังหน้าต่าง ${title} ที่เปิดอยู่แล้ว (ไม่เปิดซ้ำ)`);
+              } else {
+                showToast(`⧉ แยกหน้าต่าง ${title} ออกเป็นหน้าต่างอิสระแล้ว`);
+              }
+            }
+          }).catch(() => {});
+        return;
+      }
 
       const existing = window._popoutWindows[name];
-
-
-
-      if (existing && !existing.closed) {try {existing.focus();return;} catch (_) {}}
-
-
+      if (existing && !existing.closed) {
+        try {
+          existing.focus();
+          showToast(`⧉ สลับมายังหน้าต่างที่เปิดอยู่แล้ว (ไม่เปิดซ้ำ)`);
+          return;
+        } catch (_) {}
+      }
 
       const win = document.getElementById(`win-${name}`) || window._toolWindowNodes[name];
-
-
-
       if (!win) return;
-
-
-
       window._toolWindowNodes[name] = win;
-
-
-
       if (win.ownerDocument !== document) {
 
 
@@ -33476,68 +33649,17 @@
 
       const pop = window.open('', `bp3_pop_${name}`, `width=${size.w},height=${size.h},left=${left},top=${top},menubar=no,toolbar=no,location=no,status=no,resizable=yes`);
 
-
-
-
-
-
-
       if (!pop) {
-
-
-
-
-
-
-
         win.classList.add('active');
-
-
-
-
-
-
-
         win.classList.remove('minimized');
-      if (name === 'chat-settings') {
-        if (typeof syncLiveChatFontControls === 'function') syncLiveChatFontControls();
-        if (typeof updateChatPreview === 'function') updateChatPreview();
-      }
-
-
-
-
-
-
-
+        if (name === 'chat-settings') {
+          if (typeof syncLiveChatFontControls === 'function') syncLiveChatFontControls();
+          if (typeof updateChatPreview === 'function') updateChatPreview();
+        }
         return;
-
-
-
-
-
-
-
       }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
       window._popoutWindows[name] = pop;
-
-
-
       let popResizeTimer = null;
 
 
@@ -33678,7 +33800,7 @@
 
 
 
-<html lang="th" class="notranslate" translate="no">
+<html lang="th" class="notranslate" translate="no" style="background:#1e1f22!important;color:#f2f3f5!important;">
 
 
 
@@ -34355,6 +34477,8 @@
 
 
       pop.document.close();
+      bindPlatformChannelInputs(pop.document);
+      bindPlatformAutoInputs(pop.document);
 
 
 
@@ -34814,7 +34938,6 @@
 
 
 
-      window.BP3CursorSkin?.install(popDoc);
 
 
 
@@ -35477,20 +35600,7 @@
 
 
       showToast(`⧉ แยกหน้าต่าง ${titles[name] || name} ออกเป็นหน้าต่างอิสระแล้ว`);
-
-
-
-
-
-
-
     }
-
-
-
-
-
-
 
     window.popoutToolWindow = popoutToolWindow;
 
@@ -36476,7 +36586,7 @@
 
 
 
-      if (_autoPopoutWindows && name !== 'author-profile') {
+      if (_autoPopoutWindows) {
 
 
 
@@ -48470,7 +48580,17 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+    function bindPlatformChannelInputs(doc) {
+      for (const [key,id] of Object.entries(PLATFORM_INPUT_IDS)) {
+        const input=doc.getElementById(id);if(!input||input.dataset.channelSaveBound)continue;
+        input.dataset.channelSaveBound='1';
+        input.value=localStorage.getItem('bp3_channel_'+key)||input.value;
+        for(const event of ['input','change','blur'])input.addEventListener(event,()=>setPlatformChannel(key,input.value.trim()));
+      }
+    }
+    let _platformSettingsReady=Promise.resolve();
     function initPlatformSettingsInputs() {
+      bindPlatformChannelInputs(document);
       try {
         const saved = JSON.parse(localStorage.getItem('bp3_platform_audio') || '{}');
         for (const [key, value] of Object.entries(saved)) {
@@ -48492,6 +48612,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
       for (const [key, inputId] of Object.entries(PLATFORM_INPUT_IDS)) {
         const input = document.getElementById(inputId);
         if (input) {
+          if(input.dataset.channelSaveBound)continue;
           const saved = localStorage.getItem(`bp3_channel_${key}`);
           if (saved) input.value = saved;
           const saveVal = (e) => {
@@ -48512,10 +48633,13 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
       }
 
       // Restore from persistent backend file
-      fetch('/api/platform/settings')
+      _platformSettingsReady=fetch('/api/platform/settings')
         .then(res => res.json())
         .then(data => {
           if (!data || typeof data !== 'object') return;
+          for(const key of Object.keys(PLATFORM_AUTO_IDS)) {
+            if(typeof data['auto_connect_'+key]==='boolean')localStorage.setItem('bp3_auto_connect_'+key,String(data['auto_connect_'+key]));
+          }
           for (const key of Object.keys(PLATFORM_INPUT_IDS)) {
             const serverVal = data['channel_' + key];
             if (serverVal && typeof serverVal === 'string' && serverVal.trim()) {
@@ -48526,17 +48650,9 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
             }
           }
           if (Array.isArray(data.hidden_platforms)) {
-            let changed = false;
-            for (const p of data.hidden_platforms) {
-              if (!_hiddenPlatforms.includes(p)) {
-                _hiddenPlatforms.push(p);
-                changed = true;
-              }
-            }
-            if (changed) {
-              localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
-              applyPlatformHiddenState();
-            }
+            _hiddenPlatforms = [...data.hidden_platforms];
+            localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
+            applyPlatformHiddenState();
           }
         })
         .catch(() => {});
@@ -48564,7 +48680,22 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+    function bindPlatformAutoInputs(doc) {
+      for(const [platform,id] of Object.entries(PLATFORM_AUTO_IDS)) {
+        const checkbox=doc.getElementById(id);if(!checkbox)continue;
+        checkbox.checked=localStorage.getItem('bp3_auto_connect_'+platform)==='true';
+        if(checkbox.dataset.autoConnectBound)continue;
+        checkbox.dataset.autoConnectBound='1';
+        checkbox.addEventListener('change',()=>{
+          const enabled=checkbox.checked;localStorage.setItem('bp3_auto_connect_'+platform,String(enabled));
+          document.getElementById(id).checked=enabled;
+          fetch('/api/platform/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({['auto_connect_'+platform]:enabled})}).catch(()=>{});
+        });
+      }
+    }
     async function initAutoConnect() {
+      await _platformSettingsReady;
+      bindPlatformAutoInputs(document);
 
 
 
@@ -48881,7 +49012,6 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         }
         if (target) {
           setPlatformChannel(key, target);
-        }
 
 
 
@@ -49713,110 +49843,79 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-    function openPlatformChannelWeb(key, target) {
-
-
-
-
-
-
-
-      if (!target) target = getPlatformChannel(key);
-
-
-
-
-
-
-
-      let url = '';
-
-
-
-
-
-
-
-      if (key === 'twitch') url = `https://twitch.tv/${target}`;
-
-
-
-
-
-
-
-      else if (key === 'kick') url = `https://kick.com/${target}`;
-
-
-
-
-
-
-
-      else if (key === 'tiktok') url = `https://www.tiktok.com/@${target.replace(/^@/, '')}/live`;
-
-
-
-
-
-
-
-      else if (key === 'youtube') url = target.startsWith('http') ? target : `https://youtube.com/@${target}/live`;
-
-
-
-
-
-
-
-      else if (key === 'soop') url = /^https?:\/\//i.test(target) ? target :  /^(?:(?:play|www|ch)\.)?sooplive\.(?:co\.kr|com)\//i.test(target) || /^bj\.afreecatv\.com\//i.test(target) ? 'https://' + target : `https://play.sooplive.co.kr/${target.replace(/^@/,'')}`;
-
-
-
-
-
-
-
-      else if (key === 'mylive') {
-
-
-
-        const raw = (target || '').trim();
-
-
-
-        if (/^https?:\/\//i.test(raw)) url = raw;
-
-
-
-        else if (/^\d+$/.test(raw)) url = `https://mylive.in.th/streams/${raw}`;
-
-
-
-        else if (raw.includes('/streams/')) url = `https://${raw.replace(/^\/+/, '')}`;
-
-
-
-        else url = `https://mylive.in.th/${raw.replace(/^@/, '')}`;
-
-
-
+    function extractPlatformChannelSlug(key, input) {
+      if (!input) return '';
+      let str = String(input).trim().replace(/\/+$/, '');
+      if (key === 'twitch') {
+        const m = str.match(/(?:twitch\.tv\/|^@?)([a-zA-Z0-9_]+)$/i);
+        if (m) return m[1].toLowerCase();
+        return str.split('/').pop().replace(/^[@#]/, '').toLowerCase();
       }
+      if (key === 'kick') {
+        const m = str.match(/(?:kick\.com\/|^@?)([a-zA-Z0-9_\-]+)$/i);
+        if (m) return m[1].toLowerCase();
+        return str.split('/').pop().replace(/^[@#]/, '').toLowerCase();
+      }
+      if (key === 'tiktok') {
+        const m = str.match(/(?:tiktok\.com\/@?|^@?)([a-zA-Z0-9_\.\-]+?)(?:\/live)?$/i);
+        if (m) return m[1].replace(/^@/, '');
+        return str.split('/').pop().replace(/^[@#]/, '').replace(/\/live$/, '');
+      }
+      if (key === 'soop') {
+        const m = str.match(/(?:sooplive\.(?:co\.kr|com)\/|^@?)([a-zA-Z0-9_\-]+)$/i);
+        if (m) return m[1];
+        return str.split('/').pop().replace(/^[@#]/, '');
+      }
+      if (key === 'mylive') {
+        const m = str.match(/streams\/(\d+)/i);
+        if (m) return m[1];
+        return str.split('/').pop().replace(/^[@#]/, '');
+      }
+      return str.split('/').pop().replace(/^[@#]/, '');
+    }
+    window.extractPlatformChannelSlug = extractPlatformChannelSlug;
 
-
-
-
-
-
-
+    function openPlatformChannelWeb(key, target) {
+      if (!target) target = getPlatformChannel(key);
+      target = (target || '').trim();
+      if (!target) return;
+      let url = '';
+      const isFullHttp = /^https?:\/\//i.test(target);
+      if (key === 'twitch') {
+        const slug = extractPlatformChannelSlug('twitch', target);
+        url = slug ? `https://twitch.tv/${slug}` : (isFullHttp ? target : `https://twitch.tv/${target}`);
+      } else if (key === 'kick') {
+        const slug = extractPlatformChannelSlug('kick', target);
+        url = slug ? `https://kick.com/${slug}` : (isFullHttp ? target : `https://kick.com/${target}`);
+      } else if (key === 'tiktok') {
+        const slug = extractPlatformChannelSlug('tiktok', target);
+        url = slug ? `https://www.tiktok.com/@${slug}/live` : (isFullHttp ? target : `https://www.tiktok.com/@${target.replace(/^@/, '')}/live`);
+      } else if (key === 'youtube') {
+        if (isFullHttp) {
+          url = target;
+        } else {
+          const handle = target.replace(/^@/, '');
+          url = `https://youtube.com/@${handle}/live`;
+        }
+      } else if (key === 'soop') {
+        if (isFullHttp) {
+          url = target;
+        } else {
+          const slug = extractPlatformChannelSlug('soop', target);
+          url = `https://play.sooplive.co.kr/${slug}`;
+        }
+      } else if (key === 'mylive') {
+        if (isFullHttp) {
+          url = target;
+        } else if (/^\d+$/.test(target)) {
+          url = `https://mylive.in.th/streams/${target}`;
+        } else if (target.includes('/streams/')) {
+          url = `https://${target.replace(/^\/+/, '')}`;
+        } else {
+          url = `https://mylive.in.th/${target.replace(/^@/, '')}`;
+        }
+      }
       if (url) openExternalUrl(url);
-
-
-
-
-
-
-
     }
 
 
@@ -51089,7 +51188,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      const slug = (target || '').trim().replace(/^@/, '');
+      const slug = extractPlatformChannelSlug(key, target);
 
 
 
@@ -51194,6 +51293,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
       let target = getPlatformChannel(key) || _platformStates[key]?.target || '';
+      const slug = extractPlatformChannelSlug(key, target) || target;
 
 
 
@@ -51201,7 +51301,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        const res = await fetch('/api/stream-title?platform=' + encodeURIComponent(key) + '&channel=' + encodeURIComponent(target));
+        const res = await fetch('/api/stream-title?platform=' + encodeURIComponent(key) + '&channel=' + encodeURIComponent(slug));
 
 
 
@@ -53789,365 +53889,185 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-    let _hiddenPlatforms = [];
-
-
-
-
-
-
-
+    var _hiddenPlatforms = [];
     try {
-
-
-
-
-
-
-
       _hiddenPlatforms = JSON.parse(localStorage.getItem('bp3_hidden_platforms')) || [];
-
-
-
-
-
-
-
     } catch (e) {
-
-
-
-
-
-
-
       _hiddenPlatforms = [];
-
-
-
-
-
-
-
     }
 
+    // Inter-window Platform Sync (BroadcastChannel + storage event + sync poller)
+    let _bp3SyncChannel = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        _bp3SyncChannel = new BroadcastChannel('bp3_sync_channel');
+        _bp3SyncChannel.onmessage = (e) => {
+          if (e && e.data && e.data.type === 'platform_hidden_sync') {
+            if (Array.isArray(e.data.hidden_platforms)) {
+              _hiddenPlatforms = e.data.hidden_platforms;
+              try { localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms)); } catch (_) {}
+            }
+            applyPlatformHiddenState();
+          }
+        };
+      }
+    } catch (_) {}
 
+    function broadcastPlatformHiddenState() {
+      if (_bp3SyncChannel) {
+        try {
+          _bp3SyncChannel.postMessage({
+            type: 'platform_hidden_sync',
+            hidden_platforms: _hiddenPlatforms
+          });
+        } catch (_) {}
+      }
+      try {
+        localStorage.setItem('bp3_hidden_platforms_sync_ts', String(Date.now()));
+      } catch (_) {}
+    }
 
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'bp3_hidden_platforms' || e.key === 'bp3_hidden_platforms_sync_ts') {
+        try {
+          const stored = JSON.parse(localStorage.getItem('bp3_hidden_platforms'));
+          if (Array.isArray(stored)) {
+            _hiddenPlatforms = stored;
+          }
+        } catch (_) {}
+        applyPlatformHiddenState();
+      }
+    });
 
-
-
-
-
-
-
-
-
-
-
+    let _lastHiddenSyncTs = '';
+    setInterval(() => {
+      try {
+        const ts = localStorage.getItem('bp3_hidden_platforms_sync_ts');
+        if (ts && ts !== _lastHiddenSyncTs) {
+          _lastHiddenSyncTs = ts;
+          const stored = JSON.parse(localStorage.getItem('bp3_hidden_platforms'));
+          if (Array.isArray(stored)) {
+            _hiddenPlatforms = stored;
+          }
+          applyPlatformHiddenState();
+        }
+      } catch (_) {}
+    }, 500);
 
     function applyPlatformHiddenState() {
+      try {
+        const stored = JSON.parse(localStorage.getItem('bp3_hidden_platforms'));
+        if (Array.isArray(stored)) {
+          _hiddenPlatforms = stored;
+        }
+      } catch (_) {}
+
       const docs = [document];
+      try {
+        if (window.opener && !window.opener.closed && window.opener.document) {
+          docs.push(window.opener.document);
+        }
+      } catch (_) {}
       if (window._popoutWindows) {
         for (const pop of Object.values(window._popoutWindows)) {
-          if (pop && !pop.closed && pop.document) docs.push(pop.document);
+          try {
+            if (pop && !pop.closed && pop.document) docs.push(pop.document);
+          } catch (_) {}
         }
       }
+
       for (const key in _platformMeta) {
         const isHidden = _hiddenPlatforms.includes(key);
         for (const doc of docs) {
-          const card = doc.getElementById(`card-${key}`);
-          if (card) {
-            if (isHidden) {
-              card.classList.add('hidden-card');
-              card.style.setProperty('display', 'none', 'important');
-            } else {
-              card.classList.remove('hidden-card');
-              card.style.removeProperty('display');
-              card.style.display = '';
+          try {
+            const card = doc.getElementById('card-' + key);
+            if (card) {
+              if (isHidden) {
+                card.classList.add('hidden-card');
+                card.style.setProperty('display', 'none', 'important');
+              } else {
+                card.classList.remove('hidden-card');
+                card.style.removeProperty('display');
+                card.style.display = '';
+              }
             }
-          }
-          const chk = doc.getElementById(_platformMeta[key].chkId);
-          if (chk) {
-            chk.checked = !isHidden;
-          }
-          const pill = doc.getElementById(`pill-plat-${key}`);
-          if (pill) {
-            if (isHidden) {
-              pill.classList.remove('active');
-              pill.classList.add('hidden-plat');
-              const eye = pill.querySelector('.pill-eye');
-              if (eye) eye.textContent = '🚫';
-            } else {
-              pill.classList.add('active');
-              pill.classList.remove('hidden-plat');
-              const eye = pill.querySelector('.pill-eye');
-              if (eye) eye.textContent = '👁️';
+            const chk = doc.getElementById(_platformMeta[key].chkId);
+            if (chk) {
+              chk.checked = !isHidden;
             }
-          }
+            const pill = doc.getElementById('pill-plat-' + key);
+            if (pill) {
+              if (isHidden) {
+                pill.classList.remove('active');
+                pill.classList.add('hidden-plat');
+                const eye = pill.querySelector('.pill-eye');
+                if (eye) eye.textContent = '🚫';
+              } else {
+                pill.classList.add('active');
+                pill.classList.remove('hidden-plat');
+                const eye = pill.querySelector('.pill-eye');
+                if (eye) eye.textContent = '👁️';
+              }
+            }
+          } catch (_) {}
         }
       }
       updatePlatformCounter();
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     function hidePlatform(key) {
-
-
-
-
-
-
-
       if (!_hiddenPlatforms.includes(key)) {
-
-
-
-
-
-
-
         _hiddenPlatforms.push(key);
-
-
-
-
-
-
-
-        localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
-
-
-
-
-
-
-
         try {
-      fetch('/api/platform/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hidden_platforms: _hiddenPlatforms })
-      }).catch(() => {});
-    } catch(_) {}
-    applyPlatformHiddenState();
-
-
-
-
-
-
+          localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
+        } catch (_) {}
+        try {
+          fetch('/api/platform/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hidden_platforms: _hiddenPlatforms })
+          }).catch(() => {});
+        } catch(_) {}
+        broadcastPlatformHiddenState();
+        applyPlatformHiddenState();
 
         const meta = _platformMeta[key] || { name: key };
-
-
-
-
-
-
-
-        showToast(`🚫 ซ่อนแพลตฟอร์ม ${meta.name} แล้ว (กู้คืนได้ที่ ตั้งค่า > ช่องทางสตรีม)`);
-
-
-
-
-
-
-
+        showToast('🚫 ซ่อนแพลตฟอร์ม ' + meta.name + ' แล้ว (กู้คืนได้ที่ ตั้งค่า > ช่องทางสตรีม)');
       }
-
-
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     function unhidePlatform(key) {
-
-
-
-
-
-
-
       const idx = _hiddenPlatforms.indexOf(key);
-
-
-
-
-
-
-
       if (idx !== -1) {
-
-
-
-
-
-
-
         _hiddenPlatforms.splice(idx, 1);
-
-
-
-
-
-
-
-        localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
-
-
-
-
-
-
-
         try {
-      fetch('/api/platform/settings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ hidden_platforms: _hiddenPlatforms })
-      }).catch(() => {});
-    } catch(_) {}
-    applyPlatformHiddenState();
-
-
-
-
-
-
+          localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
+        } catch (_) {}
+        try {
+          fetch('/api/platform/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hidden_platforms: _hiddenPlatforms })
+          }).catch(() => {});
+        } catch(_) {}
+        broadcastPlatformHiddenState();
+        applyPlatformHiddenState();
 
         const meta = _platformMeta[key] || { name: key };
-
-
-
-
-
-
-
-        showToast(`👁️ นำแพลตฟอร์ม ${meta.name} กลับมาแสดงใน Sidebar แล้ว`);
-
-
-
-
-
-
-
+        showToast('👁️ นำแพลตฟอร์ม ' + meta.name + ' กลับมาแสดงใน Sidebar แล้ว');
       }
-
-
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     function togglePlatformVisibility(key, shouldShow) {
-
-
-
-
-
-
-
-      if (shouldShow) {
-
-
-
-
-
-
-
-        unhidePlatform(key);
-
-
-
-
-
-
-
-      } else {
-
-
-
-
-
-
-
-        hidePlatform(key);
-
-
-
-
-
-
-
+      if (typeof shouldShow !== 'boolean') {
+        shouldShow = _hiddenPlatforms.includes(key);
       }
-
-
-
-
-
-
-
+      if (shouldShow) {
+        unhidePlatform(key);
+      } else {
+        hidePlatform(key);
+      }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     // ----------------------------------------------------
 
@@ -73862,41 +73782,72 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         }
         return;
       }
-      fetch('/api/window/frame', {
+      const payload = typeof action === 'string' && typeof direction === 'object' && direction !== null
+        ? { action: action, ...direction }
+        : { action: action, direction: direction };
+
+      return fetch('/api/window/frame', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: action, direction: direction })
+        body: JSON.stringify(payload)
       }).then(r => r.json()).then(res => {
-                if (action === 'maximize' && res && res.maximized !== undefined) {
+        if ((action === 'maximize' || action === 'snap') && res) {
           const btn = document.getElementById('btnAppWinMax');
           const resizers = document.getElementById('appWindowResizers');
           const titlebar = document.getElementById('desktopTitlebar');
+          const isMax = !!res.maximized;
           if (btn) {
-            btn.innerHTML = res.maximized
+            btn.innerHTML = isMax
               ? '<svg width="10" height="10" viewBox="0 0 10 10"><path fill="currentColor" d="M2 0v2H0v8h8V8h2V0H2zm6 7H1V3h7v4zm1-1V1H3v1h5v4h1z"/></svg>'
               : '<svg width="10" height="10" viewBox="0 0 10 10"><path fill="currentColor" fill-rule="evenodd" d="M0 0v10h10V0H0zm1 1h8v8H1V1z"/></svg>';
-            btn.title = res.maximized ? 'ย่อขนาดหน้าต่าง' : 'ขยายเต็มจอ';
+            btn.title = isMax ? 'ย่อขนาดหน้าต่าง' : 'ขยายเต็มจอ (ชี้เพื่อเลือก Snap)';
           }
           if (resizers) {
-            if (res.maximized) resizers.classList.add('maximized');
+            if (isMax) resizers.classList.add('maximized');
             else resizers.classList.remove('maximized');
           }
           if (titlebar) {
-            if (res.maximized) {
+            if (isMax) {
               titlebar.classList.add('is-maximized');
-              titlebar.classList.remove('pywebview-drag-region');
             } else {
               titlebar.classList.remove('is-maximized');
-              titlebar.classList.add('pywebview-drag-region');
             }
           }
         }
+        return res;
       }).catch(() => {});
     };
 
-    
     function initDesktopTitlebarEvents() {
       const titlebar = document.getElementById('desktopTitlebar');
+      const btnMax = document.getElementById('btnAppWinMax');
+      const flyout = document.getElementById('snapLayoutsFlyout');
+
+      // Windows 11 Snap Layouts Flyout toggle on hover / right-click
+      let flyoutTimer = null;
+      if (btnMax && flyout) {
+        btnMax.addEventListener('mouseenter', () => {
+          clearTimeout(flyoutTimer);
+          flyoutTimer = setTimeout(() => flyout.classList.add('active'), 250);
+        });
+        btnMax.addEventListener('mouseleave', () => {
+          clearTimeout(flyoutTimer);
+          flyoutTimer = setTimeout(() => {
+            if (!flyout.matches(':hover')) flyout.classList.remove('active');
+          }, 300);
+        });
+        btnMax.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          flyout.classList.toggle('active');
+        });
+        flyout.addEventListener('mouseleave', () => {
+          flyout.classList.remove('active');
+        });
+      }
+      window.hideSnapFlyout = function() {
+        if (flyout) flyout.classList.remove('active');
+      };
+
       if (!titlebar) return;
 
       // Double-click to toggle maximize / restore
@@ -73905,17 +73856,25 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         window.windowFrameAction('maximize');
       });
 
-      // When maximized, dragging down pulls the window back into restored state smoothly
+      // Drag titlebar: pull-down from maximize to restore, and edge-snapping on release
       let dragStart = null;
+      let isDraggingTitlebar = false;
+
       titlebar.addEventListener('mousedown', (e) => {
         if (e.button !== 0) return;
         if (e.target.closest('#appWindowControls') || e.target.closest('button')) return;
+        isDraggingTitlebar = true;
+        window.windowFrameAction('drag');
         if (titlebar.classList.contains('is-maximized')) {
           dragStart = { x: e.screenX, y: e.screenY };
         }
       });
 
       window.addEventListener('mousemove', (e) => {
+        if (e.buttons === 0) {
+          isDraggingTitlebar = false;
+          dragStart = null;
+        }
         if (dragStart) {
           const dist = Math.hypot(e.screenX - dragStart.x, e.screenY - dragStart.y);
           if (dist > 8) {
@@ -73925,81 +73884,50 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         }
       });
 
+      titlebar.addEventListener('mousemove', (e) => {
+        if (e.buttons === 0) {
+          isDraggingTitlebar = false;
+          dragStart = null;
+        }
+      });
+
       window.addEventListener('mouseup', () => {
+        isDraggingTitlebar = false;
         dragStart = null;
+      });
+
+      // Global Keyboard Shortcuts for Snapping (Alt + Arrow Keys)
+      window.addEventListener('keydown', (e) => {
+        if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            window.windowFrameAction('maximize');
+          } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            window.windowFrameAction('snap', { direction: 'restore' });
+          } else if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            window.windowFrameAction('snap', { direction: 'left' });
+          } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            window.windowFrameAction('snap', { direction: 'right' });
+          }
+        }
       });
     }
 
     function initWindowEdgeResizers() {
       const handles = document.querySelectorAll('.win-resize-edge');
-      let isResizing = false;
-      let startX = 0, startY = 0;
-      let startScreenX = 0, startScreenY = 0;
-      let startW = 0, startH = 0;
-      let currentDir = '';
-
       handles.forEach(edge => {
         edge.addEventListener('mousedown', (e) => {
           if (e.button !== 0) return;
-          currentDir = edge.getAttribute('data-dir');
+          const currentDir = edge.getAttribute('data-dir');
           if (!currentDir) return;
-
-          isResizing = true;
-          startX = e.screenX;
-          startY = e.screenY;
-          startScreenX = window.screenX;
-          startScreenY = window.screenY;
-          startW = window.outerWidth;
-          startH = window.outerHeight;
 
           e.preventDefault();
           e.stopPropagation();
 
-          document.body.style.userSelect = 'none';
-
-          const onMouseMove = (ev) => {
-            if (!isResizing) return;
-            const dx = ev.screenX - startX;
-            const dy = ev.screenY - startY;
-
-            let newW = startW;
-            let newH = startH;
-            let newX = startScreenX;
-            let newY = startScreenY;
-
-            if (currentDir.includes('right')) newW = Math.max(1024, startW + dx);
-            if (currentDir.includes('bottom')) newH = Math.max(680, startH + dy);
-            if (currentDir.includes('left')) {
-              const proposedW = startW - dx;
-              if (proposedW >= 1024) {
-                newW = proposedW;
-                newX = startScreenX + dx;
-              }
-            }
-            if (currentDir.includes('top')) {
-              const proposedH = startH - dy;
-              if (proposedH >= 680) {
-                newH = proposedH;
-                newY = startScreenY + dy;
-              }
-            }
-
-            fetch('/api/window/frame', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'set-bounds', x: newX, y: newY, w: newW, h: newH })
-            }).catch(() => {});
-          };
-
-          const onMouseUp = () => {
-            isResizing = false;
-            document.body.style.userSelect = '';
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-          };
-
-          window.addEventListener('mousemove', onMouseMove);
-          window.addEventListener('mouseup', onMouseUp);
+          window.windowFrameAction('resize', { direction: currentDir });
         });
       });
     }
@@ -75068,7 +74996,6 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-  <script src="./ragnarok_cursor_skin.js"></script>
 
 
 

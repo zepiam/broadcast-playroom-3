@@ -492,6 +492,9 @@ body {
 
 /* ซ่อนการ์ดแพลตฟอร์มเมื่อถูกซ่อน ไม่ว่าจะในโหมดปกติหรือโหมดกะทัดรัด (Compact Mode Hide Fix) */
 .plat-card.hidden-card,
+.plat-card[style*="display: none"],
+.plat-card[style*="display:none"],
+#platformsContainer .plat-card.hidden-card,
 .col-sidebar.sidebar-compact .plat-card.hidden-card,
 .col-sidebar.sidebar-compact .plat-card[style*="display: none"],
 .col-sidebar.sidebar-compact .plat-card[style*="display:none"] {
@@ -3779,4 +3782,217 @@ select option {
   width: 10px;
   height: 10px;
   cursor: nwse-resize;
+}
+
+
+/* Windows Snap Layouts Flyout */
+.snap-layouts-flyout {
+  display: none;
+  position: fixed;
+  top: 36px;
+  right: 50px;
+  z-index: 99999999;
+  background: rgba(30, 31, 34, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  padding: 8px 10px;
+  width: 220px;
+  contain: strict;
+  isolation: isolate;
+  user-select: none;
+}
+
+.snap-layouts-flyout.active {
+  display: block;
+}
+
+.snap-flyout-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.snap-flyout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.snap-tile {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.snap-tile:hover {
+  background: rgba(88, 101, 242, 0.2);
+  border-color: #5865f2;
+}
+
+.snap-tile span {
+  font-size: 11.5px;
+  color: #e2e8f0;
+}
+
+.snap-tile-preview {
+  width: 50px;
+  height: 32px;
+  border: 1px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.snap-tile-preview.left-half::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: #5865f2;
+  border-radius: 3px 0 0 3px;
+}
+
+.snap-tile-preview.right-half::before {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: #5865f2;
+  border-radius: 0 3px 3px 0;
+}
+
+.snap-tile-preview.full::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #5865f2;
+  border-radius: 3px;
+}
+
+.snap-tile-preview.restore::before {
+  content: '';
+  position: absolute;
+  inset: 4px 6px;
+  background: #5865f2;
+  border-radius: 2px;
+}
+
+/* Standalone Popout Tool Window Mode (External Native Window - ZERO Address Bar) */
+html.popout-standalone-window,
+html.popout-standalone-window body,
+body.popout-standalone-window {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  background: #1e1f22 !important;
+  color: #f2f3f5 !important;
+}
+
+html.popout-standalone-window #desktopTitlebar,
+html.popout-standalone-window .desktop-titlebar,
+html.popout-standalone-window .topbar,
+html.popout-standalone-window .layout,
+html.popout-standalone-window .left-rail,
+html.popout-standalone-window .chat-column,
+html.popout-standalone-window .content-area,
+html.popout-standalone-window .snap-layouts-flyout,
+html.popout-standalone-window .app-window-resizers,
+html.popout-standalone-window #sidebar,
+html.popout-standalone-window header,
+html.popout-standalone-window nav,
+html.popout-standalone-window aside,
+html.popout-standalone-window footer,
+body.popout-standalone-window #desktopTitlebar,
+body.popout-standalone-window .desktop-titlebar,
+body.popout-standalone-window .topbar,
+body.popout-standalone-window .layout,
+body.popout-standalone-window .left-rail,
+body.popout-standalone-window .chat-column,
+body.popout-standalone-window .content-area,
+body.popout-standalone-window .snap-layouts-flyout,
+body.popout-standalone-window .app-window-resizers {
+  display: none !important;
+}
+
+html.popout-standalone-window .floating-window,
+body.popout-standalone-window .floating-window {
+  display: none !important;
+}
+
+html.popout-standalone-window .floating-window.popout-target,
+html.popout-standalone-window .floating-window.active,
+body.popout-standalone-window .floating-window.popout-target,
+body.popout-standalone-window .floating-window.active {
+  display: flex !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  transform: none !important;
+  z-index: 9999 !important;
+  background: #1e1f22 !important;
+  flex-direction: column !important;
+}
+
+html.popout-standalone-window .floating-window.popout-target .floating-header,
+html.popout-standalone-window .floating-window.active .floating-header,
+body.popout-standalone-window .floating-window.popout-target .floating-header,
+body.popout-standalone-window .floating-window.active .floating-header {
+  border-radius: 0 !important;
+  cursor: default !important;
+}
+
+/* Hide duplicate minimize/close buttons in popout windows - native Windows OS titlebar handles them */
+html.popout-standalone-window .floating-header .floating-actions-right,
+html.popout-standalone-window .floating-actions-right,
+html.popout-standalone-window .btn-win-action,
+body.popout-standalone-window .floating-header .floating-actions-right,
+body.popout-standalone-window .floating-actions-right,
+body.popout-standalone-window .btn-win-action {
+  display: none !important;
+}
+
+html.popout-standalone-window .floating-window.popout-target .floating-body,
+html.popout-standalone-window .floating-window.active .floating-body,
+body.popout-standalone-window .floating-window.popout-target .floating-body,
+body.popout-standalone-window .floating-window.active .floating-body {
+  flex: 1 1 auto !important;
+  height: calc(100vh - 46px) !important;
+  max-height: calc(100vh - 46px) !important;
+  overflow-y: auto !important;
+}
+
+html.popout-standalone-window .floating-window.popout-target .resizer,
+html.popout-standalone-window .floating-window.popout-target .win-resize-handle,
+html.popout-standalone-window .floating-window.active .resizer,
+html.popout-standalone-window .floating-window.active .win-resize-handle,
+body.popout-standalone-window .floating-window.popout-target .resizer,
+body.popout-standalone-window .floating-window.popout-target .win-resize-handle,
+body.popout-standalone-window .floating-window.active .resizer,
+body.popout-standalone-window .floating-window.active .win-resize-handle {
+  display: none !important;
 }

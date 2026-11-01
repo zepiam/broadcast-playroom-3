@@ -1841,6 +1841,71 @@ _TTS_CACHE_MAX = 128
 
 
 
+
+_tool_popout_windows = {}
+
+def handle_tool_popout(tool_name, main_url):
+    name = (tool_name or '').strip().lower()
+    if name == 'voice': name = 'voice-settings'
+    if not name: return {'ok': False, 'error': 'empty tool'}
+    
+    global _tool_popout_windows
+    if name in _tool_popout_windows:
+        tw = _tool_popout_windows[name]
+        try:
+            tw.show()
+            tw.restore()
+            return {'ok': True, 'focused': True}
+        except Exception:
+            _tool_popout_windows.pop(name, None)
+            
+    import webview
+    titles = {
+        'giveaway': 'Giveaway Tool สุ่มแจกรางวัล',
+        'ask': 'ASK Widget ตั้งคำถามโหวต',
+        'replie': 'Replie Tools ข้อความตอบกลับ',
+        'randomizer': 'Quick Randomizer สุ่มชื่อ / เลข',
+        'user-manager': 'จัดการผู้ชม (User Manager)',
+        'settings': 'ตั้งค่าระบบ (Settings)',
+        'voice-settings': 'ตั้งค่าเสียงอ่าน (Voice Settings)',
+        'chat-widget': 'Chat Widget Customizer',
+        'playroom': 'Playroom Studio ไลฟ์ซาวด์ & คลิปสั้น',
+        'author-profile': 'โปรไฟล์ผู้ชม',
+        'game-overlay': 'ตั้งค่า Game Overlay',
+        'composer': 'Composer Studio จัดฉากถ่ายทอดสด'
+    }
+    sizes = {
+        'composer': (1280, 860),
+        'chat-settings': (760, 640),
+        'settings': (940, 700),
+        'user-manager': (880, 640),
+        'voice-settings': (760, 790),
+        'giveaway': (760, 600),
+        'ask': (700, 580),
+        'replie': (700, 560),
+        'randomizer': (660, 540),
+        'playroom': (840, 640),
+        'chat-widget': (900, 680),
+        'author-profile': (660, 580),
+        'game-overlay': (760, 620)
+    }
+    sz = sizes.get(name, (800, 600))
+    title = titles.get(name, f'Broadcast Playroom - {name.capitalize()}')
+    url = f"{main_url}/index.html?popout={name}"
+    
+    tw = webview.create_window(
+        title=title,
+        url=url,
+        width=sz[0],
+        height=sz[1],
+        min_size=(480, 360)
+    )
+    _tool_popout_windows[name] = tw
+    def on_closed():
+        _tool_popout_windows.pop(name, None)
+    tw.events.closed += on_closed
+    return {'ok': True, 'created': True}
+
 class QuietHandler(SimpleHTTPRequestHandler):
 
 
@@ -7318,6 +7383,37 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+        if path == '/api/window/popout':
+            try:
+                size = int(self.headers.get('Content-Length', 0))
+                data = json.loads(self.rfile.read(size)) if size > 0 else {}
+                tool = data.get('tool') or urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('tool', [''])[0]
+                main_url = f"http://127.0.0.1:{self.server.server_port}"
+                res = handle_tool_popout(tool, main_url)
+                self.send_json(res)
+            except Exception as e:
+                self.send_json({'error': str(e)}, 500)
+            return
+
+        if path == '/api/window/popout/close':
+            try:
+                size = int(self.headers.get('Content-Length', 0))
+                data = json.loads(self.rfile.read(size)) if size > 0 else {}
+                tool = data.get('tool') or urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('tool', [''])[0]
+                tool = (tool or '').strip().lower()
+                if tool == 'voice': tool = 'voice-settings'
+                if tool in _tool_popout_windows:
+                    tw = _tool_popout_windows.pop(tool, None)
+                    if tw:
+                        try:
+                            tw.destroy()
+                        except Exception:
+                            pass
+                self.send_json({'ok': True})
+            except Exception as e:
+                self.send_json({'error': str(e)}, 500)
+            return
+
         if path == '/api/window/frame':
 
 
@@ -11342,22 +11438,12 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 def is_port_in_use(port):
-
-
-
-
-
-
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-
-
-
-
-
-
-
-        return s.connect_ex(('127.0.0.1', port)) == 0
+        try:
+            s.bind(('127.0.0.1', int(port)))
+            return False
+        except OSError:
+            return True
 
 
 
@@ -11602,6 +11688,20 @@ def open_app_window(main_url):
     if '--browser' not in sys.argv:
         try:
             import webview
+            webview.settings['DRAG_REGION_SELECTOR'] = '.disabled-pywebview-drag'
+            try:
+                from webview.platforms.edgechromium import EdgeChrome
+                def _allow_child_popups(browser, sender, args):
+                    uri = str(args.get_Uri() or '')
+                    if uri.startswith(('http://', 'https://')) and not ('127.0.0.1' in uri or 'localhost' in uri):
+                        args.set_Handled(True)
+                        import webbrowser
+                        webbrowser.open(uri)
+                    else:
+                        args.set_Handled(True)
+                EdgeChrome.on_new_window_request = _allow_child_popups
+            except Exception:
+                pass
             storage_path = os.path.join(str(DATA_ROOT), 'webview_data')
             os.makedirs(storage_path, exist_ok=True)
             w = webview.create_window(
@@ -11609,7 +11709,7 @@ def open_app_window(main_url):
                 url=main_url,
                 width=1600,
                 height=950,
-                min_size=(760, 500),
+                min_size=(600, 420),
                 frameless=True,
                 easy_drag=False
             )
@@ -11627,15 +11727,41 @@ def open_app_window(main_url):
 
             w.events.closing += _on_closing
             
-            def _setup_icon():
-                time.sleep(0.8)
+            _configured_lock = threading.Lock()
+            _configured = False
+
+            def _setup_icon_ui():
+                nonlocal _configured
+                with _configured_lock:
+                    if _configured:
+                        return
+                    _configured = True
+                try:
+                    h = w.native.Handle.ToInt64() if hasattr(w.native, 'Handle') else int(w.native)
+                    setup_app_window_icon(h)
+                    from app_window_frame import setup_discord_frame
+                    setup_discord_frame(h)
+                except Exception as e:
+                    print(f"[WARN] _setup_icon / discord_frame error: {e}", flush=True)
+
+            def _trigger_setup():
                 try:
                     if w and w.native:
-                        h = w.native.Handle.ToInt64() if hasattr(w.native, 'Handle') else int(w.native)
-                        setup_app_window_icon(h)
-                except Exception:
-                    pass
-            threading.Thread(target=_setup_icon, daemon=True).start()
+                        from System import Action
+                        w.native.BeginInvoke(Action(_setup_icon_ui))
+                except Exception as e:
+                    print(f"[WARN] _trigger_setup dispatch error: {e}", flush=True)
+
+            def _on_page_loaded():
+                _trigger_setup()
+
+            w.events.loaded += _on_page_loaded
+
+            def _setup_icon_timer():
+                time.sleep(1.0)
+                _trigger_setup()
+
+            threading.Thread(target=_setup_icon_timer, daemon=True).start()
             
             try:
                 close_splash()
@@ -12278,7 +12404,7 @@ def main():
 
 
 
-    no_splash = is_headless or '--no-splash' in sys.argv
+    no_splash = True  # Splash completely disabled as requested for instant startup
 
 
 

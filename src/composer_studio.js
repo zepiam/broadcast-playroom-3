@@ -832,7 +832,8 @@
   let layoutWrites=Promise.resolve();
   function enqueueLayoutSave(payload){
     const body=JSON.stringify(payload);
-    const request=layoutWrites.catch(()=>{}).then(()=>fetch('/api/composer/layout',{method:'POST',headers:{'Content-Type':'application/json'},body}));
+    const keepalive=new TextEncoder().encode(body).length<60000;
+    const request=layoutWrites.catch(()=>{}).then(()=>fetch('/api/composer/layout',{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive}));
     layoutWrites=request;return request;
   }
   async function saveState(silent) {

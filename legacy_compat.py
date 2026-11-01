@@ -11,7 +11,9 @@ DEFAULT_PORTS = {'composer_compat': 8080, 'chat': 8765, 'playroom': 8766, 'viewe
 def make_server(handler_class, view, port):
     if int(port):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
-            if probe.connect_ex(('127.0.0.1', int(port))) == 0:
+            try:
+                probe.bind(('127.0.0.1', int(port)))
+            except OSError:
                 raise OSError(f'Port {port} is already in use')
     class LegacyHandler(handler_class):
         legacy_view = 'composer' if view == 'composer_compat' else view

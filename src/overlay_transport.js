@@ -39,6 +39,8 @@
       epoch = data.epoch;
       cursor = data.cursor;
       for (const item of data.events || []) {
+        // A reset snapshot contains old chat, not a new live message.
+        if (data.reset && item.event === 'CHAT_MESSAGE') continue;
         if (item.client === client) continue;
         window.dispatchEvent(new CustomEvent('bp3:remote-event', {detail:item}));
         const bus = window.BP3_BUS;

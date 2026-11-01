@@ -24,17 +24,36 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from overlay_events import overlay_events
 
-from chat_twitch import TwitchChat, ChatMessage
+from chat_twitch import ChatMessage
 
-from chat_youtube import YouTubeChat
+# Platform clients are imported lazily on connection for instant startup
+TwitchChat = None
+YouTubeChat = None
+KickChat = None
+TikTokChat = None
+SoopChat = None
+MyLiveChat = None
 
-from chat_kick import KickChat
+def _warmup_platform_clients():
+    global TwitchChat, YouTubeChat, KickChat, TikTokChat, SoopChat, MyLiveChat
+    try:
+        from chat_twitch import TwitchChat as _TwitchChat
+        TwitchChat = _TwitchChat
+        from chat_kick import KickChat as _KickChat
+        KickChat = _KickChat
+        from chat_youtube import YouTubeChat as _YouTubeChat
+        YouTubeChat = _YouTubeChat
+        from chat_mylive import MyLiveChat as _MyLiveChat
+        MyLiveChat = _MyLiveChat
+        from chat_soop import SoopChat as _SoopChat
+        SoopChat = _SoopChat
+        from chat_tiktok import TikTokChat as _TikTokChat
+        TikTokChat = _TikTokChat
+    except Exception:
+        pass
 
-from chat_tiktok import TikTokChat
-
-from chat_soop import SoopChat
-
-from chat_mylive import MyLiveChat
+# Warm up in background after startup so connecting has zero latency
+threading.Thread(target=_warmup_platform_clients, daemon=True).start()
 
 
 
@@ -81,6 +100,17 @@ def fetch_stream_title(platform: str, channel: str) -> str:
     if not ch:
 
         return ''
+
+    if '://' in ch:
+        from urllib.parse import urlparse
+        try:
+            parsed = urlparse(ch)
+            ch = parsed.path.strip('/').split('/')[-1]
+        except Exception:
+            pass
+    elif '/' in ch:
+        ch = ch.rstrip('/').split('/')[-1]
+    ch = ch.lstrip('@#').strip()
 
     if plat == 'twitch':
 
@@ -183,6 +213,40 @@ def fetch_stream_title(platform: str, channel: str) -> str:
 
 
 class ChatBridge:
+
+    def _get_client_class(self, platform):
+        global TwitchChat, YouTubeChat, KickChat, TikTokChat, SoopChat, MyLiveChat
+        if platform == 'twitch':
+            if TwitchChat is None:
+                from chat_twitch import TwitchChat as _TwitchChat
+                TwitchChat = _TwitchChat
+            return TwitchChat
+        elif platform == 'youtube':
+            if YouTubeChat is None:
+                from chat_youtube import YouTubeChat as _YouTubeChat
+                YouTubeChat = _YouTubeChat
+            return YouTubeChat
+        elif platform == 'kick':
+            if KickChat is None:
+                from chat_kick import KickChat as _KickChat
+                KickChat = _KickChat
+            return KickChat
+        elif platform == 'tiktok':
+            if TikTokChat is None:
+                from chat_tiktok import TikTokChat as _TikTokChat
+                TikTokChat = _TikTokChat
+            return TikTokChat
+        elif platform == 'soop':
+            if SoopChat is None:
+                from chat_soop import SoopChat as _SoopChat
+                SoopChat = _SoopChat
+            return SoopChat
+        elif platform == 'mylive':
+            if MyLiveChat is None:
+                from chat_mylive import MyLiveChat as _MyLiveChat
+                MyLiveChat = _MyLiveChat
+            return MyLiveChat
+        return None
 
     def __init__(self):
 
@@ -694,9 +758,13 @@ class ChatBridge:
 
             account = self.accounts.get(platform) if self.accounts and platform in ('twitch','kick') else None
 
+            cls = self._get_client_class(platform)
+            if not cls:
+                return {'success': False, 'error': f'ยังไม่รองรับแพลตฟอร์ม {platform}'}
+
             if platform == 'twitch':
 
-                client = TwitchChat(
+                client = cls(
 
                     oauth_token=(account or {}).get('access_token') or '', bot_username=(account or {}).get('username') or '',
 
@@ -720,7 +788,7 @@ class ChatBridge:
 
             elif platform == 'youtube':
 
-                client = YouTubeChat(
+                client = cls(
 
                     on_message=lambda m: self._on_message('YouTube', m),
 
@@ -736,7 +804,7 @@ class ChatBridge:
 
             elif platform == 'kick':
 
-                client = KickChat(
+                client = cls(
 
                     oauth_token=(account or {}).get('access_token') or '', bot_username=(account or {}).get('username') or '',
 
@@ -760,7 +828,7 @@ class ChatBridge:
 
             elif platform == 'tiktok':
 
-                client = TikTokChat(
+                client = cls(
 
                     on_message=lambda m: self._on_message('TikTok', m) if current() else None,
 
@@ -776,7 +844,7 @@ class ChatBridge:
 
             elif platform == 'soop':
 
-                client = SoopChat(
+                client = cls(
 
                     on_message=lambda m: self._on_message('SOOP', m) if current() else None,
 
@@ -792,7 +860,7 @@ class ChatBridge:
 
             elif platform == 'mylive':
 
-                client = MyLiveChat(
+                client = cls(
 
                     on_message=lambda m: self._on_message('MyLive', m) if current() else None,
 

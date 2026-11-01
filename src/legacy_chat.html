@@ -1082,6 +1082,7 @@ function connectWs(){
    clearAllCharSlots();chatEl.replaceChildren();balloonSlots=[];sliderLanes=[];
   }else if(item.event==='CANVAS_LAYOUT_SAVED')loadConfig();
  };
+ window._legacyChatBacklog = [];
  const _nowSec = Date.now() / 1000;
 // Ephemeral chat modes (Danmaku / Slider, Balloon, Character) must NEVER replay past historical messages
 if (config.slider_mode || config.balloon_mode || config.character_mode) {

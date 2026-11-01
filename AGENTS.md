@@ -26,6 +26,16 @@ When you start a session or pick up a task in this project, **you must read `HAN
 7. **Single Active Modifier**: One AI modifies code at a time to prevent conflicts.
 
 ## Mandatory completion reminder — applies to every AI
+## Release scope — explicit user requirement (2026-10-31)
+### Frozen backend and patch contents
+- Python backend modules are embedded in the packaged EXE. Backend changes require rebuilding and including the correct edition's EXE (plus changed/new dependencies); copying loose .py files does not prove runtime code changed. Inspect embedded modules and test the frozen runtime.
+- Frontend-only changes can ship changed HTML/JS/CSS/assets without a new EXE. Keep referenced hashed assets complete and verify syntax/runtime errors before publishing.
+- Patch updates replace changed application files only, never user settings, chat logs, OAuth credentials or RVC models. Keep Lite and Full distinct.
+- Never claim update success from ZIP extraction, manifest version or UI label alone: verify executable hash/version/API after restart. The old installed updater has been observed leaving the old EXE in place while replacing frontend/version files. Executable replacement must wait for old processes/file locks, check extraction failure and retain a recoverable download. Until tested, explicitly report the transition as unverified.
+- Version bumps for repair must be discoverable by already-updated clients (e.g. 3.3 -> 3.4). Publish patch assets and matching checksums before switching the master/release manifest.
+
+When the user requests a version update/release, prepare and publish UPDATE PATCHES on GitHub for existing installations. This does NOT authorize uploading, replacing, deleting, or otherwise modifying Hugging Face installers or repositories. Hugging Face changes require a direct, explicit user instruction naming that work. Never infer permission from a version bump, update repair, release request, or existing manifest URL. Preserve installer hosting unless explicitly instructed otherwise.
+
 Before reporting work finished or handing it to another AI, update **both `HANDOFF.md` and `WORKLOG.md`**. This is an explicit user requirement, including small UI/text changes. Record what changed, actual verification results, remaining work and how to resume. Keep WORKLOG append-only; never claim an unrun test passed. Updating only one file is incomplete. Do not wait for the user to remind you.
 
 ---

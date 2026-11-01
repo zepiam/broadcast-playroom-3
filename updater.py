@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.2"
+CURRENT_VERSION = "3.7"
 
 REPO_OWNER = "zepiam"
 
@@ -1107,17 +1107,30 @@ def restart_application_with_patch(patch_zip: Optional[str] = None):
 
             if patch_zip and os.path.isfile(patch_zip):
 
-                bat_script = f"""@echo off
+                bat_script = rf"""@echo off
 
+set "BP3_WAIT_COUNT=0"
+:wait_for_exit
+tasklist /FI "PID eq {os.getpid()}" /NH | findstr /R /C:" {os.getpid()} " >nul
+if errorlevel 1 goto apply_patch
+set /a BP3_WAIT_COUNT+=1
+if %BP3_WAIT_COUNT% GEQ 120 goto update_failed
 timeout /t 1 /nobreak >nul
+goto wait_for_exit
+:apply_patch
 
 tar -xf "{patch_zip}" -C "{install_dir}"
+if errorlevel 1 goto update_failed
 
 del "{patch_zip}"
 
 start "" "{exe_path}"
 
 del "%~f0"
+exit /b 0
+:update_failed
+echo Update failed. Archive retained: "{patch_zip}" > "{install_dir}\update_failure.txt"
+exit /b 1
 
 """
 

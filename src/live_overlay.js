@@ -191,8 +191,7 @@
     restore() {
       renderMusic();refreshNowPlaying();
       updateViewers(viewerState);
-      document.querySelectorAll('[id^="widget-chat-feed-"]').forEach(el=>el.replaceChildren());
-      chat.forEach(msg=>addChat(msg,false));
+      // Preserve retained feeds; newly mounted chat widgets start empty.
       if(replie && !document.querySelector('.replie-wrapper'))showReplie(replie);
       restoreClips();
     }

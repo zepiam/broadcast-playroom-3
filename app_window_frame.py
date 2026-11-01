@@ -4,6 +4,7 @@ import sys
 import json
 import threading
 import time
+import ctypes
 from pathlib import Path
 
 _watching = set()
@@ -91,7 +92,7 @@ def setup_app_window_icon(hwnd):
     if os.name != 'nt' or not hwnd:
         return False
     try:
-        import win32gui, win32con, ctypes
+        import win32gui, win32con
         ico_path = find_app_icon_path()
         if not ico_path or not os.path.isfile(ico_path):
             return False
@@ -210,12 +211,91 @@ def _remember_window(hwnd):
         _watching.discard(hwnd)
     threading.Thread(target=watch, daemon=True).start()
 
+class MARGINS(ctypes.Structure):
+    _fields_ = [
+        ("cxLeftWidth", ctypes.c_int),
+        ("cxRightWidth", ctypes.c_int),
+        ("cyTopHeight", ctypes.c_int),
+        ("cyBottomHeight", ctypes.c_int),
+    ]
+
+def setup_discord_frame(hwnd):
+    try:
+        import win32gui, win32con
+        style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
+        style |= win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX | win32con.WS_MINIMIZEBOX
+        style &= ~win32con.WS_CAPTION
+        win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
+
+        margins = MARGINS(0, 0, 1, 0)
+        ctypes.windll.dwmapi.DwmExtendFrameIntoClientArea(hwnd, ctypes.byref(margins))
+
+        win32gui.SetWindowPos(
+            hwnd, 0, 0, 0, 0, 0,
+            win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_FRAMECHANGED
+        )
+    except Exception as e:
+        print(f"[WARN] setup_discord_frame failed: {e}", flush=True)
+
+HT_RESIZE_MAP = {
+    'left': 10,
+    'right': 11,
+    'top': 12,
+    'top-left': 13,
+    'top-right': 14,
+    'bottom': 15,
+    'bottom-left': 16,
+    'bottom-right': 17,
+}
+
+def _do_native_resize(dir_name, target_hwnd=None):
+    try:
+        code = HT_RESIZE_MAP.get(str(dir_name).lower())
+        if not code:
+            return
+        h = target_hwnd or _main_hwnd
+        if not h and _main_webview and hasattr(_main_webview, 'native') and _main_webview.native:
+            try:
+                h = _main_webview.native.Handle.ToInt64() if hasattr(_main_webview.native, 'Handle') else int(_main_webview.native)
+            except Exception:
+                pass
+        if h:
+            VK_LBUTTON = 0x01
+            if not (ctypes.windll.user32.GetAsyncKeyState(VK_LBUTTON) & 0x8000):
+                return
+            WM_NCLBUTTONDOWN = 0x00A1
+            ctypes.windll.user32.ReleaseCapture()
+            import win32gui
+            win32gui.PostMessage(h, WM_NCLBUTTONDOWN, code, 0)
+    except Exception as e:
+        print(f"[WARN] _do_native_resize error: {e}", flush=True)
+
+def _do_native_drag(target_hwnd=None):
+    try:
+        h = target_hwnd or _main_hwnd
+        if not h and _main_webview and hasattr(_main_webview, 'native') and _main_webview.native:
+            try:
+                h = _main_webview.native.Handle.ToInt64() if hasattr(_main_webview.native, 'Handle') else int(_main_webview.native)
+            except Exception:
+                pass
+        if h:
+            VK_LBUTTON = 0x01
+            if not (ctypes.windll.user32.GetAsyncKeyState(VK_LBUTTON) & 0x8000):
+                return
+            WM_NCLBUTTONDOWN = 0x00A1
+            HTCAPTION = 2
+            ctypes.windll.user32.ReleaseCapture()
+            import win32gui
+            win32gui.PostMessage(h, WM_NCLBUTTONDOWN, HTCAPTION, 0)
+    except Exception as e:
+        print(f"[WARN] _do_native_drag error: {e}", flush=True)
+
 def action(command, data=None):
     if data is None:
         data = {}
     elif isinstance(data, str):
         data = {'direction': data}
-    if command not in ('init', 'restore-frame', 'drag', 'resize', 'set-bounds', 'minimize', 'maximize', 'close', 'set-icon'):
+    if command not in ('init', 'restore-frame', 'drag', 'resize', 'set-bounds', 'minimize', 'maximize', 'close', 'set-icon', 'snap'):
         raise ValueError('Unknown window action')
     global _main_webview
     if _main_webview:
@@ -223,9 +303,29 @@ def action(command, data=None):
             if command == 'minimize':
                 _main_webview.minimize()
                 return {'ok': True}
+            elif command == 'drag':
+                if hasattr(_main_webview, 'native') and _main_webview.native:
+                    try:
+                        from System import Action
+                        _main_webview.native.BeginInvoke(Action(_do_native_drag))
+                        return {'ok': True}
+                    except Exception as e:
+                        print(f"[WARN] BeginInvoke drag error: {e}", flush=True)
+                _do_native_drag()
+                return {'ok': True}
+            elif command == 'resize':
+                dir_name = data.get('direction', 'right') if isinstance(data, dict) else str(data)
+                if hasattr(_main_webview, 'native') and _main_webview.native:
+                    try:
+                        from System import Action
+                        _main_webview.native.BeginInvoke(Action(lambda: _do_native_resize(dir_name)))
+                        return {'ok': True}
+                    except Exception as e:
+                        print(f"[WARN] BeginInvoke resize error: {e}", flush=True)
+                _do_native_resize(dir_name)
+                return {'ok': True}
             elif command == 'maximize':
                 global _is_maximized, _main_hwnd
-                import ctypes
                 is_currently_max = False
                 if _main_hwnd:
                     try:
@@ -268,6 +368,55 @@ def action(command, data=None):
                         except Exception:
                             pass
                     return {'ok': True, 'maximized': True}
+            elif command == 'snap':
+                dir_name = data.get('direction', 'left') if isinstance(data, dict) else str(data)
+                h = _main_hwnd
+                if not h and hasattr(_main_webview, 'native') and _main_webview.native:
+                    try:
+                        h = _main_webview.native.Handle.ToInt64() if hasattr(_main_webview.native, 'Handle') else int(_main_webview.native)
+                    except Exception:
+                        pass
+                if h:
+                    try:
+                        import win32api, win32gui, win32con
+                        if dir_name == 'maximize':
+                            try:
+                                _main_webview.maximize()
+                            except Exception:
+                                pass
+                            win32gui.ShowWindow(h, win32con.SW_MAXIMIZE)
+                            return {'ok': True, 'maximized': True, 'snapped': False}
+                        elif dir_name == 'restore':
+                            try:
+                                _main_webview.restore()
+                            except Exception:
+                                pass
+                            win32gui.ShowWindow(h, win32con.SW_RESTORE)
+                            return {'ok': True, 'maximized': False, 'snapped': False}
+                        elif dir_name in ('left', 'right'):
+                            try:
+                                if ctypes.windll.user32.IsZoomed(h):
+                                    win32gui.ShowWindow(h, win32con.SW_RESTORE)
+                            except Exception:
+                                pass
+                            mon = win32api.MonitorFromWindow(h, win32con.MONITOR_DEFAULTTONEAREST)
+                            info = win32api.GetMonitorInfo(mon)
+                            work = info['Work']
+                            w_total = work[2] - work[0]
+                            h_total = work[3] - work[1]
+                            half_w = w_total // 2
+                            x = work[0] if dir_name == 'left' else (work[0] + half_w)
+                            y = work[1]
+                            w = half_w if dir_name == 'left' else (w_total - half_w)
+                            win32gui.SetWindowPos(h, 0, x, y, w, h_total, win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE | win32con.SWP_FRAMECHANGED)
+                            try:
+                                _main_webview.move(x, y)
+                                _main_webview.resize(w, h_total)
+                            except Exception:
+                                pass
+                            return {'ok': True, 'maximized': False, 'snapped': dir_name, 'x': x, 'y': y, 'w': w, 'h': h_total}
+                    except Exception as e:
+                        return {'ok': False, 'error': str(e)}
             elif command == 'close':
                 set_app_shutting_down(True)
                 _main_webview.destroy()
@@ -280,7 +429,7 @@ def action(command, data=None):
                     h = int(data.get('h', 0))
                     x = int(data.get('x', 0))
                     y = int(data.get('y', 0))
-                    if w >= 1024 and h >= 680:
+                    if w >= 480 and h >= 360:
                         _main_webview.move(x, y)
                         _main_webview.resize(w, h)
                         return {'ok': True}
@@ -322,7 +471,6 @@ def action(command, data=None):
     if command == 'init':
         left, top, right, bottom = win32gui.GetWindowRect(hwnd)
         client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
-        import ctypes
         user32 = ctypes.windll.user32
         try:
             user32.GetDpiForWindow.argtypes = [ctypes.c_void_p]
@@ -341,8 +489,11 @@ def action(command, data=None):
                 return {'ok': False}
             win32gui.SetWindowRgn(hwnd, region, True)
     elif command == 'drag':
-        win32gui.ReleaseCapture()
-        win32gui.PostMessage(hwnd, win32con.WM_NCLBUTTONDOWN, win32con.HTCAPTION, 0)
+        _do_native_drag(hwnd)
+        return {'ok': True}
+    elif command == 'resize':
+        dir_name = data.get('direction', 'right') if isinstance(data, dict) else str(data)
+        _do_native_resize(dir_name, hwnd)
         return {'ok': True}
     elif command == 'set-bounds':
         try:
@@ -350,7 +501,7 @@ def action(command, data=None):
             h = int(data.get('h', 0))
             x = int(data.get('x', 0))
             y = int(data.get('y', 0))
-            if w >= 1024 and h >= 680:
+            if w >= 480 and h >= 360:
                 win32gui.SetWindowPos(hwnd, 0, x, y, w, h, win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE)
                 return {'ok': True}
         except Exception:
@@ -359,10 +510,38 @@ def action(command, data=None):
     elif command == 'minimize':
         win32gui.ShowWindow(hwnd, win32con.SW_MINIMIZE)
     elif command == 'maximize':
-        import ctypes
         is_max = bool(ctypes.windll.user32.IsZoomed(hwnd)) if hasattr(ctypes.windll.user32, 'IsZoomed') else (win32gui.GetWindowPlacement(hwnd)[1] == win32con.SW_SHOWMAXIMIZED)
         win32gui.ShowWindow(hwnd, win32con.SW_RESTORE if is_max else win32con.SW_MAXIMIZE)
         return {'ok': True, 'maximized': not is_max}
+    elif command == 'snap':
+        dir_name = data.get('direction', 'left') if isinstance(data, dict) else str(data)
+        try:
+            import win32api, win32gui, win32con
+            if dir_name == 'maximize':
+                win32gui.ShowWindow(hwnd, win32con.SW_MAXIMIZE)
+                return {'ok': True, 'maximized': True, 'snapped': False}
+            elif dir_name == 'restore':
+                win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+                return {'ok': True, 'maximized': False, 'snapped': False}
+            elif dir_name in ('left', 'right'):
+                try:
+                    if ctypes.windll.user32.IsZoomed(hwnd):
+                        win32gui.ShowWindow(hwnd, win32con.SW_RESTORE)
+                except Exception:
+                    pass
+                mon = win32api.MonitorFromWindow(hwnd, win32con.MONITOR_DEFAULTTONEAREST)
+                info = win32api.GetMonitorInfo(mon)
+                work = info['Work']
+                w_total = work[2] - work[0]
+                h_total = work[3] - work[1]
+                half_w = w_total // 2
+                x = work[0] if dir_name == 'left' else (work[0] + half_w)
+                y = work[1]
+                w = half_w if dir_name == 'left' else (w_total - half_w)
+                win32gui.SetWindowPos(hwnd, 0, x, y, w, h_total, win32con.SWP_NOZORDER | win32con.SWP_NOACTIVATE | win32con.SWP_FRAMECHANGED)
+                return {'ok': True, 'maximized': False, 'snapped': dir_name, 'x': x, 'y': y, 'w': w, 'h': h_total}
+        except Exception as e:
+            return {'ok': False, 'error': str(e)}
     elif command == 'close':
         win32gui.PostMessage(hwnd, win32con.WM_CLOSE, 0, 0)
     return {'ok': True}

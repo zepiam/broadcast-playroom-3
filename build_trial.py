@@ -18,6 +18,8 @@ command = [sys.executable, '-m', 'PyInstaller', '--onedir', '--name', name,
            '--specpath', str(output), '--add-data', str(root / 'dist') + ';dist',
            '--add-data', str(root / 'src' / 'assets') + ';src/assets',
            '--icon', str(root / 'src' / 'assets' / ('icon_' + args.edition + '.ico')),
+           '--add-data', str(root / 'version.json') + ';.',
+           '--hidden-import', 'updater',
            '--collect-all', 'edge_tts']
 for module in ('desktop_overlay_qt', 'edge_tts', 'chat_twitch', 'chat_kick', 'chat_soop',
                'chat_mylive', 'PySide6.QtWebEngineWidgets', 'PySide6.QtWebChannel',
@@ -66,3 +68,11 @@ if exe_file.exists():
     patch_pe_subsystem_to_gui(exe_file)
 
 print('LOCAL TRIAL ONLY:', output / 'dist' / name)
+
+# Keep both version locations consistent for installers and frozen runtime.
+import shutil, hashlib, json
+bundle = output / 'dist' / name
+shutil.copy2(root / 'version.json', bundle / 'version.json')
+receipt = {'edition':args.edition, 'version':json.loads((root / 'version.json').read_text(encoding='utf-8'))['version'],
+           'sources':{filename:hashlib.sha256((root / filename).read_bytes()).hexdigest() for filename in ('launch_dev.py','updater.py','package_entry.py')}}
+(bundle / 'build_receipt.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8')

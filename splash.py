@@ -45,7 +45,22 @@ class BorderChaseCapsule:
     pass  # Defined inside PySide6 scope
 
 
+class DummySplashController:
+    def set_progress(self, percent: int, text: str = ""):
+        pass
+    def set_status(self, text: str):
+        pass
+    def finish(self):
+        pass
+    def close(self):
+        pass
+    def is_alive(self) -> bool:
+        return False
+
 def run_splash_subprocess() -> int:
+    return 0
+
+def _old_run_splash_subprocess() -> int:
     """Entry point สำหรับ Subprocess ของ Splash Screen"""
     import argparse
     from PySide6.QtWidgets import (
@@ -357,8 +372,8 @@ class SplashController:
         self.finish()
 
 
-def create_splash(image_path: str = "", is_first_run: bool = False) -> SplashController:
-    return SplashController(image_path=image_path, is_first_run=is_first_run)
+def create_splash(image_path: str = "", is_first_run: bool = False):
+    return DummySplashController()
 
 
 if __name__ == "__main__":

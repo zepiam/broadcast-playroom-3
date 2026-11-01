@@ -5,6 +5,7 @@ from http.server import ThreadingHTTPServer
 from playwright.sync_api import sync_playwright
 import launch_dev,legacy_user_filters
 with tempfile.TemporaryDirectory() as tmp:
+ launch_dev.DATA_ROOT=Path(tmp)
  old=Path(tmp)/'old.json';old.write_text(json.dumps({'auto_connect_twitch':True,'twitch_channel':'legacychannel','auto_connect_kick':False,'kick_channel':'legacykick','ask_post_result':True,'kick_oauth_token':'secret-example'}),encoding='utf-8');digest=hashlib.sha256(old.read_bytes()).digest();loader=legacy_user_filters.load;legacy_user_filters.load=lambda:loader([old]);launch_dev.LEGACY_FILTER_IMPORT_ENABLED=True
  launch_dev.LAYOUT_FILE=str(Path(tmp)/'layout.json');launch_dev._LAYOUT_CACHE=None;launch_dev.save_layout({'activePageId':'a','pages':[{'id':'a','widgets':[]}]})
  server=ThreadingHTTPServer(('127.0.0.1',0),launch_dev.QuietHandler);threading.Thread(target=server.serve_forever,daemon=True).start()
@@ -20,6 +21,10 @@ with tempfile.TemporaryDirectory() as tmp:
    settings=opened.value;settings.wait_for_load_state();settings.evaluate("switchSettingsSection('platforms')");assert settings.locator('#cfgTwitchAuto').is_checked();settings.locator('#cfgTwitchBotAskPost').wait_for(state='visible');assert settings.locator('#cfgTwitchBotAskPost').is_checked();settings.locator('#cfgTwitchAuto').uncheck();settings.locator('#cfgKickAuto').check();settings.close()
    assert page.evaluate("localStorage.getItem('bp3_auto_connect_twitch')")=='false';calls.clear();page.reload();page.wait_for_timeout(700)
    assert len(calls)==1 and 'platform=kick' in calls[0] and 'legacykick' in calls[0]
+   page.wait_for_function("fetch('/api/platform/settings').then(r=>r.json()).then(s=>s.auto_connect_kick===true && s.auto_connect_twitch===false)")
+   calls.clear();fresh=browser.new_context();fresh.route('**/api/connect?*',connect);fresh.route('**/api/legacy/user-filters',lambda route:route.fulfill(json={}))
+   reopened=fresh.new_page();reopened.goto(f'http://127.0.0.1:{server.server_port}/index.html');reopened.wait_for_timeout(1000)
+   assert len(calls)==1 and 'platform=kick' in calls[0] and 'legacykick' in calls[0],calls
    assert hashlib.sha256(old.read_bytes()).digest()==digest
    print('PASS per-platform auto-connect, migration, saved changes and no token exposure (simulated connection)');browser.close()
  finally:launch_dev.LEGACY_FILTER_IMPORT_ENABLED=False;legacy_user_filters.load=loader;server.shutdown();server.server_close()
