@@ -1813,3 +1813,23 @@ vc_controls.js):**
   - `BroadcastPlayroom3-Lite-Patch-3.8.zip`
   - `BroadcastPlayroom3-Full-Patch-3.8.zip`
 - เผยแพร่ GitHub Release `v3.8` และซิงค์ `version.json` บนกิ่ง `master` สำเร็จสมบูรณ์
+
+
+## [2026-11-01 14:40:22] Release v3.9 — Full V2 Game Overlay Suite & Settings Persistence
+- **กู้คืนหน้าต่าง Game Overlay Suite เต็มรูปแบบตามแบบฉบับเวอร์ชัน 2:**
+  - เพิ่มการรองรับโหมดแชทครบทั้ง 4 โหมด: Default, Themes (10 ธีมพร้อม Pagination), Balloon Mode และ Character Talk (นำเข้ารูปตัวละคร VTuber)
+  - รองรับการตั้งค่าอนิเมชั่นเข้า/ออก (Animations In/Out), ระบบซ่อนข้อความอัตโนมัติเมื่อหมดเวลา (Auto-Hide / Hide After Slider)
+  - ปรับแต่งกล่องข้อความ (Chat Box) ละเอียด: ความโค้งมน, เส้นขอบ, สีพื้นหลัง, ความทึบ, เงา และแสง Glow
+  - ปรับแต่งฟอนต์ครบทุก Google Fonts ภาษาไทย (32 ฟอนต์), น้ำหนักตัวอักษร, เส้นขอบตัวอักษร (Stroke) และเงาตัวอักษร (Shadow)
+  - แสดงเวลาที่โพสต์ข้อความ (Timestamp) และสลับรูปแบบเลย์เอาต์ได้ 5 รูปแบบ
+  - แก้ไขปัญหาเปิดหน้าต่าง Game Overlay ในโหมด Popout แล้วหน้าจอว่างเปล่า (เกิดจาก init event ไม่ถูกเรียกในหน้าต่างย่อย)
+- **ระบบป้องกันข้อมูลช่องและสถานะแพลตฟอร์มสูญหายเมื่ออัปเดตเวอร์ชันใหม่:**
+  - สร้างระบบสำรองข้อมูลการตั้งค่าอัตโนมัติ ackup_user_settings() ก่อนลงแพตช์ และ 
+estore_user_settings() กู้คืนข้อมูลทันทีหลังลงแพตช์เสร็จสิ้น
+  - อัปเดต at_script ใน 
+estart_application_with_patch ให้สำรองและกู้คืนไฟล์ platform_settings.json อัตโนมัติ
+  - เพิ่มระบบ Multi-Location Settings Discovery และ Bidirectional Mirroring ระหว่าง %LOCALAPPDATA%\BroadcastPlayroom3 และ DATA_ROOT ป้องกันการเขียนทับด้วยค่าว่าง
+- **Build & Release v3.9:**
+  - Compile frontend ด้วย 
+pm run build และ sync ไปยัง dist, trial และ installed production directory
+  - แพ็กเกจและเผยแพร่ BroadcastPlayroom3-Lite-Patch-3.9.zip และ BroadcastPlayroom3-Full-Patch-3.9.zip บน GitHub Release v3.9
