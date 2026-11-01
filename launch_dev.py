@@ -1992,7 +1992,7 @@ _TTS_CACHE_MAX = 128
 
 _tool_popout_windows = {}
 
-def handle_tool_popout(tool_name, main_url):
+def handle_tool_popout(tool_name, main_url, section=None):
     name = (tool_name or '').strip().lower()
     if name == 'voice': name = 'voice-settings'
     if not name: return {'ok': False, 'error': 'empty tool'}
@@ -2003,6 +2003,11 @@ def handle_tool_popout(tool_name, main_url):
         try:
             tw.show()
             tw.restore()
+            if section and name == 'settings':
+                try:
+                    tw.evaluate_js(f"if (typeof switchSettingsSection === 'function') switchSettingsSection('{section}');")
+                except Exception:
+                    pass
             return {'ok': True, 'focused': True}
         except Exception:
             _tool_popout_windows.pop(name, None)
@@ -2041,12 +2046,37 @@ def handle_tool_popout(tool_name, main_url):
     title = titles.get(name, f'Broadcast Playroom - {name.capitalize()}')
     url = f"{main_url}/index.html?popout={name}"
     
+    class PopoutJsApi:
+        def __init__(self, tool_name):
+            self.tool_name = tool_name
+        def close(self):
+            try:
+                if self.tool_name in _tool_popout_windows:
+                    w = _tool_popout_windows.pop(self.tool_name, None)
+                    if w: w.destroy()
+            except Exception:
+                pass
+            try:
+                import webview
+                for w in list(getattr(webview, 'windows', [])):
+                    w_title = (getattr(w, 'title', '') or '').lower()
+                    w_url = (getattr(w, 'url', '') or '').lower()
+                    if self.tool_name and (self.tool_name in w_title or f"popout={self.tool_name}" in w_url):
+                        try: w.destroy()
+                        except Exception: pass
+            except Exception:
+                pass
+
+    if section and name == 'settings':
+        url = url + f"&section={section}"
+
     tw = webview.create_window(
         title=title,
         url=url,
         width=sz[0],
         height=sz[1],
-        min_size=(480, 360)
+        min_size=(480, 360),
+        js_api=PopoutJsApi(name)
     )
     _tool_popout_windows[name] = tw
     def on_closed():
@@ -7524,9 +7554,11 @@ class QuietHandler(SimpleHTTPRequestHandler):
             try:
                 size = int(self.headers.get('Content-Length', 0))
                 data = json.loads(self.rfile.read(size)) if size > 0 else {}
-                tool = data.get('tool') or urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('tool', [''])[0]
+                query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                tool = data.get('tool') or query.get('tool', [''])[0]
+                section = data.get('section') or query.get('section', [''])[0]
                 main_url = f"http://127.0.0.1:{self.server.server_port}"
-                res = handle_tool_popout(tool, main_url)
+                res = handle_tool_popout(tool, main_url, section=section)
                 self.send_json(res)
             except Exception as e:
                 self.send_json({'error': str(e)}, 500)
@@ -7536,17 +7568,33 @@ class QuietHandler(SimpleHTTPRequestHandler):
             try:
                 size = int(self.headers.get('Content-Length', 0))
                 data = json.loads(self.rfile.read(size)) if size > 0 else {}
-                tool = data.get('tool') or urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query).get('tool', [''])[0]
+                query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                tool = data.get('tool') or query.get('tool', [''])[0]
                 tool = (tool or '').strip().lower()
                 if tool == 'voice': tool = 'voice-settings'
+                closed = False
                 if tool in _tool_popout_windows:
                     tw = _tool_popout_windows.pop(tool, None)
                     if tw:
                         try:
                             tw.destroy()
+                            closed = True
                         except Exception:
                             pass
-                self.send_json({'ok': True})
+                try:
+                    import webview
+                    for w in list(getattr(webview, 'windows', [])):
+                        w_title = (getattr(w, 'title', '') or '').lower()
+                        w_url = (getattr(w, 'url', '') or '').lower()
+                        if tool and (tool in w_title or f"popout={tool}" in w_url):
+                            try:
+                                w.destroy()
+                                closed = True
+                            except Exception:
+                                pass
+                except Exception:
+                    pass
+                self.send_json({'ok': True, 'closed': closed})
             except Exception as e:
                 self.send_json({'error': str(e)}, 500)
             return

@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.14"
+CURRENT_VERSION = "3.15"
 
 REPO_OWNER = "zepiam"
 
@@ -698,8 +698,20 @@ def restore_user_settings(install_dir: str):
                     if t_dir.exists():
                         target_file = t_dir / c_name
                         try:
-                            if not target_file.exists() or target_file.stat().st_size == 0 or target_file.stat().st_mtime < best_mtime:
-                                shutil.copy2(found_src, target_file)
+                            if c_name.endswith('.json') and target_file.exists() and target_file.stat().st_size > 0:
+                                try:
+                                    with open(target_file, 'r', encoding='utf-8') as tf:
+                                        t_data = json.load(tf)
+                                    with open(found_src, 'r', encoding='utf-8') as sf:
+                                        s_data = json.load(sf)
+                                    if isinstance(t_data, dict) and isinstance(s_data, dict):
+                                        t_data.update(s_data)
+                                        with open(target_file, 'w', encoding='utf-8') as tf:
+                                            json.dump(t_data, tf, ensure_ascii=False, indent=2)
+                                        continue
+                                except Exception:
+                                    pass
+                            shutil.copy2(found_src, target_file)
                         except Exception:
                             pass
     except Exception as e:
@@ -1222,6 +1234,7 @@ if errorlevel 1 goto update_failed
 
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" (
     if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\data\" >nul
+    if exist "{install_dir}\..\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\..\data\" >nul
     copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
 )
 

@@ -1901,3 +1901,10 @@ pm run build และ sync ไปยัง dist, trial และ installed prod
   - Compile frontend ด้วย 
 pm run build และ sync ไปยัง dist, trial และ installed production directory
   - เผยแพร่ BroadcastPlayroom3-Lite-Patch-3.10.zip และ BroadcastPlayroom3-Full-Patch-3.10.zip บน GitHub Release v3.10
+
+## 2026-11-01: Release v3.15 - Comprehensive Overlay Controls & Popout Parity Fixes
+- **Root Cause & Script Error Fix**: Fixed syntax error in src/desktop_overlay_controls.js (missing closing brace before catch block), restoring full functionality to the topbar Game Overlay and Overlay+ buttons.
+- **Popout Section Navigation**: Fixed Overlay & Translate right-click menus to properly navigate to target sections (	ranslate, obs) in both inline and popout settings windows via cross-window BroadcastChannel and URL query parameters.
+- **Game Overlay Tab Design**: Upgraded Game Overlay and Viewer Overlay switcher buttons to modern styled Dark Pills with glowing active highlights, eliminating unstyled/white browser button appearance.
+- **Button Cleanup & Parity**: Removed redundant "บันทึกการตั้งค่า" buttons across Settings and Replie; changed "พับเก็บ" to "ปิดหน้าต่าง" across Settings, Replie, ASK, QuickRandomizer, Playroom, and User Manager windows, adding native pywebview window.pywebview.api.close() support.
+- **Permanent Data Persistence**: Enhanced updater backup & restore logic with JSON key-level merging so existing user channel names and Auto-Connect states are never overwritten or reset when updating to new versions.

@@ -923,6 +923,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
             if (window.BP3ViewerOverlaySettings?.init) window.BP3ViewerOverlaySettings.init(document);
           }, 50);
         } else if (targetName === 'settings') {
+          const secParam = params.get('section') || localStorage.getItem('bp3_settings_target_section');
+          if (secParam) {
+            try { localStorage.removeItem('bp3_settings_target_section'); } catch (_) {}
+            setTimeout(() => {
+              if (typeof switchSettingsSection === 'function') switchSettingsSection(secParam);
+            }, 50);
+            setTimeout(() => {
+              if (typeof switchSettingsSection === 'function') switchSettingsSection(secParam);
+            }, 250);
+          }
           setTimeout(() => {
             if (typeof initPlatformSettingsInputs === 'function') initPlatformSettingsInputs();
             if (typeof bindPlatformAutoInputs === 'function') bindPlatformAutoInputs(document);
@@ -1021,7 +1031,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.14</span>
+      <span class="desktop-titlebar-tag">v3.15</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -6713,7 +6723,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <button class="btn-topbar-action" onclick="closeToolWindow('ask')">พับเก็บ</button>
+          <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('ask')">ปิดหน้าต่าง</button>
 
 
 
@@ -8058,45 +8068,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
       <div class="floating-footer-right">
-
-
-
-
-
-
-
-        <button class="btn-topbar-action" onclick="closeToolWindow('replie')">พับเก็บ</button>
-
-
-
-
-
-
-
-        <button class="btn-topbar-action primary" onclick="showToast('💾 บันทึกคำสั่ง Replie เรียบร้อย')">
-
-
-
-
-
-
-
-          บันทึกการตั้งค่า
-
-
-
-
-
-
-
-        </button>
-
-
-
-
-
-
-
+        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('replie')">ปิดหน้าต่าง</button>
       </div>
 
 
@@ -9241,7 +9213,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        <button class="btn-topbar-action" onclick="closeToolWindow('randomizer')">พับเก็บ</button>
+        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('randomizer')">ปิดหน้าต่าง</button>
 
 
 
@@ -10961,7 +10933,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        <button class="btn-topbar-action" onclick="closeToolWindow('playroom')">พับเก็บ</button>
+        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('playroom')">ปิดหน้าต่าง</button>
 
 
 
@@ -22271,7 +22243,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        <button class="btn-topbar-action" onclick="closeToolWindow('user-manager')">พับเก็บ</button>
+        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('user-manager')">ปิดหน้าต่าง</button>
 
 
 
@@ -23622,8 +23594,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
     <!-- Tab Bar -->
     <div class="win-tabs game-overlay-tabs" style="display: flex; gap: 8px; padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); background: #18191c;">
-      <button type="button" class="win-tab-btn modal-tab-btn active" id="tabGoGame" onclick="switchGameOverlayTab('game')">🎮 Game Overlay</button>
-      <button type="button" class="win-tab-btn modal-tab-btn" id="tabGoViewer" onclick="switchGameOverlayTab('viewer')">👥 Viewer Overlay</button>
+      <button type="button" class="win-tab-btn modal-tab-btn active" id="tabGoGame" onclick="switchGameOverlayTab('game')" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:8px 18px; background:#3b82f6; border:1px solid #60a5fa; color:#ffffff; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(59,130,246,0.35); outline:none;">🎮 Game Overlay</button>
+      <button type="button" class="win-tab-btn modal-tab-btn" id="tabGoViewer" onclick="switchGameOverlayTab('viewer')" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:8px 18px; background:#25272c; border:1px solid rgba(255,255,255,0.12); color:#c4c9d4; border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer; outline:none;">👥 Viewer Overlay</button>
     </div>
 
     <!-- Window Body -->
@@ -32625,11 +32597,19 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        function popoutToolWindow(name) {
+        function popoutToolWindow(name, section) {
       if (name === 'voice') name = 'voice-settings';
+      if (name === 'settings' && section) {
+        try {
+          localStorage.setItem('bp3_settings_target_section', section);
+          if (window._settingsSectionChannel) {
+            window._settingsSectionChannel.postMessage({ action: 'switchSection', sectionId: section });
+          }
+        } catch (_) {}
+      }
 
       if (window.pywebview) {
-        fetch('/api/window/popout?tool=' + encodeURIComponent(name), { method: 'POST' })
+        fetch('/api/window/popout?tool=' + encodeURIComponent(name) + (section ? '&section=' + encodeURIComponent(section) : ''), { method: 'POST' })
           .then(r => r.json())
           .then(res => {
             if (res && res.ok) {
@@ -34638,7 +34618,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-            dockBtn.onclick = () => popoutToolWindow(name);
+            dockBtn.onclick = () => popoutToolWindow(name, section);
 
 
 
@@ -35877,15 +35857,16 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-    function openToolWindow(name) {
-
-
-
-
-
-
-
+    function openToolWindow(name, section) {
       if (name === 'voice') name = 'voice-settings';
+      if (name === 'settings' && section) {
+        try {
+          localStorage.setItem('bp3_settings_target_section', section);
+          if (window._settingsSectionChannel) {
+            window._settingsSectionChannel.postMessage({ action: 'switchSection', sectionId: section });
+          }
+        } catch (_) {}
+      }
 
 
 
@@ -36340,6 +36321,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if (isStandalone) {
         let targetTool = (popoutParam || name || '').toLowerCase();
         if (targetTool === 'voice') targetTool = 'voice-settings';
+        try {
+          if (window.pywebview?.api?.close) window.pywebview.api.close();
+        } catch (_) {}
         try {
           fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetTool), { method: 'POST' }).catch(() => {});
         } catch (_) {}
@@ -38593,7 +38577,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const document = getToolDocument('randomizer');
+      const doc = getToolDocument('randomizer') || document;
 
 
 
@@ -38601,7 +38585,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const textEl = document.getElementById('randItemsText');
+      const textEl = doc.getElementById('randItemsText');
 
 
 
@@ -38617,7 +38601,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const selectedMode = document.getElementById('randDisplayMode')?.value || 'wheel';
+      const selectedMode = doc.getElementById('randDisplayMode')?.value || 'wheel';
 
 
 
@@ -38637,7 +38621,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        document.defaultView.alert(selectedMode === 'viewers' ? 'ยังไม่มีรายชื่อคนดูที่ส่งข้อความในแชทสด' : 'กรุณาพิมพ์ตัวเลือกอย่างน้อย 1 รายการ');
+        (doc.defaultView || window).alert(selectedMode === 'viewers' ? 'ยังไม่มีรายชื่อคนดูที่ส่งข้อความในแชทสด' : 'กรุณาพิมพ์ตัวเลือกอย่างน้อย 1 รายการ');
 
 
 
@@ -38677,7 +38661,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const titleEl = document.getElementById('randTitleInput');
+      const titleEl = doc.getElementById('randTitleInput');
 
 
 
@@ -38685,31 +38669,31 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const scaleVal = parseInt(document.getElementById('lblRandScale')?.textContent) || 100;
+      const scaleVal = parseInt(doc.getElementById('lblRandScale')?.textContent) || 100;
 
 
 
-      const oxVal = parseInt(document.getElementById('lblRandOx')?.textContent) || 0;
+      const oxVal = parseInt(doc.getElementById('lblRandOx')?.textContent) || 0;
 
 
 
-      const oyVal = parseInt(document.getElementById('lblRandOy')?.textContent) || 0;
+      const oyVal = parseInt(doc.getElementById('lblRandOy')?.textContent) || 0;
 
 
 
-      const anchorVal = document.getElementById('randAnchor')?.value || 'center';
+      const anchorVal = doc.getElementById('randAnchor')?.value || 'center';
 
 
 
-      const holdVal = Number(document.getElementById('randHoldDuration')?.value) || 5;
+      const holdVal = Number(doc.getElementById('randHoldDuration')?.value) || 5;
 
 
 
-      const spinVal = Number(document.getElementById('randSpinDuration')?.value) || 4;
+      const spinVal = Number(doc.getElementById('randSpinDuration')?.value) || 4;
 
 
 
-      const colorTheme = document.getElementById('randColorTheme')?.value || 'pastel';
+      const colorTheme = doc.getElementById('randColorTheme')?.value || 'pastel';
 
 
 
@@ -38845,7 +38829,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const resEl = document.getElementById('randWinnerResult');
+      const resEl = doc.getElementById('randWinnerResult');
 
 
 
@@ -38905,7 +38889,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          const chkRemove = document.getElementById('chkRandRemove');
+          const chkRemove = doc.getElementById('chkRandRemove');
 
 
 
@@ -38973,7 +38957,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const textEl = document.getElementById('randItemsText');
+      const textEl = doc.getElementById('randItemsText');
 
 
 
@@ -39073,7 +39057,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const textEl = document.getElementById('randItemsText');
+      const textEl = doc.getElementById('randItemsText');
 
 
 
@@ -39117,7 +39101,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const document = getToolDocument('randomizer');
+      const doc = getToolDocument('randomizer') || document;
 
 
 
@@ -39141,7 +39125,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      const resEl = document.getElementById('randWinnerResult');
+      const resEl = doc.getElementById('randWinnerResult');
 
 
 
@@ -42461,7 +42445,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-    function switchSettingsSection(sectionId) {
+    function switchSettingsSection(sectionId, fromBroadcast = false) {
+      if (!fromBroadcast && window._settingsSectionChannel) {
+        try { window._settingsSectionChannel.postMessage({ action: 'switchSection', sectionId }); } catch (_) {}
+      }
 
 
 
@@ -44038,69 +44025,50 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
     function switchGameOverlayTab(tabName) {
-
-
-
       const doc = getGameOverlayDoc();
-
-
-
-      doc.querySelectorAll('#tabGoGame, #tabGoViewer, #tabGoMore').forEach(b => b.classList.remove('active'));
-
-
-
+      const bGame = doc.getElementById('tabGoGame');
+      const bViewer = doc.getElementById('tabGoViewer');
+      const bMore = doc.getElementById('tabGoMore');
+      [bGame, bViewer, bMore].forEach(b => {
+        if (b) {
+          b.classList.remove('active');
+          b.style.background = '#25272c';
+          b.style.borderColor = 'rgba(255,255,255,0.12)';
+          b.style.color = '#c4c9d4';
+          b.style.boxShadow = 'none';
+        }
+      });
       doc.querySelectorAll('.go-pane').forEach(p => p.style.display = 'none');
 
-
-
-
-
-
-
       if (tabName === 'game') {
-
-
-
-        doc.getElementById('tabGoGame')?.classList.add('active');
-
-
-
+        if (bGame) {
+          bGame.classList.add('active');
+          bGame.style.background = '#3b82f6';
+          bGame.style.borderColor = '#60a5fa';
+          bGame.style.color = '#ffffff';
+          bGame.style.boxShadow = '0 2px 8px rgba(59,130,246,0.35)';
+        }
         const p = doc.getElementById('paneGoGame'); if (p) p.style.display = 'flex';
-
-
-
       } else if (tabName === 'viewer') {
-
-
-
-        doc.getElementById('tabGoViewer')?.classList.add('active');
-
-
-
+        if (bViewer) {
+          bViewer.classList.add('active');
+          bViewer.style.background = '#3b82f6';
+          bViewer.style.borderColor = '#60a5fa';
+          bViewer.style.color = '#ffffff';
+          bViewer.style.boxShadow = '0 2px 8px rgba(59,130,246,0.35)';
+        }
         const p = doc.getElementById('paneGoViewer'); if (p) p.style.display = 'flex';
-
-
-
       } else if (tabName === 'more') {
-
-
-
-        doc.getElementById('tabGoMore')?.classList.add('active');
-
-
-
+        if (bMore) {
+          bMore.classList.add('active');
+          bMore.style.background = '#3b82f6';
+          bMore.style.borderColor = '#60a5fa';
+          bMore.style.color = '#ffffff';
+          bMore.style.boxShadow = '0 2px 8px rgba(59,130,246,0.35)';
+        }
         const p = doc.getElementById('paneGoMore'); if (p) p.style.display = 'flex';
-
-
-
       }
-
-
-
     }
-
-
-
     window.switchGameOverlayTab = switchGameOverlayTab;
 
 
@@ -52606,7 +52574,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          { text: '⚙️ ตั้งค่าการแปลภาษา...', run: () => { openToolWindow('settings'); switchSettingsSection('translate'); } }
+          { text: '⚙️ ตั้งค่าการแปลภาษา...', run: () => openToolWindow('settings', 'translate') }
 
 
 
@@ -52686,7 +52654,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          { text: '⚙️ ตั้งค่า OBS WebSocket...', run: () => {openToolWindow('settings');switchSettingsSection('obs');} }
+          { text: '⚙️ ตั้งค่า OBS WebSocket...', run: () => openToolWindow('settings', 'obs') }
 
 
 
@@ -56063,6 +56031,17 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.switchSettingsSection = switchSettingsSection;
+    // Global settings broadcast channel
+    try {
+      window._settingsSectionChannel = new BroadcastChannel('bp3_settings_section');
+      window._settingsSectionChannel.onmessage = (e) => {
+        if (e.data?.action === 'switchSection' && e.data?.sectionId) {
+          if (typeof switchSettingsSection === 'function') {
+            switchSettingsSection(e.data.sectionId, true);
+          }
+        }
+      };
+    } catch (_) {}
 
 
 
