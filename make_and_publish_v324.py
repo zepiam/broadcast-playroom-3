@@ -31,7 +31,7 @@ CORE_PYTHON_FILES = [
     'bot_auth.py', 'bot_oauth_credentials.py', 'twitch_oauth.py', 'kick_oauth.py',
     'chat_bridge.py', 'chat_twitch.py', 'chat_kick.py', 'chat_youtube.py',
     'chat_soop.py', 'chat_mylive.py', 'tts_service.py', 'dns_settings.py',
-    'dist_integrity.py', 'smoke_test_gate.py', 'findupdate.py', 'FindUpdate.bat'
+    'dist_integrity.py', 'smoke_test_gate.py', 'findupdate.py', 'FindUpdate.bat', 'avatar_cache_service.py'
 ]
 
 def package_patch(src_patch, dst_patch, build_type):

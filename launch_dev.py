@@ -2378,6 +2378,30 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+        if path == '/api/avatars/cache-info':
+            import avatar_cache_service
+            info = avatar_cache_service.get_cache_info(DATA_ROOT)
+            self.send_json(info)
+            return
+
+        if path == '/api/avatar/fetch':
+            import avatar_cache_service
+            query = urllib.parse.parse_qs(parsed.query)
+            plat = query.get('platform', ['twitch'])[0]
+            uname = query.get('username', [''])[0]
+            img_data = avatar_cache_service.get_or_fetch_avatar(DATA_ROOT, plat, uname)
+            if img_data:
+                self.send_response(200)
+                self.send_header('Content-Type', 'image/png')
+                self.send_header('Content-Length', str(len(img_data)))
+                self.send_header('Cache-Control', 'public, max-age=86400')
+                self.end_headers()
+                self.wfile.write(img_data)
+            else:
+                self.send_response(404)
+                self.end_headers()
+            return
+
         if path == '/api/splash/close':
 
 
@@ -5621,6 +5645,13 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+
+        if path == '/api/avatars/clear-cache':
+            import avatar_cache_service
+            avatar_cache_service.clear_cache(DATA_ROOT)
+            info = avatar_cache_service.get_cache_info(DATA_ROOT)
+            self.send_json({'success': True, 'info': info})
+            return
 
         if path == '/api/app/ready':
             global _app_frontend_ready

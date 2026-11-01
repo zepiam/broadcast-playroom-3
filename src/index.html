@@ -1095,7 +1095,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.24</span>
+      <span class="desktop-titlebar-tag">v3.25</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -19508,6 +19508,28 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
             </div>
 
+            <div class="chat-setting-toggle-card" style="margin-top: 8px;">
+              <div class="chat-setting-toggle-info">
+                <div class="chat-setting-toggle-title">
+                  <span class="chat-setting-icon-pill">🌐</span>
+                  <span>ดึงรูปโปรไฟล์จริงจากแพลตฟอร์ม</span>
+                </div>
+                <div class="chat-setting-toggle-desc">
+                  หากเปิด: ดึงภาพโปรไฟล์จริงจาก Twitch มาย่อขนาด 50px เก็บในแคช | หากปิด: สุ่มไอคอนตัวละครน่ารักของโปรแกรม
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                  <span style="font-size: 11px; color: var(--dc-text-muted);" id="lblAvatarCacheInfo">ขนาดแคชรูปภาพ: 0.0 MB (0 รูป)</span>
+                  <button type="button" class="btn-topbar-action" style="height: 22px; padding: 0 8px; font-size: 10.5px;" onclick="clearAvatarCache()">
+                    🗑️ ล้างแคชรูปประจำตัว
+                  </button>
+                </div>
+              </div>
+              <label class="cwc-switch">
+                <input type="checkbox" id="chkFetchRealPlatformAvatar" onchange="toggleRealPlatformAvatar(this.checked)">
+                <span class="cwc-switch-slider"></span>
+              </label>
+            </div>
+
 
 
 
@@ -21229,7 +21251,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        <button class="btn-topbar-action primary" onclick="showToast('💾 บันทึกข้อมูลคนดูเรียบร้อย')">บันทึก</button>
+        <button class="btn-topbar-action primary" id="btnSaveAuthorProfile" onclick="saveAuthorProfileChanges()">บันทึก</button>
 
 
 
@@ -39684,6 +39706,121 @@ try {
 
 
 
+    
+    function getViewerDisplayAvatar(username, platform) {
+      if (!username) return getRandomAvatarForUser('guest');
+      if (window._customUserAvatars && (_customUserAvatars[username] || _customUserAvatars[username.toLowerCase()])) {
+        return _customUserAvatars[username] || _customUserAvatars[username.toLowerCase()];
+      }
+      const fetchReal = localStorage.getItem('bp3_fetch_real_platform_avatar') === 'true';
+      if (fetchReal && (platform || 'twitch').toLowerCase() === 'twitch') {
+        return `/api/avatar/fetch?platform=twitch&username=${encodeURIComponent(username)}`;
+      }
+      return getRandomAvatarForUser(username);
+    }
+    window.getViewerDisplayAvatar = getViewerDisplayAvatar;
+
+    function toggleRealPlatformAvatar(enabled) {
+      localStorage.setItem('bp3_fetch_real_platform_avatar', enabled ? 'true' : 'false');
+      const docs = [document];
+      try { if (window.opener?.document) docs.push(window.opener.document); } catch(_) {}
+      try { if (window.parent?.document) docs.push(window.parent.document); } catch(_) {}
+      try {
+        if (window._popupWindows) {
+          Object.values(window._popupWindows).forEach(pop => {
+            if (pop?.document && !docs.includes(pop.document)) docs.push(pop.document);
+          });
+        }
+      } catch(_) {}
+
+      docs.forEach(doc => {
+        try {
+          doc.querySelectorAll('.chat-row').forEach(row => {
+            const u = row.dataset.username;
+            if (u) {
+              const newAvatar = getViewerDisplayAvatar(u, 'Twitch');
+              const img = row.querySelector('.avatar-img');
+              if (img) img.src = newAvatar;
+            }
+          });
+        } catch(_) {}
+      });
+      updateAvatarCacheInfo();
+    }
+    window.toggleRealPlatformAvatar = toggleRealPlatformAvatar;
+
+    async function updateAvatarCacheInfo() {
+      const lbls = [document.getElementById('lblAvatarCacheInfo')];
+      try {
+        if (window._popupWindows) {
+          Object.values(window._popupWindows).forEach(pop => {
+            const el = pop?.document?.getElementById('lblAvatarCacheInfo');
+            if (el) lbls.push(el);
+          });
+        }
+      } catch(_) {}
+      try {
+        const res = await fetch('/api/avatars/cache-info').then(r => r.json());
+        const txt = (res && res.size_mb != null) 
+          ? `ขนาดแคชรูปภาพ: ${res.size_mb} MB (${res.count} รูป)`
+          : 'ขนาดแคชรูปภาพ: 0.00 MB (0 รูป)';
+        lbls.forEach(l => { if (l) l.textContent = txt; });
+      } catch (_) {
+        lbls.forEach(l => { if (l) l.textContent = 'ขนาดแคชรูปภาพ: 0.00 MB (0 รูป)'; });
+      }
+    }
+    window.updateAvatarCacheInfo = updateAvatarCacheInfo;
+
+    async function clearAvatarCache() {
+      try {
+        await fetch('/api/avatars/clear-cache', { method: 'POST' });
+        await updateAvatarCacheInfo();
+        toggleRealPlatformAvatar(localStorage.getItem('bp3_fetch_real_platform_avatar') === 'true');
+      } catch (_) {}
+    }
+    window.clearAvatarCache = clearAvatarCache;
+
+    function saveAuthorProfileChanges() {
+      const u = _activeUserRecord?.username;
+      if (!u) {
+        closeToolWindow('author-profile');
+        return;
+      }
+      try {
+        const doc = getToolDocument('author-profile');
+        const pane3 = doc.getElementById('paneProfTab3');
+        const txt = pane3?.querySelector('textarea');
+        if (txt) {
+          const notes = JSON.parse(localStorage.getItem('bp3_user_notes') || '{}');
+          notes[u.toLowerCase()] = txt.value;
+          localStorage.setItem('bp3_user_notes', JSON.stringify(notes));
+        }
+      } catch (_) {}
+
+      if (_activeUserRecord.avatar) {
+        _customUserAvatars[u] = _activeUserRecord.avatar;
+        _customUserAvatars[u.toLowerCase()] = _activeUserRecord.avatar;
+        try {
+          localStorage.setItem('bp3_custom_avatars', JSON.stringify(_customUserAvatars));
+        } catch(_) {}
+      }
+
+      try {
+        if (!window._authorProfileChannel) {
+          window._authorProfileChannel = new BroadcastChannel('bp3_author_profile_sync');
+        }
+        window._authorProfileChannel?.postMessage({
+          action: 'avatarChanged',
+          username: u,
+          avatarUrl: _activeUserRecord.avatar
+        });
+      } catch (_) {}
+
+      syncChatRowAvatars(u, _activeUserRecord.avatar);
+      closeToolWindow('author-profile');
+    }
+    window.saveAuthorProfileChanges = saveAuthorProfileChanges;
+
     function getRandomAvatarForUser(username) {
 
 
@@ -40821,117 +40958,50 @@ try {
 
 
     function syncChatRowAvatars(username, avatarUrl) {
-
-
-
-
-
-
-
       if (!username) return;
-
-
-
-
-
-
-
       const targetLower = username.trim().toLowerCase();
-
-
-
-
-
-
-
-      document.querySelectorAll('.chat-row').forEach(row => {
-
-
-
-
-
-
-
-        const userSpan = row.querySelector('.chat-username');
-
-
-
-
-
-
-
-        if (userSpan && userSpan.textContent.trim().toLowerCase() === targetLower) {
-
-
-
-
-
-
-
-          const avatarImg = row.querySelector('.avatar-img');
-
-
-
-
-
-
-
-          if (avatarImg) avatarImg.src = avatarUrl;
-
-
-
-
-
-
-
-          const chatAvatar = row.querySelector('.chat-avatar');
-
-
-
-
-
-
-
-          if (chatAvatar) {
-
-
-
-
-
-
-
-            chatAvatar.setAttribute('data-custom-avatar', avatarUrl);
-
-
-
-
-
-
-
-          }
-
-
-
-
-
-
-
+      const docsToUpdate = [document];
+      try {
+        if (window.opener && window.opener.document && !docsToUpdate.includes(window.opener.document)) {
+          docsToUpdate.push(window.opener.document);
         }
+      } catch (_) {}
+      try {
+        if (window.parent && window.parent.document && !docsToUpdate.includes(window.parent.document)) {
+          docsToUpdate.push(window.parent.document);
+        }
+      } catch (_) {}
+      try {
+        if (window._popupWindows) {
+          Object.values(window._popupWindows).forEach(pop => {
+            if (pop && pop.document && !docsToUpdate.includes(pop.document)) {
+              docsToUpdate.push(pop.document);
+            }
+          });
+        }
+      } catch (_) {}
 
-
-
-
-
-
-
+      docsToUpdate.forEach(doc => {
+        try {
+          doc.querySelectorAll('.chat-row').forEach(row => {
+            const userSpan = row.querySelector('.chat-username');
+            const origUser = (row.dataset.username || userSpan?.getAttribute('data-original-user') || userSpan?.textContent || '').trim().toLowerCase();
+            if (origUser === targetLower || userSpan?.textContent.trim().toLowerCase() === targetLower) {
+              const avatarImg = row.querySelector('.avatar-img');
+              if (avatarImg) avatarImg.src = avatarUrl;
+              const chatAvatar = row.querySelector('.chat-avatar');
+              if (chatAvatar) chatAvatar.setAttribute('data-custom-avatar', avatarUrl);
+            }
+          });
+          doc.querySelectorAll('.user-row').forEach(row => {
+            const name = (row.dataset.name || row.querySelector('strong')?.textContent || '').trim().toLowerCase();
+            if (name === targetLower) {
+              const userImg = row.querySelector('img');
+              if (userImg) userImg.src = avatarUrl;
+            }
+          });
+        } catch (_) {}
       });
-
-
-
-
-
-
-
     }
 
 
@@ -45495,6 +45565,11 @@ try {
 
 
       if (chkAvatar) chkAvatar.checked = showAvatar;
+      const chkRealAvatar = document.getElementById('chkFetchRealPlatformAvatar');
+      if (chkRealAvatar) {
+        chkRealAvatar.checked = localStorage.getItem('bp3_fetch_real_platform_avatar') === 'true';
+      }
+      if (typeof updateAvatarCacheInfo === 'function') updateAvatarCacheInfo();
 
 
 
@@ -62060,6 +62135,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
       const effectiveName = getEffectiveAuthorName(msg.username);
+      const userDisplayAvatar = getViewerDisplayAvatar(msg.username, msg.platform || 'Twitch');
+      msg.avatar = userDisplayAvatar;
 
 
 
@@ -62347,7 +62424,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        if(avatarImage){avatarImage.addEventListener('error',()=>{if(avatarImage.getAttribute('src')!==platformLogo)avatarImage.src=platformLogo;},{once:true});if(!msg.avatar)avatarImage.src=platformLogo;}
+        if(avatarImage){avatarImage.addEventListener('error',()=>{if(avatarImage.getAttribute('src')!==platformLogo)avatarImage.src=platformLogo;},{once:true});if(!msg.avatar)avatarImage.src=getRandomAvatarForUser(msg.username);}
 
 
 

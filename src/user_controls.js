@@ -207,33 +207,15 @@ window.filterUserRoster=value=>{query=String(value || '').toLowerCase().trim();r
 window.filterUserCategory=value=>{category=value;render();};
 
 window.blockUserFromProfile=function(){
-
- const name=_activeUserRecord?.username;if(!name)return;
-
- const doc=getToolDocument('author-profile'),root=doc.getElementById('win-author-profile');if(!root)return;
-
- let panel=root.querySelector('#profileBlockRules');if(panel){panel.remove();return;}
-
- panel=doc.createElement('div');panel.id='profileBlockRules';panel.style.cssText='padding:12px;display:flex;flex-wrap:wrap;gap:12px;border-top:1px solid #444';
-
- const rule=window.BP3Blacklist.classify({username:name}).rule;
-
- for(const [field,label] of [['replie','ไม่ให้ใช้คำสั่ง Replie'],['overlay','ไม่ให้ขึ้น Overlay'],['tts','ไม่ให้อ่าน TTS'],['all','ไม่อนุญาตทุกส่วน']]){
-
-  const wrapper=doc.createElement('label'),checkbox=doc.createElement('input');checkbox.type='checkbox';checkbox.dataset.blockRule=field;checkbox.checked=!!rule[field];wrapper.append(checkbox,doc.createTextNode(' '+label));panel.append(wrapper);
-
+ const name=window._activeUserRecord?.username || (typeof _activeUserRecord !== 'undefined' ? _activeUserRecord?.username : null);
+ if(!name)return;
+ if(typeof window.openBlockUserModal === 'function'){
+   window.openBlockUserModal(name);
+ } else if(window.opener && typeof window.opener.openBlockUserModal === 'function'){
+   window.opener.openBlockUserModal(name);
+ } else if(window.parent && typeof window.parent.openBlockUserModal === 'function'){
+   window.parent.openBlockUserModal(name);
  }
-
- const saveButton=doc.createElement('button');saveButton.type='button';saveButton.className='btn-topbar-action primary';saveButton.textContent='บันทึกการบล็อก';saveButton.onclick=()=>{
-
-  const values={};panel.querySelectorAll('input[data-block-rule]').forEach(box=>values[box.dataset.blockRule]=box.checked);
-
-  const key=name.toLowerCase();if(Object.values(values).some(Boolean))window._blockedUsers[key]=values;else if(window.BP3Blacklist.classify({username:key}).bot)window._blockedUsers[key]=values;else delete window._blockedUsers[key];
-
-  localStorage.setItem('bp3_blocked_users',JSON.stringify(window._blockedUsers));window.BP3SyncBotBlocklist?.();window.BP3PruneBlockedSpeech?.();render();renderBlockedSettings();panel.remove();showToast('บันทึกการบล็อกแล้ว');
-
- };panel.append(saveButton);root.querySelector('.floating-footer')?.before(panel);
-
 };
 
 
@@ -431,11 +413,21 @@ try {
         } finally {
 
           window._isHandlingProfileSync = false;
-
         }
-
       }
-
+    } else if (e.data && e.data.action === 'avatarChanged') {
+      const { username, avatarUrl } = e.data;
+      if (window._customUserAvatars) {
+        window._customUserAvatars[username] = avatarUrl;
+      }
+      if (typeof window.syncChatRowAvatars === 'function') {
+        window.syncChatRowAvatars(username, avatarUrl);
+      }
+      if (window._activeUserRecord && window._activeUserRecord.username?.toLowerCase() === username?.toLowerCase()) {
+        window._activeUserRecord.avatar = avatarUrl;
+        const img = (typeof getToolDocument === 'function' ? getToolDocument('author-profile') : document)?.getElementById('profAvatarImg');
+        if (img) img.src = avatarUrl;
+      }
     }
 
   };

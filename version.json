@@ -1,31 +1,31 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.24",
-  "latest_version": "3.24",
+  "version": "3.25",
+  "latest_version": "3.25",
   "critical": true,
-  "changelog": "### Broadcast Playroom v3.24 Update Highlights\n\n- **แนบโปรแกรมกู้ชีพและอัปเดตฉุกเฉิน (Standalone FindUpdate Utility)**:\n  - เพิ่มไฟล์ `FindUpdate.bat` และ `findupdate.py` ไว้ในโฟลเดอร์โปรแกรมโดยตรง\n  - กรณีโปรแกรมหลักเกิดข้อผิดพลาดหรือเปิดไม่ติด สามารถดับเบิลคลิก `FindUpdate.bat` เพื่อให้ระบบค้นหาเวอร์ชันล่าสุดบน GitHub และดาวน์โหลดมาแตกไฟล์ทับซ่อมแซมตัวเองได้ทันที 100% โดยไม่ต้องลบลงใหม่\n- **ระบบความปลอดภัยและการทดสอบหลายชั้น (Multi-Layer Verification Architecture)**:\n  - เพิ่ม **Automated Smoke Test Gate** รัน Headless Chromium ตรวจสอบข้อผิดพลาดของหน้าจอและฟังก์ชันทั้งหมดอัตโนมัติก่อนอนุญาตให้ปล่อยอัปเดต ป้องกันโค้ดหลุด 100%\n  - เพิ่ม **Startup Integrity Check** สแกนความสมบูรณ์ของโครงสร้างไฟล์ในระดับมิลลิวินาทีก่อนเปิดหน้าต่างโปรแกรม\n  - เพิ่ม **Emergency Self-Repair Mode** (`emergency_repair.html`) ดักจับกรณีไฟล์เสียหายและกู้คืนตัวเองอัตโนมัติ\n- **ระบบโปรไฟล์ผู้ชมแบบเรียลไทม์ & ซิงค์ข้ามหน้าต่าง (Safe Cross-Window Profile Sync)**:\n  - ซิงค์ข้อมูลคนดูจากการคลิกในแชทสด หรือใน User Manager อย่างปลอดภัย ไม่มีข้อมูล mockup ค้าง\n- **การเชื่อมต่อ Twitch Chatbot & Anti-Cache**:\n  - เชื่อมต่อ Twitch / KICK แบบ One-Click ด้วย Credentials ภายในตัวโปรแกรม\n  - ระบบ Hard Anti-Cache ป้องกันการจำโค้ดเก่า\n",
+  "changelog": "# Broadcast Playroom v3.25\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.25:\n- **แก้ไขปุ่มบันทึกและตั้งค่าการบล็อกในโปรไฟล์ผู้ชม (Viewer Profile)**:\n  - แก้ไขปุ่ม \"บันทึก\" ให้ทำงานอย่างถูกต้อง: บันทึกข้อมูลโน้ตความจำ, บันทึกรูปโปรไฟล์ที่สุ่ม/เปลี่ยนใหม่, ซิงค์รูปภาพกลับไปยังแถวแชทสดทันที และปิดหน้าต่างให้อย่างเรียบร้อย\n  - แก้ไขปุ่ม \"ตั้งค่าการบล็อก\" ให้เปิดหน้าต่างจัดการกฎการบล็อก (Block Settings) ได้อย่างถูกต้องทั้งในหน้าต่างหลักและหน้าต่าง Popout\n- **แก้ไขรูปไอคอน Twitch ซ้อนกันในแชทสด**:\n  - เมื่อผู้ชมพิมพ์แชทเข้ามา จะสุ่มไอคอนตัวละครน่ารักของโปรแกรมแยกตามชื่อผู้ใช้อัตโนมัติ โดยมี Badge แพลตฟอร์มติดอยู่มุมล่าง ไม่ขึ้นเป็นรูปโลโก้ Twitch ขนาดใหญ่ซ้อนกันอีกต่อไป\n- **ฟังก์ชันใหม่: ดึงรูปโปรไฟล์จริงจากแพลตฟอร์ม (Optional)**:\n  - เพิ่มสวิตช์เปิด/ปิดใน **ตั้งค่าแชทสด**:\n    - **เปิด**: ดึงรูปโปรไฟล์จริงของผู้ใช้จาก Twitch มาย่อขนาด 50px PNG คุณภาพคมชัดและเก็บไว้ในแคชเครื่อง\n    - **ปิด**: สุ่มไอคอนตัวละครน่ารักประจำตัวผู้ใช้ของโปรแกรม\n- **ระบบจัดการแคชรูปภาพประจำตัว (Avatar Cache Manager)**:\n  - แสดงขนาดความจุของแคชรูปภาพแบบ Real-time (เช่น `ขนาดแคชรูปภาพ: 0.15 MB (12 รูป)`)\n  - เพิ่มปุ่ม `🗑️ ล้างแคชรูปประจำตัว` สามารถกดล้างแคชและรีเฟรชรูปภาพใหม่ได้ทันที\n- **FindUpdate Utility**:\n  - แนบเครื่องมือ `FindUpdate.bat` และ `findupdate.py` ไว้ในโฟลเดอร์โปรแกรม สำหรับกู้คืน/ซ่อมแซมและตรวจหาอัปเดตใหม่ได้ทันทีแม้โปรแกรมหลักจะเปิดไม่ติด\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-lite.zip",
-    "sha256": "b0c0a9f7777205f1602a60d216a602f10d986072de6fe80562f75d2e580987d1",
-    "size": 50024872
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-lite.zip",
+    "sha256": "2958419f0454ff5955d42feb0f0a5ea5378818b3e3598f0d8dcf4ba81ccbf404",
+    "size": 50030482
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-full.zip",
-    "sha256": "df3c829f775f1c0a6fc9f9788ab1edf27f9803846430e755d05d60054225c7f6",
-    "size": 50024872
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-full.zip",
+    "sha256": "e149d50e21eb07c0501f09b193766d06e473d5f9fa64aa6d4a613c8cfdb7feba",
+    "size": 50030482
   },
   "packages": {
     "lite": {
-      "version": "3.24",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-lite.zip",
-      "patch_sha256": "b0c0a9f7777205f1602a60d216a602f10d986072de6fe80562f75d2e580987d1",
-      "patch_size": 50024872
+      "version": "3.25",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-lite.zip",
+      "patch_sha256": "2958419f0454ff5955d42feb0f0a5ea5378818b3e3598f0d8dcf4ba81ccbf404",
+      "patch_size": 50030482
     },
     "full": {
-      "version": "3.24",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-full.zip",
-      "patch_sha256": "df3c829f775f1c0a6fc9f9788ab1edf27f9803846430e755d05d60054225c7f6",
-      "patch_size": 50024872
+      "version": "3.25",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-full.zip",
+      "patch_sha256": "e149d50e21eb07c0501f09b193766d06e473d5f9fa64aa6d4a613c8cfdb7feba",
+      "patch_size": 50030482
     }
   }
 }
