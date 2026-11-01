@@ -1095,7 +1095,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.22</span>
+      <span class="desktop-titlebar-tag">v3.23</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -33820,30 +33820,6 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-<script>
-try {
-  window._authorProfileChannel = new BroadcastChannel('bp3_author_profile_sync');
-  window._authorProfileChannel.onmessage = (e) => {
-    if (e.data && e.data.action === 'openAuthor' && e.data.payload) {
-      const p = e.data.payload;
-      if (typeof openAuthorModal === 'function') {
-        openAuthorModal(p.username, p.platform, p.avatarUrl, p.nickname, p.isVip);
-      }
-    }
-  };
-  window.syncAuthorProfile = function() {
-    try {
-      const raw = localStorage.getItem('bp3_active_author_profile');
-      if (raw) {
-        const p = JSON.parse(raw);
-        if (p.username && typeof openAuthorModal === 'function') {
-          openAuthorModal(p.username, p.platform, p.avatarUrl, p.nickname, p.isVip);
-        }
-      }
-    } catch (_) {}
-  };
-} catch (_) {}
-</script>
 
 </body>
 
@@ -39947,10 +39923,12 @@ try {
       try {
         const payload = { username, platform: platform || 'Twitch', avatarUrl: finalAvatar, nickname: finalNick, isVip: !!isVip };
         localStorage.setItem('bp3_active_author_profile', JSON.stringify(payload));
-        if (!window._authorProfileChannel) {
-          try { window._authorProfileChannel = new BroadcastChannel('bp3_author_profile_sync'); } catch(_) {}
+        if (!window._isHandlingProfileSync) {
+          if (!window._authorProfileChannel) {
+            try { window._authorProfileChannel = new BroadcastChannel('bp3_author_profile_sync'); } catch(_) {}
+          }
+          window._authorProfileChannel?.postMessage({ action: 'openAuthor', payload });
         }
-        window._authorProfileChannel?.postMessage({ action: 'openAuthor', payload });
       } catch(_) {}
 
       _activeUserRecord = {
