@@ -1095,7 +1095,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.26</span>
+      <span class="desktop-titlebar-tag">v3.27</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -20947,6 +20947,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
         <button class="win-tab-btn" id="btnProfTab3" onclick="switchProfTab(3)">📝 โน้ตความจำ</button>
+        <button class="win-tab-btn" id="btnProfTab4" onclick="switchProfTab(4)">⚙️ กฎการบล็อก</button>
 
 
 
@@ -21157,6 +21158,45 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
       </div>
 
+      <!-- Pane 4: Block Settings -->
+      <div id="paneProfTab4" style="display:none; flex:1; overflow-y:auto; flex-direction:column; gap:8px;">
+        <div style="font-size:12px; font-weight:700; color:#ef4444; margin-bottom:4px;">
+          🚫 ตั้งค่ากฎการบล็อกสำหรับผู้ใช้คนนี้
+        </div>
+        
+        <label style="display:flex; align-items:center; justify-content:space-between; background:#1e1f22; padding:8px 12px; border-radius:6px; cursor:pointer;">
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#f2f3f5;">บล็อกทั้งหมด (Block All)</div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted);">ซ่อนข้อความแชท ปิดเสียงอ่าน TTS และปิดบอทตอบกลับ</div>
+          </div>
+          <input type="checkbox" id="chkProfBlockAll" onchange="onProfBlockAllToggled(this.checked)">
+        </label>
+
+        <label style="display:flex; align-items:center; justify-content:space-between; background:#1e1f22; padding:8px 12px; border-radius:6px; cursor:pointer;">
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#f2f3f5;">ซ่อนจากหน้าจอ OBS Overlay</div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted);">ไม่แสดงข้อความของคนดูคนนี้บนหน้าจอถ่ายทอดสด</div>
+          </div>
+          <input type="checkbox" id="chkProfBlockOverlay">
+        </label>
+
+        <label style="display:flex; align-items:center; justify-content:space-between; background:#1e1f22; padding:8px 12px; border-radius:6px; cursor:pointer;">
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#f2f3f5;">ปิดเสียงอ่าน (Mute TTS)</div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted);">ไม่อ่านออกเสียงข้อความของคนดูคนนี้</div>
+          </div>
+          <input type="checkbox" id="chkProfBlockTts">
+        </label>
+
+        <label style="display:flex; align-items:center; justify-content:space-between; background:#1e1f22; padding:8px 12px; border-radius:6px; cursor:pointer;">
+          <div>
+            <div style="font-size:12px; font-weight:600; color:#f2f3f5;">ปิดคำสั่งตอบกลับอัตโนมัติ (Replie)</div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted);">บอทจะไม่ตอบกลับข้อความหรือคำสั่งของคนนี้</div>
+          </div>
+          <input type="checkbox" id="chkProfBlockReplie">
+        </label>
+      </div>
+
 
 
 
@@ -21187,46 +21227,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      <button class="btn-topbar-action close-red" style="font-size:11.5px;" onclick="blockUserFromProfile()">
-
-
-
-
-
-
-
-        🛑 บล็อกคนดูคนนี้
-
-
-
-
-
-
-
+      <button type="button" class="btn-topbar-action" id="btnProfileBlockTab" style="font-size:11.5px; color:#f87171; border-color:rgba(239,68,68,0.35);" onclick="switchProfTab(4)">
+        🛑 ตั้งค่าการบล็อก
       </button>
-
-
-
-
-
-
-
-      <button class="btn-topbar-action" id="btnExportUserChat" style="font-size:11.5px; margin-left:6px;" title="Export ข้อความแชทและประวัติกิจกรรมทั้งหมดเป็นไฟล์ text" onclick="window.exportUserChatHistory && window.exportUserChatHistory()">
-
-
-
-
-
-
-
+      <button type="button" class="btn-topbar-action" id="btnExportUserChat" style="font-size:11.5px; margin-left:6px;" title="Export ข้อความแชทและประวัติกิจกรรมทั้งหมดเป็นไฟล์ text" onclick="exportUserChatMessages()">
         📥 Export ข้อความ
-
-
-
-
-
-
-
       </button>
 
 
@@ -39780,6 +39785,86 @@ try {
     }
     window.clearAvatarCache = clearAvatarCache;
 
+    
+    function onProfBlockAllToggled(checked) {
+      const doc = getToolDocument('author-profile');
+      const chkOv = doc.getElementById('chkProfBlockOverlay');
+      const chkTts = doc.getElementById('chkProfBlockTts');
+      const chkRep = doc.getElementById('chkProfBlockReplie');
+      if (checked) {
+        if (chkOv) chkOv.checked = true;
+        if (chkTts) chkTts.checked = true;
+        if (chkRep) chkRep.checked = true;
+      }
+    }
+    window.onProfBlockAllToggled = onProfBlockAllToggled;
+
+    function exportUserChatMessages() {
+      const doc = getToolDocument('author-profile');
+      const u = _activeUserRecord?.username || doc.getElementById('profUsername')?.textContent?.trim();
+      const plat = _activeUserRecord?.platform || 'Twitch';
+      if (!u || u === '---') {
+        showToast('⚠️ ไม่พบชื่อผู้ชมที่ต้องการ Export');
+        return;
+      }
+
+      const lines = [];
+      const p1 = doc.getElementById('paneProfTab1');
+      if (p1) {
+        p1.querySelectorAll('div').forEach(el => {
+          const t = el.textContent?.trim();
+          if (t && !t.includes('ยังไม่มีประวัติแชท') && t.length > 2 && !lines.includes(t)) {
+            lines.push(t);
+          }
+        });
+      }
+
+      const docs = [document];
+      try { if (window.opener?.document) docs.push(window.opener.document); } catch(_) {}
+      try { if (window.parent?.document) docs.push(window.parent.document); } catch(_) {}
+      const targetLower = u.toLowerCase().trim();
+
+      docs.forEach(d => {
+        try {
+          d.querySelectorAll('.chat-row').forEach(row => {
+            const userSpan = row.querySelector('.chat-username');
+            const orig = (row.dataset.username || userSpan?.getAttribute('data-original-user') || userSpan?.textContent || '').toLowerCase().trim();
+            if (orig === targetLower) {
+              const time = row.querySelector('.chat-timestamp')?.textContent?.trim() || '';
+              const body = row.querySelector('.chat-body-msg')?.textContent?.trim() || '';
+              const entry = `[${time}] ${u}: ${body}`;
+              if (!lines.includes(entry)) lines.push(entry);
+            }
+          });
+        } catch(_) {}
+      });
+
+      if (lines.length === 0) {
+        showToast(`ℹ️ ไม่พบประวัติข้อความของ ${u}`);
+        return;
+      }
+
+      const header = [
+        `====================================================`,
+        ` ประวัติข้อความแชท: ${u} (${plat})`,
+        ` วันที่ส่งออก: ${new Date().toLocaleString('th-TH')}`,
+        ` จำนวนข้อความ: ${lines.length} ข้อความ`,
+        `====================================================\r\n`
+      ].join('\r\n');
+
+      const fullContent = header + lines.join('\r\n');
+      const blob = new Blob([fullContent], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `chat_history_${u}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => a.remove(), 200);
+      showToast(`📥 ส่งออกประวัติแชทของ ${u} เรียบร้อยแล้ว (${lines.length} ข้อความ)`);
+    }
+    window.exportUserChatMessages = exportUserChatMessages;
+    window.exportUserChatHistory = exportUserChatMessages;
+
     function saveAuthorProfileChanges() {
       const u = _activeUserRecord?.username;
       if (!u) {
@@ -39814,6 +39899,31 @@ try {
           username: u,
           avatarUrl: _activeUserRecord.avatar
         });
+      } catch (_) {}
+
+      
+      // Save block rules from Tab 4
+      try {
+        const doc = getToolDocument('author-profile');
+        const key = (u || '').toLowerCase().trim();
+        const chkAll = doc.getElementById('chkProfBlockAll')?.checked;
+        const chkOv = doc.getElementById('chkProfBlockOverlay')?.checked;
+        const chkTts = doc.getElementById('chkProfBlockTts')?.checked;
+        const chkRep = doc.getElementById('chkProfBlockReplie')?.checked;
+
+        if (!window._blockedUsers) {
+          try { window._blockedUsers = JSON.parse(localStorage.getItem('bp3_blocked_users')) || {}; } catch(_) { window._blockedUsers = {}; }
+        }
+        if (chkAll) {
+          window._blockedUsers[key] = { all: true, overlay: true, tts: true, replie: true };
+        } else if (chkOv || chkTts || chkRep) {
+          window._blockedUsers[key] = { all: false, overlay: !!chkOv, tts: !!chkTts, replie: !!chkRep };
+        } else {
+          delete window._blockedUsers[key];
+        }
+        localStorage.setItem('bp3_blocked_users', JSON.stringify(window._blockedUsers));
+        window.BP3SyncBotBlocklist?.();
+        window.BP3PruneBlockedSpeech?.();
       } catch (_) {}
 
       syncChatRowAvatars(u, _activeUserRecord.avatar);
@@ -40151,6 +40261,22 @@ try {
 
 
       document.getElementById('profAvatarImg').src = _activeUserRecord.avatar;
+      try {
+        const key = (username || '').toLowerCase().trim();
+        if (!window._blockedUsers) {
+          try { window._blockedUsers = JSON.parse(localStorage.getItem('bp3_blocked_users')) || {}; } catch(_) { window._blockedUsers = {}; }
+        }
+        const existing = window._blockedUsers?.[key];
+        const rule = window.BP3Blacklist?.flags(existing) || { replie: false, overlay: false, tts: false, all: false };
+        const chkAll = document.getElementById('chkProfBlockAll');
+        const chkOv = document.getElementById('chkProfBlockOverlay');
+        const chkTts = document.getElementById('chkProfBlockTts');
+        const chkRep = document.getElementById('chkProfBlockReplie');
+        if (chkAll) chkAll.checked = !!rule.all;
+        if (chkOv) chkOv.checked = !!(rule.all || rule.overlay);
+        if (chkTts) chkTts.checked = !!(rule.all || rule.tts);
+        if (chkRep) chkRep.checked = !!(rule.all || rule.replie);
+      } catch(_) {}
 
 
 
@@ -42220,73 +42346,16 @@ try {
 
 
     function switchProfTab(tabNum) {
+      const doc = getToolDocument('author-profile');
+      doc.getElementById('btnProfTab1')?.classList.toggle('active', tabNum === 1);
+      doc.getElementById('btnProfTab2')?.classList.toggle('active', tabNum === 2);
+      doc.getElementById('btnProfTab3')?.classList.toggle('active', tabNum === 3);
+      doc.getElementById('btnProfTab4')?.classList.toggle('active', tabNum === 4);
 
-
-
-      const document=getToolDocument('author-profile');
-
-
-
-
-
-
-
-      document.getElementById('btnProfTab1').classList.toggle('active', tabNum === 1);
-
-
-
-
-
-
-
-      document.getElementById('btnProfTab2').classList.toggle('active', tabNum === 2);
-
-
-
-
-
-
-
-      document.getElementById('btnProfTab3').classList.toggle('active', tabNum === 3);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      document.getElementById('paneProfTab1').style.display = tabNum === 1 ? 'flex' : 'none';
-
-
-
-
-
-
-
-      document.getElementById('paneProfTab2').style.display = tabNum === 2 ? 'flex' : 'none';
-
-
-
-
-
-
-
-      document.getElementById('paneProfTab3').style.display = tabNum === 3 ? 'block' : 'none';
-
-
-
-
-
-
-
+      const p1 = doc.getElementById('paneProfTab1'); if (p1) p1.style.display = tabNum === 1 ? 'flex' : 'none';
+      const p2 = doc.getElementById('paneProfTab2'); if (p2) p2.style.display = tabNum === 2 ? 'flex' : 'none';
+      const p3 = doc.getElementById('paneProfTab3'); if (p3) p3.style.display = tabNum === 3 ? 'block' : 'none';
+      const p4 = doc.getElementById('paneProfTab4'); if (p4) p4.style.display = tabNum === 4 ? 'flex' : 'none';
     }
 
 
