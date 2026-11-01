@@ -447,7 +447,7 @@ def check_for_update(build_type: Optional[str] = None) -> dict:
 
 
 
-    latest_ver = manifest.get("version", current_ver)
+    latest_ver = manifest.get("version") or manifest.get("latest_version") or current_ver
 
     edition_info = manifest.get(bt, {})
     if not edition_info and "packages" in manifest:
