@@ -960,20 +960,33 @@ document.addEventListener('DOMContentLoaded',async()=>{
             e.preventDefault();
             e.stopPropagation();
           }
-          try { closeToolWindow(targetName); } catch (_) {}
-          fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetName), { method: 'POST' }).catch(() => {});
-          try { window.pywebview?.api?.close?.(); } catch (_) {}
-          try {
-            win.classList.remove('active', 'popout-target');
-            win.style.display = 'none';
-          } catch (_) {}
-          try { window.close(); } catch (_) {}
+          closeToolWindow(targetName);
         };
+
+        // Capture all clicks on close buttons inside the popout window
+        document.addEventListener('click', (e) => {
+          const btn = e.target.closest('button, .btn-win-action');
+          if (!btn) return;
+          if (btn.classList.contains('settings-nav-item') || btn.closest('.settings-sidebar')) return;
+          if (btn.closest('.tab-header') || btn.closest('.chat-header') || btn.closest('.header-left')) return;
+          const text = (btn.textContent || '').trim();
+          const title = (btn.getAttribute('title') || '').trim();
+          const onclickAttr = btn.getAttribute('onclick') || '';
+          if (text === 'ปิดหน้าต่าง' || text === 'ปิด' || title === 'ปิดหน้าต่าง' || title === 'ปิด' || btn.classList.contains('win-close') || btn.classList.contains('close-red') || onclickAttr.includes('closeToolWindow')) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeToolWindow(targetName);
+          }
+        }, true);
 
         const closeBtns = win.querySelectorAll('.btn-win-action.win-close, .btn-win-action.close-red, button.btn-win-action, button.btn-topbar-action, button');
         closeBtns.forEach(btn => {
           if (btn.classList.contains('settings-nav-item') || btn.closest('.settings-sidebar')) return;
-          if (btn.textContent.includes('ปิดหน้าต่าง') || btn.classList.contains('close-red') || (btn.getAttribute('onclick') || '').includes('closeToolWindow')) {
+          if (btn.closest('.tab-header') || btn.closest('.chat-header') || btn.closest('.header-left')) return;
+          const text = (btn.textContent || '').trim();
+          const title = (btn.getAttribute('title') || '').trim();
+          const onclickAttr = btn.getAttribute('onclick') || '';
+          if (text === 'ปิดหน้าต่าง' || text === 'ปิด' || title === 'ปิดหน้าต่าง' || title === 'ปิด' || btn.classList.contains('win-close') || btn.classList.contains('close-red') || onclickAttr.includes('closeToolWindow')) {
             btn.onclick = doClose;
           }
         });
@@ -1056,7 +1069,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.18</span>
+      <span class="desktop-titlebar-tag">v3.19</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -2207,7 +2220,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-            <button class="btn-plat-gear" onclick="openToolWindow('settings'); switchSettingsSection('platforms')" title="ตั้งค่าช่องทางแพลตฟอร์ม">⚙️</button>
+            <button class="btn-plat-gear" onclick="openToolWindow('settings', 'platforms')" title="ตั้งค่าช่องทางแพลตฟอร์ม">⚙️</button>
 
 
 
@@ -4567,7 +4580,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-    <button type="button" class="status-support-link" onclick="openToolWindow('settings'); switchSettingsSection('supporters')">สนับสนุนการพัฒนาโปรแกรม</button>
+    <button type="button" class="status-support-link" onclick="openToolWindow('settings', 'supporters')">สนับสนุนการพัฒนาโปรแกรม</button>
 
 
 
@@ -32643,8 +32656,12 @@ document.addEventListener('DOMContentLoaded',async()=>{
         } catch (_) {}
       }
 
-      if (window.pywebview) {
-        fetch('/api/window/popout?tool=' + encodeURIComponent(name) + (section ? '&section=' + encodeURIComponent(section) : ''), { method: 'POST' })
+      if (window.pywebview || location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
+        fetch('/api/window/popout?tool=' + encodeURIComponent(name) + (section ? '&section=' + encodeURIComponent(section) : ''), { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool: name, section: section || '' })
+        })
           .then(r => r.json())
           .then(res => {
             if (res && res.ok) {
@@ -36305,17 +36322,30 @@ try {
         if (targetTool === 'voice') targetTool = 'voice-settings';
         if (targetTool === 'reply') targetTool = 'replie';
         if (targetTool === 'users') targetTool = 'user-manager';
-        try {
-          if (window.pywebview?.api?.close) window.pywebview.api.close();
-        } catch (_) {}
-        try {
-          fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetTool), { method: 'POST' }).catch(() => {});
-        } catch (_) {}
+        
+        // Hide DOM immediately for instant visual feedback
         const el = document.getElementById('win-' + targetTool) || document.getElementById('win-' + name);
         if (el) {
           el.classList.remove('active', 'popout-target');
-          el.style.display = 'none';
+          el.style.setProperty('display', 'none', 'important');
         }
+
+        // Call pywebview RPC
+        try {
+          if (window.pywebview?.api?.close) window.pywebview.api.close();
+        } catch (_) {}
+
+        // Call backend API with keepalive
+        try {
+          fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetTool), {
+            method: 'POST',
+            keepalive: true,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tool: targetTool })
+          }).catch(() => {});
+        } catch (_) {}
+
+        // Call window.close fallback
         try { window.close(); } catch (_) {}
         return;
       }
@@ -36354,7 +36384,7 @@ try {
       const winNodeInline = document.getElementById('win-' + name);
       if (winNodeInline) {
         winNodeInline.classList.remove('active', 'popout-target');
-        winNodeInline.style.display = 'none';
+        winNodeInline.style.setProperty('display', 'none', 'important');
       }
 
 
@@ -42465,6 +42495,7 @@ try {
 
 
     function switchSettingsSection(sectionId, fromBroadcast = false) {
+      if (!sectionId) return;
       if (!fromBroadcast && window._settingsSectionChannel) {
         try { window._settingsSectionChannel.postMessage({ action: 'switchSection', sectionId }); } catch (_) {}
       }
@@ -50621,11 +50652,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        openToolWindow('settings');
-
-
-
-        switchSettingsSection('platforms');
+        openToolWindow('settings', 'platforms');
 
 
 
@@ -54948,7 +54975,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        <button class="context-menu-item" onclick="openToolWindow('settings'); switchSettingsSection('platforms'); hideContextMenu();">
+        <button class="context-menu-item" onclick="openToolWindow('settings', 'platforms'); hideContextMenu();">
 
 
 
@@ -55196,7 +55223,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        <button class="context-menu-item" onclick="(window.opener?.openToolWindow || openToolWindow)('settings'); (window.opener?.switchSettingsSection || switchSettingsSection)('${secKey}'); hideContextMenu();">
+        <button class="context-menu-item" onclick="(window.opener?.openToolWindow || openToolWindow)('settings', '${secKey}'); hideContextMenu();">
 
 
 
@@ -56073,6 +56100,12 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.switchSettingsSection = switchSettingsSection;
+    try {
+      const initSec = new URLSearchParams(window.location.search).get('section') || localStorage.getItem('bp3_settings_target_section');
+      if (initSec && (window.location.search.includes('popout=settings') || document.getElementById('win-settings')?.classList.contains('active'))) {
+        switchSettingsSection(initSec);
+      }
+    } catch (_) {}
     // Global settings broadcast channel
     try {
       window._settingsSectionChannel = new BroadcastChannel('bp3_settings_section');

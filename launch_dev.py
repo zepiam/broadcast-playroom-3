@@ -1991,12 +1991,42 @@ _TTS_CACHE_MAX = 128
 
 
 _tool_popout_windows = {}
+_window_close_lock = threading.Lock()
+_closing_window_ids = set()
+
+def safe_destroy_window(w):
+    if not w:
+        return False
+    w_id = id(w)
+    with _window_close_lock:
+        if w_id in _closing_window_ids:
+            return True
+        _closing_window_ids.add(w_id)
+    try:
+        w.destroy()
+        return True
+    except Exception:
+        return False
+
+def normalize_tool_name(tool_name):
+    name = (tool_name or '').strip().lower()
+    aliases = {
+        'voice': 'voice-settings',
+        'voice-setting': 'voice-settings',
+        'reply': 'replie',
+        'replies': 'replie',
+        'users': 'user-manager',
+        'usermanager': 'user-manager',
+        'user': 'user-manager',
+        'random': 'randomizer',
+        'overlay+': 'overlay-plus-settings',
+        'overlayplus': 'overlay-plus-settings',
+        'overlay-plus': 'overlay-plus-settings',
+    }
+    return aliases.get(name, name)
 
 def handle_tool_popout(tool_name, main_url, section=None):
-    name = (tool_name or '').strip().lower()
-    if name == 'voice': name = 'voice-settings'
-    if name == 'reply': name = 'replie'
-    if name == 'users': name = 'user-manager'
+    name = normalize_tool_name(tool_name)
     if not name: return {'ok': False, 'error': 'empty tool'}
     
     global _tool_popout_windows
@@ -2007,7 +2037,7 @@ def handle_tool_popout(tool_name, main_url, section=None):
             tw.restore()
             if section and name == 'settings':
                 try:
-                    tw.evaluate_js(f"if (typeof switchSettingsSection === 'function') switchSettingsSection('{section}');")
+                    tw.evaluate_js(f"try {{ (window.switchSettingsSection || switchSettingsSection)('{section}'); }} catch(e) {{}}")
                 except Exception:
                     pass
             return {'ok': True, 'focused': True}
@@ -2051,43 +2081,30 @@ def handle_tool_popout(tool_name, main_url, section=None):
     url = f"{main_url}/index.html?popout={name}"
     
     class PopoutJsApi:
-        def __init__(self, tool_name):
+        def __init__(self, tool_name, win_ref=None):
             self.tool_name = tool_name
+            self.win_ref = win_ref
         def close(self):
-            closed = False
-            w_popped = None
-            try:
-                if self.tool_name in _tool_popout_windows:
-                    w_popped = _tool_popout_windows.pop(self.tool_name, None)
-                    if w_popped:
-                        w_popped.destroy()
-                        closed = True
-            except Exception:
-                pass
-            try:
-                import webview
-                tool_no_hyphen = (self.tool_name or '').replace('-', ' ')
-                for w in list(getattr(webview, 'windows', [])):
-                    if closed and w == w_popped: continue
-                    w_title = (getattr(w, 'title', '') or '').lower()
-                    w_url = (getattr(w, 'url', '') or '').lower()
-                    if self.tool_name and (self.tool_name in w_title or tool_no_hyphen in w_title or f"popout={self.tool_name}" in w_url):
-                        try: w.destroy()
-                        except Exception: pass
-            except Exception:
-                pass
+            target = self.win_ref or _tool_popout_windows.pop(self.tool_name, None)
+            if self.tool_name in _tool_popout_windows:
+                _tool_popout_windows.pop(self.tool_name, None)
+            if target:
+                threading.Thread(target=safe_destroy_window, args=(target,), daemon=True).start()
+            return {'ok': True}
 
     if section and name == 'settings':
         url = url + f"&section={section}"
 
+    api = PopoutJsApi(name)
     tw = webview.create_window(
         title=title,
         url=url,
         width=sz[0],
         height=sz[1],
         min_size=(480, 360),
-        js_api=PopoutJsApi(name)
+        js_api=api
     )
+    api.win_ref = tw
     _tool_popout_windows[name] = tw
     def on_closed():
         _tool_popout_windows.pop(name, None)
@@ -7580,35 +7597,29 @@ class QuietHandler(SimpleHTTPRequestHandler):
                 data = json.loads(self.rfile.read(size)) if size > 0 else {}
                 query = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
                 tool = data.get('tool') or query.get('tool', [''])[0]
-                tool = (tool or '').strip().lower()
-                if tool == 'voice': tool = 'voice-settings'
-                if tool == 'reply': tool = 'replie'
-                if tool == 'users': tool = 'user-manager'
-                closed = False
-                if tool in _tool_popout_windows:
+                tool = normalize_tool_name(tool)
+                
+                # Send JSON response immediately to prevent HTTP/COM deadlock with client fetch
+                self.send_json({'ok': True, 'closing': tool})
+                
+                def _do_close():
                     tw = _tool_popout_windows.pop(tool, None)
                     if tw:
-                        try:
-                            tw.destroy()
-                            closed = True
-                        except Exception:
-                            pass
-                try:
-                    import webview
-                    tool_no_hyphen = (tool or '').replace('-', ' ')
-                    for w in list(getattr(webview, 'windows', [])):
-                        if closed and w == tw: continue
-                        w_title = (getattr(w, 'title', '') or '').lower()
-                        w_url = (getattr(w, 'url', '') or '').lower()
-                        if tool and (tool in w_title or tool_no_hyphen in w_title or f"popout={tool}" in w_url):
-                            try:
-                                w.destroy()
-                                closed = True
-                            except Exception:
-                                pass
-                except Exception:
-                    pass
-                self.send_json({'ok': True, 'closed': closed})
+                        safe_destroy_window(tw)
+                    try:
+                        import webview
+                        tool_no_hyphen = (tool or '').replace('-', ' ')
+                        for w in list(getattr(webview, 'windows', [])):
+                            w_title = (getattr(w, 'title', '') or '').lower()
+                            w_url = (getattr(w, 'url', '') or '').lower()
+                            # Never close main window
+                            if 'broadcast playroom 3' in w_title and 'popout=' not in w_url:
+                                continue
+                            if tool and (tool in w_title or tool_no_hyphen in w_title or f"popout={tool}" in w_url):
+                                safe_destroy_window(w)
+                    except Exception:
+                        pass
+                threading.Thread(target=_do_close, daemon=True).start()
             except Exception as e:
                 self.send_json({'error': str(e)}, 500)
             return
