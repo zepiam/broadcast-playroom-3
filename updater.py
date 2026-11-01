@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.8"
+CURRENT_VERSION = "3.9"
 
 REPO_OWNER = "zepiam"
 
@@ -611,6 +611,79 @@ def download_update_file(
 
 
 
+
+def backup_user_settings(install_dir: str):
+    """สำรองข้อมูลการตั้งค่าและช่องทางสตรีมของผู้ใช้ทั้งหมดก่อนลงอัปเดตใหม่"""
+    import shutil
+    try:
+        lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
+        backup_dirs = [
+            Path(lad) / 'BroadcastPlayroom3' / 'settings_backup',
+            Path(install_dir) / 'settings_backup'
+        ]
+        for b_dir in backup_dirs:
+            b_dir.mkdir(parents=True, exist_ok=True)
+            
+        search_dirs = [
+            Path(install_dir) / 'data',
+            Path(install_dir) / 'userdata',
+            Path(install_dir),
+            Path(lad) / 'BroadcastPlayroom3',
+            Path(install_dir).parent / 'data'
+        ]
+        
+        config_names = [
+            'platform_settings.json', 'composer_layout.json', 'bot_accounts.dat',
+            'obs_connection.dat', 'defender_state.json', 'dns_settings.json',
+            'replace_words.json', 'rvc_settings.json'
+        ]
+        
+        for c_name in config_names:
+            for s_dir in search_dirs:
+                src_file = s_dir / c_name
+                if src_file.is_file() and src_file.stat().st_size > 0:
+                    for b_dir in backup_dirs:
+                        dst = b_dir / c_name
+                        if not dst.exists() or dst.stat().st_size == 0:
+                            shutil.copy2(src_file, dst)
+    except Exception as e:
+        logger.warning(f"Failed to backup user settings: {e}")
+
+def restore_user_settings(install_dir: str):
+    """กู้คืนข้อมูลการตั้งค่าของผู้ใช้หลังลงแพตช์เสร็จสิ้น เพื่อให้ข้อมูลช่องและแพลตฟอร์มไม่หายเด็ดขาด"""
+    import shutil
+    try:
+        lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
+        backup_dirs = [
+            Path(lad) / 'BroadcastPlayroom3' / 'settings_backup',
+            Path(install_dir) / 'settings_backup'
+        ]
+        target_dirs = [
+            Path(install_dir) / 'data',
+            Path(lad) / 'BroadcastPlayroom3',
+            Path(install_dir).parent / 'data'
+        ]
+        config_names = [
+            'platform_settings.json', 'composer_layout.json', 'bot_accounts.dat',
+            'obs_connection.dat', 'defender_state.json', 'dns_settings.json',
+            'replace_words.json', 'rvc_settings.json'
+        ]
+        for c_name in config_names:
+            found_src = None
+            for b_dir in backup_dirs:
+                candidate = b_dir / c_name
+                if candidate.is_file() and candidate.stat().st_size > 0:
+                    found_src = candidate
+                    break
+            if found_src:
+                for t_dir in target_dirs:
+                    if t_dir.exists():
+                        target_file = t_dir / c_name
+                        if not target_file.exists() or target_file.stat().st_size == 0:
+                            shutil.copy2(found_src, target_file)
+    except Exception as e:
+        logger.warning(f"Failed to restore user settings: {e}")
+
 def apply_update_patch(patch_zip: str) -> bool:
 
     """ติดตั้งแพตช์อัปเดตแบบ Safe Atomic Swap (เตรียมไว้สำหรับ v3.0.1+)"""
@@ -625,6 +698,7 @@ def apply_update_patch(patch_zip: str) -> bool:
 
     try:
 
+        backup_user_settings(install_dir)
         with zipfile.ZipFile(patch_zip, "r") as zf:
 
             # ตรวจสอบ path traversal attack ก่อน extract
@@ -638,7 +712,7 @@ def apply_update_patch(patch_zip: str) -> bool:
                     raise ValueError(f"Suspicious path in update archive: {member}")
 
             zf.extractall(install_dir)
-
+        restore_user_settings(install_dir)
         return True
 
     except Exception as e:
@@ -1118,9 +1192,17 @@ if %BP3_WAIT_COUNT% GEQ 120 goto update_failed
 timeout /t 1 /nobreak >nul
 goto wait_for_exit
 :apply_patch
+if not exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup" mkdir "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup"
+if exist "{install_dir}\data\platform_settings.json" copy /y "{install_dir}\data\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
+if exist "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 
 tar -xf "{patch_zip}" -C "{install_dir}"
 if errorlevel 1 goto update_failed
+
+if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" (
+    if not exist "{install_dir}\data\platform_settings.json" if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\data\" >nul
+    if not exist "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
+)
 
 del "{patch_zip}"
 

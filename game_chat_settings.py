@@ -4,7 +4,13 @@ from game_overlay_themes import get_theme_list
 from legacy_chat_config import build_game_chat_config
 
 MODES = ['default', 'theme', 'special', 'character']
-FONTS = ['Kanit','Prompt','Sarabun','Mitr','Bai Jamjuree','Noto Sans Thai','IBM Plex Sans Thai','Plus Jakarta Sans']
+FONTS = [
+    'Kanit', 'Prompt', 'Sarabun', 'Mitr', 'Bai Jamjuree', 'Chakra Petch', 'Mali',
+    'Chonburi', 'Charm', 'Krub', 'Niramit', 'Pattaya', 'Srisakdi', 'Taviraj',
+    'Trirong', 'Pridi', 'Itim', 'Athiti', 'K2D', 'KoHo', 'Fahkwang', 'Kodchasan',
+    'Sedgwick Ave', 'Roboto', 'Montserrat', 'Poppins', 'Inter', 'Open Sans', 'Lato',
+    'Noto Sans Thai', 'IBM Plex Sans Thai', 'Plus Jakarta Sans'
+]
 ANIM_IN = ['minimal','fade','slide_left','slide_up','zoom','bounce','pop','flip','glow','typewriter','slide_pop','card_flip','liquid','neon_pulse','glassy','elastic']
 ANIM_OUT = ['fade_out','slide_right','slide_down','shrink','blur_out','dissolve']
 LAYOUTS = ['stacked','inline','message_only','stacked_no_logo','inline_no_logo']

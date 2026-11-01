@@ -45,3 +45,6 @@ scratch/
 
 build/
 dist_releases/
+
+data/
+userdata/

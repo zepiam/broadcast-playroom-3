@@ -1,7 +1,7 @@
 /* Game Overlay has its own legacy-compatible appearance settings. */
 (()=>{'use strict';
  const modes=[['default','Default'],['theme','Theme'],['special','Balloon'],['character','Character Talk']];
- const choices={layout:[['inline','1 บรรทัด (ชื่อ: ข้อความ)'],['stacked','2 บรรทัด'],['message_only','เฉพาะข้อความ'],['inline_no_logo','1 บรรทัด ไม่มีโลโก้'],['stacked_no_logo','2 บรรทัด ไม่มีโลโก้']],font_family:['Kanit','Prompt','Sarabun','Mitr','Bai Jamjuree','Noto Sans Thai','IBM Plex Sans Thai','Plus Jakarta Sans'],font_weight:['300','400','500','600','700'],anim_in:['minimal','fade','slide_left','slide_up','zoom','bounce','pop','flip','glow','typewriter','slide_pop','card_flip','liquid','neon_pulse','glassy','elastic'],anim_out:['fade_out','slide_right','slide_down','shrink','blur_out','dissolve']};
+ const choices={layout:[['inline','1 บรรทัด (ชื่อ: ข้อความ)'],['stacked','2 บรรทัด'],['message_only','เฉพาะข้อความ'],['inline_no_logo','1 บรรทัด ไม่มีโลโก้'],['stacked_no_logo','2 บรรทัด ไม่มีโลโก้']],font_family:['Kanit','Prompt','Sarabun','Mitr','Bai Jamjuree','Chakra Petch','Mali','Chonburi','Charm','Krub','Niramit','Pattaya','Srisakdi','Taviraj','Trirong','Pridi','Itim','Athiti','K2D','KoHo','Fahkwang','Kodchasan','Sedgwick Ave','Roboto','Montserrat','Poppins','Inter','Open Sans','Lato','Noto Sans Thai','IBM Plex Sans Thai','Plus Jakarta Sans'],font_weight:['300','400','500','600','700'],anim_in:['minimal','fade','slide_left','slide_up','zoom','bounce','pop','flip','glow','typewriter','slide_pop','card_flip','liquid','neon_pulse','glassy','elastic'],anim_out:['fade_out','slide_right','slide_down','shrink','blur_out','dissolve']};
  const groups=[
   ['📝 เนื้อหาและการจัดวาง',[['show_logo','แสดงโลโก้แพลตฟอร์ม','checkbox'],['show_timestamp','แสดงเวลา','checkbox'],['layout','รูปแบบข้อความ','select'],['font_size','ขนาดตัวอักษร (px)','number',10,64],['emote_size','ขนาด Emote (px)','number',12,64],['animated_emotes','แสดง Twitch Emote แบบเคลื่อนไหว','checkbox'],['max_rows','จำนวนข้อความสูงสุด','number',1,100],['max_msg_length','ความยาวข้อความสูงสุด (0 = ไม่จำกัด)','number',0,500],['msg_spacing','ระยะห่างข้อความ (px)','number',0,30,0.5],['demo_interval','ช่วงเวลา Loop Demo (วินาที)','number',1,60,0.5]]],
   ['🔤 ฟอนต์และสี',[['font_family','ฟอนต์','select'],['font_weight','น้ำหนักฟอนต์','select'],['text_color','สีข้อความ','color'],['text_stroke','เส้นขอบตัวอักษร','checkbox'],['text_stroke_color','สีเส้นขอบ','color'],['text_stroke_width','ความหนาเส้นขอบ','number',0,6],['text_shadow','เงาตัวอักษร','checkbox'],['text_shadow_color','สีเงา','color'],['text_shadow_blur','ความฟุ้งเงา','number',0,10]]],
@@ -67,7 +67,7 @@
    if(state.values.default_image_url){const image=el(doc,'img','game-chat-character-preview');image.src=state.values.default_image_url;image.alt='ภาพตัวละครเริ่มต้น';panel.append(image);const clear=el(doc,'button','game-chat-mode','ใช้ภาพเริ่มต้นของโปรแกรม');clear.type='button';clear.onclick=()=>post('character','default_image_url','',true).catch(()=>{});panel.append(clear)}root.append(panel);
   }
   for(const [title,fields,only] of groups){if(only && state.mode!==only)continue;const panel=el(doc,'details','game-chat-panel');panel.open=!only && title.startsWith('📝');panel.append(el(doc,'summary','',title));const content=el(doc,'div','game-chat-fields');
-   for(const [key,label,type,min,max,step] of fields){if(key==='show_timestamp')continue;const row=el(doc,'label','game-chat-row');row.append(el(doc,'span','',label));let control;
+   for(const [key,label,type,min,max,step] of fields){const row=el(doc,'label','game-chat-row');row.append(el(doc,'span','',label));let control;
     if(type==='select'){control=el(doc,'select','modal-input');for(const option of choices[key]||[]){const [value,text]=Array.isArray(option)?option:[option,option];const item=el(doc,'option','',text);item.value=value;control.append(item)}}
     else{control=el(doc,'input',type==='number'?'game-range-input':'modal-input');control.type=type==='number'?'range':type;if(type==='number'){control.min=min;control.max=max;control.step=step||1}}
     control.dataset.gameChatKey=key;if(type==='checkbox')control.checked=!!state.values[key];else control.value=state.values[key] ?? '';
@@ -81,4 +81,21 @@
  window.BP3GameSliders={init(doc){doc.querySelectorAll('#win-game-overlay input[type="range"][data-output]').forEach(control=>{const output=doc.getElementById(control.dataset.output);if(!output)return;const update=()=>{output.textContent=control.dataset.percent==='true'?Math.round(Number(control.value)*100)+'%':control.value+(control.dataset.unit||'')};if(!control.dataset.sliderLabelBound){control.addEventListener('input',update);control.dataset.sliderLabelBound='1'}update()})}};
  const viewerFields={goViewerMode:'mode',goViewerAlign:'align',goViewerWidth:'width',goViewerHeight:'height',goViewerAlpha:'alpha',goViewerFontSize:'font_size',goViewerIconSize:'icon_size',goViewerFontColor:'font_color',goViewerTextStroke:'text_stroke',goViewerTextStrokeColor:'text_stroke_color',goViewerTextStrokeWidth:'text_stroke_width',goViewerTextShadow:'text_shadow',goViewerTextShadowColor:'text_shadow_color',goViewerTextShadowBlur:'text_shadow_blur'};
  window.BP3ViewerOverlaySettings={init(doc){for(const [id,key] of Object.entries(viewerFields)){const control=doc.getElementById(id);if(!control||control.dataset.viewerLiveBound)continue;control.dataset.viewerLiveBound='1';control.addEventListener('change',()=>{const badge=doc.getElementById('viewerOverlaySaveStatus');const show=(text,error=false)=>{if(badge){badge.textContent=text;badge.classList.toggle('error',error)}};const numeric=control.type==='number'||control.type==='range';const value=control.type==='checkbox'?control.checked:numeric?Number(control.value):control.value;if(numeric&&(!control.value||!control.validity.valid)){show('กรุณากรอกค่าในช่วงที่กำหนด',true);return}viewerQueue=viewerQueue.catch(()=>{}).then(async()=>{show('กำลังบันทึก...');const r=await fetch('/api/viewer-overlay-settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({[key]:value})});if(!r.ok)throw Error('บันทึก Viewer Overlay ไม่สำเร็จ');show('บันทึกแล้ว')}).catch(e=>{show(e.message,true);throw e})})}},flush:()=>viewerQueue};
+
+  // Auto-init on load if Game Overlay customizer is present
+  if (typeof document !== 'undefined') {
+    const autoInit = () => {
+      const root = document.getElementById('gameChatCustomizer');
+      if (root) {
+        window.BP3GameChatSettings?.init(document);
+        window.BP3GameSliders?.init(document);
+        window.BP3ViewerOverlaySettings?.init(document);
+      }
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', autoInit);
+    } else {
+      setTimeout(autoInit, 100);
+    }
+  }
 })();

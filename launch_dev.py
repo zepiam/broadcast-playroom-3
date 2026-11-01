@@ -1040,6 +1040,93 @@ else:
 
 
 
+
+def _get_platform_settings_paths():
+    paths = []
+    try:
+        paths.append(Path(DATA_ROOT) / 'platform_settings.json')
+    except Exception:
+        pass
+    try:
+        lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
+        paths.append(Path(lad) / 'BroadcastPlayroom3' / 'platform_settings.json')
+    except Exception:
+        pass
+    try:
+        if '_SHARED_DATA' in globals() and _SHARED_DATA:
+            paths.append(Path(_SHARED_DATA) / 'platform_settings.json')
+    except Exception:
+        pass
+    try:
+        if '_APP_ROOT' in globals() and _APP_ROOT:
+            paths.append(Path(_APP_ROOT) / 'data' / 'platform_settings.json')
+    except Exception:
+        pass
+    seen = set()
+    res = []
+    for pt in paths:
+        s = str(pt.resolve()) if pt.exists() else str(pt)
+        if s not in seen:
+            seen.add(s)
+            res.append(pt)
+    return res
+
+def _load_platform_settings():
+    merged = {}
+    for pt in _get_platform_settings_paths():
+        if pt.is_file():
+            try:
+                with open(pt, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                if isinstance(data, dict):
+                    for k, v in data.items():
+                        if k.startswith('channel_'):
+                            if v and str(v).strip():
+                                merged[k] = str(v).strip()
+                            elif k not in merged:
+                                merged[k] = v
+                        elif k == 'hidden_platforms':
+                            if isinstance(v, list) and v:
+                                if 'hidden_platforms' not in merged or not merged['hidden_platforms']:
+                                    merged['hidden_platforms'] = v
+                        elif k not in merged:
+                            merged[k] = v
+            except Exception:
+                pass
+    if merged:
+        for pt in _get_platform_settings_paths():
+            try:
+                pt.parent.mkdir(parents=True, exist_ok=True)
+                if not pt.is_file() or pt.stat().st_size == 0:
+                    with open(pt, 'w', encoding='utf-8') as f:
+                        json.dump(merged, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+    return merged
+
+def _save_platform_settings(new_data):
+    if not isinstance(new_data, dict):
+        return
+    current = _load_platform_settings()
+    for k, v in new_data.items():
+        if k.startswith('channel_'):
+            if v and str(v).strip():
+                current[k] = str(v).strip()
+            elif str(v).strip() == '':
+                current[k] = ''
+        elif k == 'hidden_platforms':
+            if isinstance(v, list):
+                current['hidden_platforms'] = v
+        else:
+            current[k] = v
+    for pt in _get_platform_settings_paths():
+        try:
+            pt.parent.mkdir(parents=True, exist_ok=True)
+            with open(pt, 'w', encoding='utf-8') as f:
+                json.dump(current, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
+
 _cand_layout = DATA_ROOT / 'composer_layout.json'
 
 
@@ -5425,18 +5512,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
             try:
                 size = int(self.headers.get('Content-Length', 0))
                 data = json.loads(self.rfile.read(size).decode('utf-8'))
-                settings_path = os.path.join(str(DATA_ROOT), 'platform_settings.json')
-                existing = {}
-                if os.path.exists(settings_path):
-                    try:
-                        with open(settings_path, 'r', encoding='utf-8') as sf:
-                            existing = json.load(sf)
-                    except Exception:
-                        existing = {}
-                if isinstance(data, dict):
-                    existing.update(data)
-                with open(settings_path, 'w', encoding='utf-8') as sf:
-                    json.dump(existing, sf, ensure_ascii=False, indent=2)
+                _save_platform_settings(data)
                 self.send_json({'success': True})
             except Exception as e:
                 self.send_json({'success': False, 'error': str(e)})
@@ -11140,15 +11216,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
         elif path == '/api/platform/settings':
-            settings_path = os.path.join(str(DATA_ROOT), 'platform_settings.json')
-            if os.path.exists(settings_path):
-                try:
-                    with open(settings_path, 'r', encoding='utf-8') as sf:
-                        response_data = json.load(sf)
-                except Exception:
-                    response_data = {}
-            else:
-                response_data = {}
+            response_data = _load_platform_settings()
 
         elif path == '/api/version':
 
