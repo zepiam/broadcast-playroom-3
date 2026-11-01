@@ -1,19 +1,19 @@
 {
+  "version": "3.15",
   "product": "broadcast-playroom-3",
-  "version": "3.14",
-  "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.14\n- นำปุ่ม '💾 บันทึกการตั้งค่า' ที่ซ้ำซ้อนออกจากหน้าต่าง Settings และ Chat Settings เหลือเพียงปุ่ม 'ปิดหน้าต่าง' ให้สอดคล้องกับระบบ Auto-Save ทั่วทั้งระบบอย่างสมบูรณ์แบบ\n- แก้ไขปัญหาข้อมูลช่องทางสตรีมและสถานะติ๊กเชื่อมต่ออัตโนมัติ (Auto-Connect) หายหรือถูกรีเซ็ตเมื่ออัปเดตเวอร์ชันใหม่: ปรับปรุงระบบ Backup & Restore ให้เก็บข้อมูลที่สดใหม่ที่สุดเสมอ พร้อมระบบผสานข้อมูล (Multi-Path Merge & Persistent Sync) รับประกันว่าข้อมูลที่เคยกรอกและติ๊กไว้จะคงอยู่ถาวร 100%\n- รองรับการโหลดและซิงก์ข้อมูลช่องและเช็กบ็อกซ์แบบเรียลไทม์ทั้งในหน้าจอหลักและหน้าต่างแยก Popout Window ทันทีที่เปิดใช้งาน",
-  "published_at": "2026-11-01",
-  "lite": {
-    "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.14/BroadcastPlayroom3-Lite-Patch-3.14.zip",
-    "size": 44226740,
-    "sha256": "27374a096a38adc3264f02cf3c781f78c8f6d55c27fcd056c73e1728a8b6bf8c"
-  },
-  "full": {
-    "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.14/BroadcastPlayroom3-Full-Patch-3.14.zip",
-    "size": 92671902,
-    "sha256": "fbdf8236a35d075c8a7e017df3d616e41438385cbead2176370404c9ed79eecf"
+  "release_date": "2026-11-01",
+  "min_app_version": "3.0.0",
+  "changelog": "- Broadcast Playroom v3.15\n- กู้คืนและแก้ไขปุ่ม Game Overlay และ Overlay+ ด้านบน ให้กลับมาใช้งานได้สมบูรณ์แบบ 100%\n- แก้ไขเมนูคลิกขวา Overlay & แปลภาษา: คลิก 'ตั้งค่าการแปลภาษา...' เปิดเข้าสู่หน้าตั้งค่าแท็บแปลภาษาโดยตรง และคลิก 'ตั้งค่า OBS WebSocket...' เปิดเข้าแท็บ OBS WebSocket โดยตรง\n- ปรับแต่งปุ่มแท็บสลับ Game Overlay / Viewer Overlay ในหน้าต่างตั้งค่า Game Overlay ให้เป็นดีไซน์ Dark Pill ที่สวยงาม ไม่เปลือย ไม่หลุดสไตล์\n- ปรับปุ่ม 'พับเก็บ' เป็น 'ปิดหน้าต่าง' และนำปุ่มบันทึกที่ซ้ำซ้อนออกในเครื่องมือ (Settings, Replie, ASK, QuickRandomizer, Playroom, User Manager) รองรับการสั่งปิดทั้งในโหมดปกติและ Popout Window\n- แก้ไขระบบ Auto-Save และ Backup & Restore ให้ผสานและจดจำข้อมูลช่องทางสตรีม (Channel Names) และสถานะเชื่อมต่ออัตโนมัติ (Auto-Connect) คงอยู่ถาวร 100% ไม่สูญหายเมื่ออัปเดตเวอร์ชันใหม่",
+  "packages": {
+    "lite": {
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Lite-Patch-3.15.zip",
+      "patch_sha256": "b2cb22dd53752df71820d05c4b83f0187a9dd23cb7002d55a7003c63bf9d9f93",
+      "patch_size": 44228113
+    },
+    "full": {
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Full-Patch-3.15.zip",
+      "patch_sha256": "6a25c970066db028d66d9faa08deb22f971c98a1357f30a3bd9d8483d204ad50",
+      "patch_size": 92673275
+    }
   }
 }
