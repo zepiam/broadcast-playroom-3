@@ -1,31 +1,31 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.25",
-  "latest_version": "3.25",
+  "version": "3.26",
+  "latest_version": "3.26",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.25\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.25:\n- **แก้ไขปุ่มบันทึกและตั้งค่าการบล็อกในโปรไฟล์ผู้ชม (Viewer Profile)**:\n  - แก้ไขปุ่ม \"บันทึก\" ให้ทำงานอย่างถูกต้อง: บันทึกข้อมูลโน้ตความจำ, บันทึกรูปโปรไฟล์ที่สุ่ม/เปลี่ยนใหม่, ซิงค์รูปภาพกลับไปยังแถวแชทสดทันที และปิดหน้าต่างให้อย่างเรียบร้อย\n  - แก้ไขปุ่ม \"ตั้งค่าการบล็อก\" ให้เปิดหน้าต่างจัดการกฎการบล็อก (Block Settings) ได้อย่างถูกต้องทั้งในหน้าต่างหลักและหน้าต่าง Popout\n- **แก้ไขรูปไอคอน Twitch ซ้อนกันในแชทสด**:\n  - เมื่อผู้ชมพิมพ์แชทเข้ามา จะสุ่มไอคอนตัวละครน่ารักของโปรแกรมแยกตามชื่อผู้ใช้อัตโนมัติ โดยมี Badge แพลตฟอร์มติดอยู่มุมล่าง ไม่ขึ้นเป็นรูปโลโก้ Twitch ขนาดใหญ่ซ้อนกันอีกต่อไป\n- **ฟังก์ชันใหม่: ดึงรูปโปรไฟล์จริงจากแพลตฟอร์ม (Optional)**:\n  - เพิ่มสวิตช์เปิด/ปิดใน **ตั้งค่าแชทสด**:\n    - **เปิด**: ดึงรูปโปรไฟล์จริงของผู้ใช้จาก Twitch มาย่อขนาด 50px PNG คุณภาพคมชัดและเก็บไว้ในแคชเครื่อง\n    - **ปิด**: สุ่มไอคอนตัวละครน่ารักประจำตัวผู้ใช้ของโปรแกรม\n- **ระบบจัดการแคชรูปภาพประจำตัว (Avatar Cache Manager)**:\n  - แสดงขนาดความจุของแคชรูปภาพแบบ Real-time (เช่น `ขนาดแคชรูปภาพ: 0.15 MB (12 รูป)`)\n  - เพิ่มปุ่ม `🗑️ ล้างแคชรูปประจำตัว` สามารถกดล้างแคชและรีเฟรชรูปภาพใหม่ได้ทันที\n- **FindUpdate Utility**:\n  - แนบเครื่องมือ `FindUpdate.bat` และ `findupdate.py` ไว้ในโฟลเดอร์โปรแกรม สำหรับกู้คืน/ซ่อมแซมและตรวจหาอัปเดตใหม่ได้ทันทีแม้โปรแกรมหลักจะเปิดไม่ติด\n",
+  "changelog": "# Broadcast Playroom v3.26\n\n### การแก้ไขด่วน (Critical Fix):\n- **แก้ไขปัญหาข้อความแชทจากแพลตฟอร์ม (Twitch, MyLive, YouTube, Kick) ไม่ขึ้นในหน้าแชทสด**:\n  - แก้ไขสถานะตัวแปรล็อกการดึงข้อมูล `_isPollingRealChats` ในลูปตรวจสอบข้อความใหม่ โดยเพิ่มบล็อก `finally` เพื่อคืนค่าสถานะทุกครั้ง\n  - จากเดิมที่ตัวแปรค้างเป็น `true` หลังจากการดึงข้อมูลรอบแรก ทำให้โปรแกรมหยุดดึงข้อความจากเซิร์ฟเวอร์แบบถาวร (ทำให้พิมพ์จากในเว็บไม่เข้า แต่พิมพ์จากโปรแกรมแล้วขึ้น)\n  - เพิ่มตัวสำรอง Heartbeat Poller Interval (1200ms) ควบคู่กับ Web Worker ป้องกันกรณีเบราว์เซอร์หยุดทำงานในเบื้องหลัง เพื่อให้การรับข้อความจากภายนอกทำงานตลอดเวลา 100%\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-lite.zip",
-    "sha256": "2958419f0454ff5955d42feb0f0a5ea5378818b3e3598f0d8dcf4ba81ccbf404",
-    "size": 50030482
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.26/patch-v3.26-lite.zip",
+    "sha256": "9728a58b748a47c59b45f15d2b9fdd03e962face4ba07efff17a32ca96f43376",
+    "size": 50030558
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-full.zip",
-    "sha256": "e149d50e21eb07c0501f09b193766d06e473d5f9fa64aa6d4a613c8cfdb7feba",
-    "size": 50030482
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.26/patch-v3.26-full.zip",
+    "sha256": "ae3c401fe59d9c565ab37e402d6d326f82fbf7255c0f842ab85296084772cc89",
+    "size": 50030558
   },
   "packages": {
     "lite": {
-      "version": "3.25",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-lite.zip",
-      "patch_sha256": "2958419f0454ff5955d42feb0f0a5ea5378818b3e3598f0d8dcf4ba81ccbf404",
-      "patch_size": 50030482
+      "version": "3.26",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.26/patch-v3.26-lite.zip",
+      "patch_sha256": "9728a58b748a47c59b45f15d2b9fdd03e962face4ba07efff17a32ca96f43376",
+      "patch_size": 50030558
     },
     "full": {
-      "version": "3.25",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.25/patch-v3.25-full.zip",
-      "patch_sha256": "e149d50e21eb07c0501f09b193766d06e473d5f9fa64aa6d4a613c8cfdb7feba",
-      "patch_size": 50030482
+      "version": "3.26",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.26/patch-v3.26-full.zip",
+      "patch_sha256": "ae3c401fe59d9c565ab37e402d6d326f82fbf7255c0f842ab85296084772cc89",
+      "patch_size": 50030558
     }
   }
 }
