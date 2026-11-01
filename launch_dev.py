@@ -8965,39 +8965,13 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+                    layout=get_layout();settings=layout.setdefault('legacyTools',{})
                     entries=data.get('overlays')
-
-
-
-
-
-
-
-                    if not isinstance(entries,list) or len(entries)>3:raise ValueError('Overlay+ รองรับสูงสุด 3 หน้าต่าง')
-
-
-
-
-
-
-
-                    for entry in entries:
-
-
-
-
-
-
-
-                        if not isinstance(entry,dict) or (entry.get('url') and urllib.parse.urlparse(entry['url']).scheme not in ('http','https')):raise ValueError('URL ไม่ถูกต้อง')
-
-
-
-
-
-
-
-                    layout=get_layout();settings=layout.setdefault('legacyTools',{});settings['more_overlays']=entries
+                    if entries is not None:
+                        if not isinstance(entries,list) or len(entries)>3:raise ValueError('Overlay+ รองรับสูงสุด 3 หน้าต่าง')
+                        for entry in entries:
+                            if not isinstance(entry,dict) or (entry.get('url') and urllib.parse.urlparse(entry['url']).scheme not in ('http','https')):raise ValueError('URL ไม่ถูกต้อง')
+                        settings['more_overlays']=entries
 
 
 
@@ -11727,7 +11701,7 @@ def open_app_window(main_url):
     if '--browser' not in sys.argv:
         try:
             import webview
-            webview.settings['DRAG_REGION_SELECTOR'] = '.disabled-pywebview-drag'
+            webview.settings['DRAG_REGION_SELECTOR'] = '.pywebview-drag-region, .desktop-titlebar'
             try:
                 from webview.platforms.edgechromium import EdgeChrome
                 def _allow_child_popups(browser, sender, args):
@@ -11750,7 +11724,7 @@ def open_app_window(main_url):
                 height=950,
                 min_size=(600, 420),
                 frameless=True,
-                easy_drag=False
+                easy_drag=True
             )
             from app_window_frame import set_webview_window, setup_app_window_icon, is_app_shutting_down
             set_webview_window(w)

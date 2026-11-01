@@ -1,4 +1,4 @@
-"""Update trial index and its CSS as one coherent static frontend revision."""
+"""Update trial index and its CSS and scripts as one coherent static frontend revision."""
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit, unquote
@@ -37,11 +37,16 @@ def main():
         for path in styles:
             if not (SOURCE / path).is_file(): raise FileNotFoundError(f'Missing source stylesheet: {path}')
         for path in scripts:
-            if not (target / path).is_file(): raise FileNotFoundError(f'Missing trial script: {target / path}')
+            if not (SOURCE / path).is_file(): raise FileNotFoundError(f'Missing source script: {path}')
+            if not (target / path).is_file():
+                (target / path).parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(SOURCE / path, target / path)
+                print(f'Synced new script to trial: {path}')
     for target in TARGETS:
-        # Copy dependencies before publishing the new index, so it never points
-        # to a not-yet-copied stylesheet during an update.
         for path in styles:
+            (target / path).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(SOURCE / path, target / path)
+        for path in scripts:
             (target / path).parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(SOURCE / path, target / path)
         fd, temporary = tempfile.mkstemp(prefix='.index-', suffix='.tmp', dir=target)

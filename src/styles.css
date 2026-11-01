@@ -3917,7 +3917,10 @@ html.popout-standalone-window .app-window-resizers,
 html.popout-standalone-window #sidebar,
 html.popout-standalone-window header,
 html.popout-standalone-window nav,
-html.popout-standalone-window aside,
+html.popout-standalone-window #colSidebar,
+html.popout-standalone-window .col-sidebar,
+html.popout-standalone-window #eventsCol,
+html.popout-standalone-window .col-events,
 html.popout-standalone-window footer,
 body.popout-standalone-window #desktopTitlebar,
 body.popout-standalone-window .desktop-titlebar,
@@ -3980,10 +3983,17 @@ html.popout-standalone-window .floating-window.popout-target .floating-body,
 html.popout-standalone-window .floating-window.active .floating-body,
 body.popout-standalone-window .floating-window.popout-target .floating-body,
 body.popout-standalone-window .floating-window.active .floating-body {
-  flex: 1 1 auto !important;
-  height: calc(100vh - 46px) !important;
-  max-height: calc(100vh - 46px) !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
   overflow-y: auto !important;
+}
+
+html.popout-standalone-window .floating-window .floating-footer,
+body.popout-standalone-window .floating-window .floating-footer {
+  flex: 0 0 auto !important;
+  margin-top: auto !important;
 }
 
 html.popout-standalone-window .floating-window.popout-target .resizer,
@@ -3996,3 +4006,5 @@ body.popout-standalone-window .floating-window.active .resizer,
 body.popout-standalone-window .floating-window.active .win-resize-handle {
   display: none !important;
 }
+
+html.popout-standalone-window .settings-sidebar, #win-settings .settings-sidebar { display: flex !important; visibility: visible !important; }

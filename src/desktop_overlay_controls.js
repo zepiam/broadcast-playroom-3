@@ -8,8 +8,12 @@ window.desktopOverlayAction=async function(kind,action='toggle'){
 window.openDesktopOverlaySettings=async function(tab='game'){
  if (typeof openToolWindow === 'function') openToolWindow('game-overlay');
  setTimeout(async () => {
+  const doc = typeof getToolDocument === 'function' ? getToolDocument('game-overlay') : document;
   if (typeof switchGameOverlayTab === 'function') switchGameOverlayTab(tab);
   if (typeof loadGameOverlaySettings === 'function') await loadGameOverlaySettings();
+  if (window.BP3GameChatSettings?.init) await window.BP3GameChatSettings.init(doc);
+  if (window.BP3GameSliders?.init) window.BP3GameSliders.init(doc);
+  if (window.BP3ViewerOverlaySettings?.init) window.BP3ViewerOverlaySettings.init(doc);
   await refresh();
   try { window.focus(); } catch (_) {}
  }, 50);
