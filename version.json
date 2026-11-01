@@ -1,31 +1,31 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.27",
-  "latest_version": "3.27",
+  "version": "3.28",
+  "latest_version": "3.28",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.27\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.27:\n- **ปรับปรุงปุ่ม \"ตั้งค่าการบล็อก\" ในหน้าต่างโปรไฟล์ผู้ชม (Viewer Profile)**:\n  - แก้ไขปัญหาปุ่มกดแล้วปิดหน้าต่าง โดยเปลี่ยนโครงสร้างจากการเปิด Modal ภายนอกมาเป็น **แท็บที่ 4: ⚙️ กฎการบล็อก** ฝังอยู่ภายในหน้าต่างโปรไฟล์ผู้ชมโดยตรง\n  - สามารถกดปุ่ม `🛑 ตั้งค่าการบล็อก` ที่แถบด้านล่างเพื่อสลับมายังแท็บกฎการบล็อกได้ทันที มีตัวเลือก 4 กฎชัดเจน (บล็อกทั้งหมด, ซ่อนจากจอ Overlay, ปิดเสียงอ่าน TTS, ปิดคำสั่งบอท Replie)\n  - รองรับการทำงานอย่างสมบูรณ์แบบทั้งในโหมดหน้าต่างปกติและโหมดหน้าต่างแยก Popout เมื่อกด \"บันทึก\" ระบบจะเซฟกฎการบล็อกและปิดหน้าต่างให้อย่างเรียบร้อย\n- **แก้ไขปุ่ม \"Export ข้อความ\" ในหน้าต่างโปรไฟล์ผู้ชม**:\n  - แก้ไขฟังก์ชันการส่งออกประวัติแชทให้รวบรวมข้อความของผู้ชมคนนั้นจากหน้าแชทสดและประวัติในระบบมาจัดเรียงตามลำดับเวลา\n  - สร้างและดาวน์โหลดไฟล์ `.txt` ประวัติการแชท (เช่น `chat_history_men9ch.txt`) พร้อมระบุเวลา วันที่ และชื่อแพลตฟอร์มให้ทันทีเมื่อกดปุ่ม\n",
+  "changelog": "# Broadcast Playroom v3.28\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.28:\n- **แก้ไขปัญหารูปโปรไฟล์ Twitch โหลดไม่ขึ้น / รูปแตก (Broken Image)**:\n  - ปรับระบบการดึงรูปโปรไฟล์จริงจาก Twitch มาเป็นแบบ **Client-Side Async Fetching (ผ่าน DecAPI)** โดยตรง\n  - **ไม่มีทางขึ้นรูปแตกอีกต่อไป**: ข้อความแชทจะแสดงเป็นไอคอนตัวละครน่ารักจำลองทันทีโดยไม่มีดีเลย์ และเมื่อระบบดึงภาพโปรไฟล์จริงจาก Twitch CDN สำเร็จ จะทำการสลับรูปให้โดยอัตโนมัติอย่างแนบเนียน หากโหลดไม่สำเร็จหรือเน็ตหลุด จะคงเป็นรูปตัวละครจำลองไว้เสมอ\n- **ปรับพฤติกรรมของปุ่ม \"ล้างแคชรูปประจำตัว\" ตามที่ต้องการ**:\n  - เมื่อกดปุ่ม `🗑️ ล้างแคชรูปประจำตัว` ในตั้งค่าแชทสด:\n    1. แคชรูปโปรไฟล์ทั้งหมดจะถูกลบทันที\n    2. หน้าต่างแชทสดและโปรไฟล์จะ**รีเซ็ตกลับไปแสดงเป็นรูปประจำตัวจำลอง (สุ่มตัวละคร) ก่อนทันที**\n    3. เมื่อมีข้อความใหม่พิมพ์เข้ามาในอนาคต ระบบจึงจะเริ่มส่งคำขอดึงรูปโปรไฟล์จริงจากเว็บนั้นๆ ใหม่อีกครั้ง\n- **แก้ไขปุ่ม \"คืนค่า\" ในโปรไฟล์คนดู**:\n  - ลบรูปคัสตอมทั้งตัวพิมพ์ใหญ่และตัวพิมพ์เล็ก เพื่อให้ชื่อผู้ใช้กลับมาใช้การดึงรูปตามปกติของระบบ\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.27/patch-v3.27-lite.zip",
-    "sha256": "3aab2a0697aa033da6f8de789663e4ef5447fbfea68d50fa40d56cca0408d2d9",
-    "size": 50033630
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-lite.zip",
+    "sha256": "8b00b8ae3a74db6c6b943ea67d765d954270196c7951dcfaa1a24375d2328930",
+    "size": 50034604
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.27/patch-v3.27-full.zip",
-    "sha256": "ee2b78eaf8bff222b086d67eea0bb0af778a90cd9dbc7326d6cb961b81f13f50",
-    "size": 50033630
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-full.zip",
+    "sha256": "3373012ccd065adbebbd09d72cb2008301facf815f082316d72c9357e792c6cc",
+    "size": 50034604
   },
   "packages": {
     "lite": {
-      "version": "3.27",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.27/patch-v3.27-lite.zip",
-      "patch_sha256": "3aab2a0697aa033da6f8de789663e4ef5447fbfea68d50fa40d56cca0408d2d9",
-      "patch_size": 50033630
+      "version": "3.28",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-lite.zip",
+      "patch_sha256": "8b00b8ae3a74db6c6b943ea67d765d954270196c7951dcfaa1a24375d2328930",
+      "patch_size": 50034604
     },
     "full": {
-      "version": "3.27",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.27/patch-v3.27-full.zip",
-      "patch_sha256": "ee2b78eaf8bff222b086d67eea0bb0af778a90cd9dbc7326d6cb961b81f13f50",
-      "patch_size": 50033630
+      "version": "3.28",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-full.zip",
+      "patch_sha256": "3373012ccd065adbebbd09d72cb2008301facf815f082316d72c9357e792c6cc",
+      "patch_size": 50034604
     }
   }
 }
