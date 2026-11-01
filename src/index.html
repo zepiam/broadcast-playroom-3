@@ -67388,6 +67388,16 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+    
+    // Periodic safety watchdog: unstick queue if _isAudioTtsPlaying is true but nothing is playing
+    setInterval(() => {
+      if (_isAudioTtsPlaying && !window._currentTtsAudio && !_activeChatFallbackStop && _audioTtsQueue.length > 0) {
+        console.warn('[BP3 TTS Watchdog] Unsticking idle queue; resetting _isAudioTtsPlaying');
+        _isAudioTtsPlaying = false;
+        processNextAudioTts();
+      }
+    }, 4000);
+
     function clearChatTtsQueue() {
 
 
@@ -68199,93 +68209,60 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
       let handled = false;
-
-
-
-
-
-
+      let watchdogTimer = null;
+      const clearWatchdog = () => {
+        if (watchdogTimer) { clearTimeout(watchdogTimer); watchdogTimer = null; }
+      };
 
       const finishAudio = (useFallback = false) => {
-
-
-
-
-
-
-
         if (handled) return;
-
-
-
-
-
-
-
         handled = true;
-
-
-
+        clearWatchdog();
+        try { audio.pause(); audio.src = ''; } catch (_) {}
         if(window._currentTtsAudio===audio)window._currentTtsAudio=null;
-
-
-
-
-
-
 
         let advanced=false;const advance=()=>{if(advanced)return;advanced=true;_activeChatFallbackStop=null;_isAudioTtsPlaying=false;setTimeout(processNextAudioTts,120);};
 
-
-
-        if (useFallback && item.kind!=='secret') { const row=[...document.querySelectorAll('#chatList .chat-row[data-message-id]')].find(el=>el.dataset.messageId===String(item.messageId));const badge=row?.querySelector('.chat-tts-time');if(badge){badge.textContent='เสียงสำรอง';badge.title='ใช้เสียงสำรองของเบราว์เซอร์';badge.classList.remove('tts-pending');}_activeChatFallbackStop=()=>{try{window.speechSynthesis.cancel();}finally{advance();}};if(speakTextViaWebSpeechFallback(item.sentence,item.gender,item.platform,advance)) return;_activeChatFallbackStop=null; }
-
-
+        if (useFallback && item.kind!=='secret') { 
+          const row=[...document.querySelectorAll('#chatList .chat-row[data-message-id]')].find(el=>el.dataset.messageId===String(item.messageId));
+          const badge=row?.querySelector('.chat-tts-time');
+          if(badge){
+            badge.textContent='เสียงสำรอง';
+            badge.title='ใช้เสียงสำรองของระบบ (TTS ออนไลน์ตอบสนองช้าเกิน 4.5s)';
+            badge.classList.remove('tts-pending');
+          }
+          _activeChatFallbackStop=()=>{try{window.speechSynthesis.cancel();}finally{advance();}};
+          if(speakTextViaWebSpeechFallback(item.sentence,item.gender,item.platform,advance)) return;
+          _activeChatFallbackStop=null; 
+        }
 
         advance();
-
-
-
-
-
-
-
       };
 
+      // Watchdog: If online TTS does not start playing within 4.5 seconds (network hang/freeze),
+      // instantly switch to native Microsoft local voice so the streamer NEVER waits!
+      watchdogTimer = setTimeout(() => {
+        if (!handled) {
+          console.warn('[BP3 TTS Watchdog] Audio synthesis stalled > 4.5s; triggering instant local voice');
+          finishAudio(true);
+        }
+      }, 4500);
 
-
-
-
-
-
-      
-
-
-
-
-
-
+      audio.addEventListener('playing', () => {
+        clearWatchdog();
+        // Playback watchdog: ensure audio can never freeze the queue indefinitely
+        const maxDuration = Math.max(8000, ((audio.duration && isFinite(audio.duration)) ? audio.duration * 1000 + 3000 : 15000));
+        watchdogTimer = setTimeout(() => {
+          if (!handled) {
+            console.warn('[BP3 TTS Watchdog] Playback exceeded expected duration; finishing audio');
+            finishAudio(false);
+          }
+        }, maxDuration);
+      }, { once: true });
 
       audio._bp3Stop = () => {audio.pause();finishAudio(false);};
-
-
-
       audio.onended = () => finishAudio(false);
-
-
-
-
-
-
-
       audio.onerror = () => finishAudio(true);
-
-
-
-
-
-
-
       audio.play().catch(() => finishAudio(true));
 
 

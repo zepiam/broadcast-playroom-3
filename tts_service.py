@@ -178,6 +178,20 @@ def resolve_voice(text: str, gender: str = 'female') -> tuple[str, str]:
 class TTSService:
     def __init__(self):
         self.dns_settings = None
+        self._start_warmup_worker()
+
+    def _start_warmup_worker(self):
+        def _warmup_loop():
+            import time
+            while True:
+                time.sleep(180)  # Pre-warm DNS & socket pool every 3 minutes
+                try:
+                    socket.getaddrinfo('speech.platform.bing.com', 443, socket.AF_INET)
+                except Exception:
+                    pass
+        import threading
+        t = threading.Thread(target=_warmup_loop, daemon=True, name="TTSWarmupWorker")
+        t.start()
 
     async def _synthesize_single(self, text: str, voice: str, rate: str = '', pitch: str = '', volume: str = '') -> bytes:
         kwargs = {}
@@ -193,7 +207,8 @@ class TTSService:
         if c_vol and c_vol not in ['+0%', '0%', '-0%']:
             kwargs['volume'] = c_vol
 
-        # Match the legacy engine: force IPv4 and retry the selected voice.
+        # Match the legacy engine: force IPv4 with fast timeouts (connect 3.5s, receive 5.0s)
+        # to ensure stuck network fails fast and allows instant local fallback
         for attempt in range(2):
             try:
                 options = {'family': socket.AF_INET}
@@ -202,8 +217,10 @@ class TTSService:
                     from network_dns import AppDnsResolver
                     options['resolver'] = AppDnsResolver(SimpleNamespace(dns_service=dns['service'], dns_custom=dns['custom']))
                 async with aiohttp.TCPConnector(**options) as connector:
+                    c_to = 3.5 if attempt == 0 else 2.5
+                    r_to = 5.0 if attempt == 0 else 4.0
                     comm = edge_tts.Communicate(text, voice=voice, connector=connector,
-                                                connect_timeout=8, receive_timeout=20, **kwargs)
+                                                connect_timeout=c_to, receive_timeout=r_to, **kwargs)
                     buf = io.BytesIO()
                     async for chunk in comm.stream():
                         if chunk['type'] == 'audio':
@@ -214,7 +231,7 @@ class TTSService:
             except Exception as error:
                 logger.warning('TTS voice %s attempt %d failed: %s', voice, attempt + 1, error)
             if attempt == 0:
-                await asyncio.sleep(0.3)
+                await asyncio.sleep(0.2)
         return b''
 
     async def synthesize(self, text: str, gender: str = 'female', rate: str = '', pitch: str = '', volume: str = '') -> bytes:
