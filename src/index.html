@@ -21158,17 +21158,58 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
       </div>
 
-      <!-- Pane 4: Block Settings -->
-      <div id="paneProfTab4" style="display:none; flex:1; overflow-y:auto; flex-direction:column; gap:8px;">
-        <div style="font-size:12px; font-weight:700; color:#ef4444; margin-bottom:4px;">
-          🚫 ตั้งค่ากฎการบล็อกสำหรับผู้ใช้คนนี้
+      <!-- Pane 4: Block Settings (Master + 3-Grid Layout) -->
+      <div id="paneProfTab4" style="display:none; flex:1; overflow-y:auto; flex-direction:column; gap:10px;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">
+          <span style="font-size:12px; font-weight:700; color:#ef4444;">🚫 ตัวเลือกและกฎการบล็อก</span>
+          <span style="font-size:11px; color:var(--dc-text-muted);">เปิดใช้งานเฉพาะส่วนได้</span>
         </div>
         
-        <label style="display:flex; align-items:center; justify-content:space-between; background:#1e1f22; padding:8px 12px; border-radius:6px; cursor:pointer;">
-          <div>
-            <div style="font-size:12px; font-weight:600; color:#f2f3f5;">บล็อกทั้งหมด (Block All)</div>
-            <div style="font-size:10.5px; color:var(--dc-text-muted);">ซ่อนข้อความแชท ปิดเสียงอ่าน TTS และปิดบอทตอบกลับ</div>
+        <!-- Master Block All Card -->
+        <label style="display:flex; align-items:center; justify-content:space-between; background:rgba(239,68,68,0.1); border:1.5px solid rgba(239,68,68,0.35); padding:10px 14px; border-radius:8px; cursor:pointer;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:20px;">🛑</span>
+            <div>
+              <div style="font-size:13px; font-weight:700; color:#fecaca;">บล็อกทั้งหมด (Block All)</div>
+              <div style="font-size:11px; color:#fda4af;">ซ่อนข้อความจากทุกที่ ปิดเสียงอ่าน TTS และปิดบอทตอบกลับ</div>
+            </div>
           </div>
+          <input type="checkbox" id="chkProfBlockAll" onchange="onProfBlockAllToggled(this.checked)" style="width:18px; height:18px; accent-color:#ef4444; cursor:pointer;">
+        </label>
+
+        <!-- 3 Columns Sub-Grid -->
+        <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
+          <!-- Col 1: OBS Overlay -->
+          <label style="display:flex; flex-direction:column; justify-content:space-between; background:#1e1f22; border:1px solid rgba(255,255,255,0.08); padding:9px 11px; border-radius:8px; cursor:pointer; gap:6px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#f2f3f5;">🖥️ ซ่อนจาก OBS</span>
+              <input type="checkbox" id="chkProfBlockOverlay" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;">
+            </div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted); line-height:1.35;">ไม่แสดงข้อความของคนดูคนนี้บนหน้าจอถ่ายทอดสด</div>
+          </label>
+
+          <!-- Col 2: Mute TTS -->
+          <label style="display:flex; flex-direction:column; justify-content:space-between; background:#1e1f22; border:1px solid rgba(255,255,255,0.08); padding:9px 11px; border-radius:8px; cursor:pointer; gap:6px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#f2f3f5;">🔇 ปิดเสียง TTS</span>
+              <input type="checkbox" id="chkProfBlockTts" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;">
+            </div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted); line-height:1.35;">ไม่อ่านออกเสียงข้อความของคนดูคนนี้</div>
+          </label>
+
+          <!-- Col 3: Block Replie -->
+          <label style="display:flex; flex-direction:column; justify-content:space-between; background:#1e1f22; border:1px solid rgba(255,255,255,0.08); padding:9px 11px; border-radius:8px; cursor:pointer; gap:6px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#f2f3f5;">🤖 ปิดบอท Replie</span>
+              <input type="checkbox" id="chkProfBlockReplie" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;">
+            </div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted); line-height:1.35;">บอทจะไม่ตอบกลับข้อความหรือคำสั่งของคนนี้</div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    
           <input type="checkbox" id="chkProfBlockAll" onchange="onProfBlockAllToggled(this.checked)">
         </label>
 
@@ -74059,28 +74100,30 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
         const data = await res.json();
 
-
-
-        if (statusText) {
-
-
-
-          statusText.textContent = data.message || 'กำลังรีสตาร์ทโปรแกรม...';
-
-
-
+        if (data && data.success === false) {
+          if (statusText) {
+            statusText.textContent = data.message || 'ดาวน์โหลดไม่สำเร็จ กรุณาลองใหม่อีกครั้ง';
+          }
+          if (footer) {
+            footer.style.display = 'flex';
+          }
+          const btnOk = document.getElementById('btnConfirmFastUpdate');
+          if (btnOk) {
+            btnOk.disabled = false;
+            btnOk.textContent = '🔄 ลองใหม่อีกครั้ง';
+            btnOk.onclick = () => {
+              startFastUpdateProcess();
+            };
+          }
+          return;
         }
 
-
+        if (statusText) {
+          statusText.textContent = data.message || 'กำลังรีสตาร์ทโปรแกรม...';
+        }
 
         setTimeout(() => {
-
-
-
           location.reload();
-
-
-
         }, 2200);
 
 

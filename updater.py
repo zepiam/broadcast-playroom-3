@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.30"
+CURRENT_VERSION = "3.31"
 
 REPO_OWNER = "zepiam"
 
@@ -240,10 +240,22 @@ def fetch_remote_manifest(timeout: int = 8) -> Optional[dict]:
 
     """ดาวน์โหลด manifest (version.json) จาก GitHub โดยมี fallback หลายช่องทาง"""
 
-    headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
+    headers = {
+        "User-Agent": USER_AGENT,
+        "Accept": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+    }
 
     override_url = os.environ.get("BP3_UPDATE_MANIFEST_URL")
-    urls = [override_url] if override_url else [RAW_MANIFEST_URL, RELEASE_MANIFEST_URL]
+    if override_url:
+        urls = [override_url]
+    else:
+        urls = [
+            RELEASE_MANIFEST_URL,
+            RAW_MANIFEST_URL + f"?t={int(time.time())}",
+            RAW_MANIFEST_URL,
+        ]
 
 
 
@@ -478,6 +490,7 @@ def check_for_update(build_type: Optional[str] = None) -> dict:
             "download_url": edition_info.get("url") or edition_info.get("patch_url") or "",
 
             "sha256": edition_info.get("sha256") or edition_info.get("patch_sha256") or "",
+            "mirrors": edition_info.get("mirrors") or edition_info.get("patch_mirrors") or [],
 
             "build_type": bt,
 
@@ -518,109 +531,104 @@ def check_for_update(build_type: Optional[str] = None) -> dict:
 
 
 def download_update_file(
-
     url: str,
-
     dest_path: str,
-
     on_progress: Optional[Callable[[int, int, float], None]] = None,
-
     expected_sha256: str = "",
-
+    progress_callback: Optional[Callable] = None,
 ) -> bool:
-
-    """ดาวน์โหลดไฟล์แพตช์/อัปเดตพร้อม Progress Callback และตรวจสอบ SHA256 Checksum"""
-
+    """ดาวน์โหลดไฟล์แพตช์/อัปเดตพร้อม Progress Callback และตรวจสอบ SHA256 Checksum (ทนทานต่อ SSL/Proxy/Antivirus)"""
     if not url:
-
         return False
 
-
-
+    prog = on_progress or progress_callback
     temp_path = dest_path + ".downloading"
-
-    sha = hashlib.sha256()
-
-    total_size = 0
-
-    downloaded = 0
-
-
-
+    
+    # รองรับการเชื่อมต่อ HTTPS ทุกรูปแบบ (Windows Certs, Default, Unverified สำหรับ Antivirus SSL Inspection)
+    ssl_contexts = []
     try:
+        ctx_win = ssl.create_default_context()
+        ctx_win.load_default_certs()
+        ssl_contexts.append(ctx_win)
+    except Exception:
+        pass
+    try:
+        ssl_contexts.append(ssl.create_default_context())
+    except Exception:
+        pass
+    try:
+        ssl_contexts.append(ssl._create_unverified_context())
+    except Exception:
+        pass
+    if not ssl_contexts:
+        ssl_contexts = [None]
 
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    last_error = None
+    for ctx in ssl_contexts:
+        sha = hashlib.sha256()
+        total_size = 0
+        downloaded = 0
+        try:
+            req = urllib.request.Request(url, headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "*/*",
+                "Cache-Control": "no-cache",
+            })
+            kw = {"timeout": 45}
+            if ctx is not None:
+                kw["context"] = ctx
 
-        with urllib.request.urlopen(req, timeout=30) as resp:
+            with urllib.request.urlopen(req, **kw) as resp:
+                total_size = int(resp.headers.get("Content-Length", 0))
+                with open(temp_path, "wb") as f:
+                    while True:
+                        chunk = resp.read(64 * 1024)
+                        if not chunk:
+                            break
+                        f.write(chunk)
+                        sha.update(chunk)
+                        downloaded += len(chunk)
+                        if prog:
+                            pct = (downloaded / total_size * 100) if total_size > 0 else 0.0
+                            try:
+                                prog(downloaded, total_size, pct)
+                            except TypeError:
+                                try:
+                                    prog(downloaded, total_size)
+                                except Exception:
+                                    pass
 
-            total_size = int(resp.headers.get("Content-Length", 0))
+            if expected_sha256:
+                calc_hash = sha.hexdigest().lower()
+                if calc_hash != expected_sha256.lower().strip():
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                    raise ValueError(f"Checksum mismatch: expected {expected_sha256}, got {calc_hash}")
 
-            with open(temp_path, "wb") as f:
+            # ป้องกัน Antivirus ล็อคไฟล์ชั่วคราวตอน rename
+            for retry in range(5):
+                try:
+                    if os.path.exists(dest_path):
+                        os.remove(dest_path)
+                    os.rename(temp_path, dest_path)
+                    return True
+                except PermissionError:
+                    time.sleep(0.3)
 
-                while True:
+            return True
 
-                    chunk = resp.read(64 * 1024)
-
-                    if not chunk:
-
-                        break
-
-                    f.write(chunk)
-
-                    sha.update(chunk)
-
-                    downloaded += len(chunk)
-
-                    if on_progress:
-
-                        pct = (downloaded / total_size * 100) if total_size > 0 else 0.0
-
-                        on_progress(downloaded, total_size, pct)
-
-
-
-        if expected_sha256:
-
-            calc_hash = sha.hexdigest().lower()
-
-            if calc_hash != expected_sha256.lower().strip():
-
-                if os.path.exists(temp_path):
-
+        except Exception as e:
+            last_error = e
+            logger.warning(f"Download attempt failed with ctx {type(ctx)}: {e}")
+            if os.path.exists(temp_path):
+                try:
                     os.remove(temp_path)
+                except Exception:
+                    pass
+            continue
 
-                raise ValueError(f"Checksum mismatch: expected {expected_sha256}, got {calc_hash}")
-
-
-
-        if os.path.exists(dest_path):
-
-            os.remove(dest_path)
-
-        os.rename(temp_path, dest_path)
-
-        return True
-
-    except Exception as e:
-
-        logger.error(f"Download update failed: {e}")
-
-        if os.path.exists(temp_path):
-
-            try:
-
-                os.remove(temp_path)
-
-            except Exception:
-
-                pass
-
-        return False
-
-
-
-
-
+    logger.error(f"Download update failed after all attempts: {last_error}")
+    return False
 
 def backup_user_settings(install_dir: str):
     """สำรองข้อมูลการตั้งค่าและช่องทางสตรีมของผู้ใช้ทั้งหมดก่อนลงอัปเดตใหม่"""
@@ -881,7 +889,14 @@ def perform_update_and_restart(build_type: Optional[str] = None) -> dict:
 
             dest_zip = os.path.join(temp_dir, f"bp3_update_{info.get('latest_version')}.zip")
 
-            downloaded = download_update_file(download_url, dest_zip, expected_sha256=expected_sha)
+            candidate_urls = [download_url] + [m for m in info.get("mirrors", []) if m and m != download_url]
+            downloaded = False
+            for cur_url in candidate_urls:
+                if cur_url != download_url:
+                    logger.info(f"Failing over to mirror: {cur_url}")
+                downloaded = download_update_file(cur_url, dest_zip, expected_sha256=expected_sha)
+                if downloaded:
+                    break
 
             if not downloaded:
 

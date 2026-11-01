@@ -1,31 +1,43 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.30",
-  "latest_version": "3.30",
+  "version": "3.31",
+  "latest_version": "3.31",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.30\\n\\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.30:\\n- **ทดสอบระบบอัปเดตอัตโนมัติ (End-to-End In-App Update Verification)**\\n- ระบบ Single Instance Guard ป้องกันการเปิดโปรแกรมซ้อน และเด้งหน้าต่างเดิมขึ้นมาแสดงบนสุด\\n- ดึงและแคชรูปโปรไฟล์คนดูจริงครบทุกแพลตฟอร์ม (Twitch, Kick, YouTube, TikTok)\\n",
+  "changelog": "# Broadcast Playroom v3.31\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.31:\n- **ปรับปรุงแท็บกฎการบล็อกในหน้าต่างโปรไฟล์ผู้ชม (Master + 3-Grid Layout)**:\n  - จัดการแสดงผลใหม่เป็น 2 ระดับ: แถวบนเป็นการ์ดหลัก \"บล็อกทั้งหมด (Block All)\" พร้อมไฮไลต์สีแดงเด่นชัด และแถวล่างเป็นการ์ดตัวเลือกย่อย 3 คอลัมน์ (ซ่อนจาก OBS, ปิดเสียง TTS, ปิดบอท Replie)\n  - แสดงผลครบทุกหัวข้อทันที 100% โดยไม่ต้องเลื่อนเมาส์สไลด์หรือติด Scrollbar อีกต่อไป\n  - ขยายขนาดหน้าต่างโปรไฟล์ผู้ชมเป็น 680x620 px เพิ่มความโปร่งสบายตา\n- **ระบบ Dual-Mirror High-Availability Update (GitHub + HuggingFace)**:\n  - เผยแพร่แพตช์คู่ขนานทั้งบน GitHub Releases และ HuggingFace Mirror (`men9ch/broadcast-playroom-3`)\n  - รองรับ Auto-Fallback สลับดาวน์โหลดไปยังเซิร์ฟเวอร์สำรองอัตโนมัติหากพบอาการสะดุดหรือเน็ตค้าง\n- **ยกระดับความทนทานของระบบดาวน์โหลดอัปเดต**:\n  - รองรับ SSL Multi-Context ป้องกันปัญหา Antivirus สแกน HTTPS\n  - เพิ่มระบบ Cache-Busting ป้องกัน CDN ส่งไฟล์ Hash เก่า\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-lite.zip",
-    "sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
-    "size": 49919668
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-lite.zip",
+    "mirrors": [
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-lite.zip"
+    ],
+    "sha256": "eb0d2dbac7b7f3c962668078ff4a55184421c99ade39a888930c4bfa1b73a2b9",
+    "size": 50039360
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-full.zip",
-    "sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
-    "size": 49919668
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-full.zip",
+    "mirrors": [
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-full.zip"
+    ],
+    "sha256": "73ed285c1b6d1a01be83f1544b859a795dfbb7f5be495340325dfd83c5fc4164",
+    "size": 50039360
   },
   "packages": {
     "lite": {
-      "version": "3.30",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-lite.zip",
-      "patch_sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
-      "patch_size": 49919668
+      "version": "3.31",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-lite.zip",
+      "patch_mirrors": [
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-lite.zip"
+      ],
+      "patch_sha256": "eb0d2dbac7b7f3c962668078ff4a55184421c99ade39a888930c4bfa1b73a2b9",
+      "patch_size": 50039360
     },
     "full": {
-      "version": "3.30",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-full.zip",
-      "patch_sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
-      "patch_size": 49919668
+      "version": "3.31",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-full.zip",
+      "patch_mirrors": [
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-full.zip"
+      ],
+      "patch_sha256": "73ed285c1b6d1a01be83f1544b859a795dfbb7f5be495340325dfd83c5fc4164",
+      "patch_size": 50039360
     }
   }
 }

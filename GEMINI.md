@@ -25,6 +25,10 @@
    - การตั้งค่าสำคัญ (ชื่อช่อง, แพลตฟอร์มที่ซ่อนไว้, OBS, Overlay+, Widget, Giveaway) ต้องบันทึกอัตโนมัติ (Auto-Save) และใช้ไฟล์หลังบ้านบนเครื่อง (`platform_settings.json`) เป็น Source of Truth
    - การอัปเดตแพตช์ต้องไม่ล้างหรือเขียนทับข้อมูลส่วนตัวของผู้ใช้เด็ดขาด
 
+5. **กฎการปล่อยอัปเดตแบบ Dual-Mirror (GitHub + HuggingFace Mirror)**:
+   - **ปล่อยอัปเดตคู่ขนาน 2 ช่องทางเสมอ**: ทุกครั้งที่มีการ Release แพตช์ใหม่ ต้องอัปโหลดไฟล์แพตช์ขึ้นทั้ง **GitHub Releases** (Primary) และ **HuggingFace** (`men9ch/broadcast-playroom-3`) (Secondary Mirror) พร้อมกันเสมอ
+   - **รองรับ Auto-Fallback & Checksum ตรงกัน**: ทั้งสองแหล่งต้องเก็บไฟล์ ZIP ก้อนเดียวกันเป๊ะ และใช้ SHA-256 Checksum ตัวเดียวกัน ใน `version.json` ต้องระบุ URL สำรองของ HuggingFace เพื่อให้ระบบอัปเดตสามารถตรวจจับการสะดุดและสลับดาวน์โหลดผ่าน Mirror ได้อัตโนมัติ 100%
+
 ---
 
 ## กฎด้าน UI และ ประสิทธิภาพ (Zero GPU Lockup)

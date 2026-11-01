@@ -2095,7 +2095,7 @@ def handle_tool_popout(tool_name, main_url, section=None):
         'randomizer': (660, 540),
         'playroom': (840, 640),
         'chat-widget': (900, 680),
-        'author-profile': (660, 580),
+        'author-profile': (680, 620),
         'game-overlay': (760, 620),
         'overlay-plus-settings': (700, 480)
     }

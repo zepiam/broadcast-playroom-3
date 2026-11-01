@@ -1,3 +1,39 @@
+## [2026-11-02 02:27] – Antigravity (Viewer Profile Block Rules Redesign: Master + 3-Grid Layout)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** ใช้งานจริงเรียบร้อย ผ่าน Safety Audit Gate & Headless Smoke Test 100%
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **แก้ปัญหาแท็บกฎการบล็อกแคบและต้องสไลด์เมาส์ดู:**
+     - ปรับโครงสร้าง `paneProfTab4` ใน `src/index.html` เป็นเลย์เอาต์ใหม่ **Master + 3-Grid Layout**:
+       - **แถวบน (Master Switch):** การ์ด `[ 🛑 บล็อกทั้งหมด (Block All) ]` เด่นชัดด้านบน พร้อมไฮไลต์สีแดงอ่อนและปุ่ม Toggle
+       - **แถวล่าง (3-Column Sub-Grid):** แบ่งเป็น 3 การ์ดย่อยเรียงแนวนอนพอดีหน้าจอ: `🖥️ ซ่อนจาก OBS`, `🔇 ปิดเสียง TTS`, และ `🤖 ปิดบอท Replie`
+     - ยุบความสูงจากเดิม ~240px เหลือเพียง ~110px แสดงผลครบทุกหัวข้อ 100% ทันทีที่เปิดแท็บ โดยไม่ต้องเลื่อน Scrollbar สไลด์ดูอีกต่อไป
+  2. **ปรับสัดส่วนหน้าต่าง Popout ให้โปร่งสบายตา:**
+     - ปรับขนาดเริ่มต้นของ `'author-profile'` ใน `launch_dev.py` จาก `(660, 580)` เป็น `(680, 620)`
+  3. **การทดสอบและซิงก์ไฟล์:**
+     - รัน `npm run build` ตรวจสอบผ่าน Safety Audit Gate และ Smoke Test
+     - ซิงก์ไฟล์ `dist/` และ `launch_dev.py` ไปยังโฟลเดอร์โปรแกรมหลัก (`BroadcastPlayroom3/full`) พร้อมใช้งานทันที
+
+---
+
+## [2026-11-02 02:08] – Antigravity (Dual-Mirror Release Protocol & In-App Updater Resiliency)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** ทดสอบการอัปเดต In-App Update ผ่านฉลุย 100% พร้อมบันทึกกฎเหล็ก Dual-Mirror (GitHub + HuggingFace)
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **สถาปัตยกรรม Dual-Mirror Release (GitHub + HuggingFace):**
+     - บันทึกกฎเหล็กประจำโปรเจกต์ใน `GEMINI.md` และ `AGENTS.md` ตามคำสั่งเด็ดขาดของผู้ใช้
+     - ทุกการ Release ในอนาคตจะอัปโหลดคู่ขนานทั้ง **GitHub Releases** (Primary) และ **HuggingFace** (`men9ch/broadcast-playroom-3`) (Secondary Mirror) ด้วย SHA-256 Checksum ก้อนเดียวกันเป๊ะ
+  2. **แก้ปัญหา In-App Update หลอดเปอร์เซ็นต์ค้าง & ดาวน์โหลดไม่สำเร็จ:**
+     - แก้ไข `fetch_remote_manifest` ใน `updater.py` ให้ดึงจาก `RELEASE_MANIFEST_URL` เป็นอันดับแรก และส่ง Header `Cache-Control: no-cache, no-store` พร้อม `?t=timestamp` ป้องกัน Fastly CDN แคช Manifest เก่า 5 นาที ซึ่งเป็นสาเหตุให้เกิด Checksum Mismatch
+     - เพิ่มระบบ SSL Multi-Context ใน `download_update_file` (ดึง Windows Root Certs, Default Context, และ Unverified Context Fallback) ป้องกัน Antivirus (Kaspersky, Bitdefender, ESET ฯลฯ) ที่สแกน HTTPS ตัดการเชื่อมต่อ
+     - เพิ่ม Retry Loop จัดการจังหวะ Windows/Antivirus ล็อคไฟล์ชั่วคราวตอน rename `.downloading`
+     - ปรับปรุงโมดอลอัปเดตใน `src/index.html` และ `dist/index.html` ไม่ให้ปิดหรือรีโหลดหน้าต่างหนีเมื่อการดาวน์โหลดไม่สำเร็จ แต่จะแสดงข้อความเตือนและปุ่ม "🔄 ลองใหม่อีกครั้ง" ให้กดซ้ำได้ทันที
+  3. **ผลการทดสอบ End-to-End In-App Update:**
+     - ผู้ใช้ทดสอบคลิกอัปเดตจริงจาก v3.29 ขึ้นเป็น v3.30 สำเร็จเรียบร้อย 100%
+
+---
+
 ## [2026-11-01 15:55] – Antigravity (Published v3.14 LIVE: Universal Settings Cleanup & Permanent Platform Persistence)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
