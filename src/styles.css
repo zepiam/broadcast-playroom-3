@@ -2424,6 +2424,15 @@ select option {
   animation: none; /* Zero GPU lockup */
 }
 
+.rail-icon-btn.update-glow.is-downloading {
+  border-color: transparent !important;
+  box-shadow: 0 0 16px rgba(35, 165, 90, 0.4), inset 0 0 8px rgba(35, 165, 90, 0.2) !important;
+}
+
+.rail-icon-btn.update-glow .rail-update-progress-bar {
+  filter: drop-shadow(0 0 3px #23a55a);
+}
+
 .rail-icon-btn.update-glow:hover {
   background-color: #23a55a !important;
   color: #ffffff !important;

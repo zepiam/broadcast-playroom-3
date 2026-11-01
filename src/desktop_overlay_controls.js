@@ -60,24 +60,41 @@ async function refresh(){
     // 2. Overlay+ main button & frame toggle companion button
     const btnOp = document.getElementById('topbar-item-overlay-plus');
     const btnOpFrame = document.getElementById('topbar-btn-overlay-plus-frame');
+    const hasOverlayPlusUrl = Array.isArray(state.settings?.more_overlays) &&
+      state.settings.more_overlays.some(e => e && e.enabled !== false && typeof e.url === 'string' && e.url.trim().length > 0);
+
     if (btnOp) {
-      const isOpActive = !!overlayPlus;
-      btnOp.classList.toggle('active', isOpActive);
-      btnOp.setAttribute('aria-pressed', String(isOpActive));
-      const lbl = btnOp.querySelector('.btn-label-text');
-      if (lbl) {
-        lbl.textContent = isOpActive ? 'ปิด Overlay+' : 'Overlay+';
-      }
-      if (isOpActive) {
-        btnOp.style.borderColor = 'rgba(239, 68, 68, 0.55)';
-        btnOp.style.background = 'rgba(239, 68, 68, 0.18)';
-        btnOp.style.color = '#fca5a5';
-        btnOp.title = 'คลิกเพื่อปิด Overlay+ ออกจากหน้าจอ';
+      if (!hasOverlayPlusUrl && !overlayPlus) {
+        btnOp.style.setProperty('display', 'none', 'important');
+        btnOp.hidden = true;
+        if (btnOpFrame) {
+          btnOpFrame.style.setProperty('display', 'none', 'important');
+          btnOpFrame.hidden = true;
+        }
       } else {
-        btnOp.style.borderColor = '';
-        btnOp.style.background = '';
-        btnOp.style.color = '';
-        btnOp.title = 'คลิกสลับ Overlay+ / คลิกขวาเพื่อเปิดเมนู & ซ่อนปุ่ม';
+        const isManuallyHidden = window._topbarHiddenKeys && window._topbarHiddenKeys.includes('overlay-plus');
+        if (!isManuallyHidden) {
+          btnOp.style.removeProperty('display');
+          btnOp.hidden = false;
+        }
+        const isOpActive = !!overlayPlus;
+        btnOp.classList.toggle('active', isOpActive);
+        btnOp.setAttribute('aria-pressed', String(isOpActive));
+        const lbl = btnOp.querySelector('.btn-label-text');
+        if (lbl) {
+          lbl.textContent = isOpActive ? 'ปิด Overlay+' : 'Overlay+';
+        }
+        if (isOpActive) {
+          btnOp.style.borderColor = 'rgba(239, 68, 68, 0.55)';
+          btnOp.style.background = 'rgba(239, 68, 68, 0.18)';
+          btnOp.style.color = '#fca5a5';
+          btnOp.title = 'คลิกเพื่อปิด Overlay+ ออกจากหน้าจอ';
+        } else {
+          btnOp.style.borderColor = '';
+          btnOp.style.background = '';
+          btnOp.style.color = '';
+          btnOp.title = 'คลิกสลับ Overlay+ / คลิกขวาเพื่อเปิดเมนู & ซ่อนปุ่ม';
+        }
       }
     }
     if (btnOpFrame) {
@@ -172,20 +189,22 @@ window.openOverlayPlusSettings=async function(){
     }
   }catch(error){showToast(error.message);}
 };
-window.saveOverlayPlusSettings=async function(){
-  const doc=getToolDocument('overlay-plus-settings'),status=doc.getElementById('overlayPlusSaveStatus');
+window.saveOverlayPlusSettings=async function(closeOnSuccess=false){
+  const doc=getToolDocument('overlay-plus-settings'),status=doc?.getElementById('overlayPlusSaveStatus');
   try{
-    const overlays=[0,1,2].map(i=>({...overlayPlusEntries[i],url:(doc.getElementById('opUrl'+i)?.value||'').trim(),enabled:!!doc.getElementById('opEnabled'+i)?.checked}));
+    const overlays=[0,1,2].map(i=>({...overlayPlusEntries[i],url:(doc?.getElementById('opUrl'+i)?.value||'').trim(),enabled:!!doc?.getElementById('opEnabled'+i)?.checked}));
     const response=await fetch('/api/desktop-overlays',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'configure',overlays})});
     const result=await response.json();
     if(!response.ok)throw Error(result.error||'บันทึกไม่สำเร็จ');
-    closeToolWindow('overlay-plus-settings');
-    showToast('บันทึก Overlay+ แล้ว');
+    await refresh();
+    if(status){status.textContent='บันทึกแล้ว';status.classList.remove('error');setTimeout(()=>{if(status)status.textContent='';},2000);}
+    if(closeOnSuccess){closeToolWindow('overlay-plus-settings');showToast('บันทึก Overlay+ แล้ว');}
   }catch(error){
     if(status){status.textContent=error.message;status.classList.add('error');}
     else showToast(error.message);
   }
 };
+window.persistOverlayPlusSettings = function() { return window.saveOverlayPlusSettings(false); };
 window.addEventListener('bp3:remote-event',event=>{
   if(event.detail?.event==='DESKTOP_OVERLAY_STATE' && window.ComposerStudio?.state)Object.assign(ComposerStudio.state.legacyTools ||= {},event.detail.payload);
   if(event.detail?.event==='DESKTOP_OVERLAY_SETTINGS'){
