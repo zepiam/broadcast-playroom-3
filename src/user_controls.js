@@ -42,45 +42,187 @@ let query='',category='all',renderTimer=null,saveTimer=null;
 
 const tool=()=>window._toolWindowNodes?.['user-manager'] || getToolDocument('user-manager').getElementById('win-user-manager');
 
-const save=()=>{try{localStorage.setItem('bp3_user_roster',JSON.stringify([...people.values()]));}catch{try{localStorage.setItem('bp3_user_roster',JSON.stringify([...people.values()].map(person=>({...person,history:(person.history || []).slice(-1)}))));}catch{}}};
+function getActiveManagerRoots() {
+ const roots = [];
+ const mainWin = document.getElementById('win-user-manager');
+ if (mainWin && mainWin.classList.contains('active') && !mainWin.classList.contains('minimized')) {
+  roots.push(mainWin);
+ }
+ const popup = window._popoutWindows?.['user-manager'];
+ if (popup && !popup.closed && popup.document) {
+  const popWin = popup.document.getElementById('win-user-manager');
+  if (popWin && !roots.includes(popWin)) roots.push(popWin);
+ }
+ const t = (typeof tool === 'function') ? tool() : null;
+ if (t && !roots.includes(t)) roots.push(t);
+ return roots;
+}
+
+const save=()=>{
+ const rosterList = [...people.values()];
+ try{localStorage.setItem('bp3_user_roster',JSON.stringify(rosterList));}catch{
+  try{localStorage.setItem('bp3_user_roster',JSON.stringify(rosterList.map(person=>({...person,history:(person.history || []).slice(-1)}))));}catch{}
+ }
+ if(typeof fetch==='function'){
+  fetch('/api/user-roster',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({roster:rosterList})
+  }).catch(()=>{});
+ }
+};
+
+async function syncRosterFromBackend(){
+ try{
+  const res = await fetch('/api/user-roster');
+  if (res.ok) {
+   const data = await res.json();
+   const serverRoster = data.roster || data;
+   if (Array.isArray(serverRoster) && serverRoster.length > 0) {
+    let changed = false;
+    for (const person of serverRoster) {
+     if (!person || !person.username) continue;
+     const key = (person.platform || 'Twitch').toLowerCase() + ':' + person.username.toLowerCase();
+     const existing = people.get(key);
+     if (!existing || (person.lastSeen || 0) >= (existing.lastSeen || 0)) {
+      people.set(key, person);
+      changed = true;
+     }
+    }
+    if (changed) {
+     try{localStorage.setItem('bp3_user_roster',JSON.stringify([...people.values()]));}catch(_){}
+     render();
+    }
+   } else if (people.size > 0) {
+    save();
+   }
+  }
+ }catch(err){
+  console.warn('Could not sync user roster from backend:', err);
+ }
+}
+syncRosterFromBackend();
 
 const cell=(doc,value)=>{const td=doc.createElement('td');td.textContent=String(value ?? '');return td;};
 
 function render(){
+ const roots = getActiveManagerRoots();
+ if (!roots.length) return;
+ const list=[...people.values()].sort((a,b)=>(b.lastSeen || 0)-(a.lastSeen || 0));
+ const counts={
+  all:list.length,
+  vip:list.filter(person=>person.isVip).length,
+  blocked:list.filter(person=>isBlocked(person.username)).length,
+  active:list.filter(person=>(Date.now()-(person.lastSeen || 0))<5*60*1000).length
+ };
 
- const root=tool();if(!root)return;const doc=root.ownerDocument,body=root.querySelector('#userRosterBody');if(!body)return;body.replaceChildren();
+ for (const root of roots) {
+  const doc = root.ownerDocument, body = root.querySelector('#userRosterBody');
+  if (!body) continue;
+  body.replaceChildren();
 
- const list=[...people.values()].sort((a,b)=>b.lastSeen-a.lastSeen);
+  const matches = list.filter(person => {
+   const blocked = isBlocked(person.username);
+   const text = [person.username, getEffectiveAuthorName(person.username), person.platform].join(' ').toLowerCase();
+   return text.includes(query) && (category==='blocked'?blocked:category==='vip'?person.isVip:category==='active'?(Date.now()-(person.lastSeen || 0))<5*60*1000:true);
+  });
 
- const matches=list.filter(person=>{const blocked=isBlocked(person.username);const text=[person.username,getEffectiveAuthorName(person.username),person.platform].join(' ').toLowerCase();return text.includes(query) && (category==='blocked'?blocked:category==='vip'?person.isVip:category==='active'?Date.now()-person.lastSeen<5*60*1000:true);});
+  const fragment = doc.createDocumentFragment();
+  for (const person of matches) {
+   const row = doc.createElement('tr');
+   row.className = 'user-row';
+   row.dataset.name = person.username.toLowerCase();
+   row.dataset.vip = String(!!person.isVip);
 
- const fragment=doc.createDocumentFragment();
+   const name = cell(doc, '');
+   name.style.cursor = 'pointer';
+   const wrap = doc.createElement('div');
+   wrap.style.display = 'flex';
+   wrap.style.alignItems = 'center';
+   wrap.style.gap = '8px';
+   if (person.avatar) {
+    const img = doc.createElement('img');
+    img.src = person.avatar;
+    img.style.width = '24px';
+    img.style.height = '24px';
+    img.style.borderRadius = '50%';
+    img.style.objectFit = 'cover';
+    img.onerror = () => { img.style.display = 'none'; };
+    wrap.append(img);
+   }
+   const strong = doc.createElement('strong');
+   strong.textContent = person.username;
+   strong.style.color = person.isVip ? '#f87171' : '#f2f3f5';
+   wrap.append(strong);
+   name.append(wrap);
+   name.onclick = () => openAuthorModal(person.username, person.platform, person.avatar, getEffectiveAuthorName(person.username), person.isVip);
 
- for(const person of matches){const row=doc.createElement('tr');row.className='user-row';row.dataset.name=person.username.toLowerCase();row.dataset.vip=String(!!person.isVip);
+   const effNick = getEffectiveAuthorName(person.username);
+   const nickname = cell(doc, (effNick && effNick !== person.username) ? effNick : '-');
+   nickname.style.color = '#38bdf8';
+   nickname.style.cursor = 'pointer';
+   nickname.onclick = () => editUserNickname(person.username);
 
-  const name=cell(doc,person.username);name.style.cursor='pointer';name.onclick=()=>openAuthorModal(person.username,person.platform,person.avatar,getEffectiveAuthorName(person.username),person.isVip);
+   const blocked = isBlocked(person.username);
+   const statusCell = cell(doc, blocked ? 'ถูกบล็อก' : person.isVip ? 'VIP' : 'คนดูทั่วไป');
+   if (blocked) statusCell.style.color = '#ef4444';
+   else if (person.isVip) statusCell.style.color = '#eab308';
+   else statusCell.style.color = '#94a3b8';
 
-  const nickname=cell(doc,getEffectiveAuthorName(person.username)===person.username?'-':getEffectiveAuthorName(person.username));nickname.style.color='#38bdf8';nickname.style.cursor='pointer';nickname.onclick=()=>editUserNickname(person.username);
+   const lastSeenStr = person.lastSeen ? new Date(person.lastSeen).toLocaleTimeString() : '-';
 
-  row.append(name,nickname,cell(doc,person.platform),cell(doc,person.count),cell(doc,isBlocked(person.username)?'บล็อก':person.isVip?'VIP':'คนดูทั่วไป'),cell(doc,new Date(person.lastSeen).toLocaleTimeString()));
+   row.append(name, nickname, cell(doc, person.platform || 'Twitch'), cell(doc, person.count || 1), statusCell, cell(doc, lastSeenStr));
 
-  const action=doc.createElement('button');action.className='btn-topbar-action';action.textContent='โปรไฟล์';action.onclick=name.onclick;const actions=cell(doc,'');actions.append(action);row.append(actions);fragment.append(row);
+   const action = doc.createElement('button');
+   action.className = 'btn-topbar-action';
+   action.textContent = 'โปรไฟล์';
+   action.onclick = name.onclick;
+   const actions = cell(doc, '');
+   actions.append(action);
+   row.append(actions);
+   fragment.append(row);
+  }
+  body.append(fragment);
 
- }body.append(fragment);
+  for (const [cat, id, label] of [['all','btnFilterAll','ทั้งหมด'],['vip','btnFilterVip','🌟 ผู้สนับสนุน'],['blocked','btnFilterBlocked','🛑 ถูกบล็อก'],['active','btnFilterActive','🟢 ล่าสุด']]) {
+   const button = root.querySelector('#' + id);
+   if (button) button.textContent = label + ' (' + counts[cat] + ')';
+  }
 
- const counts={all:list.length,vip:list.filter(person=>person.isVip).length,blocked:list.filter(person=>isBlocked(person.username)).length,active:list.filter(person=>Date.now()-person.lastSeen<5*60*1000).length};for(const [cat,id,label] of [['all','btnFilterAll','ทั้งหมด'],['vip','btnFilterVip','🌟 ผู้สนับสนุน'],['blocked','btnFilterBlocked','🛑 ถูกบล็อก'],['active','btnFilterActive','🟢 ล่าสุด']]){const button=root.querySelector('#'+id);if(button)button.textContent=label+' ('+counts[cat]+')';}
-
- root.querySelectorAll('.win-tabs .win-tab-btn').forEach(button=>button.classList.remove('active'));
-
- root.querySelector('#'+({all:'btnFilterAll',vip:'btnFilterVip',blocked:'btnFilterBlocked',active:'btnFilterActive'}[category] || 'btnFilterAll'))?.classList.add('active');
-
+  root.querySelectorAll('.win-tabs .win-tab-btn').forEach(button => button.classList.remove('active'));
+  root.querySelector('#' + ({all:'btnFilterAll',vip:'btnFilterVip',blocked:'btnFilterBlocked',active:'btnFilterActive'}[category] || 'btnFilterAll'))?.classList.add('active');
+ }
 }
 
-function schedule(){clearTimeout(saveTimer);saveTimer=setTimeout(save,250);const popup=window._popoutWindows?.['user-manager'];if(!popup || popup.closed)return;if(renderTimer)return;renderTimer=setTimeout(()=>{renderTimer=null;render();},150);}
+function schedule(){
+ clearTimeout(saveTimer);
+ saveTimer=setTimeout(save,300);
+ if(renderTimer)return;
+ renderTimer=setTimeout(()=>{
+  renderTimer=null;
+  render();
+ },150);
+}
 
-window.registerUserToRoster=function(msg){
+window.BP3RegisterUserToRoster = function(msg){
+  if (!msg || typeof msg !== 'object') return;
 
-  if(!msg?.username || ['คุณ','HOST'].includes(msg.username))return;
+  // STRICT GUARD: Only genuine live viewers from real live broadcasts are recorded!
+  // Any demo, mockup, simulated, test buttons, preview, sample, or local program host message is strictly forbidden!
+  if (
+    msg.demo || msg.is_demo || msg.test || msg.is_test ||
+    msg.mock || msg.is_mock || msg.simulated || msg.is_simulated ||
+    msg.sample || msg.is_sample || msg.preview || msg.sent_from_program ||
+    msg.is_self || msg.extra?.is_test || msg.extra?.demo || msg.extra?.simulated
+  ) {
+    return;
+  }
+
+  const rawUsername = String(msg.username || '').trim();
+  if (!rawUsername) return;
+
+  const reservedNames = ['คุณ', 'HOST', 'Host', 'host', 'ระบบ', 'System', 'system', 'BOT', 'Bot', 'bot'];
+  if (reservedNames.includes(rawUsername) || rawUsername.startsWith('[DEMO]')) return;
 
   const platform=String(msg.platform || 'Twitch'),key=platform.toLowerCase()+':'+msg.username.toLowerCase();
 
@@ -202,9 +344,15 @@ window.blockViewerFromSettings=function(){
 
 };
 
-window.filterUserRoster=value=>{query=String(value || '').toLowerCase().trim();render();};
+window.registerUserToRoster = window.BP3RegisterUserToRoster;
 
-window.filterUserCategory=value=>{category=value;render();};
+window.BP3FilterUserRoster = value => { query = String(value || '').toLowerCase().trim(); render(); };
+window.filterUserRoster = window.BP3FilterUserRoster;
+
+window.BP3FilterUserCategory = value => { category = value; render(); };
+window.filterUserCategory = window.BP3FilterUserCategory;
+
+window.BP3RenderUserRoster = render;
 
 window.blockUserFromProfile=function(){
  const name=window._activeUserRecord?.username || (typeof _activeUserRecord !== 'undefined' ? _activeUserRecord?.username : null);

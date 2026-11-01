@@ -1167,6 +1167,77 @@ def _save_platform_settings(new_data):
     except Exception:
         pass
 
+def _get_user_roster_paths():
+    paths = []
+    try:
+        paths.append(Path(DATA_ROOT) / 'user_roster.json')
+    except Exception:
+        pass
+    try:
+        lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
+        paths.append(Path(lad) / 'BroadcastPlayroom3' / 'user_roster.json')
+        paths.append(Path(lad) / 'BroadcastPlayroom3' / 'settings_backup' / 'user_roster.json')
+    except Exception:
+        pass
+    try:
+        if '_SHARED_DATA' in globals() and _SHARED_DATA:
+            paths.append(Path(_SHARED_DATA) / 'user_roster.json')
+    except Exception:
+        pass
+    try:
+        if '_APP_ROOT' in globals() and _APP_ROOT:
+            paths.append(Path(_APP_ROOT) / 'data' / 'user_roster.json')
+    except Exception:
+        pass
+    seen = set()
+    res = []
+    for pt in paths:
+        s = str(pt.resolve()) if pt.exists() else str(pt)
+        if s not in seen:
+            seen.add(s)
+            res.append(pt)
+    return res
+
+def _load_user_roster():
+    candidates = []
+    for pt in _get_user_roster_paths():
+        if pt.is_file() and pt.stat().st_size > 0:
+            candidates.append(pt)
+    try:
+        candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    except Exception:
+        pass
+    for pt in candidates:
+        try:
+            with open(pt, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                return data
+            if isinstance(data, dict) and 'roster' in data and isinstance(data['roster'], list):
+                return data['roster']
+        except Exception:
+            pass
+    return []
+
+def _save_user_roster(roster_data):
+    if not isinstance(roster_data, list):
+        return
+    for pt in _get_user_roster_paths():
+        try:
+            pt.parent.mkdir(parents=True, exist_ok=True)
+            with open(pt, 'w', encoding='utf-8') as f:
+                json.dump(roster_data, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
+    try:
+        lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
+        bak = Path(lad) / 'BroadcastPlayroom3' / 'settings_backup' / 'user_roster.json'
+        bak.parent.mkdir(parents=True, exist_ok=True)
+        with open(bak, 'w', encoding='utf-8') as f:
+            json.dump(roster_data, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
 _cand_layout = DATA_ROOT / 'composer_layout.json'
 
 
@@ -5665,6 +5736,20 @@ class QuietHandler(SimpleHTTPRequestHandler):
                 data = json.loads(self.rfile.read(size).decode('utf-8'))
                 _save_platform_settings(data)
                 self.send_json({'success': True})
+            except Exception as e:
+                self.send_json({'success': False, 'error': str(e)})
+            return
+
+        if path == '/api/user-roster':
+            try:
+                size = int(self.headers.get('Content-Length', 0))
+                payload = json.loads(self.rfile.read(size).decode('utf-8'))
+                roster = payload.get('roster') if isinstance(payload, dict) and 'roster' in payload else payload
+                if isinstance(roster, list):
+                    _save_user_roster(roster)
+                    self.send_json({'success': True, 'count': len(roster)})
+                else:
+                    self.send_json({'success': False, 'error': 'Invalid roster format'})
             except Exception as e:
                 self.send_json({'success': False, 'error': str(e)})
             return
@@ -11389,6 +11474,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
         elif path == '/api/platform/settings':
             response_data = _load_platform_settings()
+        elif path == '/api/user-roster':
+            response_data = {'success': True, 'roster': _load_user_roster()}
 
         elif path == '/api/version':
 
@@ -12668,6 +12755,7 @@ def main():
 
     _single_instance_mutex = None
     if not is_headless and os.name == 'nt':
+        import ctypes
         from ctypes import wintypes
         kernel32 = ctypes.windll.kernel32
         kernel32.CreateMutexW.argtypes = [wintypes.LPCVOID, wintypes.BOOL, wintypes.LPCWSTR]

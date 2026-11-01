@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.31"
+CURRENT_VERSION = "3.32"
 
 REPO_OWNER = "zepiam"
 
@@ -653,7 +653,7 @@ def backup_user_settings(install_dir: str):
         config_names = [
             'platform_settings.json', 'composer_layout.json', 'bot_accounts.dat',
             'obs_connection.dat', 'defender_state.json', 'dns_settings.json',
-            'replace_words.json', 'rvc_settings.json'
+            'replace_words.json', 'rvc_settings.json', 'user_roster.json'
         ]
         
         for c_name in config_names:
@@ -696,7 +696,7 @@ def restore_user_settings(install_dir: str):
         config_names = [
             'platform_settings.json', 'composer_layout.json', 'bot_accounts.dat',
             'obs_connection.dat', 'defender_state.json', 'dns_settings.json',
-            'replace_words.json', 'rvc_settings.json'
+            'replace_words.json', 'rvc_settings.json', 'user_roster.json'
         ]
         for c_name in config_names:
             found_src = None
@@ -1302,6 +1302,8 @@ goto wait_for_exit
 if not exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup" mkdir "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup"
 if exist "{install_dir}\data\platform_settings.json" copy /y "{install_dir}\data\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
+if exist "{install_dir}\data\user_roster.json" copy /y "{install_dir}\data\user_roster.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
+if exist "%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 
 tar -xf "{patch_zip}" -C "{install_dir}"
 if errorlevel 1 goto update_failed
@@ -1319,6 +1321,11 @@ if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.js
     if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\data\" >nul
     if exist "{install_dir}\..\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\..\data\" >nul
     copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
+)
+if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" (
+    if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" "{install_dir}\data\" >nul
+    if exist "{install_dir}\..\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" "{install_dir}\..\data\" >nul
+    copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
 )
 
 del "{patch_zip}"

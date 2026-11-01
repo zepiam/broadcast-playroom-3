@@ -678,6 +678,9 @@ body.win-is-resizing {
 /* Supporters page: compact, readable and stationary. */
 .status-support-link { border:0; background:transparent; color:#a5d6b2; cursor:pointer; padding:4px 6px; font:inherit; }
 .status-support-link:hover { color:#6ee7a0; text-decoration:underline; }
+.status-footer-link { border:0; background:transparent; color:#9ca3af; cursor:pointer; padding:4px 6px; font:inherit; text-decoration:none; }
+.status-footer-link:hover { color:#e5e7eb; text-decoration:underline; }
+.status-footer-sep { color:#4b5563; font-size:11px; user-select:none; margin:0 2px; }
 .support-layout { display:grid; grid-template-columns:minmax(230px, .9fr) minmax(300px,1.1fr); gap:16px; align-items:start; }
 .support-methods { display:grid; gap:12px; }
 .support-method { display:flex; align-items:center; gap:12px; justify-content:space-between; padding:14px; background:#1e293b; border:1px solid #334155; border-left:4px solid #38bdf8; }

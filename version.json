@@ -1,43 +1,43 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.31",
-  "latest_version": "3.31",
+  "version": "3.32",
+  "latest_version": "3.32",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.31\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.31:\n- **ปรับปรุงแท็บกฎการบล็อกในหน้าต่างโปรไฟล์ผู้ชม (Master + 3-Grid Layout)**:\n  - จัดการแสดงผลใหม่เป็น 2 ระดับ: แถวบนเป็นการ์ดหลัก \"บล็อกทั้งหมด (Block All)\" พร้อมไฮไลต์สีแดงเด่นชัด และแถวล่างเป็นการ์ดตัวเลือกย่อย 3 คอลัมน์ (ซ่อนจาก OBS, ปิดเสียง TTS, ปิดบอท Replie)\n  - แสดงผลครบทุกหัวข้อทันที 100% โดยไม่ต้องเลื่อนเมาส์สไลด์หรือติด Scrollbar อีกต่อไป\n  - ขยายขนาดหน้าต่างโปรไฟล์ผู้ชมเป็น 680x620 px เพิ่มความโปร่งสบายตา\n- **ระบบ Dual-Mirror High-Availability Update (GitHub + HuggingFace)**:\n  - เผยแพร่แพตช์คู่ขนานทั้งบน GitHub Releases และ HuggingFace Mirror (`men9ch/broadcast-playroom-3`)\n  - รองรับ Auto-Fallback สลับดาวน์โหลดไปยังเซิร์ฟเวอร์สำรองอัตโนมัติหากพบอาการสะดุดหรือเน็ตค้าง\n- **ยกระดับความทนทานของระบบดาวน์โหลดอัปเดต**:\n  - รองรับ SSL Multi-Context ป้องกันปัญหา Antivirus สแกน HTTPS\n  - เพิ่มระบบ Cache-Busting ป้องกัน CDN ส่งไฟล์ Hash เก่า\n",
+  "changelog": "# Broadcast Playroom v3.32\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.32:\n- **ฐานข้อมูลคนดูถาวร (User Manager Local Disk Persistence)**:\n  - เชื่อมต่อการบันทึกรายชื่อคนดูลงฮาร์ดดิสก์จริง (`data/user_roster.json`) ผ่านระบบ API `/api/user-roster`\n  - ข้อมูลคนดู (ชื่อ, แพลตฟอร์ม, รูปโปรไฟล์, จำนวนข้อความ, ประวัติแชท, สถานะ VIP/บล็อก) จะคงอยู่อย่างถาวรแม้ปิดหรือรีสตาร์ตโปรแกรม\n  - รองรับการแสดงผลและนับจำนวนคนดูแบบเรียลไทม์ครบทุกแท็บ (ทั้งหมด, 🌟 ผู้สนับสนุน, 🛑 ถูกบล็อก, 🟢 ล่าสุด)\n  - เพิ่มระบบสำรองและกู้คืนอัตโนมัติใน `updater.py` ทำให้เวลาอัปเดตเวอร์ชันใหม่ในอนาคต ข้อมูลรายชื่อคนดูจะไม่สูญหาย\n  - วางระบบ Strict Isolation Gatekeeper บล็อกข้อความจากปุ่มทดสอบ, แชทจำลอง, และข้อความที่สตรีมเมอร์พิมพ์เอง ไม่ให้เข้าสู่ฐานข้อมูลคนดู บันทึกเฉพาะคนดูจริงจาก Live Stream เท่านั้น\n- **ปรับแต่งแถบเมนูด้านบน (Topbar Cleanup)**:\n  - นำตัวคั่น `|` ที่อยู่ขวามือถัดจากปุ่ม แปลภาษา, Overlay, Game Overlay ออกเพื่อความเรียบร้อยและสะอาดตา\n- **เพิ่มแถบลิงก์ทางลัดด้านล่างขวา (Status Footer Quick Links)**:\n  - เพิ่มลิงก์: `เว็บไซต์ | แจ้งบัค | สนับสนุนการพัฒนาโปรแกรม` พร้อมเส้นคั่นสีเทาบางๆ\n  - ลิงก์ `เว็บไซต์` เปิด `https://www.men9ch.com`\n  - ลิงก์ `แจ้งบัค` เปิด Discord Support `https://discord.gg/nj4KNs6b92`\n  - ลิงก์ `สนับสนุนการพัฒนาโปรแกรม` เปิดหน้าต่างสนับสนุนในโปรแกรม\n- **อัปเดตแพ็กเกจติดตั้ง Installer (BroadcastPlayroom3-Full.zip v3.32)**:\n  - อัปเดตไฟล์ติดตั้งตัวเต็มผ่าน Hugging Face Mirror เพื่อให้ผู้ใช้งานที่ติดตั้งผ่าน Setup Installer ได้รับเวอร์ชัน 3.32 ทันที\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-lite.zip"
     ],
-    "sha256": "aec4c139dced80f3963f9016aa0adc3ed63e78a8ce90d5a8fe9d079f7409f467",
-    "size": 50039120
+    "sha256": "7be95e0b1a91e0f83f734137026457956af63262965a599f12eaf897fa2abb38",
+    "size": 50032996
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-full.zip"
     ],
-    "sha256": "28382b34606ab4d1e4223bc858837d5493eb8660bd9efe62238d133581eca5b2",
-    "size": 50039120
+    "sha256": "5ac55f08df22c03f5e0a51270ae016b0d461c16f1b2978979b916e2a02c48e14",
+    "size": 50032996
   },
   "packages": {
     "lite": {
-      "version": "3.31",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-lite.zip",
+      "version": "3.32",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-lite.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-lite.zip"
       ],
-      "patch_sha256": "aec4c139dced80f3963f9016aa0adc3ed63e78a8ce90d5a8fe9d079f7409f467",
-      "patch_size": 50039120
+      "patch_sha256": "7be95e0b1a91e0f83f734137026457956af63262965a599f12eaf897fa2abb38",
+      "patch_size": 50032996
     },
     "full": {
-      "version": "3.31",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.31/patch-v3.31-full.zip",
+      "version": "3.32",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-full.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.31-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-full.zip"
       ],
-      "patch_sha256": "28382b34606ab4d1e4223bc858837d5493eb8660bd9efe62238d133581eca5b2",
-      "patch_size": 50039120
+      "patch_sha256": "5ac55f08df22c03f5e0a51270ae016b0d461c16f1b2978979b916e2a02c48e14",
+      "patch_size": 50032996
     }
   }
 }
