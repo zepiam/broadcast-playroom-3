@@ -45,6 +45,10 @@ import sys
 
 
 
+if any(flag in sys.argv for flag in ("--repair", "--update", "--findupdate")):
+    from findupdate import run_findupdate_cli
+    sys.exit(run_findupdate_cli(force_repair="--repair" in sys.argv))
+
 if "--splash-subprocess" in sys.argv:
 
 
