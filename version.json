@@ -1,30 +1,30 @@
 {
+  "version": "3.17",
   "latest_version": "3.17",
   "critical": false,
-  "changelog": "### Broadcast Playroom v3.17 Update Highlights\n\n- **ซ่อนปุ่ม Overlay+ อัตโนมัติเมื่อยังไม่มีการระบุ URL**: หากยังไม่ได้กำหนด URL ในตั้งค่า ปุ่ม Overlay+ จะไม่แสดงบนแถบด้านบนให้เกะกะ และจะปรากฏขึ้นอัตโนมัติทันทีที่มีการบันทึก URL หรือเปิดใช้งาน\n- **แถบตั้งค่า Overlay+ ในแท็บ Docks & Web URL**: เพิ่มการ์ดสำหรับเข้าถึงการตั้งค่า URL ของ Overlay+ ในหน้าต่างตั้งค่าหลักโดยตรง\n- **แถบขอบไฟอัปเดตแบบ Squircle Progress Bar บน Server Rail**: ขณะกำลังดาวน์โหลดไฟล์อัปเดตในเบื้องหลัง ขอบเรืองแสงสีเขียวรอบปุ่มลูกศรดาวน์โหลดจะวิ่งเป็น Progress Bar ตามเปอร์เซ็นต์จริง (0-100%) และเมื่อดาวน์โหลดเสร็จสมบูรณ์ เส้นขอบจะวิ่งครบรอบล้อมกรอบปุ่มตามเดิม พร้อมแจ้งเตือนให้พร้อมติดตั้ง\n- **Zero GPU Lockup Compliance**: คำนวณความยาวเส้นรอบรูป SVG Dash-offset แบบ Real-time ตาม Chunks ที่รับมา โดยไม่มี CSS animation loop หน่วงการทำงาน ทำให้ GPU เข้าสู่โหมดพัก (0% idle) ได้อย่างสมบูรณ์",
+  "changelog": "### Broadcast Playroom v3.17 Update Highlights\n\n- **ซ่อนปุ่ม Overlay+ อัตโนมัติเมื่อยังไม่มีการระบุ URL**: หากยังไม่ได้กำหนด URL ในตั้งค่า ปุ่ม Overlay+ จะไม่แสดงบนแถบด้านบนให้เกะกะ และจะปรากฏขึ้นอัตโนมัติทันทีที่มีการบันทึก URL หรือเปิดใช้งาน\n- **แถบตั้งค่า Overlay+ ในแท็บ Docks & Web URL**: เพิ่มการ์ดสำหรับเข้าถึงการตั้งค่า URL ของ Overlay+ ในหน้าต่างตั้งค่าหลักโดยตรง\n- **แถบขอบไฟอัปเดตแบบ Squircle Progress Bar บน Server Rail**: ขณะกำลังดาวน์โหลดไฟล์อัปเดตในเบื้องหลัง ขอบเรืองแสงสีเขียวรอบปุ่มลูกศรดาวน์โหลดจะวิ่งเป็น Progress Bar ตามเปอร์เซ็นต์จริง (0-100%) และเมื่อดาวน์โหลดเสร็จสมบูรณ์ เส้นขอบจะวิ่งครบรอบล้อมกรอบปุ่มตามเดิม พร้อมแจ้งเตือนให้พร้อมติดตั้ง\n- **Zero GPU Lockup Compliance**: คำนวณความยาวเส้นรอบรูป SVG Dash-offset แบบ Real-time ตาม Chunks ที่รับมา โดยไม่มี CSS animation loop หน่วงการทำงาน ทำให้ GPU เข้าสู่โหมดพัก (0% idle) ได้อย่างสมบูรณ์\n- **Safe PyInstaller Atomic Extraction (_internal parity)**: แพ็กเกจครอบคลุมโครงสร้าง _internal ของตัวเต็ม ทำให้รีสตาร์ทแล้วอัปเดตติดสมบูรณ์แบบแน่นอน",
   "lite": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-lite.zip",
-    "sha256": "267e694611a4338105e226cd7ef7e2d9eccb7fe3580a102cdd3716c8ec5b8d28",
-    "size": 24912211
+    "sha256": "c606df5f4a11182ff293e8f60fbe213e0d6e1a60c2b8e78785604dd7d7528729",
+    "size": 49828404
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-full.zip",
-    "sha256": "94e84e818dac0bbd591aff4d857368a5e7dca46ffa19d131023abb0b07c21d98",
-    "size": 24912211
+    "sha256": "a2a8453f89ea13c681d2e2bd6fb8bd274682adcd69e795b62e27389b0c6f8638",
+    "size": 49828404
   },
   "packages": {
     "lite": {
       "version": "3.17",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-lite.zip",
-      "patch_sha256": "267e694611a4338105e226cd7ef7e2d9eccb7fe3580a102cdd3716c8ec5b8d28",
-      "patch_size": 24912211
+      "patch_sha256": "c606df5f4a11182ff293e8f60fbe213e0d6e1a60c2b8e78785604dd7d7528729",
+      "patch_size": 49828404
     },
     "full": {
       "version": "3.17",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-full.zip",
-      "patch_sha256": "94e84e818dac0bbd591aff4d857368a5e7dca46ffa19d131023abb0b07c21d98",
-      "patch_size": 24912211
+      "patch_sha256": "a2a8453f89ea13c681d2e2bd6fb8bd274682adcd69e795b62e27389b0c6f8638",
+      "patch_size": 49828404
     }
-  },
-  "version": "3.17"
+  }
 }
