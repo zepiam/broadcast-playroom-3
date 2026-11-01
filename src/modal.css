@@ -184,25 +184,36 @@
   gap: 4px;
 }
 
-.win-tab-btn {
-  flex: 1;
-  padding: 6px 14px;
-  background: transparent;
-  border: none;
-  color: var(--dc-text-muted);
-  border-radius: 4px;
-  font-family: var(--font-family);
-  font-size: 12.5px;
+.win-tab-btn, .modal-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: #25272c;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #c4c9d4;
+  border-radius: 8px;
+  font-family: var(--font-family, inherit);
+  font-size: 13.5px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.12s ease;
+  transition: all 0.15s ease;
   text-align: center;
+  outline: none;
 }
 
-.win-tab-btn.active {
-  background-color: var(--dc-bg-card-hover, #35373c);
-  color: var(--dc-text-primary);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+.win-tab-btn:hover, .modal-tab-btn:hover {
+  background: #2e3036;
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.win-tab-btn.active, .modal-tab-btn.active {
+  background-color: #3b82f6;
+  border-color: #60a5fa;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
 }
 
 /* ตารางข้อมูล (เช่น รายชื่อคนสุ่ม / ตารางคำสั่ง Replie) */

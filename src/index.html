@@ -998,7 +998,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.9</span>
+      <span class="desktop-titlebar-tag">v3.10</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -23646,9 +23646,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
     </div>
 
     <!-- Tab Bar -->
-    <div class="win-tabs" style="display: flex; gap: 8px; padding: 10px 18px 0 18px; border-bottom: 1px solid rgba(255,255,255,0.08); background: #1e1f22;">
-      <button type="button" class="modal-tab-btn active" id="tabGoGame" onclick="switchGameOverlayTab('game')">🎮 Game Overlay</button>
-      <button type="button" class="modal-tab-btn" id="tabGoViewer" onclick="switchGameOverlayTab('viewer')">👥 Viewer Overlay</button>
+    <div class="win-tabs game-overlay-tabs" style="display: flex; gap: 8px; padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); background: #18191c;">
+      <button type="button" class="win-tab-btn modal-tab-btn active" id="tabGoGame" onclick="switchGameOverlayTab('game')">🎮 Game Overlay</button>
+      <button type="button" class="win-tab-btn modal-tab-btn" id="tabGoViewer" onclick="switchGameOverlayTab('viewer')">👥 Viewer Overlay</button>
     </div>
 
     <!-- Window Body -->

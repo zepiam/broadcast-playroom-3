@@ -1833,3 +1833,14 @@ estart_application_with_patch ให้สำรองและกู้คื�
   - Compile frontend ด้วย 
 pm run build และ sync ไปยัง dist, trial และ installed production directory
   - แพ็กเกจและเผยแพร่ BroadcastPlayroom3-Lite-Patch-3.9.zip และ BroadcastPlayroom3-Full-Patch-3.9.zip บน GitHub Release v3.9
+
+
+## [2026-11-01 14:45:57] Release v3.10 — Modernized Game Overlay Tabs Styling
+- **ปรับแต่งสไตล์ปุ่มแท็บ Game Overlay:**
+  - แก้ไขปัญหาปุ่มแท็บ 🎮 Game Overlay และ 👥 Viewer Overlay แสดงผลเป็นปุ่มสีขาวเปลือยไม่มีสไตล์ (Unstyled default button)
+  - กำหนดคลาส game-overlay-tabs, modal-tab-btn, win-tab-btn ใน src/styles.css และ src/modal.css ให้เป็นปุ่มแท็บสไตล์โมเดิร์น
+  - สถานะ Active ไฮไลต์ด้วยสีน้ำเงิน #3b82f6 พร้อม Glow นุ่มนวล และสถานะปกติเป็นสีเข้ม #25272c ขอบมน order-radius: 8px เข้ากับ Dark Theme ของโปรแกรม
+- **Build & Release v3.10:**
+  - Compile frontend ด้วย 
+pm run build และ sync ไปยัง dist, trial และ installed production directory
+  - เผยแพร่ BroadcastPlayroom3-Lite-Patch-3.10.zip และ BroadcastPlayroom3-Full-Patch-3.10.zip บน GitHub Release v3.10
