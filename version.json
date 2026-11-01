@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.6",
+  "version": "3.7",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.6\n- แก้ไขปัญหาปุ่มควบคุมหัวหน้าต่างในหน้าต่างเครื่องมือแยก (Popout Tool Windows) ซ้อนกัน 2 ชั้น\n- แก้ไขการซ่อน/แสดงการ์ดแพลตฟอร์มบน Sidebar ในหน้าแรกให้ซิงค์แบบ Real-time ทันทีเมื่อตั้งค่าในหน้าต่างแยก\n- ปรับปรุงการกดปุ่ม Quick Pills ในหน้าตั้งค่าช่องทางสตรีมให้แม่นยำและเสถียรยิ่งขึ้น\n- รวมการอัปเกรดความเร็วเปิดโปรแกรม 13 เท่า และเฟรมหน้าต่าง Windows 11 Snap Assist จาก v3.5 ครบถ้วน",
+  "changelog": "- Broadcast Playroom v3.7\n- แก้ไขบั๊กหน้าต่างกลายเป็นรูปไอคอนใหญ่เต็มจอ: ฉีดสไตล์ชีต (styles.css, modal.css, ฯลฯ) ครบถ้วน 100% พร้อม inline constraint ขนาด 16px บนไอคอน titlebar\n- ปิดหน้าต่างโหลด Splash Screen ถาวรตามคำขอ เข้าโปรแกรมเร็วทันที (Instant Startup 0.9s)\n- แก้ไขปุ่มย่อ/ปิดหน้าต่างซ้อนกันในหน้าต่างป๊อปอัป (Popout Tool Windows) ให้เหลือชุดปุ่มระบบ Windows เพียงชุดเดียว\n- ปรับปรุงระบบซ่อน/แสดงช่องทางแพลตฟอร์มใน Sidebar และ Settings ให้ซิงค์สถานะตรงกันแบบเรียลไทม์\n- รวม Cumulative Patch สำหรับทั้งรุ่น Lite และ Full ให้กดอัปเดตจากเวอร์ชันใดก็ใช้งานได้ทันที",
   "published_at": "2026-11-01",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.6/BroadcastPlayroom3-Lite-Patch-3.6.zip",
-    "size": 28222391,
-    "sha256": "621ef3ca0ddb0b573d0051144235dd2736e21fa5386c475afebcfdb3f1406c40"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.7/BroadcastPlayroom3-Lite-Patch-3.7.zip",
+    "size": 44190023,
+    "sha256": "9841289e073dea72b8774d2fe27e228d0821fcf06079ecbb866ddd01d499928e"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.6/BroadcastPlayroom3-Full-Patch-3.6.zip",
-    "size": 92635064,
-    "sha256": "fbd5bfe3271b4c4fbfe4615673668a286b44d2c5f5a8f162164fb0934c8d2ae7"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.7/BroadcastPlayroom3-Full-Patch-3.7.zip",
+    "size": 92635185,
+    "sha256": "013572d98ddf91a421178392f85c833904f2cab6ae772645cc0ab4b69766f127"
   }
 }
