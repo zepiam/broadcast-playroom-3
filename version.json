@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.11",
+  "version": "3.12",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.11\n- แก้ไขปุ่ม 'ปิดหน้าต่าง' และ 'พับเก็บ' ด้านล่างของหน้าต่างแยก (Popout Windows) ให้สามารถสั่งปิดหน้าต่าง pywebview ได้อย่างสมบูรณ์แบบ\n- ปรับปรุงฟังก์ชัน `closeToolWindow` ให้รองรับการปิดหน้าต่างแบบ Standalone Popout Window อัตโนมัติในทุกหน้าต่างย่อย (Game Overlay Settings, System Settings, Voice Settings, Ask, Replie, Randomizer, User Manager, Author Profile ฯลฯ)\n- เพิ่มการสั่งเชื่อมต่อ API `/api/window/popout/close` และ `window.close()` อัตโนมัติเมื่อกดปุ่มปิด/พับเก็บที่แถบล่างของหน้าต่าง เพื่อความสะดวกสบายของผู้ใช้โดยไม่ต้องเลื่อนไปกดกากบาท [X] มุมบนขวา",
+  "changelog": "- Broadcast Playroom v3.12\n- นำแถบหัวข้อและคำอธิบายซ้ำซ้อนด้านบน (เช่น 'Overlay Composer Studio จัดวางเลย์เอาต์...', 'ตั้งค่า Game Overlay ปรับแต่งหน้าต่าง...') ออกจากทุกหน้าต่าง เพิ่มพื้นที่ทำงานให้กว้างขวาง สบายตา คลีน มินิมอล\n- ใน Composer Studio: ยุบหัวข้อซ้ำซ้อนและจัดแถบเครื่องมือ (พรีวิว, ส่งออก, นำเข้า, ลิงก์ OBS ฯลฯ) ชิดด้านบน ทำให้แคนวาสจัดฉากมีพื้นที่กว้างขึ้นเต็มตา\n- ใน Game Overlay: ปรับระบบเป็น Auto-save บันทึกอัตโนมัติทันทีที่มีการขยับสไลเดอร์ขนาด ความสูง หรือความทึบ พร้อมบันทึกก่อนปิดหน้าต่าง และนำปุ่ม '💾 บันทึกการตั้งค่า' ออก เหลือเพียงปุ่ม 'ปิดหน้าต่าง' เรียบหรู",
   "published_at": "2026-11-01",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.11/BroadcastPlayroom3-Lite-Patch-3.11.zip",
-    "size": 44225941,
-    "sha256": "a2ad409d2a8524452a8f6e851d5373f6b5130f7d74e5044e616505f21f4fe498"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.12/BroadcastPlayroom3-Lite-Patch-3.12.zip",
+    "size": 44226155,
+    "sha256": "be6ce63be0ca7604fe9139021ab4187cf010ef4bff47db7b1b53de0469c44955"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.11/BroadcastPlayroom3-Full-Patch-3.11.zip",
-    "size": 92671103,
-    "sha256": "9054a6bed083a493923a2d24e1a042ee5ff094abb609ef201de16fde5f9c2c53"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.12/BroadcastPlayroom3-Full-Patch-3.12.zip",
+    "size": 92671317,
+    "sha256": "b4154267eb3ddd88f1587442d19ceec4408ca7d8606e0be43bb3ffb5440fafb9"
   }
 }
