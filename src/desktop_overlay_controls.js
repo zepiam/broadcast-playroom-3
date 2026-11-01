@@ -116,11 +116,22 @@ window.desktopOverlayAction=async function(kind,action='toggle'){
   try{
     const response=await fetch('/api/desktop-overlays',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,action})});
     const result=await response.json();
-    if(!response.ok)throw Error(result.error || 'เปิด Overlay ไม่สำเร็จ');
+    if(!response.ok){
+      const errMsg = result.error || 'เปิด Overlay ไม่สำเร็จ';
+      if(kind==='overlay+'){
+        showToast(errMsg);
+        if(typeof openOverlayPlusSettings==='function')openOverlayPlusSettings();
+        return;
+      }
+      throw Error(errMsg);
+    }
     await refresh();
     showToast(action==='edit'?'สลับกรอบปรับตำแหน่งแล้ว':action==='demo'?'สลับสถานะ Loop Demo แล้ว':'เปลี่ยนสถานะหน้าต่าง Overlay แล้ว');
   }catch(error){
     showToast(error.message);
+    if(kind==='overlay+' && typeof openOverlayPlusSettings==='function'){
+      openOverlayPlusSettings();
+    }
   }
 };
 window.openDesktopOverlaySettings=async function(tab='game'){

@@ -2025,6 +2025,7 @@ def handle_tool_popout(tool_name, main_url, section=None):
         'playroom': 'Playroom Studio ไลฟ์ซาวด์ & คลิปสั้น',
         'author-profile': 'โปรไฟล์ผู้ชม',
         'game-overlay': 'ตั้งค่า Game Overlay',
+        'overlay-plus-settings': 'ตั้งค่า Overlay+ (เบราว์เซอร์ลอย)',
         'composer': 'Composer Studio จัดฉากถ่ายทอดสด'
     }
     sizes = {
@@ -2040,7 +2041,8 @@ def handle_tool_popout(tool_name, main_url, section=None):
         'playroom': (840, 640),
         'chat-widget': (900, 680),
         'author-profile': (660, 580),
-        'game-overlay': (760, 620)
+        'game-overlay': (760, 620),
+        'overlay-plus-settings': (700, 480)
     }
     sz = sizes.get(name, (800, 600))
     title = titles.get(name, f'Broadcast Playroom - {name.capitalize()}')

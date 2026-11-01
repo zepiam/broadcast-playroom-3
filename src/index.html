@@ -922,6 +922,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
             if (window.BP3GameSliders?.init) window.BP3GameSliders.init(document);
             if (window.BP3ViewerOverlaySettings?.init) window.BP3ViewerOverlaySettings.init(document);
           }, 50);
+        } else if (targetName === 'overlay-plus-settings') {
+          setTimeout(() => {
+            if (typeof window.openOverlayPlusSettings === 'function') window.openOverlayPlusSettings();
+          }, 50);
         } else if (targetName === 'settings') {
           const secParam = params.get('section') || localStorage.getItem('bp3_settings_target_section');
           if (secParam) {
@@ -945,11 +949,13 @@ document.addEventListener('DOMContentLoaded',async()=>{
             e.stopPropagation();
           }
           fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetName), { method: 'POST' }).catch(() => {});
+          try { window.pywebview?.api?.close?.(); } catch (_) {}
           try { window.close(); } catch (_) {}
         };
 
-        const closeBtns = win.querySelectorAll('.btn-win-action.win-close, .btn-win-action.close-red, [title*="ปิด"], [id^="btnClose"], [onclick*="closeToolWindow"]');
+        const closeBtns = win.querySelectorAll('.btn-win-action.win-close, .btn-win-action.close-red, button.btn-win-action, button.btn-topbar-action[title*="ปิด"], button[title="ปิดหน้าต่าง"], button[onclick*="closeToolWindow"]');
         closeBtns.forEach(btn => {
+          if (btn.classList.contains('settings-nav-item') || btn.closest('.settings-sidebar')) return;
           btn.onclick = doClose;
         });
       }
@@ -32603,6 +32609,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
                 'playroom': 'Playroom Studio ไลฟ์ซาวด์ & คลิปสั้น',
                 'author-profile': 'โปรไฟล์ผู้ชม',
                 'game-overlay': 'ตั้งค่า Game Overlay',
+                'overlay-plus-settings': 'ตั้งค่า Overlay+ (เบราว์เซอร์ลอย)',
                 'composer': 'Composer Studio จัดฉากถ่ายทอดสด'
               };
               const title = titles[name] || name;
@@ -52768,7 +52775,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          { text: '⚙️ ตั้งค่า Docks & Web URL...', run: () => openDesktopOverlaySettings() }
+          { text: '⚙️ ตั้งค่า Overlay+ (เบราว์เซอร์ลอย)...', run: () => openOverlayPlusSettings() }
 
 
 
@@ -73457,65 +73464,60 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+        const pctEl = document.getElementById('fastUpdateDownloadStatePercent');
+        const trackEl = document.getElementById('fastUpdateDownloadStateProgressTrack');
+        const barEl = document.getElementById('fastUpdateDownloadStateProgressBar');
+
         if (data.status === 'ready_to_install') {
-
-
 
           if (stateText) stateText.textContent = `ดาวน์โหลดไฟล์อัปเดต (v${data.version || ''}) พร้อมติดตั้งเรียบร้อยแล้ว`;
 
-
-
           if (stateIcon) stateIcon.textContent = '✅';
-
-
 
           if (promptText) promptText.innerHTML = `โปรแกรมมีเวอร์ชันใหม่ (v${data.version || ''}) รีสตาร์ทเพื่ออัปเดตหรือไม่?`;
 
-
+          if (pctEl) {
+            pctEl.style.display = 'inline-block';
+            pctEl.textContent = '100%';
+          }
+          if (trackEl) trackEl.style.display = 'block';
+          if (barEl) {
+            barEl.style.width = '100%';
+            barEl.style.background = '#23a55a';
+          }
 
           if (btnOk) {
 
-
-
             btnOk.disabled = false;
-
-
 
             btnOk.textContent = 'OK (รีสตาร์ทเพื่ออัปเดต)';
 
-
-
           }
-
-
 
         } else if (data.status === 'downloading') {
 
-
-
-          if (stateText) stateText.textContent = `กำลังดาวน์โหลดไฟล์อัปเดตในเบื้องหลัง... ${data.percent || 0}%`;
-
-
+          const pct = Math.min(100, Math.max(0, parseFloat(data.percent) || 0));
+          if (stateText) stateText.textContent = `กำลังดาวน์โหลดไฟล์อัปเดตในเบื้องหลัง...`;
 
           if (stateIcon) stateIcon.textContent = '⏳';
 
-
+          if (pctEl) {
+            pctEl.style.display = 'inline-block';
+            pctEl.textContent = `${pct.toFixed(1)}%`;
+          }
+          if (trackEl) trackEl.style.display = 'block';
+          if (barEl) {
+            barEl.style.width = `${pct}%`;
+            barEl.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+          }
 
           if (btnOk) {
 
-
-
             btnOk.disabled = false;
-
-
 
             btnOk.textContent = 'OK (ดาวน์โหลดและรีสตาร์ท)';
 
-
-
           }
-
-
 
         }
 
@@ -73561,11 +73563,12 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      if (badge && _latestUpdateInfo && _latestUpdateInfo.latest_version) {
+      const info = window._latestUpdateInfo || _latestUpdateInfo;
+      if (badge && info && info.latest_version) {
 
 
 
-        badge.textContent = `v${_latestUpdateInfo.latest_version}`;
+        badge.textContent = 'v' + (info.latest_version || '');
 
 
 
@@ -74461,17 +74464,11 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      <div>
+      <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
 
+        <h3 id="fastUpdateTitle" style="margin:0; font-size:15px; font-weight:800; color:#f2f3f5; white-space:nowrap;">อัปเดต Broadcast Playroom</h3>
 
-
-        <h3 id="fastUpdateTitle" style="margin:0; font-size:15px; font-weight:800; color:#f2f3f5;">อัปเดต Broadcast Playroom</h3>
-
-
-
-        <span id="fastUpdateVersionBadge" class="badge-version">v3.x.x</span>
-
-
+        <span id="fastUpdateVersionBadge" class="badge-version" style="display:inline-block; padding:3px 9px; border-radius:12px; font-size:12px; font-weight:700; background:rgba(35,165,90,0.18); color:#34d399; border:1px solid rgba(52,211,153,0.38); font-family:var(--font-family-mono); letter-spacing:0.3px;">v3.x.x</span>
 
       </div>
 
@@ -74525,13 +74522,18 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        <div id="fastUpdateDownloadStateBox" style="margin-bottom:12px; font-size:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px 12px; display:flex; align-items:center; gap:8px;">
+        <div id="fastUpdateDownloadStateBox" style="margin-bottom:12px; font-size:12px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:10px 14px; display:flex; flex-direction:column; gap:8px;">
 
-
-
-          <span id="fastUpdateDownloadStateIcon">⚡</span> <span id="fastUpdateDownloadStateText">ระบบกำลังตรวจสอบไฟล์อัปเดต...</span>
-
-
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="fastUpdateDownloadStateIcon">⚡</span>
+              <span id="fastUpdateDownloadStateText">ระบบกำลังตรวจสอบไฟล์อัปเดต...</span>
+            </div>
+            <span id="fastUpdateDownloadStatePercent" style="font-weight:700; color:#34d399; font-family:var(--font-family-mono); font-size:12px; display:none;">0%</span>
+          </div>
+          <div id="fastUpdateDownloadStateProgressTrack" style="width:100%; height:6px; background:rgba(255,255,255,0.08); border-radius:999px; overflow:hidden; display:none;">
+            <div id="fastUpdateDownloadStateProgressBar" style="width:0%; height:100%; background:linear-gradient(90deg, #10b981, #34d399); border-radius:999px; transition:width 0.3s ease;"></div>
+          </div>
 
         </div>
 
