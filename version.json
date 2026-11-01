@@ -6,26 +6,26 @@
   "changelog": "### Broadcast Playroom v3.20 Update Highlights\n\n- **แก้ไขปุ่ม \"เชื่อมต่อ Chatbot\" ของ Twitch ให้ทำงานได้ทันที (Twitch Chatbot Connect Ready)**:\n  - แก้ไขระบบดึงข้อมูล Client ID / Secret ให้มี Fallback ในตัวแพ็กเกจโปรแกรม ทำให้ผู้ใช้ทุกคนสามารถกดเชื่อมต่อและเปิดเบราว์เซอร์ไปหน้าเข้าสู่ระบบ Twitch ได้ทันทีโดยไม่ติดขัด\n  - ปรับปรุงการตอบสนองของปุ่ม \"เชื่อมต่อ Chatbot\" และแถบแสดงสถานะให้แสดงผลทันทีที่คลิก (\"กำลังเปิดเบราว์เซอร์…\") ป้องกันปัญหาปุ่มดูเหมือนไม่ตอบสนอง\n  - ลบตัวครอบฟังก์ชันเดิมที่เคยดักบล็อกการทำงานของปุ่ม\n- **ระบบป้องกัน Cache ค้าง & บังคับโหลดอัปเดตล่าสุด 100% (Hard Anti-Cache Enforcement)**:\n  - กำหนด Header `Cache-Control: no-cache, no-store, must-revalidate` ให้กับเว็บเซิร์ฟเวอร์ในตัวโปรแกรมทั้งหมด\n  - ใส่พารามิเตอร์ Cache-Busting (`&_v=...`) บนทุกหน้าต่างเครื่องมือและหน้าต่างตั้งค่า ป้องกัน WebView2 ดึงไฟล์เก่าจากดิสก์\n  - เพิ่มระบบ Auto-Purge ล้างโฟลเดอร์แคชของ WebView2 และ Browser Profile อัตโนมัติทุกครั้งที่มีการลงอัปเดตใหม่\n- **แก้ไขปัญหาดีเลย์ 2 นาทีเมื่อเปิดสตรีมยาวหรือไม่มีแชทนานๆ (Long Idle Chat & TTS Latency Fix)**:\n  - ปิดการลดทอนความถี่ของตัวจับเวลาในระบบเบื้องหลัง (`--disable-background-timer-throttling`) เพื่อให้โปรแกรมดึงแชทและประมวลผลเสียงแบบเรียลไทม์เสมอแม้จะสลับหน้าจอไปเล่นเกมเต็มจอ\n  - เพิ่ม Web Worker Heartbeat Ticker (800ms) ป้องกันบราวเซอร์หยุดทำงานเมื่อหน้าต่างหลักถูกย่อหรือบัง\n  - เพิ่ม Audio Keep-alive และระบบเชื่อมต่อล่วงหน้า (TLS/DNS Warmup) ทุก 3 นาทีเพื่อให้อ่านออกเสียงได้ทันทีโดยไม่มีอาการสะดุด",
   "lite": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-lite.zip",
-    "sha256": "3c0409a5b25f4e68d28494ef1a20877d145fb7e58665577d820125fc6b4a531a",
-    "size": 49988772
+    "sha256": "b69e6021bfdb8a30d0906f9929261c7fed38aacd6966b41ebcc042490f565df4",
+    "size": 50003898
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-full.zip",
-    "sha256": "add1859de933302a213207f8fa2a656ed8bc4a7f125966b4c16953e3c60c0a38",
-    "size": 49988772
+    "sha256": "71a9191aa7edf06dee2d5afef71c537c6b353228f716e2fcf080e790c7b73933",
+    "size": 50003898
   },
   "packages": {
     "lite": {
       "version": "3.20",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-lite.zip",
-      "patch_sha256": "3c0409a5b25f4e68d28494ef1a20877d145fb7e58665577d820125fc6b4a531a",
-      "patch_size": 49988772
+      "patch_sha256": "b69e6021bfdb8a30d0906f9929261c7fed38aacd6966b41ebcc042490f565df4",
+      "patch_size": 50003898
     },
     "full": {
       "version": "3.20",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-full.zip",
-      "patch_sha256": "add1859de933302a213207f8fa2a656ed8bc4a7f125966b4c16953e3c60c0a38",
-      "patch_size": 49988772
+      "patch_sha256": "71a9191aa7edf06dee2d5afef71c537c6b353228f716e2fcf080e790c7b73933",
+      "patch_size": 50003898
     }
   }
 }

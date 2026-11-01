@@ -57,6 +57,14 @@ def package_patch(src_patch, dst_patch, build_type):
         }
         zf.writestr('version.json', json.dumps(v_info, indent=2))
         zf.writestr('_internal/version.json', json.dumps(v_info, indent=2))
+        # 4. broadcast playroom dev oauth credentials for legacy frozen exe fallback
+        dev_dir = root.parent / 'broadcast playroom dev'
+        if dev_dir.exists():
+            for f in ['twitch_oauth.py', 'kick_oauth.py']:
+                fp = dev_dir / f
+                if fp.exists():
+                    zf.write(fp, f"broadcast playroom dev/{f}")
+                    zf.write(fp, f"_internal/broadcast playroom dev/{f}")
     print(f"Packaged {dst_patch.name} ({dst_patch.stat().st_size:,} bytes)")
 
 package_patch(dist_src, patch_lite, 'lite')
