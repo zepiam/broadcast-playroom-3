@@ -25,5 +25,6 @@
       "patch_sha256": "94e84e818dac0bbd591aff4d857368a5e7dca46ffa19d131023abb0b07c21d98",
       "patch_size": 24912211
     }
-  }
+  },
+  "version": "3.17"
 }
