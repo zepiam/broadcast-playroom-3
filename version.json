@@ -1,9 +1,23 @@
 {
-  "version": "3.15",
   "product": "broadcast-playroom-3",
+  "version": "3.15",
+  "repo": "zepiam/broadcast-playroom-3",
   "release_date": "2026-11-01",
+  "published_at": "2026-11-01",
   "min_app_version": "3.0.0",
   "changelog": "- Broadcast Playroom v3.15\n- กู้คืนและแก้ไขปุ่ม Game Overlay และ Overlay+ ด้านบน ให้กลับมาใช้งานได้สมบูรณ์แบบ 100%\n- แก้ไขเมนูคลิกขวา Overlay & แปลภาษา: คลิก 'ตั้งค่าการแปลภาษา...' เปิดเข้าสู่หน้าตั้งค่าแท็บแปลภาษาโดยตรง และคลิก 'ตั้งค่า OBS WebSocket...' เปิดเข้าแท็บ OBS WebSocket โดยตรง\n- ปรับแต่งปุ่มแท็บสลับ Game Overlay / Viewer Overlay ในหน้าต่างตั้งค่า Game Overlay ให้เป็นดีไซน์ Dark Pill ที่สวยงาม ไม่เปลือย ไม่หลุดสไตล์\n- ปรับปุ่ม 'พับเก็บ' เป็น 'ปิดหน้าต่าง' และนำปุ่มบันทึกที่ซ้ำซ้อนออกในเครื่องมือ (Settings, Replie, ASK, QuickRandomizer, Playroom, User Manager) รองรับการสั่งปิดทั้งในโหมดปกติและ Popout Window\n- แก้ไขระบบ Auto-Save และ Backup & Restore ให้ผสานและจดจำข้อมูลช่องทางสตรีม (Channel Names) และสถานะเชื่อมต่ออัตโนมัติ (Auto-Connect) คงอยู่ถาวร 100% ไม่สูญหายเมื่ออัปเดตเวอร์ชันใหม่",
+  "lite": {
+    "type": "patch",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Lite-Patch-3.15.zip",
+    "size": 44228113,
+    "sha256": "b2cb22dd53752df71820d05c4b83f0187a9dd23cb7002d55a7003c63bf9d9f93"
+  },
+  "full": {
+    "type": "patch",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Full-Patch-3.15.zip",
+    "size": 92673275,
+    "sha256": "6a25c970066db028d66d9faa08deb22f971c98a1357f30a3bd9d8483d204ad50"
+  },
   "packages": {
     "lite": {
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Lite-Patch-3.15.zip",
