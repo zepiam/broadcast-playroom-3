@@ -1,30 +1,30 @@
 {
-  "version": "3.18",
-  "latest_version": "3.18",
+  "version": "3.19",
+  "latest_version": "3.19",
   "critical": false,
-  "changelog": "### Broadcast Playroom v3.18 Update Highlights\n\n- **ป้องกันอาการ TTS อ่านแชทย้อนหลังและอ่านซ้อน 2 ครั้ง (Popout Safety Guard)**:\n  - ตรวจจับหน้าต่างแยก (Popout / Secondary Window) เช่น หน้าต่างตั้งค่า Game Overlay หรือหน้าต่างเครื่องมือต่างๆ ให้ไม่เริ่มระบบดึงประวัติข้อความแชทซ้ำ และไม่สั่งเล่นเสียงอ่าน TTS\n  - เฉพาะหน้าต่างหลักของโปรแกรมเท่านั้นที่จะเป็นผู้ดึงแชทและเล่นเสียงอ่าน ทำให้หมดปัญหาเสียงอ่านแชทย้อนหลังตั้งแต่ข้อความแรกเมื่อเปิดหน้าต่างตั้งค่า และแก้ปัญหาเสียงอ่านซ้อนกัน 2 ครั้งเมื่อมีข้อความแชทใหม่เข้ามา 100%\n- **กู้คืนปุ่มจัดการ \"แก้ไข\" และ \"ลบ\" ในคลังคำแทนที่การอ่าน (Dictionary & Word Replacement)**:\n  - ปรับแก้กฎ CSS ของหน้าต่างแยกที่เคยบดบังปุ่ม ทำให้คอลัมน์ \"จัดการ\" ในตารางแสดงปุ่ม `✏️ แก้ไข` และ `🗑️ ลบ` ชัดเจนในทุกแถว\n  - เพิ่มปุ่มลำโพง `🔊` จิ๋วในแถวตาราง ให้กดทดลองฟังเสียงอ่านคำแทนที่ได้ทันที\n- **ระบบหน้าต่างแก้ไขคำศัพท์ (Edit Word Modal) พร้อมปุ่มทดลองฟัง Edge-TTS**:\n  - เมื่อกดปุ่ม `✏️ แก้ไข` คำใดๆ จะเปิดแถบแก้ไขคำศัพท์ขึ้นมา พร้อมช่องคำเดิมและคำที่ให้อ่านแทน\n  - มีปุ่ม `🔊 ฟัง` ให้กดทดสอบฟังเสียงสังเคราะห์จริงจาก Edge-TTS ก่อนตัดสินใจบันทึก\n- **Dual-Path Packaging & Version Manifest Parity**:\n  - แพ็กเกจครอบคลุมโครงสร้างทั้ง root และ `_internal/` ป้องกันการ rollback และรองรับการอัปเดตอัตโนมัติจากทุกเวอร์ชันก่อนหน้าอย่างไร้รอยต่อ",
+  "changelog": "### Broadcast Playroom v3.19 Update Highlights\n\n- **แก้ไขปุ่ม \"ปิดหน้าต่าง\" ให้กดปิดได้ 100% ทุกหน้าต่างแยก (Robust Window Close & Anti-Deadlock)**:\n  - แก้ไขปัญหาปุ่ม \"ปิดหน้าต่าง\" ของหน้าต่างตั้งค่าระบบ, ตั้งค่าเสียงอ่าน, Replie Tools, ASK Tool, Quick Randomizer และ User Manager ที่เคยกดปิดไม่ลงหรือปิดติดๆ ดับๆ\n  - ขจัดปัญหา Deadlock ระหว่างการเรียก fetch ปิดหน้าต่างกับการทำลายหน้าต่าง WebView2 โดยตอบกลับ HTTP ทันทีและทำลายหน้าต่างแบบ Asynchronous บน Thread แยก\n  - ป้องกัน Cross-Thread Conflict ด้วย Safe Window Lock และส่ง Instance หน้าต่างตรงเข้า JS API Bridge\n  - เพิ่ม Global Capture Click Interceptor ที่ระดับ Document ปิดหน้าต่างทันทีเมื่อกดปุ่มปิด\n- **คลิกขวาปุ่มด้านบนแล้วเลือกตั้งค่า ไปยังแท็บที่เกี่ยวข้องทันที (Direct Section Deep-Linking)**:\n  - เมื่อคลิกขวาที่ปุ่มด้านบน เช่น ปุ่ม \"อ่านทุกภาษา / แปลภาษา\" แล้วกด \"⚙️ ตั้งค่าการแปลภาษา...\" หน้าต่างตั้งค่าจะเปิดและสลับไปยังแท็บ \"แปลภาษาแชทสด\" โดยตรง ไม่ค้างอยู่ที่ \"ช่องทางสตรีม\"\n  - รองรับการเปิดไปยังแท็บ OBS WebSocket, ผู้สนับสนุน และแท็บอื่นๆ จากทุกเมนูคลิกขวาอย่างแม่นยำ\n- **Dual-Path Packaging & Version Manifest Parity**:\n  - รองรับการอัปเดตแบบคู่ขนานทั้ง root และ `_internal/` ป้องกันการ rollback กลับเวอร์ชันเดิม",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-lite.zip",
-    "sha256": "4472cc8a46c0ca9e65ca889cd974b77069500c6cf616dbfa738ac00cad7d60d9",
-    "size": 49834152
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.19/patch-v3.19-lite.zip",
+    "sha256": "cb3fc365fd1ce75c671e9ce744d4ade81aa24ec66a1be7ae20ada0d77cc8829e",
+    "size": 49835188
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-full.zip",
-    "sha256": "0d1d8d0d7257b50934a9ae4a6e2cdb5ae9e562cef4ed60d9c081d52dd491ad4c",
-    "size": 49834152
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.19/patch-v3.19-full.zip",
+    "sha256": "21fa00d4a4bb97cecd0c017d3a380206cb05381330e3ab17a3a715db66e57ae7",
+    "size": 49835188
   },
   "packages": {
     "lite": {
-      "version": "3.18",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-lite.zip",
-      "patch_sha256": "4472cc8a46c0ca9e65ca889cd974b77069500c6cf616dbfa738ac00cad7d60d9",
-      "patch_size": 49834152
+      "version": "3.19",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.19/patch-v3.19-lite.zip",
+      "patch_sha256": "cb3fc365fd1ce75c671e9ce744d4ade81aa24ec66a1be7ae20ada0d77cc8829e",
+      "patch_size": 49835188
     },
     "full": {
-      "version": "3.18",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-full.zip",
-      "patch_sha256": "0d1d8d0d7257b50934a9ae4a6e2cdb5ae9e562cef4ed60d9c081d52dd491ad4c",
-      "patch_size": 49834152
+      "version": "3.19",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.19/patch-v3.19-full.zip",
+      "patch_sha256": "21fa00d4a4bb97cecd0c017d3a380206cb05381330e3ab17a3a715db66e57ae7",
+      "patch_size": 49835188
     }
   }
 }
