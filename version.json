@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.12",
+  "version": "3.13",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.12\n- นำแถบหัวข้อและคำอธิบายซ้ำซ้อนด้านบน (เช่น 'Overlay Composer Studio จัดวางเลย์เอาต์...', 'ตั้งค่า Game Overlay ปรับแต่งหน้าต่าง...') ออกจากทุกหน้าต่าง เพิ่มพื้นที่ทำงานให้กว้างขวาง สบายตา คลีน มินิมอล\n- ใน Composer Studio: ยุบหัวข้อซ้ำซ้อนและจัดแถบเครื่องมือ (พรีวิว, ส่งออก, นำเข้า, ลิงก์ OBS ฯลฯ) ชิดด้านบน ทำให้แคนวาสจัดฉากมีพื้นที่กว้างขึ้นเต็มตา\n- ใน Game Overlay: ปรับระบบเป็น Auto-save บันทึกอัตโนมัติทันทีที่มีการขยับสไลเดอร์ขนาด ความสูง หรือความทึบ พร้อมบันทึกก่อนปิดหน้าต่าง และนำปุ่ม '💾 บันทึกการตั้งค่า' ออก เหลือเพียงปุ่ม 'ปิดหน้าต่าง' เรียบหรู",
+  "changelog": "- Broadcast Playroom v3.13\n- อัปเกรดระบบ Auto-save แบบองค์รวมทั่วทั้งโปรแกรม (Universal Auto-Save): ทุกหน้าต่างและการตั้งค่า (Overlay+, Chat Widget, Giveaway, Game Overlay, OBS WebSocket, เสียงอ่าน TTS, ขนาดและสเกล ฯลฯ) จะถูกบันทึกอัตโนมัติทันทีที่มีการเปลี่ยนแปลง โดยไม่ต้องคอยกดปุ่มบันทึกซ้ำซ้อน\n- นำปุ่มบันทึกที่ไม่จำเป็นออกจากหน้าต่างต่างๆ เช่น Overlay+ และ Giveaway เพื่อเพิ่มความสะดวกสบายและมอบประสบการณ์การใช้งานที่ลื่นไหลสไตล์มินิมอล\n- แก้ไขปัญหาข้อมูลช่องและสถานะแพลตฟอร์มที่ซ่อนไว้สูญหายหลังการอัปเดตเวอร์ชันใหม่: กำหนดให้ไฟล์ฐานข้อมูลบนเครื่อง (`platform_settings.json`) เป็นแหล่งข้อมูลหลัก (Source of Truth) อย่างถาวร พร้อมระบบสำรองและกู้คืนการตั้งค่าผู้ใช้โดยอัตโนมัติทุกครั้งที่มีการอัปเดตแพตช์",
   "published_at": "2026-11-01",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.12/BroadcastPlayroom3-Lite-Patch-3.12.zip",
-    "size": 44226155,
-    "sha256": "be6ce63be0ca7604fe9139021ab4187cf010ef4bff47db7b1b53de0469c44955"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.13/BroadcastPlayroom3-Lite-Patch-3.13.zip",
+    "size": 44226337,
+    "sha256": "b3582be6e856ddbadb6b7c63b5ddc6d810a11db9716d24d4f238a15eec9e59bd"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.12/BroadcastPlayroom3-Full-Patch-3.12.zip",
-    "size": 92671317,
-    "sha256": "b4154267eb3ddd88f1587442d19ceec4408ca7d8606e0be43bb3ffb5440fafb9"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.13/BroadcastPlayroom3-Full-Patch-3.13.zip",
+    "size": 92671499,
+    "sha256": "3273f208e1e07b9838c49abaaaadbd352d7338eca4e3f3204fdb6c2f2f85dc13"
   }
 }
