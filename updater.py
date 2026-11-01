@@ -450,6 +450,8 @@ def check_for_update(build_type: Optional[str] = None) -> dict:
     latest_ver = manifest.get("version", current_ver)
 
     edition_info = manifest.get(bt, {})
+    if not edition_info and "packages" in manifest:
+        edition_info = manifest.get("packages", {}).get(bt, {})
 
 
 
@@ -465,9 +467,9 @@ def check_for_update(build_type: Optional[str] = None) -> dict:
 
             "changelog": manifest.get("changelog", ""),
 
-            "download_url": edition_info.get("url", ""),
+            "download_url": edition_info.get("url") or edition_info.get("patch_url") or "",
 
-            "sha256": edition_info.get("sha256", ""),
+            "sha256": edition_info.get("sha256") or edition_info.get("patch_sha256") or "",
 
             "build_type": bt,
 
