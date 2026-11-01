@@ -1,3 +1,14 @@
+## [2026-11-01 12:58] – Antigravity (Codified Mandatory Production Artifact Pre-Flight Gate)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เพิ่มกฎเหล็กและข้อกำหนดอย่างเป็นทางการลงใน `AGENTS.md`, `HANDOFF.md` และ `WORKLOG.md`
+- **สรุปสาระสำคัญ:**
+  - กำหนดให้ AI ทุกตัว (ทั้ง Antigravity และ Codex) ต้องทดสอบเฉพาะไฟล์ Production จริง (`dist/index.html` และ Executable) ก่อนปล่อยอัปเดตทุกครั้ง ห้ามใช้ผลการรันใน Dev มาอ้างอิงความถูกต้องเด็ดขาด
+  - การันตีระบบตรวจสอบอัตโนมัติ (Build Gate, Playwright E2E on dist, Backend Self-Healing) เพื่อไม่ให้ภาระการตรวจสอบตกเป็นของผู้ใช้
+  - บันทึกเป็นมาตรฐานการทำงานถาวรของโปรเจกต์
+
+---
+
 ## [2026-11-01 12:36] – Antigravity (Implemented 3-Tier Zero-Fail Safety Shield for Releases)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)

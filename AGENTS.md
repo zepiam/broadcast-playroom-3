@@ -34,6 +34,15 @@ When you start a session or pick up a task in this project, **you must read `HAN
 - Never claim update success from ZIP extraction, manifest version or UI label alone: verify executable hash/version/API after restart. The old installed updater has been observed leaving the old EXE in place while replacing frontend/version files. Executable replacement must wait for old processes/file locks, check extraction failure and retain a recoverable download. Until tested, explicitly report the transition as unverified.
 - Version bumps for repair must be discoverable by already-updated clients (e.g. 3.3 -> 3.4). Publish patch assets and matching checksums before switching the master/release manifest.
 
+
+### Mandatory Production Artifact Pre-Flight Gate (Zero User Burden)
+- **Never rely on Dev Mode (`src/`) to declare a release ready:** Dev servers serve loose source files dynamically. Production runs strictly from compiled bundles (`dist/` and `_internal/dist/`). Testing dev does NOT prove production works.
+- **Mandatory 3-Step Production Pre-Flight Verification before any Release:**
+  1. **Build Gate:** `npm run build` must run `copy_dist_assets.py` with the Safety Audit Gate passing (verifying all CSS links, bundle sizes > 50 kB, and inline image/layout constraints).
+  2. **Headless E2E on `dist/`:** Automated Playwright tests must load `dist/index.html` directly, asserting zero FOUC, correct titlebar icon bounding box (16x16 px), correct background colors, and no duplicated controls.
+  3. **Self-Healing Fallback:** The backend `launch_dev.py` MUST maintain runtime self-healing so that even if corrupted assets are somehow extracted on a client machine, the app automatically repairs its HTML before display.
+- **Strict Quality Rule:** The user must NEVER have to debug, inspect, or catch basic build discrepancies. The AI agent bears 100% autonomous responsibility for production readiness and verification.
+
 When the user requests a version update/release, prepare and publish UPDATE PATCHES on GitHub for existing installations. This does NOT authorize uploading, replacing, deleting, or otherwise modifying Hugging Face installers or repositories. Hugging Face changes require a direct, explicit user instruction naming that work. Never infer permission from a version bump, update repair, release request, or existing manifest URL. Preserve installer hosting unless explicitly instructed otherwise.
 
 Before reporting work finished or handing it to another AI, update **both `HANDOFF.md` and `WORKLOG.md`**. This is an explicit user requirement, including small UI/text changes. Record what changed, actual verification results, remaining work and how to resume. Keep WORKLOG append-only; never claim an unrun test passed. Updating only one file is incomplete. Do not wait for the user to remind you.

@@ -9,3 +9,6 @@
   3. **Fixed Duplicate Controls in Popout Windows:** Hid `.floating-actions-right` and `#desktopTitlebar` in standalone popouts, keeping only the native OS window frame.
   4. **Synchronized Platform Hiding:** Sidebar and Settings platform cards immediately reflect visibility changes across all views.
 - **Verification:** All tests passed with Playwright (`tests/verify_ui_fixes.py`).
+
+## Permanent Quality Standard: Mandatory Production Pre-Flight Gate
+- All future releases MUST be verified against `dist/` and compiled artifacts via Playwright before publishing. Zero user burden.
