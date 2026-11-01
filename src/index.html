@@ -938,6 +938,32 @@ document.addEventListener('DOMContentLoaded',async()=>{
           setTimeout(() => {
             if (typeof window.openOverlayPlusSettings === 'function') window.openOverlayPlusSettings();
           }, 50);
+        } else if (targetName === 'author-profile') {
+          const syncAuthorProfile = () => {
+            try {
+              let user = params.get('section') || params.get('user');
+              let plat = params.get('plat');
+              let avatar = '';
+              let nick = '';
+              let vip = false;
+              const raw = localStorage.getItem('bp3_active_author_profile');
+              if (raw) {
+                const data = JSON.parse(raw);
+                if (!user || data.username === user) {
+                  user = data.username || user;
+                  plat = data.platform || plat;
+                  avatar = data.avatarUrl || data.avatar || '';
+                  nick = data.nickname || '';
+                  vip = !!data.isVip;
+                }
+              }
+              if (user && typeof openAuthorModal === 'function') {
+                openAuthorModal(user, plat || 'Twitch', avatar, nick, vip);
+              }
+            } catch (_) {}
+          };
+          setTimeout(syncAuthorProfile, 40);
+          setTimeout(syncAuthorProfile, 200);
         } else if (targetName === 'settings') {
           const secParam = params.get('section') || localStorage.getItem('bp3_settings_target_section');
           if (secParam) {
@@ -1069,7 +1095,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.21</span>
+      <span class="desktop-titlebar-tag">v3.22</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -20474,7 +20500,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-              <span style="font-size:16px; font-weight:800; color:#ffffff;" id="profUsername">Somchai_VIP</span>
+              <span style="font-size:16px; font-weight:800; color:#ffffff;" id="profUsername">---</span>
 
 
 
@@ -20514,7 +20540,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-              <strong style="font-size:12.5px; color:#38bdf8;" id="profNickname">พี่สมชาย VIP</strong>
+              <strong style="font-size:12.5px; color:#38bdf8;" id="profNickname">-</strong>
 
 
 
@@ -20682,7 +20708,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-            <div style="font-size:14px; font-weight:700; color:#34d399;" id="profMsgCount">48 ข้อความ</div>
+            <div style="font-size:14px; font-weight:700; color:#34d399;" id="profMsgCount">0 ข้อความ</div>
 
 
 
@@ -20714,7 +20740,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-            <div style="font-size:14px; font-weight:700; color:#f59e0b;" id="profGwCount">5 ครั้ง</div>
+            <div style="font-size:14px; font-weight:700; color:#f59e0b;" id="profGwCount">0 ครั้ง</div>
 
 
 
@@ -20746,7 +20772,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-            <div style="font-size:13px; font-weight:700; color:#60a5fa;" id="profLastSeen">2 นาทีที่แล้ว</div>
+            <div style="font-size:13px; font-weight:700; color:#60a5fa;" id="profLastSeen">-</div>
 
 
 
@@ -20931,70 +20957,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
       <div id="paneProfTab1" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
-
-
-
-
-
-
-
-        <div style="background:#1e1f22; padding:8px 12px; border-radius:6px; font-size:12.5px;">
-
-
-
-
-
-
-
-          <div style="font-size:10.5px; color:var(--dc-text-dim); margin-bottom:2px;">18:28:10 • YouTube</div>
-
-
-
-
-
-
-
-          <div>สวัสดีครับสตรีมเมอร์ วันนี้ภาพชัดแจ่ม เสียงอ่านเพราะมากครับ!</div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-        <div style="background:#1e1f22; padding:8px 12px; border-radius:6px; font-size:12.5px;">
-
-
-
-
-
-
-
-          <div style="font-size:10.5px; color:var(--dc-text-dim); margin-bottom:2px;">18:20:11 • YouTube</div>
-
-
-
-
-
-
-
-          <div>!join เช็คชื่อร่วมกิจกรรมแจกโค้ดครับ</div>
-
-
-
-
-
-
-
-        </div>
+        <div style="text-align:center; padding:24px; color:var(--dc-text-dim); font-size:12.5px;">ยังไม่มีประวัติแชท</div>
 
 
 
@@ -32647,6 +32610,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
         function popoutToolWindow(name, section) {
       if (name === 'voice') name = 'voice-settings';
+      if (name === 'author-profile' && section) {
+        try {
+          const raw = localStorage.getItem('bp3_active_author_profile');
+          if (raw) {
+            const p = JSON.parse(raw);
+            if (!section && p.username) section = p.username;
+          }
+        } catch (_) {}
+      }
       if (name === 'settings' && section) {
         try {
           localStorage.setItem('bp3_settings_target_section', section);
@@ -33846,6 +33818,32 @@ document.addEventListener('DOMContentLoaded',async()=>{
 <div id="topbarContextMenu" class="custom-context-menu"></div>
 
 
+
+
+<script>
+try {
+  window._authorProfileChannel = new BroadcastChannel('bp3_author_profile_sync');
+  window._authorProfileChannel.onmessage = (e) => {
+    if (e.data && e.data.action === 'openAuthor' && e.data.payload) {
+      const p = e.data.payload;
+      if (typeof openAuthorModal === 'function') {
+        openAuthorModal(p.username, p.platform, p.avatarUrl, p.nickname, p.isVip);
+      }
+    }
+  };
+  window.syncAuthorProfile = function() {
+    try {
+      const raw = localStorage.getItem('bp3_active_author_profile');
+      if (raw) {
+        const p = JSON.parse(raw);
+        if (p.username && typeof openAuthorModal === 'function') {
+          openAuthorModal(p.username, p.platform, p.avatarUrl, p.nickname, p.isVip);
+        }
+      }
+    } catch (_) {}
+  };
+} catch (_) {}
+</script>
 
 </body>
 
@@ -39946,14 +39944,16 @@ try {
 
 
 
+      try {
+        const payload = { username, platform: platform || 'Twitch', avatarUrl: finalAvatar, nickname: finalNick, isVip: !!isVip };
+        localStorage.setItem('bp3_active_author_profile', JSON.stringify(payload));
+        if (!window._authorProfileChannel) {
+          try { window._authorProfileChannel = new BroadcastChannel('bp3_author_profile_sync'); } catch(_) {}
+        }
+        window._authorProfileChannel?.postMessage({ action: 'openAuthor', payload });
+      } catch(_) {}
+
       _activeUserRecord = {
-
-
-
-
-
-
-
         username: username,
 
 
@@ -40242,7 +40242,7 @@ try {
 
 
 
-      openToolWindow('author-profile');
+      openToolWindow('author-profile', username);
 
 
 

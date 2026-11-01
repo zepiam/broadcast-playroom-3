@@ -202,8 +202,18 @@ window.exportUserChatHistory = function(targetUsername, targetPlatform) {
   }
 };
 
+try {
+  if (!window._authorProfileChannel) {
+    window._authorProfileChannel = new BroadcastChannel('bp3_author_profile_sync');
+  }
+} catch (_) {}
+
 const profile=window.openAuthorModal;
 window.openAuthorModal=function(username,platform,avatar,nickname,isVip){
+ try {
+   localStorage.setItem('bp3_active_author_profile', JSON.stringify({ username, platform: platform || 'Twitch', avatarUrl: avatar, nickname, isVip: !!isVip }));
+   window._authorProfileChannel?.postMessage({ action: 'openAuthor', payload: { username, platform: platform || 'Twitch', avatarUrl: avatar, nickname, isVip: !!isVip } });
+ } catch (_) {}
  window.pruneViewerChatHistory = pruneViewerChatHistory;
  pruneViewerChatHistory();
  const person=people.get(String(platform || 'Twitch').toLowerCase()+':'+String(username).toLowerCase());

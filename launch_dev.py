@@ -2054,6 +2054,11 @@ def handle_tool_popout(tool_name, main_url, section=None):
                     tw.evaluate_js(f"try {{ (window.switchSettingsSection || switchSettingsSection)('{section}'); }} catch(e) {{}}")
                 except Exception:
                     pass
+            if name == 'author-profile':
+                try:
+                    tw.evaluate_js("try { if (window.syncAuthorProfile) window.syncAuthorProfile(); } catch(e) {}")
+                except Exception:
+                    pass
             return {'ok': True, 'focused': True}
         except Exception:
             _tool_popout_windows.pop(name, None)
@@ -2092,7 +2097,10 @@ def handle_tool_popout(tool_name, main_url, section=None):
     }
     sz = sizes.get(name, (800, 600))
     title = titles.get(name, f'Broadcast Playroom - {name.capitalize()}')
-    url = f"{main_url}/index.html?popout={name}&_v={int(time.time() * 1000)}"
+    url = f"{main_url}/index.html?popout={name}"
+    if section:
+        url += f"&section={urllib.parse.quote(str(section))}"
+    url += f"&_v={int(time.time() * 1000)}"
     
     class PopoutJsApi:
         def __init__(self, tool_name, win_ref=None):
