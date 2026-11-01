@@ -65,13 +65,22 @@ def run_smoke_test(root_path=None) -> bool:
 
         # Verify critical functions in window scope
         fn_checks = page.evaluate("""() => {
+            const leakedFooters = Array.from(document.querySelectorAll('.floating-footer')).filter(el => !el.closest('.floating-window'));
+            const leakedBodies = Array.from(document.querySelectorAll('.floating-body')).filter(el => !el.closest('.floating-window'));
             return {
                 openAuthorModal: typeof window.openAuthorModal === 'function',
                 openToolWindow: typeof window.openToolWindow === 'function',
                 syncAuthorProfile: typeof window.syncAuthorProfile === 'function',
-                bodyTextHasRawJs: document.body.innerText.includes('pop.document.close();')
+                bodyTextHasRawJs: document.body.innerText.includes('pop.document.close();'),
+                leakedFootersCount: leakedFooters.length,
+                leakedBodiesCount: leakedBodies.length
             };
         }""")
+
+        if fn_checks.get('leakedFootersCount', 0) > 0:
+            errors.append(f"DOM LEAK DETECTED: {fn_checks['leakedFootersCount']} .floating-footer elements are outside .floating-window (mismatched/extra </div> tag)!")
+        if fn_checks.get('leakedBodiesCount', 0) > 0:
+            errors.append(f"DOM LEAK DETECTED: {fn_checks['leakedBodiesCount']} .floating-body elements are outside .floating-window (mismatched/extra </div> tag)!")
 
         if not fn_checks.get('openAuthorModal'):
             errors.append("window.openAuthorModal is not defined as a function!")
