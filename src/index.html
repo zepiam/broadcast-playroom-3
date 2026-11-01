@@ -1486,21 +1486,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
       <button class="topbar-single-btn sortable-item" id="topbar-item-game-overlay" data-item-id="game-overlay" draggable="true" title="คลิกสลับ Game Overlay / คลิกขวาเพื่อเปิดเมนู & ซ่อนปุ่ม" onclick="handleSortableClick(event, () => desktopOverlayAction('game'))">
-
-
-
-
-
-
-
         <span>🎮</span> <span class="btn-label-text">Game Overlay</span>
-
-
-
-
-
-
-
+      </button>
+      <button class="topbar-single-btn btn-overlay-frame-toggle" id="topbar-btn-game-overlay-frame" hidden style="display:none!important; padding:4px 9px; font-size:12px; font-weight:600; border-radius:6px; cursor:pointer; align-items:center; gap:4px; margin-left:2px;" onclick="desktopOverlayAction('game', 'edit')" title="สลับซ่อน/แสดงกรอบปรับแต่งตำแหน่ง (Ctrl+Shift+H)">
+        <span class="frame-label-text">👁️ ซ่อนกรอบ</span>
       </button>
 
 
@@ -1526,21 +1515,10 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
       <button class="topbar-single-btn sortable-item" id="topbar-item-overlay-plus" data-item-id="overlay-plus" draggable="true" title="คลิกสลับ Overlay+ / คลิกขวาเพื่อเปิดเมนู & ซ่อนปุ่ม" onclick="handleSortableClick(event, () => desktopOverlayAction('overlay+'))">
-
-
-
-
-
-
-
         <span>🪟</span> <span class="btn-label-text">Overlay+</span>
-
-
-
-
-
-
-
+      </button>
+      <button class="topbar-single-btn btn-overlay-frame-toggle" id="topbar-btn-overlay-plus-frame" hidden style="display:none!important; padding:4px 9px; font-size:12px; font-weight:600; border-radius:6px; cursor:pointer; align-items:center; gap:4px; margin-left:2px;" onclick="desktopOverlayAction('overlay+', 'edit')" title="สลับซ่อน/แสดงกรอบปรับแต่งตำแหน่ง (Ctrl+Shift+N)">
+        <span class="frame-label-text">👁️ ซ่อนกรอบ</span>
       </button>
 
 

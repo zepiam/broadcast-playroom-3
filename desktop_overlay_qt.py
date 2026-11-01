@@ -470,170 +470,86 @@ def main():
 
 
 
-    # ─── native edit bar (Qt widget — ดัก mouse ได้จริง) ───
-
+        # ─── native edit bar (Qt widget — ดัก mouse ได้จริง) ───
     # อยู่ด้านบนของ view, โชว์เฉพาะ edit mode
-
-    edit_bar = QtWidgets.QFrame()
-
-    edit_bar.setFixedHeight(28)
-
-    edit_bar.setStyleSheet(
-
-        "QFrame { background: rgba(0,0,0,0.92); border-bottom: 2px solid #ef4444; }"
-
-        "QLabel { color: #fbbf24; font-weight: 600; font-size: 12px; padding-left: 8px; }"
-
-        "QPushButton { background: #374151; color: #fff; border: 0; padding: 4px 10px;"
-
-        "              border-radius: 4px; font-size: 12px; margin-right: 4px; }"
-
-        "QPushButton:hover { background: #4b5563; }"
-
-        "QPushButton#gear:hover { background: #7c3aed; }"
-
-        "QPushButton#confirm:hover { background: #ef4444; }"
-
-    )
-
-    edit_bar_layout = QtWidgets.QHBoxLayout(edit_bar)
-
-    edit_bar_layout.setContentsMargins(0, 0, 4, 0)
-
-    edit_bar_layout.setSpacing(0)
-
-    title_lbl = QtWidgets.QLabel("Edit Mode — คลิกตรงนี้เพื่อลากย้ายตำแหน่ง")
-
-    edit_bar_layout.addWidget(title_lbl)
-
-    edit_bar_layout.addStretch()
-
-    edit_bar.hide()  # ซ่อนตอนเริ่ม (ไม่มีปุ่มใน edit_bar — ย้ายลง bottom_bar หมด)
-
-
-
-    def on_gear():
-
-        _send_to_parent({"cmd": "open_settings"})
-
-    def on_confirm():
-
-        _send_to_parent({"cmd": "exit_edit"})
-
-
-
-    # drag handler บน edit_bar (Qt widget ดัก mouse ได้จริง)
-
     drag_state = {"active": False, "start": None, "win_pos": None}
 
-
-
     class DragBar(QtWidgets.QFrame):
-
         """edit bar ที่ลาก window ได้ — แต่ปุ่มด้านในคลิกได้"""
-
         def mousePressEvent(self, event):
-
             if event.button() == QtCore.Qt.LeftButton:
-
-                # เช็คว่า click ตรงปุ่มไหม — ถ้าใช่ ส่งต่อให้ปุ่ม (ไม่ลาก)
-
                 child = self.childAt(event.position().toPoint())
-
                 if child and isinstance(child, QtWidgets.QPushButton):
-
                     super().mousePressEvent(event)
-
                     return
-
-                # ไม่ใช่ปุ่ม → เริ่มลาก
-
                 drag_state["active"] = True
-
                 drag_state["start"] = event.globalPosition().toPoint()
-
                 drag_state["win_pos"] = win.frameGeometry().topLeft()
-
             else:
-
                 super().mousePressEvent(event)
 
-
-
         def mouseMoveEvent(self, event):
-
-            if drag_state["active"] and (event.buttons() & QtCore.Qt.LeftButton):
-
+            if drag_state["active"] and drag_state["start"] and drag_state["win_pos"]:
                 delta = event.globalPosition().toPoint() - drag_state["start"]
-
                 win.move(drag_state["win_pos"] + delta)
-
             else:
-
                 super().mouseMoveEvent(event)
 
-
-
         def mouseReleaseEvent(self, event):
-
             if event.button() == QtCore.Qt.LeftButton:
-
                 drag_state["active"] = False
-
             else:
-
                 super().mouseReleaseEvent(event)
 
+    def on_confirm():
+        _send_to_parent({"cmd": "exit_edit"})
 
+    def on_close_overlay():
+        _send_to_parent({"cmd": "quit"})
+        QtCore.QTimer.singleShot(50, app.quit)
 
-    # แทนที่ edit_bar ด้วย DragBar (rebuild)
-
-    edit_bar.setParent(None)
+    def on_gear():
+        _send_to_parent({"cmd": "open_settings"})
 
     edit_bar = DragBar()
-
     edit_bar.setFixedHeight(28)
-
     edit_bar.setStyleSheet(
-
         "DragBar { background: rgba(0,0,0,0.92); border-bottom: 2px solid #ef4444; }"
-
         "QLabel { color: #fbbf24; font-weight: 600; font-size: 12px; padding-left: 8px; }"
-
-        "QPushButton { background: #374151; color: #fff; border: 0; padding: 4px 10px;"
-
-        "              border-radius: 4px; font-size: 12px; margin-right: 4px; }"
-
+        "QPushButton { background: #374151; color: #fff; border: 0; padding: 2px 10px;"
+        "              border-radius: 4px; font-size: 11px; margin-right: 4px; font-weight: 600; }"
         "QPushButton:hover { background: #4b5563; }"
-
-        "QPushButton#gear:hover { background: #7c3aed; }"
-
+        "QPushButton#lockbtn { background: #15803d; color: #ffffff; }"
+        "QPushButton#lockbtn:hover { background: #16a34a; }"
+        "QPushButton#confirm { background: #991b1b; color: #ffffff; }"
         "QPushButton#confirm:hover { background: #ef4444; }"
-
-        "QPushButton#stopdemo { background: #b91c1c; }"
-
-        "QPushButton#stopdemo:hover { background: #ef4444; }"
-
     )
 
     edit_bar_layout = QtWidgets.QHBoxLayout(edit_bar)
+    edit_bar_layout.setContentsMargins(4, 0, 4, 0)
+    edit_bar_layout.setSpacing(6)
 
-    edit_bar_layout.setContentsMargins(0, 0, 4, 0)
-
-    edit_bar_layout.setSpacing(0)
-
-    title_lbl = QtWidgets.QLabel("Edit Mode — คลิกตรงนี้เพื่อลากย้ายตำแหน่ง")
-
+    _is_overlay_plus = (args.mode == "overlay+")
+    _is_viewer = (args.mode == "viewer")
+    title_text = "🪟 Overlay+ (ลากเพื่อย้าย)" if _is_overlay_plus else ("👥 Viewer Overlay (ลากเพื่อย้าย)" if _is_viewer else "🎮 Game Overlay (ลากเพื่อย้าย)")
+    title_lbl = QtWidgets.QLabel(title_text)
     edit_bar_layout.addWidget(title_lbl)
-
     edit_bar_layout.addStretch()
 
+    lock_btn = QtWidgets.QPushButton("👁️ ซ่อนกรอบ (ล็อกตำแหน่ง)")
+    lock_btn.setObjectName("lockbtn")
+    lock_btn.setToolTip("บันทึกตำแหน่ง ซ่อนกรอบสีแดง และเปิดโหมดคลิกทะลุจอ (สลับเปิดใหม่ได้ที่ปุ่มด้านบนโปรแกรม)")
+    lock_btn.clicked.connect(on_confirm)
+    edit_bar_layout.addWidget(lock_btn)
+
+    close_btn = QtWidgets.QPushButton("✕ ปิด")
+    close_btn.setObjectName("confirm")
+    close_btn.setToolTip("ปิดหน้าต่าง Overlay นี้")
+    close_btn.clicked.connect(on_close_overlay)
+    edit_bar_layout.addWidget(close_btn)
+
     edit_bar.hide()
-
-
-
     layout.addWidget(edit_bar)
-
 
 
     # ─── bottom bar (edit mode) — ปุ่มเล็ก ๆ ด้านล่าง ───

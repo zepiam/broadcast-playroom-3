@@ -52,19 +52,18 @@ subprocess.check_call(['python', 'sync_trial_frontend.py'], cwd=str(root))
 installed_full = Path(r"E:\DOCS\Documents\BroadcastPlayroom3\full")
 if (installed_full / '_internal').exists():
     shutil.copytree(root / 'dist', installed_full / '_internal' / 'dist', dirs_exist_ok=True)
-    for py in ['launch_dev.py', 'updater.py', 'game_chat_settings.py']:
+    for py in ['launch_dev.py', 'updater.py', 'game_chat_settings.py', 'desktop_overlay_qt.py', 'desktop_overlay_service.py']:
         if (root / py).exists():
             shutil.copy2(root / py, installed_full / '_internal' / py)
     print("Synced to installed production app directory:", installed_full)
 
-changelog = (
-    "- Broadcast Playroom v3.15\n"
-    "- กู้คืนและแก้ไขปุ่ม Game Overlay และ Overlay+ ด้านบน ให้กลับมาใช้งานได้สมบูรณ์แบบ 100%\n"
-    "- แก้ไขเมนูคลิกขวา Overlay & แปลภาษา: คลิก 'ตั้งค่าการแปลภาษา...' เปิดเข้าสู่หน้าตั้งค่าแท็บแปลภาษาโดยตรง และคลิก 'ตั้งค่า OBS WebSocket...' เปิดเข้าแท็บ OBS WebSocket โดยตรง\n"
-    "- ปรับแต่งปุ่มแท็บสลับ Game Overlay / Viewer Overlay ในหน้าต่างตั้งค่า Game Overlay ให้เป็นดีไซน์ Dark Pill ที่สวยงาม ไม่เปลือย ไม่หลุดสไตล์\n"
-    "- ปรับปุ่ม 'พับเก็บ' เป็น 'ปิดหน้าต่าง' และนำปุ่มบันทึกที่ซ้ำซ้อนออกในเครื่องมือ (Settings, Replie, ASK, QuickRandomizer, Playroom, User Manager) รองรับการสั่งปิดทั้งในโหมดปกติและ Popout Window\n"
-    "- แก้ไขระบบ Auto-Save และ Backup & Restore ให้ผสานและจดจำข้อมูลช่องทางสตรีม (Channel Names) และสถานะเชื่อมต่ออัตโนมัติ (Auto-Connect) คงอยู่ถาวร 100% ไม่สูญหายเมื่ออัปเดตเวอร์ชันใหม่"
-)
+changelog = """- Broadcast Playroom v3.15
+- ปรับปรุงปุ่ม Game Overlay และ Overlay+ ให้แสดงสถานะ 'ปิด Game Overlay' / 'ปิด Overlay+' เมื่อหน้าต่างเปิดอยู่บนจอ ให้ผู้ใช้กดปิดได้ทันที
+- เพิ่มปุ่มลอย '👁️ ซ่อนกรอบ' / '📐 แสดงกรอบ' บนแถบ Topbar ข้างปุ่มหลัก เมื่อเปิด Overlay ช่วยให้ซ่อน/แสดงกรอบลากตำแหน่งได้ในคลิกเดียวโดยไม่ต้องจำคีย์ลัด
+- เพิ่มปุ่ม '👁️ ล็อกตำแหน่ง (ซ่อนกรอบ)' และปุ่ม '✕ ปิด' บนแถบลากย้ายสีแดงของ Overlay บนจอโดยตรง ให้สลับล็อกกรอบเข้าสู่โหมดคลิกทะลุจอได้สะดวกยิ่งขึ้น
+- แก้ไขปัญหาเมนูคลิกขวา Overlay & แปลภาษา เปิดตรงสู่แท็บที่ต้องการ
+- ลบปุ่มบันทึกซ้ำซ้อนและเปลี่ยนปุ่มพับเก็บเป็นปิดหน้าต่างทุกเครื่องมือ รองรับทั้งโหมดหน้าต่างปกติและ Popout
+- ปรับปรุงระบบ Backup & Restore ให้ผสานข้อมูลช่องทางสตรีมและ Auto-Connect ไม่หายเมื่ออัปเดตเวอร์ชันใหม่ 100%"""
 
 print("\n--- Step 3: Package Lite and Full Patch 3.15 ---")
 patch_lite_44 = root / 'build_trials/BroadcastPlayroom3-Lite-Patch-3.14.zip'
@@ -79,7 +78,7 @@ def package_patch(src_patch, dst_patch, build_type):
                 continue
             if entry.filename.startswith('_internal/dist/'):
                 continue
-            if entry.filename in ('_internal/launch_dev.py', '_internal/updater.py', '_internal/game_chat_settings.py'):
+            if entry.filename in ('_internal/launch_dev.py', '_internal/updater.py', '_internal/game_chat_settings.py', '_internal/desktop_overlay_qt.py', '_internal/desktop_overlay_service.py'):
                 continue
             dst_z.writestr(entry, src_z.read(entry))
 
@@ -90,7 +89,7 @@ def package_patch(src_patch, dst_patch, build_type):
                 dst_z.write(item, f'_internal/dist/{rel}')
 
         # Add updated python files
-        for py in ['launch_dev.py', 'updater.py', 'game_chat_settings.py']:
+        for py in ['launch_dev.py', 'updater.py', 'game_chat_settings.py', 'desktop_overlay_qt.py', 'desktop_overlay_service.py']:
             py_path = root / py
             if py_path.exists():
                 dst_z.write(py_path, f'_internal/{py}')
@@ -119,11 +118,25 @@ for p, expected_build in [(patch_lite_45, 'lite'), (patch_full_45, 'full')]:
         assert '_internal/dist/desktop_overlay_controls.js' in check.namelist()
 
 manifest = {
-    "version": "3.15",
     "product": "broadcast-playroom-3",
+    "version": "3.15",
+    "repo": "zepiam/broadcast-playroom-3",
     "release_date": "2026-11-01",
+    "published_at": "2026-11-01",
     "min_app_version": "3.0.0",
     "changelog": changelog,
+    "lite": {
+        "type": "patch",
+        "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Lite-Patch-3.15.zip",
+        "size": patch_lite_45.stat().st_size,
+        "sha256": digest(patch_lite_45)
+    },
+    "full": {
+        "type": "patch",
+        "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Full-Patch-3.15.zip",
+        "size": patch_full_45.stat().st_size,
+        "sha256": digest(patch_full_45)
+    },
     "packages": {
         "lite": {
             "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.15/BroadcastPlayroom3-Lite-Patch-3.15.zip",

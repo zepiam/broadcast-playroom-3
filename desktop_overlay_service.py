@@ -25,7 +25,7 @@ class DesktopOverlays:
       if item['index']<len(entries):entries[item['index']].update({key:msg[key] for key in ('x','y','w','h') if key in msg})
      self.save_layout(layout);self.publish({'event':'DESKTOP_OVERLAY_STATE','payload':settings})
     elif command=='edit_state':item['editing']=bool(msg.get('editing'));item['click_through']=bool(msg.get('click_through'))
-    elif command=='exit_edit':item['editing']=False
+    elif command=='exit_edit':item['editing']=False;self.command(item,'edit_off')
     elif command=='quit':self._close(item)
     elif command in ('open_settings','clear_messages','clear_msgs','toggle_demo','stop_demo'):
      if command in ('clear_messages','clear_msgs'):self.publish({'event':'DESKTOP_CHAT_CLEAR','payload':{'kind':item['kind']}})
