@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.9",
+  "version": "3.10",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.9\n- กู้คืนการตั้งค่าแชท Game Overlay ให้ครบถ้วนสมบูรณ์ตามเวอร์ชัน 2 (Full V2 Game Overlay Suite):\n  • รองรับการสลับโหมด Default, Themes (10 ธีมพร้อม Pagination), Balloon Mode และ Character Talk (นำเข้ารูปตัวละคร VTuber)\n  • ตั้งค่าอนิเมชั่นเข้า/ออก (Animations In/Out), ระบบซ่อนข้อความอัตโนมัติเมื่อหมดเวลา (Auto-Hide / Hide After Slider)\n  • ปรับแต่งกล่องข้อความ (Chat Box) ละเอียด: ความโค้งมน, เส้นขอบ, สีพื้นหลัง, ความทึบ, เงา และแสง Glow\n  • ปรับแต่งฟอนต์ครบทุก Google Fonts ภาษาไทย, น้ำหนักตัวอักษร, เส้นขอบตัวอักษร (Stroke) และเงาตัวอักษร (Shadow)\n  • แสดงเวลาที่โพสต์ข้อความ (Timestamp) และสลับรูปแบบเลย์เอาต์ได้ 5 รูปแบบ\n  • แก้ไขปัญหาเปิดหน้าต่าง Game Overlay ในโหมด Popout แล้วหน้าจอว่างเปล่า ให้โหลดข้อมูลและเครื่องมือครบครันในทันที\n- ป้องกันข้อมูลช่องและสถานะแพลตฟอร์มสูญหายเมื่ออัปเดตเวอร์ชันใหม่ (Persistent Platform Settings):\n  • ระบบสำรองและกู้คืนการตั้งค่าอัตโนมัติ (Pre-Update Backup & Restore) ป้องกันไฟล์ทับหายเด็ดขาด\n  • รองรับการตรวจหาและเชื่อมโยงข้อมูล `platform_settings.json` ข้ามโฟลเดอร์ (%LOCALAPPDATA% และ Data Root) พร้อม Mirror อัตโนมัติ",
+  "changelog": "- Broadcast Playroom v3.10\n- ปรับปรุงสไตล์ปุ่มแท็บหน้าต่างตั้งค่า Game Overlay (Game Overlay & Viewer Overlay Tabs) ให้สวยงาม ทันสมัย กลมกลืนกับธีมสีเข้ม (Dark Theme) ของโปรแกรมอย่างลงตัว\n- ลบปุ่มสีขาวเปลือยที่หลุดรูปแบบออกทั้งหมด และจัดวางด้วยปุ่ม Pill Tabs สไตล์โมเดิร์น พร้อมเอฟเฟกต์ Active Highlight สีน้ำเงินสวยงาม\n- เสริมความแข็งแกร่งของคลาส CSS สากลทั้งใน `styles.css` และ `modal.css` เพื่อป้องกันปุ่มแท็บหลุดการตกแต่งในทุกหน้าต่างย่อย",
   "published_at": "2026-11-01",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.9/BroadcastPlayroom3-Lite-Patch-3.9.zip",
-    "size": 44225263,
-    "sha256": "b1d3b4785c3b99fddf62b55ff5e883df6e544e22c14a9697e997a7915e77f0ea"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.10/BroadcastPlayroom3-Lite-Patch-3.10.zip",
+    "size": 44225746,
+    "sha256": "d50f7845fe8c340911b56149e91ac36ddb5102e795cb09d70ec67ab29ae92fcf"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.9/BroadcastPlayroom3-Full-Patch-3.9.zip",
-    "size": 92670425,
-    "sha256": "33ad74f437fcdc3b6a7932a9fcf933d1aa6dee21d5d454dd1bb494cd3e504b75"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.10/BroadcastPlayroom3-Full-Patch-3.10.zip",
+    "size": 92670908,
+    "sha256": "c530180a40fd2d9aa1a04dc1ce8c2b8e118e9cff0c4419efc5f08264890b1c76"
   }
 }
