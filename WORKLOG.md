@@ -1,3 +1,17 @@
+## [2026-11-01 15:16] – Antigravity (Published v3.13 LIVE: Universal Auto-Save Across All Tools & Platform Persistence)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.13 (v3.13) ขึ้น GitHub Releases สำเร็จ พร้อม Cumulative Patches (Lite & Full)
+- **สรุปสิ่งที่ดำเนินการและแก้ไข:**
+  1. **อัปเกรดระบบ Universal Auto-Save ทั่วทั้งโปรแกรม:**
+     - ทุกหน้าต่างย่อย (Overlay+, Chat Widget Customizer, Giveaway Tool, Game Overlay, OBS WebSocket, เสียงอ่าน TTS, การตั้งค่าระบบ ฯลฯ) ปรับเป็นระบบ Auto-save บันทึกอัตโนมัติทันทีที่มีการเปลี่ยนแปลง (`onchange` / `input`)
+     - นำปุ่ม "💾 บันทึก" ที่ซ้ำซ้อนและเกะกะออกจากหน้าต่างต่างๆ เช่น Overlay+ และ Giveaway เหลือเพียงปุ่ม "ปิดหน้าต่าง"
+  2. **แก้ปัญหาชื่อช่องและสถานะแพลตฟอร์มที่ซ่อนไว้หายหลังอัปเดตเวอร์ชัน:**
+     - ย้ายสิทธิ์การควบคุมข้อมูลหลักมาอยู่ที่ Backend Persistent Storage (`platform_settings.json`) แทนการพึ่งพา `localStorage` ของเบราว์เซอร์ ซึ่งอาจสูญหายเมื่อ Origin/Port มีการเปลี่ยนแปลงตอนรีสตาร์ตอัปเดต
+     - อัปเดต `updater.py` ในขั้นตอนกู้คืนไฟล์หลังแตกซิป ให้คัดลอกไฟล์การตั้งค่าเดิมทับลงโฟลเดอร์หลักเสมอเพื่อรับประกันว่าข้อมูลช่องและแพลตฟอร์มที่ซ่อนไว้จะไม่มีวันสูญหาย
+
+---
+
 ## [2026-11-01 15:06] – Antigravity (Published v3.12 LIVE: Header Cleanup & Game Overlay Auto-save)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
