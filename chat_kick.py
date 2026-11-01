@@ -609,6 +609,13 @@ class KickChat:
         #   ให้ app.py แยกกรณีเหมือน Twitch (echo โปรแกรม = ซ่อน / พิมพ์บนเว็บ = แสดง
         #   แต่ไม่อ่าน TTS) — เดิมดักทิ้งหมดฝั่งนี้ = พิมพ์บน KICK แล้วหายจากโปรแกรม
         clean_text, segments = _strip_emote_tokens(content)
+        kick_avatar = (
+            author_data.get("profile_thumb")
+            or author_data.get("profile_pic")
+            or author_data.get("profile_image")
+            or (author_data.get("identity") or {}).get("profile_pic")
+            or ""
+        )
         self.messages_read += 1
         self.on_message(
             ChatMessage(
@@ -618,6 +625,7 @@ class KickChat:
                 event="message",
                 extra={
                     "kick_user_id": author_data.get("id"),
+                    "avatar_url": kick_avatar,
                     "segments": segments if segments else None,
                 },
             )

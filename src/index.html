@@ -39743,14 +39743,40 @@ try {
             }
           })
           .catch(() => {});
+      } else if (plat === 'kick') {
+        fetch(`https://kick.com/api/v2/channels/${encodeURIComponent(key)}`)
+          .then(res => {
+            if (!res.ok) throw new Error('Kick API error');
+            return res.json();
+          })
+          .then(data => {
+            const url = (data?.user?.profile_pic || data?.user?.profile_image || '').trim();
+            if (url && url.startsWith('http')) {
+              _platformAvatarCache[key] = url;
+              try {
+                localStorage.setItem('bp3_platform_avatar_cache', JSON.stringify(_platformAvatarCache));
+              } catch (_) {}
+              updateAvatarCacheInfo();
+              syncChatRowAvatars(username, url);
+            }
+          })
+          .catch(() => {});
       }
     }
 
-    function getViewerDisplayAvatar(username, platform) {
+    function getViewerDisplayAvatar(username, platform, incomingAvatar) {
       if (!username) return getRandomAvatarForUser('guest');
       const key = username.toLowerCase().trim();
       if (window._customUserAvatars && (_customUserAvatars[username] || _customUserAvatars[key])) {
         return _customUserAvatars[username] || _customUserAvatars[key];
+      }
+
+      // If incoming payload has real platform avatar URL (e.g. YouTube, Kick, TikTok), cache it immediately
+      if (incomingAvatar && typeof incomingAvatar === 'string' && incomingAvatar.startsWith('http') && !incomingAvatar.includes('dicebear.com')) {
+        _platformAvatarCache[key] = incomingAvatar;
+        try {
+          localStorage.setItem('bp3_platform_avatar_cache', JSON.stringify(_platformAvatarCache));
+        } catch (_) {}
       }
 
       const fetchReal = localStorage.getItem('bp3_fetch_real_platform_avatar') === 'true';
@@ -39784,7 +39810,8 @@ try {
           doc.querySelectorAll('.chat-row').forEach(row => {
             const u = row.dataset.username;
             if (u) {
-              const newAvatar = enabled ? getViewerDisplayAvatar(u, 'Twitch') : getRandomAvatarForUser(u);
+              const p = row.dataset.platform || 'Twitch';
+              const newAvatar = enabled ? getViewerDisplayAvatar(u, p) : getRandomAvatarForUser(u);
               const img = row.querySelector('.avatar-img');
               if (img) img.src = newAvatar;
             }
@@ -62244,7 +62271,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
       const effectiveName = getEffectiveAuthorName(msg.username);
-      const userDisplayAvatar = getViewerDisplayAvatar(msg.username, msg.platform || 'Twitch');
+      const userDisplayAvatar = getViewerDisplayAvatar(msg.username, msg.platform || 'Twitch', msg.avatar);
       msg.avatar = userDisplayAvatar;
 
 
@@ -62326,6 +62353,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
         row.dataset.username = String(msg.username || '');
+        row.dataset.platform = String(msg.platform || 'Twitch');
 
 
 

@@ -6,26 +6,26 @@
   "changelog": "# Broadcast Playroom v3.28\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.28:\n- **แก้ไขปัญหารูปโปรไฟล์ Twitch โหลดไม่ขึ้น / รูปแตก (Broken Image)**:\n  - ปรับระบบการดึงรูปโปรไฟล์จริงจาก Twitch มาเป็นแบบ **Client-Side Async Fetching (ผ่าน DecAPI)** โดยตรง\n  - **ไม่มีทางขึ้นรูปแตกอีกต่อไป**: ข้อความแชทจะแสดงเป็นไอคอนตัวละครน่ารักจำลองทันทีโดยไม่มีดีเลย์ และเมื่อระบบดึงภาพโปรไฟล์จริงจาก Twitch CDN สำเร็จ จะทำการสลับรูปให้โดยอัตโนมัติอย่างแนบเนียน หากโหลดไม่สำเร็จหรือเน็ตหลุด จะคงเป็นรูปตัวละครจำลองไว้เสมอ\n- **ปรับพฤติกรรมของปุ่ม \"ล้างแคชรูปประจำตัว\" ตามที่ต้องการ**:\n  - เมื่อกดปุ่ม `🗑️ ล้างแคชรูปประจำตัว` ในตั้งค่าแชทสด:\n    1. แคชรูปโปรไฟล์ทั้งหมดจะถูกลบทันที\n    2. หน้าต่างแชทสดและโปรไฟล์จะ**รีเซ็ตกลับไปแสดงเป็นรูปประจำตัวจำลอง (สุ่มตัวละคร) ก่อนทันที**\n    3. เมื่อมีข้อความใหม่พิมพ์เข้ามาในอนาคต ระบบจึงจะเริ่มส่งคำขอดึงรูปโปรไฟล์จริงจากเว็บนั้นๆ ใหม่อีกครั้ง\n- **แก้ไขปุ่ม \"คืนค่า\" ในโปรไฟล์คนดู**:\n  - ลบรูปคัสตอมทั้งตัวพิมพ์ใหญ่และตัวพิมพ์เล็ก เพื่อให้ชื่อผู้ใช้กลับมาใช้การดึงรูปตามปกติของระบบ\n",
   "lite": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-lite.zip",
-    "sha256": "8b00b8ae3a74db6c6b943ea67d765d954270196c7951dcfaa1a24375d2328930",
-    "size": 50034604
+    "sha256": "e5a73ea0608a5cfca94bf86cc49a261a1ac62fbc66937482fc35e267c7c9d300",
+    "size": 49834926
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-full.zip",
-    "sha256": "3373012ccd065adbebbd09d72cb2008301facf815f082316d72c9357e792c6cc",
-    "size": 50034604
+    "sha256": "e5a73ea0608a5cfca94bf86cc49a261a1ac62fbc66937482fc35e267c7c9d300",
+    "size": 49834926
   },
   "packages": {
     "lite": {
       "version": "3.28",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-lite.zip",
-      "patch_sha256": "8b00b8ae3a74db6c6b943ea67d765d954270196c7951dcfaa1a24375d2328930",
-      "patch_size": 50034604
+      "patch_sha256": "e5a73ea0608a5cfca94bf86cc49a261a1ac62fbc66937482fc35e267c7c9d300",
+      "patch_size": 49834926
     },
     "full": {
       "version": "3.28",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.28/patch-v3.28-full.zip",
-      "patch_sha256": "3373012ccd065adbebbd09d72cb2008301facf815f082316d72c9357e792c6cc",
-      "patch_size": 50034604
+      "patch_sha256": "e5a73ea0608a5cfca94bf86cc49a261a1ac62fbc66937482fc35e267c7c9d300",
+      "patch_size": 49834926
     }
   }
 }

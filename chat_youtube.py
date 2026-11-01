@@ -740,6 +740,7 @@ class YouTubeChat:
         """★ parse message จาก liveChatMessages.list API → dispatch"""
         snippet = item.get("snippet", {})
         author = item.get("authorDetails", {})
+        photo_url = author.get("profileImageUrl", "")
         msg_type = snippet.get("type", "textMessageEvent")
         author_name = author.get("displayName", "?")
         # ★ text message
@@ -834,6 +835,7 @@ class YouTubeChat:
         if text:
             msg = ChatMessage(
                 platform="youtube", author=author_name, text=text, event="message",
+                extra={"avatar_url": photo_url},
             )
             self.messages_read += 1
             self.on_message(msg)
@@ -993,6 +995,13 @@ class YouTubeChat:
     # ------------------------------------------------------------------ #
     # Renderer handlers
     # ------------------------------------------------------------------ #
+    @staticmethod
+    def _extract_author_photo(r: dict) -> str:
+        thumbs = (r.get("authorPhoto") or {}).get("thumbnails") or []
+        if thumbs and isinstance(thumbs, list):
+            return thumbs[-1].get("url", "")
+        return ""
+
     def _handle_text_message(self, r: dict) -> None:
         """liveChatTextMessageRenderer → chat ปกติ"""
         author = (r.get("authorName") or {}).get("simpleText", "?")
@@ -1006,6 +1015,7 @@ class YouTubeChat:
                 event="message",
                 extra={
                     "author_id": r.get("authorExternalChannelId"),
+                    "avatar_url": self._extract_author_photo(r),
                     "segments": segments if segments else None,
                 },
             )
@@ -1029,6 +1039,7 @@ class YouTubeChat:
                     "currency": currency,
                     "purchase_amount": r.get("purchaseAmount"),
                     "author_id": r.get("authorExternalChannelId"),
+                    "avatar_url": self._extract_author_photo(r),
                     "detail": {"amount_display": r.get("purchaseAmount") or "", "currency": currency},
                 },
             )
@@ -1057,6 +1068,7 @@ class YouTubeChat:
                 system_text=header or "สมัครสมาชิก",
                 extra={
                     "author_id": r.get("authorExternalChannelId"),
+                    "avatar_url": self._extract_author_photo(r),
                     "detail": detail,
                 },
             )
@@ -1076,6 +1088,7 @@ class YouTubeChat:
                 system_text=text or "มอบสมาชิกให้",
                 extra={
                     "author_id": r.get("authorExternalChannelId"),
+                    "avatar_url": self._extract_author_photo(r),
                     "detail": {"is_gifter": False, "recipient": author, "header": text},
                 },
             )
