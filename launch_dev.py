@@ -9,6 +9,18 @@ def _safe_webbrowser_open(url, *args, **kwargs):
 webbrowser.open = _safe_webbrowser_open
 import os
 
+# Prevent background throttling in WebView2 / Chromium when gaming or minimized
+_BG_THROTTLE_FLAGS = (
+    "--disable-background-timer-throttling "
+    "--disable-backgrounding-occluded-windows "
+    "--disable-renderer-backgrounding "
+    "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading"
+)
+_wv_existing = os.environ.get("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "")
+if "--disable-background-timer-throttling" not in _wv_existing:
+    os.environ["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = (_wv_existing + " " + _BG_THROTTLE_FLAGS).strip()
+
+
 
 
 
@@ -12057,29 +12069,12 @@ def open_app_window(main_url):
 
 
             f"--user-data-dir={app_profile_dir}",
-
-
-
-
-
-
-
+            "--disable-background-timer-throttling",
+            "--disable-backgrounding-occluded-windows",
+            "--disable-renderer-backgrounding",
+            "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading",
             "--enable-features=WebAppWindowControlsOverlay",
-
-
-
-
-
-
-
             "--autoplay-policy=no-user-gesture-required",
-
-
-
-
-
-
-
             "--disable-extensions",
 
 

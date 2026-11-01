@@ -542,16 +542,19 @@ class YouTubeChat:
                 #   รีเฟรช 2 กรณี: (1) ทุก 45 วิ (2) เคยมีแชทไหลแล้วเงียบผิดปกติ 3 รอบ
                 #   (GT พิสูจน์: token สดเห็นข้อความล่าสุดเสมอ)
                 now_ts = time.time()
-                need_refresh = (
-                    now_ts - getattr(self, "_reload_token_ts", 0) > 45
-                    or (self._empty_streak >= 3
-                        and now_ts - getattr(self, "_reload_token_ts", 0) >= 12)
-                )
+                # รีเฟรช token หน้าต่างสด:
+                # 1. ถ้าเคยมีแชทไหลแล้วเงียบ 3 รอบติด (และห่างจากรอบก่อน >= 20 วิ)
+                # 2. หรือสตรีมเปิดยาวและเงียบนานเป็นปกติ รีเฟรชทุก 60 วิ (ไม่ยิงถี่จนเสี่ยงโดน rate-limit)
+                refresh_interval = 20.0 if (self._had_any and self._empty_streak >= 3) else 60.0
+                need_refresh = (now_ts - getattr(self, "_reload_token_ts", 0) > refresh_interval)
                 if need_refresh:
                     fresh = self._resolve_continuation(self._video_id)
                     if fresh:
                         self._reload_token = fresh
                         self._reload_token_ts = now_ts
+                    else:
+                        # พักอย่างน้อย 20 วิ ก่อนลองใหม่ ป้องกันการยิงซ้ำรัวๆ เวลาติด 429
+                        self._reload_token_ts = now_ts - (refresh_interval - 20.0)
                     self._empty_streak = 0
                 self._continuation = self._reload_token  # ★ re-poll หน้าต่างล่าสุด
                 had_messages = self._fetch_chat()

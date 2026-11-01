@@ -587,10 +587,18 @@ class TwitchChat:
     def _reader_loop(self) -> None:
         """อ่านข้อมูลจาก socket ตลอด จนกว่าจะ disconnect"""
         buf = ""
+        last_keepalive = time.time()
         while not self._stop_event.is_set():
             try:
                 if self._sock is None:
                     break
+                now_ts = time.time()
+                if now_ts - last_keepalive >= 60.0:
+                    last_keepalive = now_ts
+                    try:
+                        self._send_raw("PING :bp3_keepalive\r\n")
+                    except Exception:
+                        pass
                 data = self._sock.recv(4096)
             except socket.timeout:
                 continue  # timeout = loop ใหม่ (ตรวจ _stop_event)
@@ -668,6 +676,8 @@ class TwitchChat:
         if line.startswith("PING"):
             self._send_raw("PONG " + line.split(" ", 1)[1] + "\r\n")
             return
+        if line.startswith("PONG"):
+            return  # Server responded to our keepalive PING
 
         # LOGIN FAILED — token หมดอายุ → refresh + reconnect หรือ fallback anonymous
         if "LOGIN_UNSUCCESSFUL" in line or "Login unsuccessful" in line or "Login authentication failed" in line:

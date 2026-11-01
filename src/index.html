@@ -70135,87 +70135,79 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     let _realChatPollerTimer = null;
+    let _realChatWorker = null;
+    let _isPollingRealChats = false;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    // Keep browser audio output pipe warm so first TTS after hours of silence has zero spin-up lag
+    let _audioKeepAliveCtx = null;
+    function ensureAudioPipelineWarm() {
+      try {
+        if (!_audioKeepAliveCtx && (window.AudioContext || window.webkitAudioContext)) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          _audioKeepAliveCtx = new AudioCtx();
+        }
+        if (_audioKeepAliveCtx && _audioKeepAliveCtx.state === 'suspended') {
+          _audioKeepAliveCtx.resume().catch(() => {});
+        }
+      } catch (_) {}
+    }
+    if (typeof window !== 'undefined') {
+      window.addEventListener('click', ensureAudioPipelineWarm, { passive: true });
+      window.addEventListener('keydown', ensureAudioPipelineWarm, { passive: true });
+    }
 
     function initRealChatPoller() {
       if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
 
-
-
-
-
-
-
       if (_realChatPollerTimer) clearInterval(_realChatPollerTimer);
+      if (_realChatWorker) {
+        try { _realChatWorker.terminate(); } catch (_) {}
+        _realChatWorker = null;
+      }
 
+      ensureAudioPipelineWarm();
 
+      // Use Web Worker heartbeat ticker to ensure 800ms ticks never throttle
+      // when the game is played fullscreen or window is hidden in background for hours.
+      try {
+        const workerBlob = new Blob([
+          "let t = null;" +
+          "self.onmessage = function(e) {" +
+          "  if (e.data === 'start') {" +
+          "    if (t) clearInterval(t);" +
+          "    t = setInterval(() => self.postMessage('tick'), 800);" +
+          "  } else if (e.data === 'stop') {" +
+          "    if (t) clearInterval(t);" +
+          "    t = null;" +
+          "  }" +
+          "};"
+        ], { type: 'application/javascript' });
+        const blobUrl = URL.createObjectURL(workerBlob);
+        _realChatWorker = new Worker(blobUrl); window._realChatWorker = _realChatWorker;
+        _realChatWorker.onmessage = function(e) {
+          if (e.data === 'tick') {
+            pollIncomingRealChats();
+          }
+        };
+        _realChatWorker.postMessage('start');
+      } catch (err) {
+        console.warn('Web Worker ticker unavailable, falling back to setInterval:', err);
+        _realChatPollerTimer = setInterval(pollIncomingRealChats, 800); window._realChatPollerTimer = _realChatPollerTimer;
+      }
 
-
-
-
-
-      _realChatPollerTimer = setInterval(pollIncomingRealChats, 800);
-
-
-
-
-
-
+      // Safeguard interval if Worker failed
+      if (!_realChatWorker) {
+        _realChatPollerTimer = setInterval(pollIncomingRealChats, 800); window._realChatPollerTimer = _realChatPollerTimer;
+      }
 
       setInterval(pollPlatformStatuses, 4000);
-
-
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     async function pollIncomingRealChats() {
       if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
-
-
-
-
-
-
-
+      if (_isPollingRealChats) return;
+      _isPollingRealChats = true;
       try {
-
-
-
-
-
-
-
         const res = await fetch(`/api/messages?last_id=${_lastLiveChatId}`);
 
 
