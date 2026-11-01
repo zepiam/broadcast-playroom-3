@@ -31,7 +31,10 @@ window.BP3Giveaway={import(data){if(!data || typeof data!=='object')return;const
 function init(){
  renderSettings();renderHistory();updateButton();
  doc().getElementById('gwDrawStyle').onchange=event=>{settings.drawStyle=event.target.value;persist();};
- doc().getElementById('btnSaveGiveawaySettings').onclick=()=>{settings.duration=Math.max(0,Number(doc().getElementById('gwReceiveDuration').value)||0);settings.display=doc().querySelector('[name="gwOverlayMode"]:checked')?.value || 'banner';persist();emitGwState();showToast('บันทึกการตั้งค่าแล้ว');};
+ const saveGw=()=>{settings.duration=Math.max(0,Number(doc().getElementById('gwReceiveDuration')?.value)||0);settings.display=doc().querySelector('[name="gwOverlayMode"]:checked')?.value || 'banner';persist();emitGwState();};
+doc().getElementById('gwReceiveDuration')?.addEventListener('change',saveGw);
+doc().querySelectorAll('[name="gwOverlayMode"]').forEach(r=>r.addEventListener('change',saveGw));
+const sBtn=doc().getElementById('btnSaveGiveawaySettings');if(sBtn){sBtn.onclick=()=>{saveGw();showToast('บันทึกการตั้งค่าแล้ว');};}
  doc().getElementById('btnGiveawayImportImage').onclick=()=>{const d=doc(),picker=d.createElement('input');picker.type='file';picker.accept='image/*';picker.hidden=true;d.body.append(picker);picker.onchange=async()=>{try{const file=picker.files[0];if(!file)return;if(!file.type.startsWith('image/'))throw Error('กรุณาเลือกไฟล์รูปภาพ');const response=await fetch('/api/playroom/import',{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Filename':encodeURIComponent(file.name)},body:file});const image=await response.json();if(!response.ok)throw Error(image.error);settings.imageUrl=image.url;settings.display='image';persist();renderSettings();emitGwState();}catch(error){showToast(error.message);}finally{picker.remove();}};picker.click();};
  fetch('/api/giveaway-settings').then(response=>response.ok?response.json():null).then(data=>BP3Giveaway.import(data)).catch(()=>{});
 }

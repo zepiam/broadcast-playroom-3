@@ -574,7 +574,14 @@
   }
 
   // Primary rendering function that updates the Live Preview in real time
+  let _cwcAutoSaveTimer = null;
   function applyLivePreview() {
+    clearTimeout(_cwcAutoSaveTimer);
+    _cwcAutoSaveTimer = setTimeout(() => {
+      try {
+        localStorage.setItem('bp3_chat_widget_config', JSON.stringify(currentConfig));
+      } catch (_) {}
+    }, 250);
     const stage = document.getElementById('cwcPreviewStage');
     if (!stage) return;
 

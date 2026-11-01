@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.12"
+CURRENT_VERSION = "3.13"
 
 REPO_OWNER = "zepiam"
 
@@ -1200,8 +1200,8 @@ tar -xf "{patch_zip}" -C "{install_dir}"
 if errorlevel 1 goto update_failed
 
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" (
-    if not exist "{install_dir}\data\platform_settings.json" if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\data\" >nul
-    if not exist "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
+    if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\data\" >nul
+    copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
 )
 
 del "{patch_zip}"

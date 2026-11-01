@@ -20,7 +20,7 @@ window.openDesktopOverlaySettings=async function(tab='game'){
 };
 window.openOverlayPlusSettings=async function(){
  if(typeof openToolWindow==='function')openToolWindow('overlay-plus-settings');
- try{const response=await fetch('/api/desktop-overlays');if(!response.ok)throw Error('โหลดการตั้งค่าไม่สำเร็จ');const data=await response.json();const doc=getToolDocument('overlay-plus-settings');overlayPlusEntries=data.settings?.more_overlays||[];for(let i=0;i<3;i++){const entry=overlayPlusEntries[i]||{};const checkbox=doc.getElementById('opEnabled'+i),input=doc.getElementById('opUrl'+i);if(checkbox)checkbox.checked=entry.enabled!==false && !!entry.url;if(input)input.value=entry.url||''}}catch(error){showToast(error.message)}
+ try{const response=await fetch('/api/desktop-overlays');if(!response.ok)throw Error('โหลดการตั้งค่าไม่สำเร็จ');const data=await response.json();const doc=getToolDocument('overlay-plus-settings');overlayPlusEntries=data.settings?.more_overlays||[];for(let i=0;i<3;i++){const entry=overlayPlusEntries[i]||{};const checkbox=doc.getElementById('opEnabled'+i),input=doc.getElementById('opUrl'+i);if(checkbox)checkbox.checked=entry.enabled!==false && !!entry.url;if(input)input.value=entry.url||'';if(checkbox&&!checkbox.dataset.asBound){checkbox.dataset.asBound='1';checkbox.addEventListener('change',()=>window.persistOverlayPlusSettings());}if(input&&!input.dataset.asBound){input.dataset.asBound='1';input.addEventListener('change',()=>window.persistOverlayPlusSettings());input.addEventListener('input',()=>window.persistOverlayPlusSettings());}}catch(error){showToast(error.message)}
 };
 window.saveOverlayPlusSettings=async function(){
  const doc=getToolDocument('overlay-plus-settings'),status=doc.getElementById('overlayPlusSaveStatus');
