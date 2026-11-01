@@ -6,26 +6,26 @@
   "changelog": "# Broadcast Playroom v3.29\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.29:\n- **ระบบ Single Instance Guard ป้องกันการเปิดโปรแกรมซ้ำซ้อน 100%**:\n  - แก้ไขปัญหาเมื่อเปิดโปรแกรมทิ้งไว้ แล้วเผลอไปกดเปิดซ้ำอีกรอบ ทำให้ขึ้นหน้าต่างซ้อนและเกิดอาการค้าง ปิดไม่ได้จนต้องเปิด Task Manager เพื่อ End Task\n  - ต่อไปนี้ หากมีโปรแกรมเปิดทำงานอยู่แล้ว การกดเปิดโปรแกรมซ้ำ**จะไม่สร้างหน้าต่างใหม่ขึ้นมาซ้อนเด็ดขาด**\n  - ระบบจะส่งสัญญาณเรียกหน้าต่างโปรแกรมเดิมที่เปิดอยู่ให้เด้งขึ้นมาแสดงบนสุดของหน้าจอทันที (Bring Window to Front & Restore จากการย่อหน้าต่าง) และโปรเซสที่เปิดซ้ำจะปิดตัวเองลงอย่างสะอาดทันที\n- **ระบบดึงรูปโปรไฟล์คนดูครบทุกแพลตฟอร์มหลัก (Twitch, Kick, YouTube, TikTok)**:\n  - รองรับการดึงและแคชรูปประจำตัวจริงจาก Twitch (DecAPI), Kick (Kick API), YouTube (InnerTube authorPhoto) และ TikTok (TikTokLive avatar)\n  - ไม่มีการเกิดภาพแตก หากไม่มีรูปหรือยังโหลดไม่เสร็จจะแสดงรูปตัวละครจำลองสุดน่ารักทันทีแบบ Real-time\n",
   "lite": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.29/patch-v3.29-lite.zip",
-    "sha256": "b633438072c643f2769b5c029238500b6a7c0dab0fa2abfd9dc817d40b5a1edc",
-    "size": 49896604
+    "sha256": "4b022ab2021788cdff43e0bae4e3cdd9b714d6b3294883c00e0196402c9c444b",
+    "size": 49916430
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.29/patch-v3.29-full.zip",
-    "sha256": "b633438072c643f2769b5c029238500b6a7c0dab0fa2abfd9dc817d40b5a1edc",
-    "size": 49896604
+    "sha256": "4b022ab2021788cdff43e0bae4e3cdd9b714d6b3294883c00e0196402c9c444b",
+    "size": 49916430
   },
   "packages": {
     "lite": {
       "version": "3.29",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.29/patch-v3.29-lite.zip",
-      "patch_sha256": "b633438072c643f2769b5c029238500b6a7c0dab0fa2abfd9dc817d40b5a1edc",
-      "patch_size": 49896604
+      "patch_sha256": "4b022ab2021788cdff43e0bae4e3cdd9b714d6b3294883c00e0196402c9c444b",
+      "patch_size": 49916430
     },
     "full": {
       "version": "3.29",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.29/patch-v3.29-full.zip",
-      "patch_sha256": "b633438072c643f2769b5c029238500b6a7c0dab0fa2abfd9dc817d40b5a1edc",
-      "patch_size": 49896604
+      "patch_sha256": "4b022ab2021788cdff43e0bae4e3cdd9b714d6b3294883c00e0196402c9c444b",
+      "patch_size": 49916430
     }
   }
 }

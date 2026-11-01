@@ -120,11 +120,13 @@ def get_current_version() -> str:
 
     candidates = [
 
-        os.path.join(install_dir, "_internal", "version.json"),
-
         os.path.join(install_dir, "version.json"),
 
+        os.path.join(install_dir, "_internal", "version.json"),
+
     ]
+
+    highest_ver = None
 
     for path in candidates:
 
@@ -140,11 +142,17 @@ def get_current_version() -> str:
 
                 if ver and ver != "0.0.0":
 
-                    return ver
+                    if highest_ver is None or is_version_newer(ver, highest_ver):
+
+                        highest_ver = ver
 
         except Exception:
 
             pass
+
+    if highest_ver:
+
+        return highest_ver
 
     return CURRENT_VERSION
 
