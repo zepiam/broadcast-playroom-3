@@ -6,26 +6,26 @@
   "changelog": "# Broadcast Playroom v3.30\\n\\n### รายการอัปเดตและปรับปรุงในเวอร์ชัน 3.30:\\n- **ทดสอบระบบอัปเดตอัตโนมัติ (End-to-End In-App Update Verification)**\\n- ระบบ Single Instance Guard ป้องกันการเปิดโปรแกรมซ้อน และเด้งหน้าต่างเดิมขึ้นมาแสดงบนสุด\\n- ดึงและแคชรูปโปรไฟล์คนดูจริงครบทุกแพลตฟอร์ม (Twitch, Kick, YouTube, TikTok)\\n",
   "lite": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-lite.zip",
-    "sha256": "dab1fd25e0eed54e96df47dc3778c8a4bc568be02c3000369559b30ed667d6bf",
-    "size": 49919670
+    "sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
+    "size": 49919668
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-full.zip",
-    "sha256": "dab1fd25e0eed54e96df47dc3778c8a4bc568be02c3000369559b30ed667d6bf",
-    "size": 49919670
+    "sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
+    "size": 49919668
   },
   "packages": {
     "lite": {
       "version": "3.30",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-lite.zip",
-      "patch_sha256": "dab1fd25e0eed54e96df47dc3778c8a4bc568be02c3000369559b30ed667d6bf",
-      "patch_size": 49919670
+      "patch_sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
+      "patch_size": 49919668
     },
     "full": {
       "version": "3.30",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.30/patch-v3.30-full.zip",
-      "patch_sha256": "dab1fd25e0eed54e96df47dc3778c8a4bc568be02c3000369559b30ed667d6bf",
-      "patch_size": 49919670
+      "patch_sha256": "64d936bbad2ccf355d0bb76e12ab9685376b4507dc2bc018385b9bfd5c17bf0f",
+      "patch_size": 49919668
     }
   }
 }
