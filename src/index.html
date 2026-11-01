@@ -68239,14 +68239,14 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         advance();
       };
 
-      // Watchdog: If online TTS does not start playing within 4.5 seconds (network hang/freeze),
-      // instantly switch to native Microsoft local voice so the streamer NEVER waits!
+      // Watchdog: Generous 14s limit allows full Edge-TTS synthesis AND heavy RVC AI voice conversion
+      // to complete with 100% fidelity without cutting in. Backup voice is strictly a last resort.
       watchdogTimer = setTimeout(() => {
         if (!handled) {
-          console.warn('[BP3 TTS Watchdog] Audio synthesis stalled > 4.5s; triggering instant local voice');
+          console.warn('[BP3 TTS Watchdog] Audio synthesis/RVC stalled > 14s; using emergency fallback');
           finishAudio(true);
         }
-      }, 4500);
+      }, 14000);
 
       audio.addEventListener('playing', () => {
         clearWatchdog();

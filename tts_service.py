@@ -182,11 +182,15 @@ class TTSService:
 
     def _start_warmup_worker(self):
         def _warmup_loop():
-            import time
+            import time, socket, ssl
             while True:
-                time.sleep(180)  # Pre-warm DNS & socket pool every 3 minutes
+                time.sleep(180)  # Pre-warm DNS & TLS session every 3 minutes so Edge-TTS never goes cold
                 try:
                     socket.getaddrinfo('speech.platform.bing.com', 443, socket.AF_INET)
+                    raw_s = socket.create_connection(('speech.platform.bing.com', 443), timeout=3.0)
+                    ctx = ssl.create_default_context()
+                    with ctx.wrap_socket(raw_s, server_hostname='speech.platform.bing.com') as s:
+                        pass
                 except Exception:
                     pass
         import threading
@@ -207,8 +211,7 @@ class TTSService:
         if c_vol and c_vol not in ['+0%', '0%', '-0%']:
             kwargs['volume'] = c_vol
 
-        # Match the legacy engine: force IPv4 with fast timeouts (connect 3.5s, receive 5.0s)
-        # to ensure stuck network fails fast and allows instant local fallback
+        # Ensure Edge-TTS gets ample connection time while avoiding minute-long stalls
         for attempt in range(2):
             try:
                 options = {'family': socket.AF_INET}
@@ -217,8 +220,8 @@ class TTSService:
                     from network_dns import AppDnsResolver
                     options['resolver'] = AppDnsResolver(SimpleNamespace(dns_service=dns['service'], dns_custom=dns['custom']))
                 async with aiohttp.TCPConnector(**options) as connector:
-                    c_to = 3.5 if attempt == 0 else 2.5
-                    r_to = 5.0 if attempt == 0 else 4.0
+                    c_to = 5.0 if attempt == 0 else 4.0
+                    r_to = 8.0 if attempt == 0 else 6.0
                     comm = edge_tts.Communicate(text, voice=voice, connector=connector,
                                                 connect_timeout=c_to, receive_timeout=r_to, **kwargs)
                     buf = io.BytesIO()
