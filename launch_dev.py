@@ -14,7 +14,9 @@ _BG_THROTTLE_FLAGS = (
     "--disable-background-timer-throttling "
     "--disable-backgrounding-occluded-windows "
     "--disable-renderer-backgrounding "
-    "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading"
+    "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading "
+    "--disable-http-cache "
+    "--disable-application-cache"
 )
 _wv_existing = os.environ.get("WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS", "")
 if "--disable-background-timer-throttling" not in _wv_existing:
@@ -2090,7 +2092,7 @@ def handle_tool_popout(tool_name, main_url, section=None):
     }
     sz = sizes.get(name, (800, 600))
     title = titles.get(name, f'Broadcast Playroom - {name.capitalize()}')
-    url = f"{main_url}/index.html?popout={name}"
+    url = f"{main_url}/index.html?popout={name}&_v={int(time.time() * 1000)}"
     
     class PopoutJsApi:
         def __init__(self, tool_name, win_ref=None):
@@ -2148,6 +2150,15 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
         super().__init__(*args, directory=DIST_DIR, **kwargs)
+
+    def end_headers(self):
+        # Force browser/WebView2 to never cache local assets so updates are 100% immediate
+        buffer_str = b"".join(getattr(self, '_headers_buffer', [])).decode('latin1', errors='ignore')
+        if 'cache-control' not in buffer_str.lower():
+            self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
+        super().end_headers()
 
 
 
@@ -11892,6 +11903,15 @@ def open_app_window(main_url):
                 pass
             storage_path = os.path.join(str(DATA_ROOT), 'webview_data')
             os.makedirs(storage_path, exist_ok=True)
+            # Purge stale WebView2 HTTP/Code caches so updates are applied 100% immediately
+            try:
+                for sub in ['EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'Default/Cache', 'Default/Code Cache']:
+                    c_dir = os.path.join(storage_path, os.path.normpath(sub))
+                    if os.path.isdir(c_dir):
+                        import shutil
+                        shutil.rmtree(c_dir, ignore_errors=True)
+            except Exception:
+                pass
             w = webview.create_window(
                 title='Broadcast Playroom 3',
                 url=main_url,
@@ -12073,6 +12093,8 @@ def open_app_window(main_url):
             "--disable-backgrounding-occluded-windows",
             "--disable-renderer-backgrounding",
             "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading",
+            "--disable-http-cache",
+            "--disable-application-cache",
             "--enable-features=WebAppWindowControlsOverlay",
             "--autoplay-policy=no-user-gesture-required",
             "--disable-extensions",

@@ -751,6 +751,30 @@ def apply_update_patch(patch_zip: str) -> bool:
             if os.path.isdir(internal_dir):
                 zf.extractall(internal_dir)
         restore_user_settings(install_dir)
+        # Purge stale WebView2 and browser profile caches so updated code loads immediately
+        try:
+            import shutil
+            from pathlib import Path
+            app_data_candidates = [
+                Path(os.environ.get("LOCALAPPDATA", "")) / "BroadcastPlayroom3",
+                Path(install_dir) / "data",
+                Path(install_dir)
+            ]
+            for root_c in app_data_candidates:
+                wv_dir = root_c / "webview_data"
+                if wv_dir.is_dir():
+                    for sub in ["EBWebView/Default/Cache", "EBWebView/Default/Code Cache", "Default/Cache", "Default/Code Cache"]:
+                        c_path = wv_dir / sub
+                        if c_path.is_dir():
+                            shutil.rmtree(c_path, ignore_errors=True)
+                bp_dir = root_c / "browser_profile"
+                if bp_dir.is_dir():
+                    for sub in ["Default/Cache", "Default/Code Cache", "GrShaderCache", "ShaderCache"]:
+                        c_path = bp_dir / sub
+                        if c_path.is_dir():
+                            shutil.rmtree(c_path, ignore_errors=True)
+        except Exception:
+            pass
         return True
 
     except Exception as e:
