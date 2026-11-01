@@ -1775,3 +1775,41 @@ vc_controls.js):**
   - รัน `tests/verify_window_frame.py`: **PASS**
   - รัน `tests/verify_chat_replay_layout.py`: **PASS**
 - **สถานะ:** แก้ไขเสร็จสมบูรณ์ Dev กลับมาเปิดและคลิกใช้งานได้ตามปกติแล้ว
+
+
+## 2026-11-01 - Release v3.8 (Full Game Overlay Suite, Settings Navigation & Window Dragging Restoration)
+
+### 1. รายละเอียดการแก้ไขและกู้คืน (Bug Fixes & Restoration)
+- **กู้คืนหน้าต่าง Game Overlay Suite เต็มรูปแบบ:**
+  - นำเข้าสคริปต์ `game_overlay_chat_controls.js` และโครงสร้าง HTML เต็มรูปแบบที่มี `#gameOverlayHotkeys` และ `#gameChatCustomizer`
+  - รองรับครบทั้ง 4 โหมด:
+    1. Default (แชทมาตรฐาน)
+    2. Theme (มี 10 ธีมสไตล์พร้อม Pagination หน้า 1/2)
+    3. Balloon (บอลลูนคำพูด)
+    4. Character Talk (อวาตาร์ตัวละคร VTuber พร้อมอัปโหลดรูปภาพและสุ่มตำแหน่งบนจอ)
+  - แถบสไลเดอร์ขนาดและความทึบแบบเรียลไทม์ (Live Sliders) สำหรับทั้ง Game Overlay และ Viewer Overlay
+  - บันทึก Global Hotkeys (เช่น Ctrl+Shift+G / Ctrl+Shift+H) ผ่าน backend `/api/game-chat-settings`
+- **แยกหน้าต่าง Overlay+ (เบราว์เซอร์ลอย):**
+  - แยกออกเป็นหน้าต่างอิสระ `#win-overlay-plus-settings` เพื่อป้องกันการตั้งค่าปนกับ Game Overlay รองรับ URL ได้สูงสุด 3 หน้าต่าง
+  - ปรับปรุงการตรวจสอบ `more_overlays` ใน `launch_dev.py` และ `src/index.html` ไม่ให้ค่า Overlay+ ถูกล้างเมื่อบันทึก Game Overlay
+- **กู้คืนเมนูแถบซ้ายในหน้าต่างการตั้งค่า (Settings Sidebar Restoration):**
+  - แก้ไขปัญหา CSS suppression ใน Popout Mode (`html.popout-standalone-window`) ที่เคยซ่อน `<aside>` ทั้งหมด
+  - เปลี่ยนเป็นระบุเฉพาะ `#colSidebar, .col-sidebar, #eventsCol, .col-events` พร้อมกำหนด `.settings-sidebar` ให้แสดงผลเป็น `display: flex !important; visibility: visible !important;` ครบทั้ง 16 หมวดหมู่
+- **แก้ไขการลากขยับหน้าต่างหลักโปรแกรม (Window Dragging):**
+  - คืนค่า `webview.settings['DRAG_REGION_SELECTOR'] = '.pywebview-drag-region, .desktop-titlebar'` และ `easy_drag=True` ใน `launch_dev.py`
+  - เพิ่ม Fallback Mousemove Dragging ผ่าน `/api/window/frame` ด้วย `requestAnimationFrame` เพื่อความลื่นไหลระดับ 60fps
+- **แก้ไขการคืน DOM Node หลังปิดหน้าต่าง Popout:**
+  - ปรับปรุง `closeToolWindow` ให้รีไบนด์ `onclick` แฮนด์เลอร์ไปยังคอนเทกต์หน้าต่างหลักเมื่อ Node ถูก adoptNode กลับมา ทำให้ปุ่มในหน้าต่างที่ฝังอยู่ยังคงทำงานได้ถูกต้อง 100%
+
+### 2. ผลการทดสอบ (Automated Verification)
+- `tests/verify_game_overlay_settings.py`: **PASS 100%** (Theme cards, Pagination, Retained controls, Character upload, Hotkeys, Range sliders, Popup close, Embedded dragging & close)
+- `tests/verify_window_frame.py`: **PASS 100%** (Native window drag, maximize, restore)
+- `tests/verify_ui_fixes.py`: **PASS 100%** (Clean popout, zero giant icons, zero double titlebars)
+- Popout Settings Sidebar Verification: **PASS 100%** (Visible category items = 16/16)
+
+### 3. การปล่อยอัปเดต (Release v3.8 Published)
+- อัปเดตเวอร์ชันเป็น `v3.8` ใน `version.json`, `updater.py`, `package.json`, `src/index.html`, และ `dist/index.html`
+- สร้างแพ็กเกจ Cumulative Patch:
+  - `BroadcastPlayroom3-Lite-Patch-3.8.zip`
+  - `BroadcastPlayroom3-Full-Patch-3.8.zip`
+- เผยแพร่ GitHub Release `v3.8` และซิงค์ `version.json` บนกิ่ง `master` สำเร็จสมบูรณ์
