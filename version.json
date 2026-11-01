@@ -1,30 +1,30 @@
 {
-  "version": "3.17",
-  "latest_version": "3.17",
+  "version": "3.18",
+  "latest_version": "3.18",
   "critical": false,
-  "changelog": "### Broadcast Playroom v3.17 Update Highlights\n\n- **ซ่อนปุ่ม Overlay+ อัตโนมัติเมื่อยังไม่มีการระบุ URL**: หากยังไม่ได้กำหนด URL ในตั้งค่า ปุ่ม Overlay+ จะไม่แสดงบนแถบด้านบนให้เกะกะ และจะปรากฏขึ้นอัตโนมัติทันทีที่มีการบันทึก URL หรือเปิดใช้งาน\n- **แถบตั้งค่า Overlay+ ในแท็บ Docks & Web URL**: เพิ่มการ์ดสำหรับเข้าถึงการตั้งค่า URL ของ Overlay+ ในหน้าต่างตั้งค่าหลักโดยตรง\n- **แถบขอบไฟอัปเดตแบบ Squircle Progress Bar บน Server Rail**: ขณะกำลังดาวน์โหลดไฟล์อัปเดตในเบื้องหลัง ขอบเรืองแสงสีเขียวรอบปุ่มลูกศรดาวน์โหลดจะวิ่งเป็น Progress Bar ตามเปอร์เซ็นต์จริง (0-100%) และเมื่อดาวน์โหลดเสร็จสมบูรณ์ เส้นขอบจะวิ่งครบรอบล้อมกรอบปุ่มตามเดิม พร้อมแจ้งเตือนให้พร้อมติดตั้ง\n- **Zero GPU Lockup Compliance**: คำนวณความยาวเส้นรอบรูป SVG Dash-offset แบบ Real-time ตาม Chunks ที่รับมา โดยไม่มี CSS animation loop หน่วงการทำงาน ทำให้ GPU เข้าสู่โหมดพัก (0% idle) ได้อย่างสมบูรณ์\n- **Safe PyInstaller Atomic Extraction (_internal parity)**: แพ็กเกจครอบคลุมโครงสร้าง _internal ของตัวเต็ม ทำให้รีสตาร์ทแล้วอัปเดตติดสมบูรณ์แบบแน่นอน",
+  "changelog": "### Broadcast Playroom v3.18 Update Highlights\n\n- **ป้องกันอาการ TTS อ่านแชทย้อนหลังและอ่านซ้อน 2 ครั้ง (Popout Safety Guard)**:\n  - ตรวจจับหน้าต่างแยก (Popout / Secondary Window) เช่น หน้าต่างตั้งค่า Game Overlay หรือหน้าต่างเครื่องมือต่างๆ ให้ไม่เริ่มระบบดึงประวัติข้อความแชทซ้ำ และไม่สั่งเล่นเสียงอ่าน TTS\n  - เฉพาะหน้าต่างหลักของโปรแกรมเท่านั้นที่จะเป็นผู้ดึงแชทและเล่นเสียงอ่าน ทำให้หมดปัญหาเสียงอ่านแชทย้อนหลังตั้งแต่ข้อความแรกเมื่อเปิดหน้าต่างตั้งค่า และแก้ปัญหาเสียงอ่านซ้อนกัน 2 ครั้งเมื่อมีข้อความแชทใหม่เข้ามา 100%\n- **กู้คืนปุ่มจัดการ \"แก้ไข\" และ \"ลบ\" ในคลังคำแทนที่การอ่าน (Dictionary & Word Replacement)**:\n  - ปรับแก้กฎ CSS ของหน้าต่างแยกที่เคยบดบังปุ่ม ทำให้คอลัมน์ \"จัดการ\" ในตารางแสดงปุ่ม `✏️ แก้ไข` และ `🗑️ ลบ` ชัดเจนในทุกแถว\n  - เพิ่มปุ่มลำโพง `🔊` จิ๋วในแถวตาราง ให้กดทดลองฟังเสียงอ่านคำแทนที่ได้ทันที\n- **ระบบหน้าต่างแก้ไขคำศัพท์ (Edit Word Modal) พร้อมปุ่มทดลองฟัง Edge-TTS**:\n  - เมื่อกดปุ่ม `✏️ แก้ไข` คำใดๆ จะเปิดแถบแก้ไขคำศัพท์ขึ้นมา พร้อมช่องคำเดิมและคำที่ให้อ่านแทน\n  - มีปุ่ม `🔊 ฟัง` ให้กดทดสอบฟังเสียงสังเคราะห์จริงจาก Edge-TTS ก่อนตัดสินใจบันทึก\n- **Dual-Path Packaging & Version Manifest Parity**:\n  - แพ็กเกจครอบคลุมโครงสร้างทั้ง root และ `_internal/` ป้องกันการ rollback และรองรับการอัปเดตอัตโนมัติจากทุกเวอร์ชันก่อนหน้าอย่างไร้รอยต่อ",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-lite.zip",
-    "sha256": "c606df5f4a11182ff293e8f60fbe213e0d6e1a60c2b8e78785604dd7d7528729",
-    "size": 49828404
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-lite.zip",
+    "sha256": "4472cc8a46c0ca9e65ca889cd974b77069500c6cf616dbfa738ac00cad7d60d9",
+    "size": 49834152
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-full.zip",
-    "sha256": "a2a8453f89ea13c681d2e2bd6fb8bd274682adcd69e795b62e27389b0c6f8638",
-    "size": 49828404
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-full.zip",
+    "sha256": "0d1d8d0d7257b50934a9ae4a6e2cdb5ae9e562cef4ed60d9c081d52dd491ad4c",
+    "size": 49834152
   },
   "packages": {
     "lite": {
-      "version": "3.17",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-lite.zip",
-      "patch_sha256": "c606df5f4a11182ff293e8f60fbe213e0d6e1a60c2b8e78785604dd7d7528729",
-      "patch_size": 49828404
+      "version": "3.18",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-lite.zip",
+      "patch_sha256": "4472cc8a46c0ca9e65ca889cd974b77069500c6cf616dbfa738ac00cad7d60d9",
+      "patch_size": 49834152
     },
     "full": {
-      "version": "3.17",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-full.zip",
-      "patch_sha256": "a2a8453f89ea13c681d2e2bd6fb8bd274682adcd69e795b62e27389b0c6f8638",
-      "patch_size": 49828404
+      "version": "3.18",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.18/patch-v3.18-full.zip",
+      "patch_sha256": "0d1d8d0d7257b50934a9ae4a6e2cdb5ae9e562cef4ed60d9c081d52dd491ad4c",
+      "patch_size": 49834152
     }
   }
 }
