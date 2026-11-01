@@ -79,6 +79,28 @@ def verify_dist_health(root_path=None) -> tuple[bool, str]:
 
     return True, f"All dist integrity checks passed ({size:,} bytes verified healthy)."
 
+def verify_patch_archive(zip_path, expected_version: str) -> tuple[bool, str]:
+    """Verifies that an update patch archive contains all required files including version manifests."""
+    import zipfile, json
+    zp = Path(zip_path)
+    if not zp.is_file():
+        return False, f"Archive not found: {zip_path}"
+    try:
+        with zipfile.ZipFile(zp, 'r') as zf:
+            names = zf.namelist()
+            if 'version.json' not in names:
+                return False, "Archive is missing root 'version.json'!"
+            if '_internal/version.json' not in names:
+                return False, "Archive is missing '_internal/version.json'!"
+            data = json.loads(zf.read('version.json').decode('utf-8'))
+            if data.get('version') != expected_version:
+                return False, f"version.json in archive has version '{data.get('version')}', expected '{expected_version}'"
+            if 'dist/index.html' not in names:
+                return False, "Archive is missing 'dist/index.html'!"
+    except Exception as e:
+        return False, f"Corrupted patch archive: {e}"
+    return True, f"Patch archive {zp.name} verified: contains valid version.json matching v{expected_version}"
+
 if __name__ == '__main__':
     root = Path(__file__).resolve().parent
     ok, msg = verify_dist_health(root)
