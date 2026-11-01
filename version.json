@@ -1,42 +1,42 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.32",
-  "latest_version": "3.32",
+  "version": "3.33",
+  "latest_version": "3.33",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.32\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.32:\n- **จดจำการตั้งค่าโหมดแปลภาษา (Translate Mode Persistence)**:\n  - แก้ไขปุ่ม แปลภาษา / อ่านทุกภาษา ให้บันทึกการตั้งค่าลงเครื่องอย่างถาวร ปิดเปิดโปรแกรมใหม่ไม่คืนค่า\n  - ซิงค์สถานะระหว่างหน้าเว็บหลักและระบบเซิร์ฟเวอร์แบบ Real-time ทันทีที่กดเปลี่ยนโหมด\n- **ฐานข้อมูลคนดูถาวร (User Manager Local Disk Persistence)**:\n  - เชื่อมต่อการบันทึกรายชื่อคนดูลงฮาร์ดดิสก์จริง (`data/user_roster.json`) ผ่านระบบ API `/api/user-roster`\n  - ข้อมูลคนดู (ชื่อ, แพลตฟอร์ม, รูปโปรไฟล์, จำนวนข้อความ, ประวัติแชท, สถานะ VIP/บล็อก) จะคงอยู่อย่างถาวรแม้ปิดหรือรีสตาร์ตโปรแกรม\n  - รองรับการแสดงผลและนับจำนวนคนดูแบบเรียลไทม์ครบทุกแท็บ (ทั้งหมด, 🌟 ผู้สนับสนุน, 🛑 ถูกบล็อก, 🟢 ล่าสุด)\n  - เพิ่มระบบสำรองและกู้คืนอัตโนมัติใน `updater.py` ทำให้เวลาอัปเดตเวอร์ชันใหม่ในอนาคต ข้อมูลรายชื่อคนดูจะไม่สูญหาย\n  - วางระบบ Strict Isolation Gatekeeper บล็อกข้อความจากปุ่มทดสอบ, แชทจำลอง, และข้อความที่สตรีมเมอร์พิมพ์เอง ไม่ให้เข้าสู่ฐานข้อมูลคนดู บันทึกเฉพาะคนดูจริงจาก Live Stream เท่านั้น\n- **ปรับแต่งแถบเมนูด้านบน (Topbar Cleanup)**:\n  - นำตัวคั่น `|` ที่อยู่ขวามือถัดจากปุ่ม แปลภาษา, Overlay, Game Overlay ออกเพื่อความเรียบร้อยและสะอาดตา\n- **เพิ่มแถบลิงก์ทางลัดด้านล่างขวา (Status Footer Quick Links)**:\n  - เพิ่มลิงก์: `เว็บไซต์ | แจ้งบัค | สนับสนุนการพัฒนาโปรแกรม` พร้อมเส้นคั่นสีเทาบางๆ\n  - ลิงก์ `เว็บไซต์` เปิด `https://www.men9ch.com`\n  - ลิงก์ `แจ้งบัค` เปิด Discord Support `https://discord.gg/nj4KNs6b92`\n  - ลิงก์ `สนับสนุนการพัฒนาโปรแกรม` เปิดหน้าต่างสนับสนุนในโปรแกรม\n",
+  "changelog": "# Broadcast Playroom v3.33\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.33:\n- **จดจำการตั้งค่าโหมดแปลภาษา (Translate Mode Persistence)**:\n  - แก้ไขปุ่ม แปลภาษา / อ่านทุกภาษา ให้บันทึกการตั้งค่าลงเครื่องอย่างถาวร ปิดเปิดโปรแกรมใหม่ไม่คืนค่า\n  - ซิงค์สถานะระหว่างหน้าเว็บหลักและระบบเซิร์ฟเวอร์แบบ Real-time ทันทีที่กดเปลี่ยนโหมด\n  - กู้คืนสถานะโหมดล่าสุดทันทีที่เปิดโปรแกรมโดยไม่มีความหน่วง (Zero Delay UI Restore)\n- **ฐานข้อมูลคนดูถาวร (User Manager Local Disk Persistence)**:\n  - เชื่อมต่อการบันทึกรายชื่อคนดูลงฮาร์ดดิสก์จริง (`data/user_roster.json`) ผ่านระบบ API `/api/user-roster`\n  - ข้อมูลคนดู (ชื่อ, แพลตฟอร์ม, รูปโปรไฟล์, จำนวนข้อความ, ประวัติแชท, สถานะ VIP/บล็อก) จะคงอยู่อย่างถาวรแม้ปิดหรือรีสตาร์ตโปรแกรม\n  - รองรับการแสดงผลและนับจำนวนคนดูแบบเรียลไทม์ครบทุกแท็บ (ทั้งหมด, 🌟 ผู้สนับสนุน, 🛑 ถูกบล็อก, 🟢 ล่าสุด)\n  - เพิ่มระบบสำรองและกู้คืนอัตโนมัติใน `updater.py` ทำให้เวลาอัปเดตเวอร์ชันใหม่ในอนาคต ข้อมูลรายชื่อคนดูจะไม่สูญหาย\n  - วางระบบ Strict Isolation Gatekeeper บล็อกข้อความจากปุ่มทดสอบ, แชทจำลอง, และข้อความที่สตรีมเมอร์พิมพ์เอง ไม่ให้เข้าสู่ฐานข้อมูลคนดู บันทึกเฉพาะคนดูจริงจาก Live Stream เท่านั้น\n- **ปรับแต่งแถบเมนูด้านบน (Topbar Cleanup)**:\n  - นำตัวคั่น `|` ที่อยู่ขวามือถัดจากปุ่ม แปลภาษา, Overlay, Game Overlay ออกเพื่อความเรียบร้อยและสะอาดตา\n- **เพิ่มแถบลิงก์ทางลัดด้านล่างขวา (Status Footer Quick Links)**:\n  - เพิ่มลิงก์: `เว็บไซต์ | แจ้งบัค | สนับสนุนการพัฒนาโปรแกรม` พร้อมเส้นคั่นสีเทาบางๆ\n  - ลิงก์ `เว็บไซต์` เปิด `https://www.men9ch.com`\n  - ลิงก์ `แจ้งบัค` เปิด Discord Support `https://discord.gg/nj4KNs6b92`\n  - ลิงก์ `สนับสนุนการพัฒนาโปรแกรม` เปิดหน้าต่างสนับสนุนในโปรแกรม\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-lite.zip"
     ],
-    "sha256": "f80c14ad0c7e9b58178415eca23b95ef6691ac834752a7d31089a8fd57595240",
+    "sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
     "size": 50031418
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-full.zip"
     ],
-    "sha256": "f80c14ad0c7e9b58178415eca23b95ef6691ac834752a7d31089a8fd57595240",
+    "sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
     "size": 50031418
   },
   "packages": {
     "lite": {
-      "version": "3.32",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-lite.zip",
+      "version": "3.33",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-lite.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-lite.zip"
       ],
-      "patch_sha256": "f80c14ad0c7e9b58178415eca23b95ef6691ac834752a7d31089a8fd57595240",
+      "patch_sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
       "patch_size": 50031418
     },
     "full": {
-      "version": "3.32",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.32/patch-v3.32-full.zip",
+      "version": "3.33",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-full.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.32-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-full.zip"
       ],
-      "patch_sha256": "f80c14ad0c7e9b58178415eca23b95ef6691ac834752a7d31089a8fd57595240",
+      "patch_sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
       "patch_size": 50031418
     }
   }
