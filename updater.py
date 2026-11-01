@@ -747,6 +747,9 @@ def apply_update_patch(patch_zip: str) -> bool:
                     raise ValueError(f"Suspicious path in update archive: {member}")
 
             zf.extractall(install_dir)
+            internal_dir = os.path.join(install_dir, "_internal")
+            if os.path.isdir(internal_dir):
+                zf.extractall(internal_dir)
         restore_user_settings(install_dir)
         return True
 
@@ -1233,6 +1236,15 @@ if exist "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" copy /y "%LO
 
 tar -xf "{patch_zip}" -C "{install_dir}"
 if errorlevel 1 goto update_failed
+if exist "{install_dir}\_internal" (
+    if exist "{install_dir}\dist" xcopy /e /y /q "{install_dir}\dist" "{install_dir}\_internal\dist\" >nul
+    if exist "{install_dir}\updater.py" copy /y "{install_dir}\updater.py" "{install_dir}\_internal\" >nul
+    if exist "{install_dir}\launch_dev.py" copy /y "{install_dir}\launch_dev.py" "{install_dir}\_internal\" >nul
+    if exist "{install_dir}\version.json" copy /y "{install_dir}\version.json" "{install_dir}\_internal\" >nul
+    if exist "{install_dir}\desktop_overlay_service.py" copy /y "{install_dir}\desktop_overlay_service.py" "{install_dir}\_internal\" >nul
+    if exist "{install_dir}\desktop_overlay_qt.py" copy /y "{install_dir}\desktop_overlay_qt.py" "{install_dir}\_internal\" >nul
+    if exist "{install_dir}\viewer_overlay_config.py" copy /y "{install_dir}\viewer_overlay_config.py" "{install_dir}\_internal\" >nul
+)
 
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" (
     if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "{install_dir}\data\" >nul
