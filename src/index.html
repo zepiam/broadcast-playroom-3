@@ -51326,242 +51326,65 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function setTranslateMode(mode) {
-
-
-
-
-
-
-
+    function setTranslateMode(mode, silent = false) {
       _currentTranslateMode = mode;
-
-
-
-
-
-
-
-      const btn = document.getElementById('btnTranslateToggle');
-
-
-
-
-
-
-
+      const btn = document.getElementById('btnTranslateToggle') || document.getElementById('topbar-item-translate');
       const icon = document.getElementById('txtTranslateIcon');
-
-
-
-
-
-
-
       const label = document.getElementById('txtTranslateLabel');
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       try {
-
-
-
         fetch('/api/translate/mode', {
-
-
-
           method: 'POST',
-
-
-
           headers: { 'Content-Type': 'application/json' },
-
-
-
           body: JSON.stringify({ mode })
-
-
-
         }).catch(() => {});
-
-
-
       } catch (_) {}
-
-
-
       try { localStorage.setItem('bp3_translate_mode', mode); } catch (_) {}
 
-
-
-
-
-
-
       if (mode === 'multilang') {
-
-
-
-
-
-
-
         if (icon) icon.textContent = '🌐';
-
-
-
-
-
-
-
-        if (label) label.textContent = 'อ่านทุกภาษา';
-
-
-
-
-
-
-
+        if (label) label.textContent = ' อ่านทุกภาษา';
         if (btn) {
-
-
-
-
-
-
-
           btn.style.color = '#34d399';
-
-
-
-
-
-
-
           btn.style.borderColor = '#10b981';
-
-
-
-
-
-
-
         }
-
-
-
-
-
-
-
-        showToast('🌐 โหมด: อ่านทุกภาษาตามเสียงภาษาต้นฉบับ');
-
-
-
-
-
-
-
+        if (!silent) showToast('🌐 โหมด: อ่านทุกภาษาตามเสียงภาษาต้นฉบับ');
       } else {
-
-
-
-
-
-
-
         if (icon) icon.textContent = '🔄';
-
-
-
-
-
-
-
-        if (label) label.textContent = 'แปลภาษา';
-
-
-
-
-
-
-
+        if (label) label.textContent = ' แปลภาษา';
         if (btn) {
-
-
-
-
-
-
-
           btn.style.color = '#fbbf24';
-
-
-
-
-
-
-
           btn.style.borderColor = '#f59e0b';
-
-
-
-
-
-
-
         }
-
-
-
-
-
-
-
-        showToast('🔄 โหมด: แปลภาษาต่างชาติเป็นภาษาไทยก่อนอ่าน');
-
-
-
-
-
-
-
+        if (!silent) showToast('🔄 โหมด: แปลภาษาต่างชาติเป็นภาษาไทยก่อนอ่าน');
       }
-
-
-
-
-
-
-
     }
+
+    // Restore saved translate mode immediately on startup
+    function initTranslateMode() {
+      try {
+        const saved = localStorage.getItem('bp3_translate_mode');
+        if (saved && (saved === 'multilang' || saved === 'translate')) {
+          setTranslateMode(saved, true);
+        }
+      } catch (_) {}
+
+      fetch('/api/translate/mode')
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.mode && (data.mode === 'multilang' || data.mode === 'translate')) {
+            setTranslateMode(data.mode, true);
+          }
+        })
+        .catch(() => {});
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', initTranslateMode);
+    } else {
+      initTranslateMode();
+    }
+
 
 
 
