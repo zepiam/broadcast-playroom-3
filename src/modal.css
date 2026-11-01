@@ -742,3 +742,14 @@ body.win-is-resizing {
 .game-overlay-body {
   background-color: var(--dc-bg-main) !important;
 }
+
+
+/* Auto-compact floating headers: hide redundant subtitle descriptions across all windows */
+.floating-title-box div > div:nth-child(2),
+.floating-title-box .badge-sub {
+  display: none !important;
+}
+.floating-header {
+  height: 38px !important;
+  min-height: 38px !important;
+}

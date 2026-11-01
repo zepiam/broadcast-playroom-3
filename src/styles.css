@@ -3970,13 +3970,42 @@ body.popout-standalone-window .floating-window.active .floating-header {
   cursor: default !important;
 }
 
-/* Hide duplicate minimize/close buttons in popout windows - native Windows OS titlebar handles them */
-html.popout-standalone-window .floating-header .floating-actions-right,
-html.popout-standalone-window .floating-actions-right,
+/* Hide duplicate headers in popout windows - native Windows OS titlebar handles title & icon */
+html.popout-standalone-window .floating-title-box,
+body.popout-standalone-window .floating-title-box {
+  display: none !important;
+}
+
+/* For windows without extra toolbars, hide floating-header completely in popout mode */
+html.popout-standalone-window .floating-window:not(#win-composer) .floating-header,
+body.popout-standalone-window .floating-window:not(#win-composer) .floating-header {
+  display: none !important;
+}
+
+/* For win-composer in popout mode, keep floating-header as a compact toolbar for action buttons */
+html.popout-standalone-window #win-composer .floating-header,
+body.popout-standalone-window #win-composer .floating-header {
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 10px !important;
+  border-radius: 0 !important;
+  cursor: default !important;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+html.popout-standalone-window #win-composer .floating-actions-right,
+body.popout-standalone-window #win-composer .floating-actions-right {
+  display: flex !important;
+  width: 100% !important;
+  gap: 6px !important;
+  align-items: center !important;
+}
+
+/* Hide duplicate minimize/close and popout buttons in popout windows */
 html.popout-standalone-window .btn-win-action,
-body.popout-standalone-window .floating-header .floating-actions-right,
-body.popout-standalone-window .floating-actions-right,
-body.popout-standalone-window .btn-win-action {
+body.popout-standalone-window .btn-win-action,
+html.popout-standalone-window .btn-popout-window,
+body.popout-standalone-window .btn-popout-window {
   display: none !important;
 }
 

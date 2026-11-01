@@ -105,14 +105,32 @@
             background: #1e1f22 !important;
             flex-direction: column !important;
           }
-          html.popout-standalone-window #win-${target} .floating-header {
+          /* Standalone Popouts: Native OS titlebar already shows window name & icon */
+          html.popout-standalone-window .floating-title-box,
+          html.popout-standalone-window .floating-title-box * {
+            display: none !important;
+          }
+          /* Windows without toolbars: hide floating-header completely in popout mode */
+          html.popout-standalone-window .floating-window:not(#win-composer) .floating-header,
+          html.popout-standalone-window #win-${target}:not(#win-composer) .floating-header {
+            display: none !important;
+          }
+          /* For composer window in popout mode: keep header as compact toolbar */
+          html.popout-standalone-window #win-composer .floating-header {
+            height: 38px !important;
+            min-height: 38px !important;
+            padding: 0 10px !important;
             border-radius: 0 !important;
             cursor: default !important;
+            border-bottom: 1px solid rgba(255,255,255,0.08) !important;
           }
-          html.popout-standalone-window #win-${target} .floating-actions-right,
-          html.popout-standalone-window #win-${target} .btn-win-action,
-          html.popout-standalone-window .floating-actions-right,
-          html.popout-standalone-window .btn-win-action {
+          html.popout-standalone-window #win-composer .floating-actions-right {
+            display: flex !important;
+            gap: 6px !important;
+            align-items: center !important;
+          }
+          html.popout-standalone-window .btn-win-action,
+          html.popout-standalone-window .btn-popout-window {
             display: none !important;
           }
           html.popout-standalone-window #win-${target} .floating-body {
@@ -998,7 +1016,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.11</span>
+      <span class="desktop-titlebar-tag">v3.12</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -4650,7 +4668,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">ระบบเช็คชื่อ & สุ่มแจกรางวัลคนดู</div>
+          
 
 
 
@@ -4914,7 +4932,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">สร้างโพลและแบบสอบถามขึ้นหน้าจอสด</div>
+          
 
 
 
@@ -6986,7 +7004,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">โต้ตอบภาพอนิเมชันเมื่อคนดูพิมพ์คำสั่งแชท</div>
+          
 
 
 
@@ -8178,7 +8196,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">สุ่มกิจกรรมลอยบนจอ OBS โดยไม่ต้องจัดหน้าจอใหม่</div>
+          
 
 
 
@@ -9362,7 +9380,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">จัดการคลิปมีม คำสั่งแชทอินเตอร์แอคทีฟ มินิเกม & ตัดฉากเขียว</div>
+          
 
 
 
@@ -11074,7 +11092,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">ปรับแต่งระบบ, เสียงอ่าน TTS, ช่องทางสตรีม, และ OBS Studio</div>
+          
 
 
 
@@ -19202,7 +19220,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">ปรับแต่งสีชื่อคนดู, ขนาดฟอนต์, และการแสดงไอคอน</div>
+          
 
 
 
@@ -20272,7 +20290,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">จัดการข้อมูลคนดู, สถิติ, และสิทธิ์การอ่านเสียง</div>
+          
 
 
 
@@ -21384,7 +21402,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">รายชื่อคนดูทั้งหมด สถิติการแชท และจัดการสิทธิ์รายบุคคล</div>
+          
 
 
 
@@ -23636,7 +23654,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         </svg>
         <div>
           <div style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">ตั้งค่า Game Overlay</div>
-          <div style="font-size: 11px; color: var(--dc-text-muted);">ปรับแต่งหน้าต่าง Game Overlay และ Viewer Overlay บนหน้าจอ</div>
+          
         </div>
       </div>
       <div class="floating-actions-right">
@@ -23849,8 +23867,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         💡 กด <strong>Ctrl+Shift+H</strong> หรือคลิก "สลับโหมดปรับตำแหน่ง" เพื่อลากย้ายกรอบบนจอ
       </div>
       <div class="floating-footer-right" style="display: flex; gap: 8px;">
-        <button type="button" class="btn-topbar-action primary" id="btnSaveGameOverlaySettings" onclick="saveGameOverlaySettings()">💾 บันทึกการตั้งค่า</button>
-        <button type="button" class="btn-topbar-action" title="ปิดหน้าต่าง" onclick="closeToolWindow('game-overlay')">ปิดหน้าต่าง</button>
+        <button type="button" class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('game-overlay')">ปิดหน้าต่าง</button>
       </div>
     </div>
   </div>
@@ -23862,7 +23879,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
         <span style="font-size: 18px;">🪟</span>
         <div>
           <div style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">ตั้งค่า Overlay+ (เบราว์เซอร์ลอย)</div>
-          <div style="font-size: 11px; color: var(--dc-text-muted);">เปิดหน้าเว็บหรือวิดเจ็ตโปรดแบบลอยเหนือจอเกม</div>
+          
         </div>
       </div>
       <div class="floating-actions-right">
@@ -23976,7 +23993,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">ปรับแต่งสไตล์แชทสดบนหน้าจอแบบเรียลไทม์</div>
+          
 
 
 
@@ -28816,7 +28833,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-          <div style="font-size: 11px; color: var(--dc-text-muted);">จัดวางเลย์เอาต์หน้าจอและวิดเจ็ตสตรีมมิ่งสดโดยไม่ต้องเปิดเบราว์เซอร์</div>
+          
 
 
 
@@ -36354,6 +36371,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
     function closeToolWindow(name) {
       if (name === 'voice') name = 'voice-settings';
+      if (name === 'game-overlay' && typeof window.saveGameOverlaySettings === 'function') {
+        try { window.saveGameOverlaySettings().catch(() => {}); } catch (_) {}
+      }
 
       // Standalone popout window handler
       const popoutParam = new URLSearchParams(window.location.search).get('popout');
