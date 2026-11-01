@@ -1,19 +1,19 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.8",
+  "version": "3.9",
   "repo": "zepiam/broadcast-playroom-3",
-  "changelog": "- Broadcast Playroom v3.8\n- กู้คืนหน้าต่าง Game Overlay Suite เต็มรูปแบบ: โหมด Themes (10 ธีมพร้อม Pagination), โหมด Balloon, โหมด Character Talk (นำเข้ารูปอวาตาร์ VTuber), บันทึก Global Hotkeys (Ctrl+Shift+G / Ctrl+Shift+H), แถบปรับขนาดและค่าความทึบแบบเรียลไทม์ (Live Sliders)\n- แยกหน้าต่างตั้งค่า Overlay+ (เบราว์เซอร์ลอย) ออกเป็นหน้าต่างเฉพาะ ไม่ปนกันและรองรับ URL ได้สูงสุด 3 หน้าต่าง\n- กู้คืนเมนูแถบซ้ายในหน้าต่างการตั้งค่า (Settings Sidebar): สามารถเลือกสลับหมวดหมู่ได้ครบทั้ง 16 หมวด (Platforms, Chatbot, TTS, Themes, Translate, OBS, Docks, Networking, NG, Replace, Block, Secret, Defender, About, Supporters, Log) ทั้งในหน้าต่างหลักและหน้าต่าง Popout\n- แก้ไขปัญหาลากขยับหน้าต่างหลักโปรแกรม (Custom Titlebar Dragging) ให้ลากขยับได้ลื่นไหล ไม่ติดขัด\n- ปรับปรุงการสลับหน้าต่างและคืน Node ไปยังหน้าต่างหลักอย่างไร้รอยต่อ ไม่มีปัญหา Event Handler หายหลังปิด Popout",
+  "changelog": "- Broadcast Playroom v3.9\n- กู้คืนการตั้งค่าแชท Game Overlay ให้ครบถ้วนสมบูรณ์ตามเวอร์ชัน 2 (Full V2 Game Overlay Suite):\n  • รองรับการสลับโหมด Default, Themes (10 ธีมพร้อม Pagination), Balloon Mode และ Character Talk (นำเข้ารูปตัวละคร VTuber)\n  • ตั้งค่าอนิเมชั่นเข้า/ออก (Animations In/Out), ระบบซ่อนข้อความอัตโนมัติเมื่อหมดเวลา (Auto-Hide / Hide After Slider)\n  • ปรับแต่งกล่องข้อความ (Chat Box) ละเอียด: ความโค้งมน, เส้นขอบ, สีพื้นหลัง, ความทึบ, เงา และแสง Glow\n  • ปรับแต่งฟอนต์ครบทุก Google Fonts ภาษาไทย, น้ำหนักตัวอักษร, เส้นขอบตัวอักษร (Stroke) และเงาตัวอักษร (Shadow)\n  • แสดงเวลาที่โพสต์ข้อความ (Timestamp) และสลับรูปแบบเลย์เอาต์ได้ 5 รูปแบบ\n  • แก้ไขปัญหาเปิดหน้าต่าง Game Overlay ในโหมด Popout แล้วหน้าจอว่างเปล่า ให้โหลดข้อมูลและเครื่องมือครบครันในทันที\n- ป้องกันข้อมูลช่องและสถานะแพลตฟอร์มสูญหายเมื่ออัปเดตเวอร์ชันใหม่ (Persistent Platform Settings):\n  • ระบบสำรองและกู้คืนการตั้งค่าอัตโนมัติ (Pre-Update Backup & Restore) ป้องกันไฟล์ทับหายเด็ดขาด\n  • รองรับการตรวจหาและเชื่อมโยงข้อมูล `platform_settings.json` ข้ามโฟลเดอร์ (%LOCALAPPDATA% และ Data Root) พร้อม Mirror อัตโนมัติ",
   "published_at": "2026-11-01",
   "lite": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.8/BroadcastPlayroom3-Lite-Patch-3.8.zip",
-    "size": 44191492,
-    "sha256": "f7166979eda7e63e4cf5f51d02666598b56b7ecca6a6705b43e04f98d8dd7c15"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.9/BroadcastPlayroom3-Lite-Patch-3.9.zip",
+    "size": 44225263,
+    "sha256": "b1d3b4785c3b99fddf62b55ff5e883df6e544e22c14a9697e997a7915e77f0ea"
   },
   "full": {
     "type": "patch",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.8/BroadcastPlayroom3-Full-Patch-3.8.zip",
-    "size": 92636654,
-    "sha256": "56e47134662a9c92df49f0a547bd114953e14c1225447540134ac1c4135bc068"
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.9/BroadcastPlayroom3-Full-Patch-3.9.zip",
+    "size": 92670425,
+    "sha256": "33ad74f437fcdc3b6a7932a9fcf933d1aa6dee21d5d454dd1bb494cd3e504b75"
   }
 }
