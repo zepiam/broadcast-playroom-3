@@ -1,4 +1,29 @@
-## [2026-11-01 12:58] – Antigravity (Codified Mandatory Production Artifact Pre-Flight Gate)
+## [2026-11-01 15:06] – Antigravity (Published v3.12 LIVE: Header Cleanup & Game Overlay Auto-save)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.12 (v3.12) ขึ้น GitHub Releases สำเร็จ พร้อม Cumulative Patches (Lite & Full)
+- **สรุปสิ่งที่ดำเนินการและแก้ไข:**
+  1. **นำแถบหัวข้อและคำอธิบายซ้ำซ้อนด้านบนออกจากทุกหน้าต่าง (Header Cleanup):**
+     - ลบแถบหัวข้อและคำอธิบาย 2 บรรทัด (เช่น `Overlay Composer Studio จัดวางเลย์เอาต์หน้าจอและวิดเจ็ต...`, `ตั้งค่า Game Overlay ปรับแต่งหน้าต่าง...`) ที่ซ้ำกับ Title bar ของ Windows ออกจากทุกหน้าต่าง
+     - ในหน้าต่างป๊อปอัป (Popout Mode): ซ่อน `.floating-title-box` และ `.floating-header` ทันทีเพื่อคืนพื้นที่แสดงผลสูงสุด
+     - ใน Composer Studio: ปรับแถบเครื่องมือ (พรีวิว, ส่งออก, นำเข้า, ลิงก์ OBS ฯลฯ) ชิดด้านบนในขนาดกะทัดรัด (Compact Toolbar) ขยายพื้นที่ Canvas ด้านล่างเต็มตา
+  2. **ระบบ Auto-save ใน Game Overlay Settings & ตัดปุ่มบันทึกออก:**
+     - ปรับให้การขยับสไลเดอร์ขนาด ความสูง หรือความทึบ บันทึกข้อมูลไปยังหลังบ้านอัตโนมัติทันทีที่มีการเปลี่ยนแปลง (`onchange`)
+     - รองรับ Save on Close ก่อนหน้าต่างจะปิด
+     - นำปุ่ม "💾 บันทึกการตั้งค่า" ออก เหลือเพียงปุ่ม "ปิดหน้าต่าง" สไตล์มินิมอล
+
+---
+
+## [2026-11-01 14:55] – Antigravity (Published v3.11 LIVE: Universal Popout Close Button Fix)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.11 (v3.11) ขึ้น GitHub Releases สำเร็จ
+- **สรุปสิ่งที่ดำเนินการและแก้ไข:**
+  - แก้ไขปุ่ม "ปิดหน้าต่าง" / "พับเก็บ" ด้านล่างของทุกหน้าต่างป๊อปอัป (Game Overlay, Settings, Voice Settings, Ask, Replie, Randomizer, User Manager ฯลฯ) ให้สั่งปิดหน้าต่าง pywebview ผ่าน `/api/window/popout/close` และ `window.close()` อย่างถูกต้อง
+
+---
+
+
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
 - **สถานะ:** เพิ่มกฎเหล็กและข้อกำหนดอย่างเป็นทางการลงใน `AGENTS.md`, `HANDOFF.md` และ `WORKLOG.md`
