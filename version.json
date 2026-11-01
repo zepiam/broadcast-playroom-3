@@ -1,30 +1,30 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.20",
-  "latest_version": "3.20",
+  "version": "3.21",
+  "latest_version": "3.21",
   "critical": false,
-  "changelog": "### Broadcast Playroom v3.20 Update Highlights\n\n- **แก้ไขปุ่ม \"เชื่อมต่อ Chatbot\" ของ Twitch ให้ทำงานได้ทันที (Twitch Chatbot Connect Ready)**:\n  - แก้ไขระบบดึงข้อมูล Client ID / Secret ให้มี Fallback ในตัวแพ็กเกจโปรแกรม ทำให้ผู้ใช้ทุกคนสามารถกดเชื่อมต่อและเปิดเบราว์เซอร์ไปหน้าเข้าสู่ระบบ Twitch ได้ทันทีโดยไม่ติดขัด\n  - ปรับปรุงการตอบสนองของปุ่ม \"เชื่อมต่อ Chatbot\" และแถบแสดงสถานะให้แสดงผลทันทีที่คลิก (\"กำลังเปิดเบราว์เซอร์…\") ป้องกันปัญหาปุ่มดูเหมือนไม่ตอบสนอง\n  - ลบตัวครอบฟังก์ชันเดิมที่เคยดักบล็อกการทำงานของปุ่ม\n- **ระบบป้องกัน Cache ค้าง & บังคับโหลดอัปเดตล่าสุด 100% (Hard Anti-Cache Enforcement)**:\n  - กำหนด Header `Cache-Control: no-cache, no-store, must-revalidate` ให้กับเว็บเซิร์ฟเวอร์ในตัวโปรแกรมทั้งหมด\n  - ใส่พารามิเตอร์ Cache-Busting (`&_v=...`) บนทุกหน้าต่างเครื่องมือและหน้าต่างตั้งค่า ป้องกัน WebView2 ดึงไฟล์เก่าจากดิสก์\n  - เพิ่มระบบ Auto-Purge ล้างโฟลเดอร์แคชของ WebView2 และ Browser Profile อัตโนมัติทุกครั้งที่มีการลงอัปเดตใหม่\n- **แก้ไขปัญหาดีเลย์ 2 นาทีเมื่อเปิดสตรีมยาวหรือไม่มีแชทนานๆ (Long Idle Chat & TTS Latency Fix)**:\n  - ปิดการลดทอนความถี่ของตัวจับเวลาในระบบเบื้องหลัง (`--disable-background-timer-throttling`) เพื่อให้โปรแกรมดึงแชทและประมวลผลเสียงแบบเรียลไทม์เสมอแม้จะสลับหน้าจอไปเล่นเกมเต็มจอ\n  - เพิ่ม Web Worker Heartbeat Ticker (800ms) ป้องกันบราวเซอร์หยุดทำงานเมื่อหน้าต่างหลักถูกย่อหรือบัง\n  - เพิ่ม Audio Keep-alive และระบบเชื่อมต่อล่วงหน้า (TLS/DNS Warmup) ทุก 3 นาทีเพื่อให้อ่านออกเสียงได้ทันทีโดยไม่มีอาการสะดุด",
+  "changelog": "### Broadcast Playroom v3.21 Update Highlights\n\n- **แก้ไขระบบเชื่อมต่อ Twitch Chatbot ให้พร้อมใช้งานทันที 100% (Instant Twitch Chatbot Authorization)**:\n  - บรรจุกุญแจแอป Twitch และ KICK (OAuth Credentials) ในตัวแพ็กเกจโปรแกรมแบบ Built-in พร้อมระบบลงทะเบียน Environment Variables อัตโนมัติ\n  - แก้ไขปัญหา \"ไม่พบข้อมูลแอปสำหรับเชื่อมบัญชี\" โดยมีตัวสำรองทั้งในระดับระบบ Windows และโฟลเดอร์แอป ไม่ต้องตั้งค่าใดๆ เพิ่มเติม\n  - ปรับปรุงการตอบสนองของปุ่ม \"เชื่อมต่อ Chatbot\" ให้แสดงผล \"กำลังเปิดเบราว์เซอร์…\" ทันทีที่คลิก\n- **ระบบป้องกัน Cache ค้าง & บังคับโหลดอัปเดตล่าสุด (Hard Anti-Cache Enforcement)**:\n  - กำหนด Header `Cache-Control: no-cache, no-store, must-revalidate` ให้กับเซิร์ฟเวอร์ภายในตัวโปรแกรม\n  - ใส่พารามิเตอร์ Cache-Busting (`&_v=...`) บนทุกหน้าต่างเครื่องมือและหน้าต่างตั้งค่า ป้องกัน WebView2 ดึงไฟล์เก่าจากดิสก์\n  - เพิ่มระบบ Auto-Purge ล้างโฟลเดอร์แคชของ WebView2 และ Browser Profile อัตโนมัติทุกครั้งที่มีการลงอัปเดตใหม่\n- **แก้ไขปัญหาดีเลย์ 2 นาทีเมื่อเปิดสตรีมยาวหรือไม่มีแชทนานๆ (Long Idle Chat & TTS Latency Fix)**:\n  - ปิดการลดทอนความถี่ของตัวจับเวลาในระบบเบื้องหลัง (`--disable-background-timer-throttling`) เพื่อให้โปรแกรมดึงแชทและประมวลผลเสียงแบบเรียลไทม์เสมอแม้จะสลับหน้าจอไปเล่นเกมเต็มจอ\n  - เพิ่ม Web Worker Heartbeat Ticker (800ms) ป้องกันบราวเซอร์หยุดทำงานเมื่อหน้าต่างหลักถูกย่อหรือบัง\n  - เพิ่ม Audio Keep-alive และระบบเชื่อมต่อล่วงหน้า (TLS/DNS Warmup) ทุก 3 นาทีเพื่อให้อ่านออกเสียงได้ทันทีโดยไม่มีอาการสะดุด",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-lite.zip",
-    "sha256": "ecf2130bdc34de22a35cdca30509260d61a9ebc6ce881de04bfadaa7c49d4b42",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.21/patch-v3.21-lite.zip",
+    "sha256": "23e384225afffc73dfa93239a3253c986626f68875beab7e7a7dd6334753923a",
     "size": 50005052
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-full.zip",
-    "sha256": "45a7a656c3af7cfe176ccae29e6b78f44640d27aaf124b9a42de4c69909a7584",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.21/patch-v3.21-full.zip",
+    "sha256": "d598eda40c24c9250b4f84ee7c93f515dcafe6b9b88a9b78878b195917a8f0ea",
     "size": 50005052
   },
   "packages": {
     "lite": {
-      "version": "3.20",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-lite.zip",
-      "patch_sha256": "ecf2130bdc34de22a35cdca30509260d61a9ebc6ce881de04bfadaa7c49d4b42",
+      "version": "3.21",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.21/patch-v3.21-lite.zip",
+      "patch_sha256": "23e384225afffc73dfa93239a3253c986626f68875beab7e7a7dd6334753923a",
       "patch_size": 50005052
     },
     "full": {
-      "version": "3.20",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.20/patch-v3.20-full.zip",
-      "patch_sha256": "45a7a656c3af7cfe176ccae29e6b78f44640d27aaf124b9a42de4c69909a7584",
+      "version": "3.21",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.21/patch-v3.21-full.zip",
+      "patch_sha256": "d598eda40c24c9250b4f84ee7c93f515dcafe6b9b88a9b78878b195917a8f0ea",
       "patch_size": 50005052
     }
   }
