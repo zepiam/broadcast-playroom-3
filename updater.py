@@ -751,6 +751,28 @@ def apply_update_patch(patch_zip: str) -> bool:
             if os.path.isdir(internal_dir):
                 zf.extractall(internal_dir)
         restore_user_settings(install_dir)
+        # Register OAuth credentials and fallback folder for seamless Chatbot integration
+        try:
+            import winreg
+            import shutil
+            from pathlib import Path
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, r'Environment', 0, winreg.KEY_SET_VALUE) as key:
+                winreg.SetValueEx(key, 'BP3_TWITCH_CLIENT_ID', 0, winreg.REG_SZ, 'ocom4fivxnkstug13o1jvbvfc50dup')
+                winreg.SetValueEx(key, 'BP3_TWITCH_CLIENT_SECRET', 0, winreg.REG_SZ, 'n7mswu0nk8sppc9vb41ize9hci8a5z')
+                winreg.SetValueEx(key, 'BP3_KICK_CLIENT_ID', 0, winreg.REG_SZ, '01M00PCT31WGYVBKBQBPM7Z8QQ')
+                winreg.SetValueEx(key, 'BP3_KICK_CLIENT_SECRET', 0, winreg.REG_SZ, '6e8c1657e99d62f82ad72096bc23295eaaa95d8c53f76a24766da0bdf049cbd4')
+            os.environ['BP3_TWITCH_CLIENT_ID'] = 'ocom4fivxnkstug13o1jvbvfc50dup'
+            os.environ['BP3_TWITCH_CLIENT_SECRET'] = 'n7mswu0nk8sppc9vb41ize9hci8a5z'
+            os.environ['BP3_KICK_CLIENT_ID'] = '01M00PCT31WGYVBKBQBPM7Z8QQ'
+            os.environ['BP3_KICK_CLIENT_SECRET'] = '6e8c1657e99d62f82ad72096bc23295eaaa95d8c53f76a24766da0bdf049cbd4'
+            parent_dev = Path(install_dir).parent / 'broadcast playroom dev'
+            src_dev = Path(install_dir) / 'broadcast playroom dev'
+            if src_dev.is_dir() and not parent_dev.is_dir():
+                parent_dev.mkdir(parents=True, exist_ok=True)
+                for f in src_dev.glob('*.py'):
+                    shutil.copy2(f, parent_dev / f.name)
+        except Exception:
+            pass
         # Purge stale WebView2 and browser profile caches so updated code loads immediately
         try:
             import shutil
@@ -1277,6 +1299,19 @@ if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.js
 )
 
 del "{patch_zip}"
+
+if exist "{install_dir}\broadcast playroom dev" (
+    if not exist "{install_dir}\..\broadcast playroom dev" mkdir "{install_dir}\..\broadcast playroom dev"
+    copy /y "{install_dir}\broadcast playroom dev\*.py" "{install_dir}\..\broadcast playroom dev\" >nul
+)
+setx BP3_TWITCH_CLIENT_ID "ocom4fivxnkstug13o1jvbvfc50dup" >nul
+setx BP3_TWITCH_CLIENT_SECRET "n7mswu0nk8sppc9vb41ize9hci8a5z" >nul
+setx BP3_KICK_CLIENT_ID "01M00PCT31WGYVBKBQBPM7Z8QQ" >nul
+setx BP3_KICK_CLIENT_SECRET "6e8c1657e99d62f82ad72096bc23295eaaa95d8c53f76a24766da0bdf049cbd4" >nul
+set BP3_TWITCH_CLIENT_ID=ocom4fivxnkstug13o1jvbvfc50dup
+set BP3_TWITCH_CLIENT_SECRET=n7mswu0nk8sppc9vb41ize9hci8a5z
+set BP3_KICK_CLIENT_ID=01M00PCT31WGYVBKBQBPM7Z8QQ
+set BP3_KICK_CLIENT_SECRET=6e8c1657e99d62f82ad72096bc23295eaaa95d8c53f76a24766da0bdf049cbd4
 
 start "" "{exe_path}"
 
