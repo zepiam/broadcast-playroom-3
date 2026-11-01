@@ -1,29 +1,29 @@
 {
-  "latest_version": "3.16",
+  "latest_version": "3.17",
   "critical": false,
-  "changelog": "### Broadcast Playroom v3.16 Update Highlights\n\n- **แถบเมนู Settings ตอบสนอง 100%**: แก้ไขปัญหาคลิกสลับหมวดหมู่ตั้งค่าด้านซ้ายแล้วหน้าจอไม่เปลี่ยนในโหมดหน้าต่างแยก\n- **เปิดการตั้งค่า Overlay+ ให้อัตโนมัติ**: เมื่อกดปุ่ม Overlay+ หากยังไม่ได้ระบุ URL จะเปิดหน้าต่างตั้งค่าเบราว์เซอร์ลอยให้ทันที\n- **หลอด Progress Bar ในกล่องอัปเดต**: เพิ่มแถบสถานะการดาวน์โหลดในเบื้องหลังแบบกราฟิกสีเขียวมรกตพร้อมตัวเลข % ละเอียด\n- **จัดวางป้ายเวอร์ชันใหม่ (Inline Header)**: ดีไซน์ส่วนหัวหน้าต่างอัปเดตให้ป้ายเวอร์ชันวางเคียงคู่ชื่อโปรแกรมอย่างลงตัว ไม่อึดอัด\n- **ความปลอดภัยและการตั้งค่าคงเดิม**: ข้อมูลบัญชีสตรีมและค่าทุกอย่างที่เคยกรอกไว้จะคงอยู่ครบถ้วนตลอดการอัปเดต",
+  "changelog": "### Broadcast Playroom v3.17 Update Highlights\n\n- **ซ่อนปุ่ม Overlay+ อัตโนมัติเมื่อยังไม่มีการระบุ URL**: หากยังไม่ได้กำหนด URL ในตั้งค่า ปุ่ม Overlay+ จะไม่แสดงบนแถบด้านบนให้เกะกะ และจะปรากฏขึ้นอัตโนมัติทันทีที่มีการบันทึก URL หรือเปิดใช้งาน\n- **แถบตั้งค่า Overlay+ ในแท็บ Docks & Web URL**: เพิ่มการ์ดสำหรับเข้าถึงการตั้งค่า URL ของ Overlay+ ในหน้าต่างตั้งค่าหลักโดยตรง\n- **แถบขอบไฟอัปเดตแบบ Squircle Progress Bar บน Server Rail**: ขณะกำลังดาวน์โหลดไฟล์อัปเดตในเบื้องหลัง ขอบเรืองแสงสีเขียวรอบปุ่มลูกศรดาวน์โหลดจะวิ่งเป็น Progress Bar ตามเปอร์เซ็นต์จริง (0-100%) และเมื่อดาวน์โหลดเสร็จสมบูรณ์ เส้นขอบจะวิ่งครบรอบล้อมกรอบปุ่มตามเดิม พร้อมแจ้งเตือนให้พร้อมติดตั้ง\n- **Zero GPU Lockup Compliance**: คำนวณความยาวเส้นรอบรูป SVG Dash-offset แบบ Real-time ตาม Chunks ที่รับมา โดยไม่มี CSS animation loop หน่วงการทำงาน ทำให้ GPU เข้าสู่โหมดพัก (0% idle) ได้อย่างสมบูรณ์",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.16/patch-v3.16-lite.zip",
-    "sha256": "42d74ebac9fd748864a73ddb5cb5ca83e57b7087ec5dbe92a702b0a45df78c07",
-    "size": 24910790
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-lite.zip",
+    "sha256": "267e694611a4338105e226cd7ef7e2d9eccb7fe3580a102cdd3716c8ec5b8d28",
+    "size": 24912211
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.16/patch-v3.16-full.zip",
-    "sha256": "264ab34863d6948888c393cfae8c17a901d1c46664ce244314659215a52e5332",
-    "size": 24910790
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-full.zip",
+    "sha256": "94e84e818dac0bbd591aff4d857368a5e7dca46ffa19d131023abb0b07c21d98",
+    "size": 24912211
   },
   "packages": {
     "lite": {
-      "version": "3.16",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.16/patch-v3.16-lite.zip",
-      "patch_sha256": "42d74ebac9fd748864a73ddb5cb5ca83e57b7087ec5dbe92a702b0a45df78c07",
-      "patch_size": 24910790
+      "version": "3.17",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-lite.zip",
+      "patch_sha256": "267e694611a4338105e226cd7ef7e2d9eccb7fe3580a102cdd3716c8ec5b8d28",
+      "patch_size": 24912211
     },
     "full": {
-      "version": "3.16",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.16/patch-v3.16-full.zip",
-      "patch_sha256": "264ab34863d6948888c393cfae8c17a901d1c46664ce244314659215a52e5332",
-      "patch_size": 24910790
+      "version": "3.17",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.17/patch-v3.17-full.zip",
+      "patch_sha256": "94e84e818dac0bbd591aff4d857368a5e7dca46ffa19d131023abb0b07c21d98",
+      "patch_size": 24912211
     }
   }
 }
