@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.13"
+CURRENT_VERSION = "3.14"
 
 REPO_OWNER = "zepiam"
 
@@ -639,13 +639,25 @@ def backup_user_settings(install_dir: str):
         ]
         
         for c_name in config_names:
+            best_src = None
+            best_mtime = -1
             for s_dir in search_dirs:
                 src_file = s_dir / c_name
                 if src_file.is_file() and src_file.stat().st_size > 0:
-                    for b_dir in backup_dirs:
+                    try:
+                        mt = src_file.stat().st_mtime
+                        if mt > best_mtime:
+                            best_mtime = mt
+                            best_src = src_file
+                    except Exception:
+                        pass
+            if best_src:
+                for b_dir in backup_dirs:
+                    try:
                         dst = b_dir / c_name
-                        if not dst.exists() or dst.stat().st_size == 0:
-                            shutil.copy2(src_file, dst)
+                        shutil.copy2(best_src, dst)
+                    except Exception:
+                        pass
     except Exception as e:
         logger.warning(f"Failed to backup user settings: {e}")
 
@@ -670,17 +682,26 @@ def restore_user_settings(install_dir: str):
         ]
         for c_name in config_names:
             found_src = None
+            best_mtime = -1
             for b_dir in backup_dirs:
                 candidate = b_dir / c_name
                 if candidate.is_file() and candidate.stat().st_size > 0:
-                    found_src = candidate
-                    break
+                    try:
+                        mt = candidate.stat().st_mtime
+                        if mt > best_mtime:
+                            best_mtime = mt
+                            found_src = candidate
+                    except Exception:
+                        pass
             if found_src:
                 for t_dir in target_dirs:
                     if t_dir.exists():
                         target_file = t_dir / c_name
-                        if not target_file.exists() or target_file.stat().st_size == 0:
-                            shutil.copy2(found_src, target_file)
+                        try:
+                            if not target_file.exists() or target_file.stat().st_size == 0 or target_file.stat().st_mtime < best_mtime:
+                                shutil.copy2(found_src, target_file)
+                        except Exception:
+                            pass
     except Exception as e:
         logger.warning(f"Failed to restore user settings: {e}")
 

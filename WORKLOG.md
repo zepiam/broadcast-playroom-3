@@ -1,3 +1,21 @@
+## [2026-11-01 15:55] – Antigravity (Published v3.14 LIVE: Universal Settings Cleanup & Permanent Platform Persistence)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.14 (v3.14) ขึ้น GitHub Releases สำเร็จ พร้อม Cumulative Patches (Lite & Full)
+- **สรุปสิ่งที่ดำเนินการและแก้ไข:**
+  1. **นำปุ่ม "💾 บันทึกการตั้งค่า" ออกจากหน้า Settings และ Chat Settings:**
+     - ปรับปรุงส่วนท้าย (Footer) ของหน้าต่าง Settings (`win-settings`) และ Chat Settings (`win-chat-settings`) ให้เหลือเพียงปุ่ม "ปิดหน้าต่าง" เพียงปุ่มเดียว เพื่อให้สอดคล้องกับระบบ Auto-Save ทั่วทั้งระบบอย่างสมบูรณ์แบบ
+  2. **แก้ปัญหาช่องทางสตรีมและสถานะติ๊ก Auto-Connect รีเซ็ต/หายหลังอัปเดตเวอร์ชันใหม่:**
+     - ตรวจพบสาเหตุหลักใน `updater.py` ที่ฟังก์ชัน `backup_user_settings` มีเงื่อนไข `if not dst.exists()` ทำให้ไฟล์แบ็กอัปเดิมไม่ถูกอัปเดตด้วยข้อมูลล่าสุดของผู้ใช้ ส่งผลให้เมื่อกู้คืนไฟล์ ข้อมูลเก่าหรือว่างถูกนำมาทับ
+     - แก้ไขให้ระบบสำรองข้อมูลตรวจหาไฟล์ที่มี timestamp ล่าสุด (`st_mtime`) และคัดลอกทับแบ็กอัปเสมอ
+     - เพิ่มระบบผสานข้อมูล (Multi-Path Fallback & Merge) ใน `launch_dev.py` ครอบคลุมทั้ง `DATA_ROOT`, `%LOCALAPPDATA%`, `settings_backup`, และ `_SHARED_DATA` พร้อมบันทึกลง `settings_backup` แบบเรียลไทม์ทุกครั้งที่มีการเปลี่ยนค่า
+     - ป้องกันการบันทึกค่าว่าง (`""`) ทับชื่อช่องที่มีอยู่เดิม เว้นแต่จะระบุชัดเจน (`explicit_clear`)
+     - แก้ไขการซิงก์ DOM ใน `src/index.html` ให้รองรับการอัปเดตสถานะของเช็กบ็อกซ์ `cfgTwitchAuto`, `cfgYtAuto` ฯลฯ และอินพุตช่องทั้งในหน้าต่างหลักและหน้าต่าง Popout ทันทีที่เปิดใช้งาน
+  3. **การทดสอบและการันตีคุณภาพ:**
+     - รัน Playwright Automated E2E Test บนเซิร์ฟเวอร์หลัก (Port 8801) ตรวจสอบปุ่มปิดหน้าต่าง, ค่าชื่อช่อง Twitch (`men9ch`) และสถานะติ๊กเชื่อมต่ออัตโนมัติ ทั้งในหน้าต่างหลักและ Popout ผ่านการทดสอบ 100%
+
+---
+
 ## [2026-11-01 15:16] – Antigravity (Published v3.13 LIVE: Universal Auto-Save Across All Tools & Platform Persistence)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)

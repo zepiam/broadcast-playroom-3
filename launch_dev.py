@@ -1050,6 +1050,7 @@ def _get_platform_settings_paths():
     try:
         lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
         paths.append(Path(lad) / 'BroadcastPlayroom3' / 'platform_settings.json')
+        paths.append(Path(lad) / 'BroadcastPlayroom3' / 'settings_backup' / 'platform_settings.json')
     except Exception:
         pass
     try:
@@ -1073,33 +1074,41 @@ def _get_platform_settings_paths():
 
 def _load_platform_settings():
     merged = {}
+    candidates = []
     for pt in _get_platform_settings_paths():
-        if pt.is_file():
-            try:
-                with open(pt, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                if isinstance(data, dict):
-                    for k, v in data.items():
-                        if k.startswith('channel_'):
-                            if v and str(v).strip():
+        if pt.is_file() and pt.stat().st_size > 0:
+            candidates.append(pt)
+    try:
+        candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
+    except Exception:
+        pass
+    for pt in candidates:
+        try:
+            with open(pt, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            if isinstance(data, dict):
+                for k, v in data.items():
+                    if k.startswith('channel_'):
+                        if v and str(v).strip():
+                            if k not in merged or not merged[k]:
                                 merged[k] = str(v).strip()
-                            elif k not in merged:
-                                merged[k] = v
-                        elif k == 'hidden_platforms':
-                            if isinstance(v, list) and v:
-                                if 'hidden_platforms' not in merged or not merged['hidden_platforms']:
-                                    merged['hidden_platforms'] = v
-                        elif k not in merged:
-                            merged[k] = v
-            except Exception:
-                pass
+                    elif k.startswith('auto_connect_'):
+                        if k not in merged:
+                            merged[k] = bool(v)
+                    elif k == 'hidden_platforms':
+                        if isinstance(v, list) and v:
+                            if 'hidden_platforms' not in merged or not merged['hidden_platforms']:
+                                merged['hidden_platforms'] = v
+                    elif k not in merged:
+                        merged[k] = v
+        except Exception:
+            pass
     if merged:
         for pt in _get_platform_settings_paths():
             try:
                 pt.parent.mkdir(parents=True, exist_ok=True)
-                if not pt.is_file() or pt.stat().st_size == 0:
-                    with open(pt, 'w', encoding='utf-8') as f:
-                        json.dump(merged, f, ensure_ascii=False, indent=2)
+                with open(pt, 'w', encoding='utf-8') as f:
+                    json.dump(merged, f, ensure_ascii=False, indent=2)
             except Exception:
                 pass
     return merged
@@ -1112,8 +1121,13 @@ def _save_platform_settings(new_data):
         if k.startswith('channel_'):
             if v and str(v).strip():
                 current[k] = str(v).strip()
-            elif str(v).strip() == '':
+            elif new_data.get('explicit_clear') or new_data.get('allow_empty'):
                 current[k] = ''
+        elif k.startswith('auto_connect_'):
+            if isinstance(v, bool):
+                current[k] = v
+            elif str(v).lower() in ('true', 'false'):
+                current[k] = str(v).lower() == 'true'
         elif k == 'hidden_platforms':
             if isinstance(v, list):
                 current['hidden_platforms'] = v
@@ -1126,6 +1140,14 @@ def _save_platform_settings(new_data):
                 json.dump(current, f, ensure_ascii=False, indent=2)
         except Exception:
             pass
+    try:
+        lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
+        bak = Path(lad) / 'BroadcastPlayroom3' / 'settings_backup' / 'platform_settings.json'
+        bak.parent.mkdir(parents=True, exist_ok=True)
+        with open(bak, 'w', encoding='utf-8') as f:
+            json.dump(current, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
 
 _cand_layout = DATA_ROOT / 'composer_layout.json'
 

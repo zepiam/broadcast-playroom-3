@@ -922,6 +922,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
             if (window.BP3GameSliders?.init) window.BP3GameSliders.init(document);
             if (window.BP3ViewerOverlaySettings?.init) window.BP3ViewerOverlaySettings.init(document);
           }, 50);
+        } else if (targetName === 'settings') {
+          setTimeout(() => {
+            if (typeof initPlatformSettingsInputs === 'function') initPlatformSettingsInputs();
+            if (typeof bindPlatformAutoInputs === 'function') bindPlatformAutoInputs(document);
+          }, 50);
         }
 
         const doClose = (e) => {
@@ -1016,7 +1021,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.13</span>
+      <span class="desktop-titlebar-tag">v3.14</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -19084,31 +19089,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        <button class="btn-topbar-action" onclick="closeToolWindow('settings')">พับเก็บ</button>
-
-
-
-
-
-
-
-        <button class="btn-topbar-action primary" onclick="closeToolWindow('settings')">
-
-
-
-
-
-
-
-          💾 บันทึกการตั้งค่า
-
-
-
-
-
-
-
-        </button>
+        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('settings')">ปิดหน้าต่าง</button>
 
 
 
@@ -20146,31 +20127,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-        <button class="btn-topbar-action" onclick="closeToolWindow('chat-settings')">พับเก็บ</button>
-
-
-
-
-
-
-
-        <button class="btn-topbar-action primary" onclick="closeToolWindow('chat-settings')">
-
-
-
-
-
-
-
-          บันทึกการตั้งค่า
-
-
-
-
-
-
-
-        </button>
+        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('chat-settings')">ปิดหน้าต่าง</button>
 
 
 
@@ -47975,8 +47932,14 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
       for (const [key,id] of Object.entries(PLATFORM_INPUT_IDS)) {
         const input=doc.getElementById(id);if(!input||input.dataset.channelSaveBound)continue;
         input.dataset.channelSaveBound='1';
-        input.value=localStorage.getItem('bp3_channel_'+key)||input.value;
-        for(const event of ['input','change','blur'])input.addEventListener(event,()=>setPlatformChannel(key,input.value.trim()));
+        const saved = localStorage.getItem('bp3_channel_'+key);
+        if (saved) input.value = saved;
+        const saveVal = () => {
+          const val = input.value.trim();
+          if (val) setPlatformChannel(key, val);
+        };
+        input.addEventListener('input', saveVal);
+        input.addEventListener('change', saveVal);
       }
     }
     let _platformSettingsReady=Promise.resolve();
@@ -48028,13 +47991,31 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         .then(res => res.json())
         .then(data => {
           if (!data || typeof data !== 'object') return;
-          for(const key of Object.keys(PLATFORM_AUTO_IDS)) {
-            if(typeof data['auto_connect_'+key]==='boolean')localStorage.setItem('bp3_auto_connect_'+key,String(data['auto_connect_'+key]));
+          const allDocs = [document];
+          if (window._popoutWindows) {
+            for (const pop of Object.values(window._popoutWindows)) {
+              if (pop && !pop.closed && pop.document) allDocs.push(pop.document);
+            }
+          }
+          for (const key of Object.keys(PLATFORM_AUTO_IDS)) {
+            if (typeof data['auto_connect_' + key] === 'boolean') {
+              const checked = !!data['auto_connect_' + key];
+              localStorage.setItem('bp3_auto_connect_' + key, String(checked));
+              for (const doc of allDocs) {
+                const chk = doc.getElementById(PLATFORM_AUTO_IDS[key]);
+                if (chk) chk.checked = checked;
+              }
+            }
           }
           for (const key of Object.keys(PLATFORM_INPUT_IDS)) {
             const serverVal = data['channel_' + key];
             if (serverVal && typeof serverVal === 'string' && serverVal.trim()) {
-              setPlatformChannel(key, serverVal.trim());
+              const val = serverVal.trim();
+              localStorage.setItem('bp3_channel_' + key, val);
+              for (const doc of allDocs) {
+                const inp = doc.getElementById(PLATFORM_INPUT_IDS[key]);
+                if (inp) inp.value = val;
+              }
             }
           }
           if (Array.isArray(data.hidden_platforms)) {
