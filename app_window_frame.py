@@ -31,6 +31,76 @@ def set_webview_window(w):
         except Exception:
             pass
 
+def bring_main_window_to_front():
+    """Restores and brings the main window of Broadcast Playroom to the foreground."""
+    global _main_hwnd, _main_webview
+    if _main_webview:
+        try:
+            _main_webview.restore()
+        except Exception:
+            pass
+        try:
+            _main_webview.show()
+        except Exception:
+            pass
+
+    if os.name != 'nt':
+        return False
+
+    user32 = ctypes.windll.user32
+    kernel32 = ctypes.windll.kernel32
+
+    hwnd = _main_hwnd
+    if not hwnd or not user32.IsWindow(hwnd):
+        # 1. Try finding window with title 'Broadcast Playroom 3'
+        hwnd = user32.FindWindowW(None, 'Broadcast Playroom 3')
+        if not hwnd:
+            # 2. Enumerate visible windows looking for 'Broadcast Playroom' in title
+            candidates = []
+            WNDENUMPROC = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_void_p)
+            def enum_cb(h, _):
+                if user32.IsWindowVisible(h):
+                    length = user32.GetWindowTextLengthW(h)
+                    if length > 0:
+                        buff = ctypes.create_unicode_buffer(length + 1)
+                        user32.GetWindowTextW(h, buff, length + 1)
+                        if 'Broadcast Playroom' in buff.value:
+                            candidates.append(h)
+                return True
+            try:
+                user32.EnumWindows(WNDENUMPROC(enum_cb), 0)
+            except Exception:
+                pass
+            if candidates:
+                hwnd = candidates[0]
+
+    if hwnd and user32.IsWindow(hwnd):
+        _main_hwnd = hwnd
+        SW_RESTORE = 9
+        SW_SHOW = 5
+        cur_thread = kernel32.GetCurrentThreadId()
+        fore_hwnd = user32.GetForegroundWindow()
+        fore_thread = user32.GetWindowThreadProcessId(fore_hwnd, None)
+        if fore_thread != cur_thread:
+            user32.AttachThreadInput(cur_thread, fore_thread, True)
+
+        try:
+            if user32.IsIconic(hwnd):
+                user32.ShowWindow(hwnd, SW_RESTORE)
+            else:
+                user32.ShowWindow(hwnd, SW_SHOW)
+
+            user32.BringWindowToTop(hwnd)
+            user32.SetForegroundWindow(hwnd)
+            user32.SetActiveWindow(hwnd)
+        except Exception:
+            pass
+
+        if fore_thread != cur_thread:
+            user32.AttachThreadInput(cur_thread, fore_thread, False)
+        return True
+    return False
+
 def get_webview_window():
     global _main_webview
     return _main_webview

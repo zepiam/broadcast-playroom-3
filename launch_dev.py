@@ -8712,6 +8712,11 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+                try:
+                    from app_window_frame import bring_main_window_to_front
+                    bring_main_window_to_front()
+                except Exception as e:
+                    print(f"[REOPEN] Could not bring window to front: {e}", flush=True)
                 self.send_json({'ok':True})
 
 
@@ -11998,7 +12003,7 @@ def open_app_window(main_url):
             
             _configured_lock = threading.Lock()
             _configured = False
-_app_frontend_ready = False
+            _app_frontend_ready = False
 
             def _setup_icon_ui():
                 nonlocal _configured
@@ -12661,6 +12666,31 @@ def main():
 
     is_headless = '--headless' in sys.argv
 
+    _single_instance_mutex = None
+    if not is_headless and os.name == 'nt':
+        from ctypes import wintypes
+        kernel32 = ctypes.windll.kernel32
+        kernel32.CreateMutexW.argtypes = [wintypes.LPCVOID, wintypes.BOOL, wintypes.LPCWSTR]
+        kernel32.CreateMutexW.restype = wintypes.HANDLE
+        mutex_name = f"Local\\BroadcastPlayroom3_App_Mutex_{APP_PROJECT_ID}"
+        _single_instance_mutex = kernel32.CreateMutexW(None, True, mutex_name)
+        if kernel32.GetLastError() == 183:  # ERROR_ALREADY_EXISTS
+            print('[INFO] Another instance of Broadcast Playroom is already running. Focusing existing window and exiting cleanly...', flush=True)
+            deadline = time.monotonic() + 3.0
+            while time.monotonic() < deadline:
+                try:
+                    if reuse_existing_server():
+                        break
+                except Exception:
+                    pass
+                time.sleep(0.2)
+            try:
+                from app_window_frame import bring_main_window_to_front
+                bring_main_window_to_front()
+            except Exception:
+                pass
+            return 0
+
 
 
 
@@ -12847,7 +12877,11 @@ def main():
 
 
 
-                    open_app_window(f'http://127.0.0.1:{PORT}/index.html')
+                    try:
+                        from app_window_frame import bring_main_window_to_front
+                        bring_main_window_to_front()
+                    except Exception:
+                        pass
 
 
 
