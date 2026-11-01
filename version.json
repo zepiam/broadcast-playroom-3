@@ -6,26 +6,26 @@
   "changelog": "### Broadcast Playroom v3.23 Update Highlights\n\n- **แก้ไขปัญหา UI Script Fragment และปุ่มปิดโปรแกรม (Hotfix v3.22 UI Parser Bug)**:\n  - แก้ไขข้อผิดพลาดการแทรกสคริปต์ผิดตำแหน่งใน v3.22 ที่ทำให้ตัวอักษรโค้ด JavaScript หลุดออกมาแสดงผลบนหน้าต่างหลักและปุ่มปิดโปรแกรมไม่ทำงาน\n  - หน้าต่างโปรแกรมหลักกลับมาแสดงผลสวยงาม คลีน 100% พร้อมใช้งานทุกปุ่มตามปกติ\n- **ระบบซิงค์โปรไฟล์ผู้ชมแบบแยกหน้าต่าง (Safe Cross-Window Profile Sync)**:\n  - จัดเก็บการเชื่อมโยง BroadcastChannel ไว้ใน `user_controls.js` อย่างเป็นระเบียบและปลอดภัย\n  - ป้องกันการเกิด echo loop ระหว่างหน้าต่างหลักและหน้าต่าง Popout\n  - กดชื่อคนดูในแชทสด หรือใน User Manager จะแสดงข้อมูลคนดูคนนั้นทันที ไม่ติดค้างข้อมูลจำลอง\n- **การเชื่อมต่อ Twitch Chatbot & Anti-Cache**:\n  - รองรับการเชื่อมต่อ Twitch / KICK แบบ One-Click ด้วย Credentials ภายในตัวโปรแกรม\n  - ระบบ Hard Anti-Cache เคลียร์ WebView2 Cache อัตโนมัติ ป้องกันการจำโค้ดเก่า\n",
   "lite": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-lite.zip",
-    "sha256": "759b6644c479c35703a8098aca58e5583e383a5294738eb890a8540d97f38422",
-    "size": 50006724
+    "sha256": "af68cea69d26328bb127fd6e3c205796b2fa50d73ba07268ac0d3d325888abb5",
+    "size": 50018722
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-full.zip",
-    "sha256": "41c84a9cea04a6b59c200d17d2c427d6d55c2789f1858b5dd0764e7f45a1a2a3",
-    "size": 50006724
+    "sha256": "d1a618c8c230e758331a4e4be678a7ea9bf55b27f26be786a0f87c8a9fc5c212",
+    "size": 50018722
   },
   "packages": {
     "lite": {
       "version": "3.23",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-lite.zip",
-      "patch_sha256": "759b6644c479c35703a8098aca58e5583e383a5294738eb890a8540d97f38422",
-      "patch_size": 50006724
+      "patch_sha256": "af68cea69d26328bb127fd6e3c205796b2fa50d73ba07268ac0d3d325888abb5",
+      "patch_size": 50018722
     },
     "full": {
       "version": "3.23",
       "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-full.zip",
-      "patch_sha256": "41c84a9cea04a6b59c200d17d2c427d6d55c2789f1858b5dd0764e7f45a1a2a3",
-      "patch_size": 50006724
+      "patch_sha256": "d1a618c8c230e758331a4e4be678a7ea9bf55b27f26be786a0f87c8a9fc5c212",
+      "patch_size": 50018722
     }
   }
 }

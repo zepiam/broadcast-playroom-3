@@ -5618,6 +5618,12 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+        if path == '/api/app/ready':
+            global _app_frontend_ready
+            _app_frontend_ready = True
+            self.send_json({'ok': True, 'ready': True})
+            return
+
         if path == '/api/platform/settings':
             try:
                 size = int(self.headers.get('Content-Length', 0))
@@ -11920,6 +11926,18 @@ def open_app_window(main_url):
                         shutil.rmtree(c_dir, ignore_errors=True)
             except Exception:
                 pass
+            # Pre-flight asset integrity check
+            try:
+                from dist_integrity import verify_dist_health
+                healthy, health_msg = verify_dist_health(ROOT_DIR)
+                if not healthy:
+                    print(f"[WARN] Startup integrity check detected issue: {health_msg}", flush=True)
+                    main_url = re.sub(r"/index\.html.*$", "/emergency_repair.html", main_url)
+                else:
+                    print(f"[INTEGRITY PASS] {health_msg}", flush=True)
+            except Exception as e:
+                print(f"[WARN] Integrity checker error: {e}", flush=True)
+
             w = webview.create_window(
                 title='Broadcast Playroom 3',
                 url=main_url,
@@ -11945,6 +11963,7 @@ def open_app_window(main_url):
             
             _configured_lock = threading.Lock()
             _configured = False
+_app_frontend_ready = False
 
             def _setup_icon_ui():
                 nonlocal _configured
@@ -11979,10 +11998,18 @@ def open_app_window(main_url):
 
             threading.Thread(target=_setup_icon_timer, daemon=True).start()
             
-            try:
-                close_splash()
-            except Exception:
-                pass
+            def _safe_splash_closer():
+                start_w = time.monotonic()
+                while time.monotonic() - start_w < 2.5:
+                    if _app_frontend_ready:
+                        break
+                    time.sleep(0.04)
+                try:
+                    close_splash()
+                except Exception:
+                    pass
+
+            threading.Thread(target=_safe_splash_closer, daemon=True).start()
 
             print("[LAUNCH] Opening Native Frameless Desktop window (No browser bar)...", flush=True)
             webview.start(storage_path=storage_path)

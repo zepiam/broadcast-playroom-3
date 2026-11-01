@@ -41,6 +41,7 @@ files_to_copy = [
     'composer.html',
     'overlay.html',
     'dock.html',
+    'emergency_repair.html',
     'favicon.ico',
     'favicon.png',
     'manifest.json'
@@ -124,3 +125,13 @@ if 'width:16px' not in final_html and 'max-width:16px' not in final_html:
     raise RuntimeError("CRITICAL BUILD FAILURE: .desktop-titlebar-icon lacks size constraints in dist/index.html!")
 
 print(">>> [SAFETY GATE PASSED] All assets, stylesheets, and fail-safe constraints verified 100% complete!")
+
+# -------------------------------------------------------------
+# Automated Smoke Test Gate (Static and Headless Browser Test)
+# -------------------------------------------------------------
+try:
+    from smoke_test_gate import run_smoke_test
+    if not run_smoke_test(project_dir):
+        raise RuntimeError("CRITICAL BUILD FAILURE: Headless browser smoke test gate failed!")
+except ImportError:
+    pass

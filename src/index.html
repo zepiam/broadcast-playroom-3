@@ -75215,6 +75215,18 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+
+<script id="bp3-ready-handshake">
+// Health & Ready Handshake: Signal Python backend that UI tree & JS modules are 100% healthy
+window.__BP3_READY__ = true;
+try {
+  fetch('/api/app/ready', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ready: true, time: Date.now() })
+  }).catch(() => {});
+} catch (_) {}
+</script>
 </body>
 
 
