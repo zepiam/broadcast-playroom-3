@@ -39,6 +39,18 @@
   <script>
   (() => {
     try {
+      window.isPopoutOrChildWindow = function() {
+        try {
+          return Boolean(
+            window.opener ||
+            new URLSearchParams(window.location.search).has('popout') ||
+            document.documentElement.classList.contains('popout-standalone-window') ||
+            document.body?.classList.contains('popout-standalone-window')
+          );
+        } catch (_) {
+          return false;
+        }
+      };
       const p = new URLSearchParams(window.location.search).get('popout');
       if (p) {
         let target = p;
@@ -129,8 +141,8 @@
             gap: 6px !important;
             align-items: center !important;
           }
-          html.popout-standalone-window .btn-win-action,
-          html.popout-standalone-window .btn-popout-window {
+          html.popout-standalone-window .floating-header .btn-win-action,
+          html.popout-standalone-window .floating-header .btn-popout-window {
             display: none !important;
           }
           html.popout-standalone-window #win-${target} .floating-body {
@@ -948,15 +960,22 @@ document.addEventListener('DOMContentLoaded',async()=>{
             e.preventDefault();
             e.stopPropagation();
           }
+          try { closeToolWindow(targetName); } catch (_) {}
           fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetName), { method: 'POST' }).catch(() => {});
           try { window.pywebview?.api?.close?.(); } catch (_) {}
+          try {
+            win.classList.remove('active', 'popout-target');
+            win.style.display = 'none';
+          } catch (_) {}
           try { window.close(); } catch (_) {}
         };
 
-        const closeBtns = win.querySelectorAll('.btn-win-action.win-close, .btn-win-action.close-red, button.btn-win-action, button.btn-topbar-action[title*="ปิด"], button[title="ปิดหน้าต่าง"], button[onclick*="closeToolWindow"]');
+        const closeBtns = win.querySelectorAll('.btn-win-action.win-close, .btn-win-action.close-red, button.btn-win-action, button.btn-topbar-action, button');
         closeBtns.forEach(btn => {
           if (btn.classList.contains('settings-nav-item') || btn.closest('.settings-sidebar')) return;
-          btn.onclick = doClose;
+          if (btn.textContent.includes('ปิดหน้าต่าง') || btn.classList.contains('close-red') || (btn.getAttribute('onclick') || '').includes('closeToolWindow')) {
+            btn.onclick = doClose;
+          }
         });
       }
 
@@ -1037,7 +1056,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.17</span>
+      <span class="desktop-titlebar-tag">v3.18</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -17240,6 +17259,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
               </button>
+              <button type="button" class="btn-topbar-action" style="height:32px; font-size:11.5px; font-weight:600; white-space:nowrap; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.4);" onclick="openExternalUrl('https://men9ch.com/wiki/ng-replace.php?pid=broadcast-playroom')">
+                🌐 ช่วยเพิ่มคำศัพท์ในระบบหลัก
+              </button>
 
 
 
@@ -17425,12 +17447,42 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
             </div>
 
+          
 
 
 
 
 
 
+
+          </div>
+
+          <!-- Edit Word Form (Hidden by default, opened via Edit button in table) -->
+          <div id="editWordFormContainer" style="display:none; background:#182234; border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:14px; box-shadow: 0 4px 14px rgba(0,0,0,0.4);">
+            <div style="font-size:12.5px; font-weight:700; color:#38bdf8; margin-bottom:8px; display:flex; align-items:center; justify-content:space-between;">
+              <span>✏️ แก้ไขคำแทนที่ในคลังศัพท์</span>
+              <span style="font-size:11px; color:#94a3b8; font-weight:normal;">(กดปุ่มลำโพงเพื่อทดลองฟังเสียง Edge-TTS ก่อนบันทึก)</span>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:center;">
+              <div>
+                <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">คำค้นหาต้นฉบับในแชท:</label>
+                <div class="dictionary-test-row">
+                  <input type="text" id="txtEditFindWord" class="modal-input" placeholder="คำค้นหาต้นฉบับ" style="height:34px; font-size:12px;">
+                  <button type="button" class="btn-topbar-action" onclick="previewDictionaryWord('txtEditFindWord')" title="ฟังเสียงคำต้นฉบับ">🔊 ฟัง</button>
+                </div>
+              </div>
+              <div>
+                <label style="font-size:11px; color:#94a3b8; display:block; margin-bottom:4px;">คำที่ให้อ่านแทน:</label>
+                <div class="dictionary-test-row">
+                  <input type="text" id="txtEditReplaceWord" class="modal-input" placeholder="คำที่ให้อ่านแทน" style="height:34px; font-size:12px;">
+                  <button type="button" class="btn-topbar-action" onclick="previewDictionaryWord('txtEditReplaceWord')" title="ฟังเสียงคำแก้">🔊 ฟัง</button>
+                </div>
+              </div>
+              <div style="padding-top:18px; display:flex; gap:6px;">
+                <button type="button" class="btn-topbar-action primary" style="height:34px; padding:0 14px; font-size:12px; font-weight:700;" onclick="saveEditDictionaryWord()">บันทึก</button>
+                <button type="button" class="btn-topbar-action" style="height:34px; padding:0 10px; font-size:12px;" onclick="cancelEditDictionaryWord()">ยกเลิก</button>
+              </div>
+            </div>
           </div>
 
 
@@ -17575,7 +17627,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-                  <th style="width:40%;">คำค้นหาในแชท</th>
+                  <th style="width:38%;">คำค้นหาในแชท</th>
 
 
 
@@ -17583,7 +17635,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-                  <th style="width:45%;">คำที่ให้อ่านแทน</th>
+                  <th style="width:40%;">คำที่ให้อ่านแทน</th>
 
 
 
@@ -17591,7 +17643,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-                  <th style="width:15%; text-align:center;">จัดการ</th>
+                  <th style="width:22%; text-align:center;">จัดการ</th>
 
 
 
@@ -32551,7 +32603,8 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-    const _autoPopoutWindows = true; // All tools open in separate windows.
+    let _autoPopoutWindows = true; // All tools open in separate windows.
+    window._autoPopoutWindows = _autoPopoutWindows;
 
 
 
@@ -32625,6 +32678,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
       if (existing && !existing.closed) {
         try {
           existing.focus();
+          if (name === 'settings' && section) {
+            try { (existing.switchSettingsSection || switchSettingsSection)(section); } catch (_) {}
+          }
           showToast(`⧉ สลับมายังหน้าต่างที่เปิดอยู่แล้ว (ไม่เปิดซ้ำ)`);
           return;
         } catch (_) {}
@@ -32954,6 +33010,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
       }
 
       window._popoutWindows[name] = pop;
+      if (name === 'settings' && section) {
+        const doSwitch = () => {
+          try { (pop.switchSettingsSection || switchSettingsSection)(section); } catch (_) {}
+        };
+        setTimeout(doSwitch, 100);
+        setTimeout(doSwitch, 300);
+        setTimeout(doSwitch, 600);
+      }
       let popResizeTimer = null;
 
 
@@ -34434,113 +34498,39 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
       if (closeBtn) {
-
-
-
-
-
-
-
         closeBtn.onclick = () => {
-
-
-
-
-
-
-
           pop.close();
-
-
-
-
-
-
-
         };
-
-
-
-
-
-
-
       }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+      // Hook all close buttons inside the adopted window in popup
+      try {
+        win.querySelectorAll('.btn-win-action.close-red, button.btn-win-action, button.btn-topbar-action, button').forEach(b => {
+          if (b.classList.contains('settings-nav-item') || b.closest('.settings-sidebar')) return;
+          if (b.textContent.includes('ปิดหน้าต่าง') || b.classList.contains('close-red') || (b.getAttribute('onclick') || '').includes('closeToolWindow')) {
+            b.onclick = (e) => {
+              if (e) { e.preventDefault(); e.stopPropagation(); }
+              try { closeToolWindow(name); } catch (_) {}
+              try { pop.close(); } catch (_) {}
+            };
+          }
+        });
+      } catch (_) {}
 
       // Handle popup window closing
-
-
-
-
-
-
-
       pop.addEventListener('beforeunload', () => {
-
-
-
         try {
-
-
-
           const profileWin = pop.document?.getElementById('win-author-profile');
-
-
-
           if (profileWin) {
-
-
-
             document.adoptNode(profileWin);
-
-
-
             document.body.appendChild(profileWin);
-
-
-
             profileWin.style.position = '';
-
-
-
             profileWin.style.top = '';
-
-
-
             profileWin.style.left = '';
-
-
-
             profileWin.style.transform = '';
-
-
-
             profileWin.style.zIndex = '';
-
-
-
             profileWin.classList.remove('active');
-
-
-
           }
-
-
-
         } catch (_) {}
 
 
@@ -35893,14 +35883,9 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      if (_autoPopoutWindows) {
-
-
-
-        popoutToolWindow(name);
-
-
-
+      const shouldPopout = (typeof window._autoPopoutWindows !== 'undefined') ? window._autoPopoutWindows : _autoPopoutWindows;
+      if (shouldPopout) {
+        popoutToolWindow(name, section);
         return;
 
 
@@ -35977,7 +35962,15 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      try {
+      
+      if (name === 'settings' && section) {
+        if (typeof switchSettingsSection === 'function') {
+          switchSettingsSection(section);
+        } else if (typeof window.switchSettingsSection === 'function') {
+          window.switchSettingsSection(section);
+        }
+      }
+try {
 
 
 
@@ -36290,7 +36283,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
     function closeToolWindow(name) {
+      if (!name) return;
+      name = (name || '').toLowerCase();
       if (name === 'voice') name = 'voice-settings';
+      if (name === 'reply') name = 'replie';
+      if (name === 'users') name = 'user-manager';
       if (name === 'overlay-plus-settings' && typeof window.persistOverlayPlusSettings === 'function') {
         try { window.persistOverlayPlusSettings().catch(() => {}); } catch (_) {}
       }
@@ -36298,29 +36295,68 @@ document.addEventListener('DOMContentLoaded',async()=>{
         try { window.saveGameOverlaySettings().catch(() => {}); } catch (_) {}
       }
 
-      // Standalone popout window handler
+      // 1. Standalone popout window handler (pywebview or opened via ?popout=...)
       const popoutParam = new URLSearchParams(window.location.search).get('popout');
-      const isStandalone = document.body.classList.contains('popout-standalone-window') || !!popoutParam;
+      const isStandalone = document.documentElement.classList.contains('popout-standalone-window') ||
+                           document.body?.classList.contains('popout-standalone-window') ||
+                           !!popoutParam;
       if (isStandalone) {
         let targetTool = (popoutParam || name || '').toLowerCase();
         if (targetTool === 'voice') targetTool = 'voice-settings';
+        if (targetTool === 'reply') targetTool = 'replie';
+        if (targetTool === 'users') targetTool = 'user-manager';
         try {
           if (window.pywebview?.api?.close) window.pywebview.api.close();
         } catch (_) {}
         try {
           fetch('/api/window/popout/close?tool=' + encodeURIComponent(targetTool), { method: 'POST' }).catch(() => {});
         } catch (_) {}
+        const el = document.getElementById('win-' + targetTool) || document.getElementById('win-' + name);
+        if (el) {
+          el.classList.remove('active', 'popout-target');
+          el.style.display = 'none';
+        }
         try { window.close(); } catch (_) {}
         return;
       }
 
-      if (window.opener && typeof window.opener.closeToolWindow === 'function' && (window.name === 'bp3_pop_' + name || window._popoutWindows === undefined)) {
-        try {
-          window.opener.closeToolWindow(name);
-          window.close();
-          return;
-        } catch (_) {}
+      // 2. Child popup window handler (opened via window.open)
+      const openerWin = window.opener || window.parentWindow;
+      if (openerWin && openerWin !== window) {
+        try { openerWin.closeToolWindow?.(name); } catch (_) {}
+        try { window.close(); } catch (_) {}
+        return;
       }
+
+      // 3. Main window: close tracked popout window if open
+      if (window._popoutWindows && window._popoutWindows[name] && !window._popoutWindows[name].closed) {
+        const pop = window._popoutWindows[name];
+        try {
+          const winNode = document.getElementById('win-' + name) || (pop.document ? pop.document.getElementById('win-' + name) : null);
+          const placeholder = document.getElementById('placeholder_win_' + name);
+          if (winNode && placeholder && placeholder.parentNode) {
+            try { document.adoptNode(winNode); } catch(e) {}
+            placeholder.parentNode.insertBefore(winNode, placeholder);
+            winNode.classList.remove('active', 'popout-target');
+            placeholder.remove();
+          }
+        } catch(e) {}
+        try { pop.close(); } catch(e) {}
+        delete window._popoutWindows[name];
+      }
+
+      // Also call server to close if native popout was created
+      try {
+        fetch('/api/window/popout/close?tool=' + encodeURIComponent(name), { method: 'POST' }).catch(() => {});
+      } catch (_) {}
+
+      // 4. Clean up inline window node if present in document
+      const winNodeInline = document.getElementById('win-' + name);
+      if (winNodeInline) {
+        winNodeInline.classList.remove('active', 'popout-target');
+        winNodeInline.style.display = 'none';
+      }
+
 
 
 
@@ -48014,6 +48050,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
       }
     }
     async function initAutoConnect() {
+      if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
       await _platformSettingsReady;
       bindPlatformAutoInputs(document);
 
@@ -67435,6 +67472,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     function playChatMessageSpeech(author, text, platform = '', messageId = null) {
+      if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
 
 
 
@@ -67959,6 +67997,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.enqueueSecretSound = function(entry,author,platform) {
+      if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
 
 
 
@@ -69271,61 +69310,21 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
         const safeK = String(k).replace(/'/g, "\\'");
-
-
-
-
-
-
-
+        const safeV = String(v).replace(/'/g, "\\'");
         html += `<tr>
-
-
-
-
-
-
-
           <td><strong style="color:#e2e8f0; font-family:Consolas, monospace;">${escapeHtml(k)}</strong></td>
-
-
-
-
-
-
-
-          <td style="color:#38bdf8;">${escapeHtml(String(v))}</td>
-
-
-
-
-
-
-
-          <td style="text-align:center;">
-
-
-
-
-
-
-
-            <button class="btn-win-action close-red" title="ลบคำนี้" onclick="deleteDictionaryWord('${safeK}')" style="height:22px; width:22px; font-size:11px; margin:0 auto; display:inline-flex; align-items:center; justify-content:center;">✕</button>
-
-
-
-
-
-
-
+          <td style="color:#38bdf8;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+              <span>${escapeHtml(String(v))}</span>
+              <button type="button" class="btn-dict-action btn-dict-play" title="ทดลองฟังเสียงอ่านคำนี้" onclick="previewDictionaryDirect('${safeV}')">🔊</button>
+            </div>
           </td>
-
-
-
-
-
-
-
+          <td style="text-align:center;">
+            <div style="display:inline-flex; gap:6px; align-items:center; justify-content:center;">
+              <button type="button" class="btn-dict-action btn-dict-edit" title="แก้ไขคำนี้" onclick="openEditDictionaryWord('${safeK}', '${safeV}')">✏️ แก้ไข</button>
+              <button type="button" class="btn-dict-action btn-dict-delete" title="ลบคำนี้" onclick="deleteDictionaryWord('${safeK}')">🗑️ ลบ</button>
+            </div>
+          </td>
         </tr>`;
 
 
@@ -69487,42 +69486,94 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     let dictionaryPreviewAudio = null;
-
-
-
     async function previewDictionaryWord(id) {
-
-
-
-      const doc=getToolDocument('settings'), text=doc.getElementById(id)?.value.trim();
-
-
-
+      const doc = getToolDocument('settings') || document;
+      const text = doc.getElementById(id)?.value.trim();
       if(!text){showToast('กรุณากรอกคำที่ต้องการทดลองฟัง');return;}
-
-
-
       if(dictionaryPreviewAudio){dictionaryPreviewAudio.pause();dictionaryPreviewAudio=null;}
-
-
-
       const audio=new Audio(`/api/tts?preview=1&text=${encodeURIComponent(text)}&gender=${encodeURIComponent(_currentVoiceGender || 'female')}`);
-
-
-
       dictionaryPreviewAudio=audio;audio.onerror=()=>showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');
-
-
-
       try{await audio.play();}catch(_){showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');}
-
-
-
     }
-
-
-
     window.previewDictionaryWord=previewDictionaryWord;
+
+    async function previewDictionaryDirect(text) {
+      if (!text) return;
+      if (dictionaryPreviewAudio) {
+        dictionaryPreviewAudio.pause();
+        dictionaryPreviewAudio = null;
+      }
+      const audio = new Audio(`/api/tts?preview=1&text=${encodeURIComponent(text)}&gender=${encodeURIComponent(_currentVoiceGender || 'female')}`);
+      dictionaryPreviewAudio = audio;
+      audio.onerror = () => showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');
+      try {
+        await audio.play();
+      } catch (_) {
+        showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');
+      }
+    }
+    window.previewDictionaryDirect = previewDictionaryDirect;
+
+    window._editingOriginalFindWord = '';
+
+    function openEditDictionaryWord(word, replace) {
+      window._editingOriginalFindWord = word;
+      const doc = getToolDocument('settings') || document;
+      const editContainer = doc.getElementById('editWordFormContainer');
+      const addContainer = doc.getElementById('addWordFormContainer');
+      if (addContainer) addContainer.style.display = 'none';
+      if (!editContainer) return;
+      editContainer.style.display = 'block';
+      const txtFind = doc.getElementById('txtEditFindWord');
+      const txtRep = doc.getElementById('txtEditReplaceWord');
+      if (txtFind) txtFind.value = word;
+      if (txtRep) {
+        txtRep.value = replace;
+        txtRep.focus();
+      }
+      editContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    window.openEditDictionaryWord = openEditDictionaryWord;
+
+    function cancelEditDictionaryWord() {
+      window._editingOriginalFindWord = '';
+      const doc = getToolDocument('settings') || document;
+      const editContainer = doc.getElementById('editWordFormContainer');
+      if (editContainer) editContainer.style.display = 'none';
+    }
+    window.cancelEditDictionaryWord = cancelEditDictionaryWord;
+
+    async function saveEditDictionaryWord() {
+      const doc = getToolDocument('settings') || document;
+      const findInput = doc.getElementById('txtEditFindWord');
+      const repInput = doc.getElementById('txtEditReplaceWord');
+      const findWord = findInput ? findInput.value.trim() : '';
+      const repWord = repInput ? repInput.value.trim() : '';
+
+      if (!findWord || !repWord) {
+        showToast('⚠️ กรุณากรอกทั้งคำค้นหาและคำที่ให้อ่านแทนครับ');
+        return;
+      }
+
+      try {
+        const origWord = window._editingOriginalFindWord;
+        if (origWord && origWord !== findWord) {
+          await fetch(`/api/dictionary/delete?word=${encodeURIComponent(origWord)}`);
+        }
+        const res = await fetch(`/api/dictionary/add?find=${encodeURIComponent(findWord)}&replace=${encodeURIComponent(repWord)}`);
+        const result = await res.json();
+        if (result.success) {
+          showToast(`✅ บันทึกการแก้ไขคำแทนที่ "${findWord}" สำเร็จแล้ว`);
+          cancelEditDictionaryWord();
+          await loadDictionaryTable();
+        } else {
+          showToast('⚠️ เกิดข้อผิดพลาดในการบันทึกการแก้ไข');
+        }
+      } catch (e) {
+        showToast('⚠️ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์คลังศัพท์ได้');
+      }
+    }
+    window.saveEditDictionaryWord = saveEditDictionaryWord;
 
 
 
@@ -70067,6 +70118,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     function initRealChatPoller() {
+      if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
 
 
 
@@ -70115,6 +70167,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     async function pollIncomingRealChats() {
+      if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
 
 
 
@@ -71350,19 +71403,12 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      initRealChatPoller();
-
-
-
-
-
-
-
-      initPlatformSettingsInputs();
-
-
-
-      initAutoConnect();
+      const isPopoutActive = typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow();
+      if (!isPopoutActive) {
+        initRealChatPoller();
+        initPlatformSettingsInputs();
+        initAutoConnect();
+      }
 
 
 

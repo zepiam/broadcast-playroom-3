@@ -1995,6 +1995,8 @@ _tool_popout_windows = {}
 def handle_tool_popout(tool_name, main_url, section=None):
     name = (tool_name or '').strip().lower()
     if name == 'voice': name = 'voice-settings'
+    if name == 'reply': name = 'replie'
+    if name == 'users': name = 'user-manager'
     if not name: return {'ok': False, 'error': 'empty tool'}
     
     global _tool_popout_windows
@@ -2052,18 +2054,24 @@ def handle_tool_popout(tool_name, main_url, section=None):
         def __init__(self, tool_name):
             self.tool_name = tool_name
         def close(self):
+            closed = False
+            w_popped = None
             try:
                 if self.tool_name in _tool_popout_windows:
-                    w = _tool_popout_windows.pop(self.tool_name, None)
-                    if w: w.destroy()
+                    w_popped = _tool_popout_windows.pop(self.tool_name, None)
+                    if w_popped:
+                        w_popped.destroy()
+                        closed = True
             except Exception:
                 pass
             try:
                 import webview
+                tool_no_hyphen = (self.tool_name or '').replace('-', ' ')
                 for w in list(getattr(webview, 'windows', [])):
+                    if closed and w == w_popped: continue
                     w_title = (getattr(w, 'title', '') or '').lower()
                     w_url = (getattr(w, 'url', '') or '').lower()
-                    if self.tool_name and (self.tool_name in w_title or f"popout={self.tool_name}" in w_url):
+                    if self.tool_name and (self.tool_name in w_title or tool_no_hyphen in w_title or f"popout={self.tool_name}" in w_url):
                         try: w.destroy()
                         except Exception: pass
             except Exception:
@@ -7574,6 +7582,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
                 tool = data.get('tool') or query.get('tool', [''])[0]
                 tool = (tool or '').strip().lower()
                 if tool == 'voice': tool = 'voice-settings'
+                if tool == 'reply': tool = 'replie'
+                if tool == 'users': tool = 'user-manager'
                 closed = False
                 if tool in _tool_popout_windows:
                     tw = _tool_popout_windows.pop(tool, None)
@@ -7585,10 +7595,12 @@ class QuietHandler(SimpleHTTPRequestHandler):
                             pass
                 try:
                     import webview
+                    tool_no_hyphen = (tool or '').replace('-', ' ')
                     for w in list(getattr(webview, 'windows', [])):
+                        if closed and w == tw: continue
                         w_title = (getattr(w, 'title', '') or '').lower()
                         w_url = (getattr(w, 'url', '') or '').lower()
-                        if tool and (tool in w_title or f"popout={tool}" in w_url):
+                        if tool and (tool in w_title or tool_no_hyphen in w_title or f"popout={tool}" in w_url):
                             try:
                                 w.destroy()
                                 closed = True
