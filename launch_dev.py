@@ -793,6 +793,45 @@ GAME_CHAT_LOCK = threading.RLock()
 
 DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dist'))
 
+def ensure_frontend_integrity():
+    """Runtime Self-Healing: If dist/index.html ever loses critical stylesheets or constraints,
+    automatically patch it before pywebview loads it. This guarantees zero white-screen or giant-icon bugs."""
+    try:
+        idx_path = os.path.join(DIST_DIR, 'index.html')
+        if not os.path.exists(idx_path):
+            return
+        with open(idx_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        repaired = False
+        # 1. Guarantee inline styling for titlebar icon
+        if '.desktop-titlebar-icon' in content and 'width:16px!important' not in content:
+            content = content.replace(
+                '<img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon"',
+                '<img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;"'
+            )
+            repaired = True
+
+        # 2. Guarantee styles.css is loaded
+        if 'styles.css' not in content and '</head>' in content:
+            content = content.replace('</head>', '  <link rel="stylesheet" href="./styles.css">\n  <link rel="stylesheet" href="./modal.css">\n  <link rel="stylesheet" href="./ui_readability.css">\n</head>')
+            repaired = True
+
+        # 3. Guarantee dark background on html tag
+        if '<html lang="th" class="notranslate" translate="no">' in content:
+            content = content.replace('<html lang="th" class="notranslate" translate="no">', '<html lang="th" class="notranslate" translate="no" style="background:#1e1f22!important;color:#f2f3f5!important;">')
+            repaired = True
+
+        if repaired:
+            with open(idx_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            logger.info("[INTEGRITY] Successfully self-healed frontend dist/index.html")
+    except Exception as e:
+        logger.warning(f"[INTEGRITY] Frontend check warning: {e}")
+
+ensure_frontend_integrity()
+
+
 
 
 

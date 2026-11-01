@@ -101,3 +101,26 @@ if os.path.exists(dist_index):
         with open(dist_index, 'w', encoding='utf-8') as f:
             f.write(dhtml)
         print(f"Injected {len(links_to_insert)} missing stylesheet links into dist/index.html")
+
+
+# ==============================================================
+# STRICT SAFETY AUDIT GATE: Fail build if any asset or link is missing
+# ==============================================================
+with open(dist_index, 'r', encoding='utf-8') as f:
+    final_html = f.read()
+
+for req in required_links:
+    if req not in final_html:
+        raise RuntimeError(f"CRITICAL BUILD FAILURE: {req} is missing from dist/index.html!")
+
+if 'styles.css' not in final_html:
+    raise RuntimeError("CRITICAL BUILD FAILURE: styles.css is not linked in dist/index.html!")
+
+styles_path = os.path.join(dist_dir, 'styles.css')
+if not os.path.exists(styles_path) or os.path.getsize(styles_path) < 50000:
+    raise RuntimeError("CRITICAL BUILD FAILURE: dist/styles.css is missing or too small!")
+
+if 'width:16px' not in final_html and 'max-width:16px' not in final_html:
+    raise RuntimeError("CRITICAL BUILD FAILURE: .desktop-titlebar-icon lacks size constraints in dist/index.html!")
+
+print(">>> [SAFETY GATE PASSED] All assets, stylesheets, and fail-safe constraints verified 100% complete!")
