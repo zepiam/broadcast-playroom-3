@@ -1,31 +1,31 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.23",
-  "latest_version": "3.23",
+  "version": "3.24",
+  "latest_version": "3.24",
   "critical": true,
-  "changelog": "### Broadcast Playroom v3.23 Update Highlights\n\n- **แก้ไขปัญหา UI Script Fragment และปุ่มปิดโปรแกรม (Hotfix v3.22 UI Parser Bug)**:\n  - แก้ไขข้อผิดพลาดการแทรกสคริปต์ผิดตำแหน่งใน v3.22 ที่ทำให้ตัวอักษรโค้ด JavaScript หลุดออกมาแสดงผลบนหน้าต่างหลักและปุ่มปิดโปรแกรมไม่ทำงาน\n  - หน้าต่างโปรแกรมหลักกลับมาแสดงผลสวยงาม คลีน 100% พร้อมใช้งานทุกปุ่มตามปกติ\n- **ระบบซิงค์โปรไฟล์ผู้ชมแบบแยกหน้าต่าง (Safe Cross-Window Profile Sync)**:\n  - จัดเก็บการเชื่อมโยง BroadcastChannel ไว้ใน `user_controls.js` อย่างเป็นระเบียบและปลอดภัย\n  - ป้องกันการเกิด echo loop ระหว่างหน้าต่างหลักและหน้าต่าง Popout\n  - กดชื่อคนดูในแชทสด หรือใน User Manager จะแสดงข้อมูลคนดูคนนั้นทันที ไม่ติดค้างข้อมูลจำลอง\n- **การเชื่อมต่อ Twitch Chatbot & Anti-Cache**:\n  - รองรับการเชื่อมต่อ Twitch / KICK แบบ One-Click ด้วย Credentials ภายในตัวโปรแกรม\n  - ระบบ Hard Anti-Cache เคลียร์ WebView2 Cache อัตโนมัติ ป้องกันการจำโค้ดเก่า\n",
+  "changelog": "### Broadcast Playroom v3.24 Update Highlights\n\n- **แนบโปรแกรมกู้ชีพและอัปเดตฉุกเฉิน (Standalone FindUpdate Utility)**:\n  - เพิ่มไฟล์ `FindUpdate.bat` และ `findupdate.py` ไว้ในโฟลเดอร์โปรแกรมโดยตรง\n  - กรณีโปรแกรมหลักเกิดข้อผิดพลาดหรือเปิดไม่ติด สามารถดับเบิลคลิก `FindUpdate.bat` เพื่อให้ระบบค้นหาเวอร์ชันล่าสุดบน GitHub และดาวน์โหลดมาแตกไฟล์ทับซ่อมแซมตัวเองได้ทันที 100% โดยไม่ต้องลบลงใหม่\n- **ระบบความปลอดภัยและการทดสอบหลายชั้น (Multi-Layer Verification Architecture)**:\n  - เพิ่ม **Automated Smoke Test Gate** รัน Headless Chromium ตรวจสอบข้อผิดพลาดของหน้าจอและฟังก์ชันทั้งหมดอัตโนมัติก่อนอนุญาตให้ปล่อยอัปเดต ป้องกันโค้ดหลุด 100%\n  - เพิ่ม **Startup Integrity Check** สแกนความสมบูรณ์ของโครงสร้างไฟล์ในระดับมิลลิวินาทีก่อนเปิดหน้าต่างโปรแกรม\n  - เพิ่ม **Emergency Self-Repair Mode** (`emergency_repair.html`) ดักจับกรณีไฟล์เสียหายและกู้คืนตัวเองอัตโนมัติ\n- **ระบบโปรไฟล์ผู้ชมแบบเรียลไทม์ & ซิงค์ข้ามหน้าต่าง (Safe Cross-Window Profile Sync)**:\n  - ซิงค์ข้อมูลคนดูจากการคลิกในแชทสด หรือใน User Manager อย่างปลอดภัย ไม่มีข้อมูล mockup ค้าง\n- **การเชื่อมต่อ Twitch Chatbot & Anti-Cache**:\n  - เชื่อมต่อ Twitch / KICK แบบ One-Click ด้วย Credentials ภายในตัวโปรแกรม\n  - ระบบ Hard Anti-Cache ป้องกันการจำโค้ดเก่า\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-lite.zip",
-    "sha256": "d0663b86420de3fc8f74e5d4e43fd28467c974ec5db8e961b13d9e5063f03d6d",
-    "size": 50024868
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-lite.zip",
+    "sha256": "b0c0a9f7777205f1602a60d216a602f10d986072de6fe80562f75d2e580987d1",
+    "size": 50024872
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-full.zip",
-    "sha256": "2f78d1238d9b25e06141b78019b69b28c5221facf3d998987073606984c5e818",
-    "size": 50024868
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-full.zip",
+    "sha256": "df3c829f775f1c0a6fc9f9788ab1edf27f9803846430e755d05d60054225c7f6",
+    "size": 50024872
   },
   "packages": {
     "lite": {
-      "version": "3.23",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-lite.zip",
-      "patch_sha256": "d0663b86420de3fc8f74e5d4e43fd28467c974ec5db8e961b13d9e5063f03d6d",
-      "patch_size": 50024868
+      "version": "3.24",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-lite.zip",
+      "patch_sha256": "b0c0a9f7777205f1602a60d216a602f10d986072de6fe80562f75d2e580987d1",
+      "patch_size": 50024872
     },
     "full": {
-      "version": "3.23",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.23/patch-v3.23-full.zip",
-      "patch_sha256": "2f78d1238d9b25e06141b78019b69b28c5221facf3d998987073606984c5e818",
-      "patch_size": 50024868
+      "version": "3.24",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.24/patch-v3.24-full.zip",
+      "patch_sha256": "df3c829f775f1c0a6fc9f9788ab1edf27f9803846430e755d05d60054225c7f6",
+      "patch_size": 50024872
     }
   }
 }
