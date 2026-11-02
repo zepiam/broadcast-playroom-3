@@ -12077,11 +12077,21 @@ def open_app_window(main_url):
             os.makedirs(storage_path, exist_ok=True)
             # Purge stale WebView2 HTTP/Code caches so updates are applied 100% immediately
             try:
-                for sub in ['EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'Default/Cache', 'Default/Code Cache']:
-                    c_dir = os.path.join(storage_path, os.path.normpath(sub))
-                    if os.path.isdir(c_dir):
-                        import shutil
-                        shutil.rmtree(c_dir, ignore_errors=True)
+                candidate_paths = [
+                    storage_path,
+                    os.path.join(str(DATA_ROOT), 'webview_data'),
+                    os.path.join(os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local'), 'BroadcastPlayroom3', 'webview_data'),
+                    os.path.join(str(Path(sys.executable).parent.parent / 'data'), 'webview_data') if getattr(sys, 'frozen', False) else None,
+                    os.path.join(str(Path(sys.executable).parent / 'data'), 'webview_data') if getattr(sys, 'frozen', False) else None
+                ]
+                for sp in candidate_paths:
+                    if not sp or not os.path.isdir(sp):
+                        continue
+                    for sub in ['EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'EBWebView/Default/GPUCache', 'EBWebView/Default/DawnCache', 'Default/Cache', 'Default/Code Cache']:
+                        c_dir = os.path.join(sp, os.path.normpath(sub))
+                        if os.path.isdir(c_dir):
+                            import shutil
+                            shutil.rmtree(c_dir, ignore_errors=True)
             except Exception:
                 pass
             # Pre-flight asset integrity check
@@ -12096,9 +12106,12 @@ def open_app_window(main_url):
             except Exception as e:
                 print(f"[WARN] Integrity checker error: {e}", flush=True)
 
+            cache_delim = '&' if '?' in main_url else '?'
+            main_url_busted = f"{main_url}{cache_delim}_v={CURRENT_VERSION}_{int(time.time())}"
+
             w = webview.create_window(
                 title='Broadcast Playroom 3',
-                url=main_url,
+                url=main_url_busted,
                 width=1600,
                 height=950,
                 min_size=(600, 420),

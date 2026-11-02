@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.40"
+CURRENT_VERSION = "3.41"
 
 REPO_OWNER = "zepiam"
 
@@ -883,12 +883,13 @@ def apply_update_patch(patch_zip: str) -> bool:
             app_data_candidates = [
                 Path(os.environ.get("LOCALAPPDATA", "")) / "BroadcastPlayroom3",
                 Path(install_dir) / "data",
+                Path(install_dir).parent / "data",
                 Path(install_dir)
             ]
             for root_c in app_data_candidates:
                 wv_dir = root_c / "webview_data"
                 if wv_dir.is_dir():
-                    for sub in ["EBWebView/Default/Cache", "EBWebView/Default/Code Cache", "Default/Cache", "Default/Code Cache"]:
+                    for sub in ["EBWebView/Default/Cache", "EBWebView/Default/Code Cache", "EBWebView/Default/GPUCache", "EBWebView/Default/DawnCache", "Default/Cache", "Default/Code Cache"]:
                         c_path = wv_dir / sub
                         if c_path.is_dir():
                             shutil.rmtree(c_path, ignore_errors=True)
@@ -1416,6 +1417,16 @@ if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" (
 )
 
 del "{patch_zip}"
+
+rem Purge WebView2 stale caches to ensure updated HTML/JS is executed
+for %%D in ("{install_dir}\data\webview_data" "{install_dir}\..\data\webview_data" "%LOCALAPPDATA%\BroadcastPlayroom3\webview_data" "%LOCALAPPDATA%\BroadcastPlayroom3\data\webview_data") do (
+    if exist "%%~D\EBWebView\Default\Cache" rmdir /s /q "%%~D\EBWebView\Default\Cache" >nul 2>&1
+    if exist "%%~D\EBWebView\Default\Code Cache" rmdir /s /q "%%~D\EBWebView\Default\Code Cache" >nul 2>&1
+    if exist "%%~D\EBWebView\Default\GPUCache" rmdir /s /q "%%~D\EBWebView\Default\GPUCache" >nul 2>&1
+    if exist "%%~D\EBWebView\Default\DawnCache" rmdir /s /q "%%~D\EBWebView\Default\DawnCache" >nul 2>&1
+    if exist "%%~D\Default\Cache" rmdir /s /q "%%~D\Default\Cache" >nul 2>&1
+    if exist "%%~D\Default\Code Cache" rmdir /s /q "%%~D\Default\Code Cache" >nul 2>&1
+)
 
 if exist "{install_dir}\broadcast playroom dev" rmdir /s /q "{install_dir}\broadcast playroom dev" >nul 2>&1
 if exist "{install_dir}\..\broadcast playroom dev" rmdir /s /q "{install_dir}\..\broadcast playroom dev" >nul 2>&1

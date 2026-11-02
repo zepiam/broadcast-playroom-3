@@ -1,23 +1,23 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.40",
-  "latest_version": "3.40",
+  "version": "3.41",
+  "latest_version": "3.41",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.40\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.40:\n- **แก้ไขและป้องกันปัญหาจัดการผู้ชม (User Manager Persistence & Popout Sync)**:\n  - เชื่อมโยง `storage_path` ให้หน้าต่าง Popout ทุกหน้าต่างแชร์ Profile, Cookie และ `localStorage` เดียวกันกับหน้าต่างหลัก 100%\n  - เพิ่มระบบป้องกันการเขียนทับ (Accidental Wipe Guard) ใน Backend และ Frontend: ป้องกันไม่ให้หน้าต่างที่ว่างเปล่าบันทึกรายการว่างทับประวัติผู้ชมบนดิสก์\n  - เพิ่มระบบ `BroadcastChannel` ซิงค์รายชื่อคนดูระหว่างหน้าต่างหลักและหน้าต่างแยกแบบ Real-time ทันทีที่มีแชตใหม่เข้ามา\n  - ปรับปรุงตัวกู้คืนการตั้งค่าใน `updater.py` ให้รองรับการ Deep-merge ข้อมูลผู้ชมที่เป็น List ข้ามเวอร์ชันได้สมบูรณ์ ไม่สูญหาย\n",
+  "changelog": "# Broadcast Playroom v3.41\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.41:\n- **แก้ไขปัญหาปุ่มเมนูไม่ตอบสนองหลังอัปเดต (WebView2 Deep Cache Purge & Robustness)**:\n  - เพิ่มคำสั่งล้างแคชระดับลึก (`Cache`, `Code Cache`, `GPUCache`, `DawnCache`) ในสคริปต์ตัวอัปเดตโดยตรง เพื่อขจัดไฟล์ไบต์โค้ดเก่าของ WebView2 ให้หมดจด 100% ขณะโปรแกรมปิดตัวลง\n  - ขยายขอบเขตการล้างแคชให้ครอบคลุมโฟลเดอร์ `<Root>/data/webview_data` ของผู้ใช้จริง\n  - เพิ่ม Cache-Busting parameter (`_v=...`) ให้ URL ของหน้าต่างหลัก บังคับให้เบราว์เซอร์โหลดหน้าเว็บและสคริปต์สดใหม่เสมอ ไม่ดึงแคชเก่ามาปะปน\n  - เพิ่ม Global Robustness & Early Button Safety Guard เพื่อป้องกันไม่ให้ข้อผิดพลาดจุดใดขัดขวางการกดปุ่มเมนู\n  - **หมายเหตุความปลอดภัย**: การล้างโฟลเดอร์แคชและโค้ดแคชนี้ เป็นเพียงการลบไฟล์สคริปต์ชั่วคราวเท่านั้น ไม่แตะต้องข้อมูลบัญชี การตั้งค่า หรือประวัติใดๆ ของผู้ใช้ 100%\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.40/patch-v3.40-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.41/patch-v3.41-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.40-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.41-lite.zip"
     ],
-    "sha256": "811569b925bf7f0d900bca46e1d78b6c7ee9727850ceef06580a32c59c9a7cc3",
-    "size": 50010088
+    "sha256": "d380cdec4e62bd7519242841dca4592862c1f047945c305699bd4c6a1221fe92",
+    "size": 50012410
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.40/patch-v3.40-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.41/patch-v3.41-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.40-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.41-full.zip"
     ],
-    "sha256": "811569b925bf7f0d900bca46e1d78b6c7ee9727850ceef06580a32c59c9a7cc3",
-    "size": 50010088
+    "sha256": "d380cdec4e62bd7519242841dca4592862c1f047945c305699bd4c6a1221fe92",
+    "size": 50012410
   }
 }
