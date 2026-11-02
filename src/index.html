@@ -1095,7 +1095,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.35</span>
+      <span class="desktop-titlebar-tag">v3.36</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -14077,6 +14077,69 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
+          <!-- Card: จำกัดความยาวข้อความ & เสียงแจ้งเตือน -->
+          <div class="voice-setting-card" style="margin-bottom: 12px;">
+            <div class="voice-setting-card-title">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>📏 จำกัดความยาวข้อความที่อ่าน</span>
+                <span id="secTtsLimitBadge" style="font-size: 12px; color: #38bdf8; font-weight: 700;">ไม่กำหนด</span>
+              </div>
+            </div>
+
+            <div class="voice-slider-group" style="margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 12.5px; font-weight: 600; color: #e2e8f0;">ความยาวสูงสุดที่ให้อ่านเสียง:</span>
+                <span id="secTtsLimitStepText" style="color: #38bdf8; font-weight: 700; font-size: 13px;">ไม่กำหนด (อ่านทุกข้อความ)</span>
+              </div>
+              <input type="range" class="plat-vol-slider" id="secSliderTtsMaxChars" min="1" max="4" step="1" value="4" oninput="syncTtsMaxChars(this.value)" style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 4px; padding: 0 2px;">
+                <span>50 ตัวอักษร</span>
+                <span>100 ตัวอักษร</span>
+                <span>150 ตัวอักษร</span>
+                <span>ไม่กำหนด</span>
+              </div>
+              <div style="font-size: 11.5px; color: #fbbf24; margin-top: 8px; line-height: 1.4;">
+                💡 คำแนะนำ: หากให้ระบบอ่านข้อความที่ยาวมากๆ จะทำให้มีดีเลย์ในการอ่านนานขึ้น
+              </div>
+            </div>
+
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #e2e8f0; cursor: pointer; user-select: none;">
+                  <input type="checkbox" id="chkEnableTtsLimitAlert" checked onchange="syncTtsLimitAlertToggle(this.checked)" style="accent-color: #5865f2; width: 16px; height: 16px;">
+                  <span>🔔 <strong>แจ้งเตือนเมื่อมีข้อความยาวเกินกำหนด</strong></span>
+                </label>
+                <span style="font-size: 11px; color: #94a3b8;">ส่งเสียงแจ้งเตือนสตรีมเมอร์เมื่อมีข้อความที่ถูกข้าม</span>
+              </div>
+
+              <div id="ttsLimitAlertControls" style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="voice-slider-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 12px; font-weight: 600; color: #cbd5e1;">🔊 ระดับเสียงแจ้งเตือน</span>
+                    <span id="secTtsAlertVolVal" style="color: #38bdf8; font-weight: 700; font-size: 12px;">70%</span>
+                  </div>
+                  <input type="range" class="plat-vol-slider" id="secSliderTtsAlertVol" min="0" max="100" value="70" oninput="syncTtsLimitAlertVol(this.value)">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px;">
+                  <span id="secTtsAlertSoundName" style="font-size: 11.5px; color: #94a3b8; flex: 1 1 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    เสียงปัจจุบัน: เสียงเริ่มต้น (Default)
+                  </span>
+                  <button type="button" class="btn-topbar-action" id="btnPreviewTtsAlertSound" onclick="playTtsLimitAlertPreview()" title="ทดลองฟังเสียงเตือน">
+                    ▶️ ฟังเสียง
+                  </button>
+                  <input type="file" id="inputTtsAlertSound" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac" style="display: none;" onchange="onTtsAlertSoundFileSelected(event)">
+                  <button type="button" class="btn-topbar-action" onclick="document.getElementById('inputTtsAlertSound').click()" title="เลือกไฟล์เสียงเตือนใหม่ (.mp3, .wav)">
+                    📁 อัปโหลดเสียง
+                  </button>
+                  <button type="button" class="btn-topbar-action" id="btnResetTtsAlertSound" onclick="resetTtsAlertSoundToDefault()" style="color: #ef4444; display: none;" title="คืนค่าเป็นเสียงเริ่มต้น">
+                    🔄 ลบ / ใช้เสียงเดิม
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Card 4: กล่องทดลองพิมพ์และอ่านสด -->
 
 
@@ -22751,6 +22814,69 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
+
+          <!-- Card: จำกัดความยาวข้อความ & เสียงแจ้งเตือน -->
+          <div class="voice-setting-card" style="margin-bottom: 12px;">
+            <div class="voice-setting-card-title">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span>📏 จำกัดความยาวข้อความที่อ่าน</span>
+                <span id="winTtsLimitBadge" style="font-size: 12px; color: #38bdf8; font-weight: 700;">ไม่กำหนด</span>
+              </div>
+            </div>
+
+            <div class="voice-slider-group" style="margin-top: 6px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 12.5px; font-weight: 600; color: #e2e8f0;">ความยาวสูงสุดที่ให้อ่านเสียง:</span>
+                <span id="winTtsLimitStepText" style="color: #38bdf8; font-weight: 700; font-size: 13px;">ไม่กำหนด (อ่านทุกข้อความ)</span>
+              </div>
+              <input type="range" class="plat-vol-slider" id="winSliderTtsMaxChars" min="1" max="4" step="1" value="4" oninput="syncTtsMaxChars(this.value)" style="width: 100%;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 4px; padding: 0 2px;">
+                <span>50 ตัวอักษร</span>
+                <span>100 ตัวอักษร</span>
+                <span>150 ตัวอักษร</span>
+                <span>ไม่กำหนด</span>
+              </div>
+              <div style="font-size: 11.5px; color: #fbbf24; margin-top: 8px; line-height: 1.4;">
+                💡 คำแนะนำ: หากให้ระบบอ่านข้อความที่ยาวมากๆ จะทำให้มีดีเลย์ในการอ่านนานขึ้น
+              </div>
+            </div>
+
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+                <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #e2e8f0; cursor: pointer; user-select: none;">
+                  <input type="checkbox" id="winChkEnableTtsLimitAlert" checked onchange="syncTtsLimitAlertToggle(this.checked)" style="accent-color: #5865f2; width: 16px; height: 16px;">
+                  <span>🔔 <strong>แจ้งเตือนเมื่อมีข้อความยาวเกินกำหนด</strong></span>
+                </label>
+                <span style="font-size: 11px; color: #94a3b8;">ส่งเสียงแจ้งเตือนสตรีมเมอร์เมื่อมีข้อความที่ถูกข้าม</span>
+              </div>
+
+              <div id="winTtsLimitAlertControls" style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="voice-slider-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-size: 12px; font-weight: 600; color: #cbd5e1;">🔊 ระดับเสียงแจ้งเตือน</span>
+                    <span id="winTtsAlertVolVal" style="color: #38bdf8; font-weight: 700; font-size: 12px;">70%</span>
+                  </div>
+                  <input type="range" class="plat-vol-slider" id="winSliderTtsAlertVol" min="0" max="100" value="70" oninput="syncTtsLimitAlertVol(this.value)">
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px;">
+                  <span id="winTtsAlertSoundName" style="font-size: 11.5px; color: #94a3b8; flex: 1 1 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    เสียงปัจจุบัน: เสียงเริ่มต้น (Default)
+                  </span>
+                  <button type="button" class="btn-topbar-action" id="winBtnPreviewTtsAlertSound" onclick="playTtsLimitAlertPreview()" title="ทดลองฟังเสียงเตือน">
+                    ▶️ ฟังเสียง
+                  </button>
+                  <input type="file" id="winInputTtsAlertSound" accept="audio/*,.mp3,.wav,.ogg,.m4a,.aac" style="display: none;" onchange="onTtsAlertSoundFileSelected(event)">
+                  <button type="button" class="btn-topbar-action" onclick="document.getElementById('winInputTtsAlertSound').click()" title="เลือกไฟล์เสียงเตือนใหม่ (.mp3, .wav)">
+                    📁 อัปโหลดเสียง
+                  </button>
+                  <button type="button" class="btn-topbar-action" id="winBtnResetTtsAlertSound" onclick="resetTtsAlertSoundToDefault()" style="color: #ef4444; display: none;" title="คืนค่าเป็นเสียงเริ่มต้น">
+                    🔄 ลบ / ใช้เสียงเดิม
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
 
       <!-- Card 4: กล่องทดลองพิมพ์และอ่านสด -->
 
@@ -41845,6 +41971,199 @@ try {
 
 
 
+    // =========================================================================
+    // TTS Character Length Limit & Over-limit Alert SFX
+    // =========================================================================
+    window._ttsMaxCharsStep = 4;
+    window._ttsLimitAlertEnabled = true;
+    window._ttsLimitAlertVolume = 70;
+    window._ttsLimitAlertCustomSound = '';
+    window._ttsLimitAlertCustomName = '';
+    let _ttsAlertAudio = null;
+
+    function getTtsMaxCharsLimit() {
+      const step = Number(window._ttsMaxCharsStep ?? localStorage.getItem('bp3_tts_max_chars_step') ?? 4);
+      if (step === 1) return 50;
+      if (step === 2) return 100;
+      if (step === 3) return 150;
+      return Infinity; // step 4: ไม่กำหนด
+    }
+    window.getTtsMaxCharsLimit = getTtsMaxCharsLimit;
+
+    function syncTtsMaxChars(step, fromServer = false) {
+      step = Math.max(1, Math.min(4, Number(step) || 4));
+      window._ttsMaxCharsStep = step;
+      try { localStorage.setItem('bp3_tts_max_chars_step', step); } catch(_) {}
+
+      let label = 'ไม่กำหนด';
+      let desc = 'ไม่กำหนด (อ่านทุกข้อความ)';
+      if (step === 1) { label = '50 ตัวอักษร'; desc = 'สูงสุด 50 ตัวอักษร'; }
+      else if (step === 2) { label = '100 ตัวอักษร'; desc = 'สูงสุด 100 ตัวอักษร'; }
+      else if (step === 3) { label = '150 ตัวอักษร'; desc = 'สูงสุด 150 ตัวอักษร'; }
+
+      document.querySelectorAll('#secSliderTtsMaxChars, #winSliderTtsMaxChars').forEach(el => el.value = step);
+      document.querySelectorAll('#secTtsLimitBadge, #winTtsLimitBadge').forEach(el => el.textContent = label);
+      document.querySelectorAll('#secTtsLimitStepText, #winTtsLimitStepText').forEach(el => el.textContent = desc);
+
+      if (!fromServer) {
+        try {
+          fetch('/api/platform/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tts_max_chars_step: step })
+          }).catch(() => {});
+        } catch(_) {}
+      }
+    }
+    window.syncTtsMaxChars = syncTtsMaxChars;
+
+    function syncTtsLimitAlertToggle(enabled, fromServer = false) {
+      enabled = Boolean(enabled);
+      window._ttsLimitAlertEnabled = enabled;
+      try { localStorage.setItem('bp3_tts_limit_alert_enabled', enabled ? 'true' : 'false'); } catch(_) {}
+
+      document.querySelectorAll('#chkEnableTtsLimitAlert, #winChkEnableTtsLimitAlert').forEach(el => el.checked = enabled);
+      document.querySelectorAll('#ttsLimitAlertControls, #winTtsLimitAlertControls').forEach(el => {
+        el.style.opacity = enabled ? '1' : '0.5';
+        el.style.pointerEvents = enabled ? 'auto' : 'none';
+      });
+
+      if (!fromServer) {
+        try {
+          fetch('/api/platform/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tts_limit_alert_enabled: enabled })
+          }).catch(() => {});
+        } catch(_) {}
+      }
+    }
+    window.syncTtsLimitAlertToggle = syncTtsLimitAlertToggle;
+
+    function syncTtsLimitAlertVol(val, fromServer = false) {
+      val = Math.max(0, Math.min(100, Number(val) || 70));
+      window._ttsLimitAlertVolume = val;
+      try { localStorage.setItem('bp3_tts_limit_alert_vol', val); } catch(_) {}
+
+      document.querySelectorAll('#secSliderTtsAlertVol, #winSliderTtsAlertVol').forEach(el => el.value = val);
+      document.querySelectorAll('#secTtsAlertVolVal, #winTtsAlertVolVal').forEach(el => el.textContent = val + '%');
+
+      if (!fromServer) {
+        try {
+          fetch('/api/platform/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ tts_limit_alert_volume: val })
+          }).catch(() => {});
+        } catch(_) {}
+      }
+    }
+    window.syncTtsLimitAlertVol = syncTtsLimitAlertVol;
+
+    function syncTtsLimitAlertSound(url, name, fromServer = false) {
+      window._ttsLimitAlertCustomSound = url || '';
+      window._ttsLimitAlertCustomName = name || '';
+      try {
+        if (url) {
+          localStorage.setItem('bp3_tts_limit_alert_custom_sound', url);
+          localStorage.setItem('bp3_tts_limit_alert_custom_name', name || 'ไฟล์เสียงกำหนดเอง');
+        } else {
+          localStorage.removeItem('bp3_tts_limit_alert_custom_sound');
+          localStorage.removeItem('bp3_tts_limit_alert_custom_name');
+        }
+      } catch(_) {}
+
+      const displayName = url ? ('ไฟล์: ' + (name || 'ไฟล์เสียงกำหนดเอง')) : 'เสียงปัจจุบัน: เสียงเริ่มต้น (Default)';
+      document.querySelectorAll('#secTtsAlertSoundName, #winTtsAlertSoundName').forEach(el => el.textContent = displayName);
+      document.querySelectorAll('#btnResetTtsAlertSound, #winBtnResetTtsAlertSound').forEach(el => {
+        el.style.display = url ? 'inline-block' : 'none';
+      });
+
+      if (!fromServer) {
+        try {
+          fetch('/api/platform/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              tts_limit_alert_custom_sound: url || '',
+              tts_limit_alert_custom_name: name || ''
+            })
+          }).catch(() => {});
+        } catch(_) {}
+      }
+    }
+    window.syncTtsLimitAlertSound = syncTtsLimitAlertSound;
+
+    function playTtsLimitAlertSound(overrideVol = null) {
+      try {
+        const isEnabled = window._ttsLimitAlertEnabled ?? ((localStorage.getItem('bp3_tts_limit_alert_enabled') ?? 'true') !== 'false');
+        if (!isEnabled && overrideVol === null) return;
+
+        const volPct = overrideVol !== null ? overrideVol : Number(window._ttsLimitAlertVolume ?? localStorage.getItem('bp3_tts_limit_alert_vol') ?? 70);
+        const volume = Math.max(0, Math.min(1, volPct / 100));
+        if (volume <= 0) return;
+
+        const customSound = window._ttsLimitAlertCustomSound || localStorage.getItem('bp3_tts_limit_alert_custom_sound') || '';
+        const soundSrc = (customSound && customSound.trim()) ? customSound : './assets/default_skip_notify.wav';
+
+        if (_ttsAlertAudio) {
+          try { _ttsAlertAudio.pause(); _ttsAlertAudio.currentTime = 0; } catch(_) {}
+        }
+        _ttsAlertAudio = new Audio(soundSrc);
+        _ttsAlertAudio.volume = volume;
+        _ttsAlertAudio.play().catch(err => {
+          console.warn('[BP3] Could not play alert sound:', err);
+        });
+      } catch(e) {
+        console.error('[BP3] Error in playTtsLimitAlertSound:', e);
+      }
+    }
+    window.playTtsLimitAlertSound = playTtsLimitAlertSound;
+
+    function playTtsLimitAlertPreview() {
+      playTtsLimitAlertSound();
+    }
+    window.playTtsLimitAlertPreview = playTtsLimitAlertPreview;
+
+    async function onTtsAlertSoundFileSelected(event) {
+      const file = event?.target?.files?.[0];
+      if (!file) return;
+      try {
+        const res = await fetch('/api/playroom/import', {
+          method: 'POST',
+          headers: {
+            'X-Filename': encodeURIComponent(file.name),
+            'Content-Type': 'application/octet-stream'
+          },
+          body: file
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.url) {
+            syncTtsLimitAlertSound(data.url, file.name);
+            playTtsLimitAlertSound();
+            return;
+          }
+        }
+      } catch(err) {
+        console.warn('[BP3] Upload sound file to /api/playroom/import failed, falling back to DataURL:', err);
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        syncTtsLimitAlertSound(e.target.result, file.name);
+        playTtsLimitAlertSound();
+      };
+      reader.readAsDataURL(file);
+    }
+    window.onTtsAlertSoundFileSelected = onTtsAlertSoundFileSelected;
+
+    function resetTtsAlertSoundToDefault() {
+      syncTtsLimitAlertSound('', '');
+      playTtsLimitAlertSound();
+    }
+    window.resetTtsAlertSoundToDefault = resetTtsAlertSoundToDefault;
+
+
     function syncVoiceVolume(val) {
 
 
@@ -47085,6 +47404,10 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
             localStorage.setItem('bp3_hidden_platforms', JSON.stringify(_hiddenPlatforms));
             applyPlatformHiddenState();
           }
+          if (data.tts_max_chars_step !== undefined) syncTtsMaxChars(data.tts_max_chars_step, true);
+          if (data.tts_limit_alert_enabled !== undefined) syncTtsLimitAlertToggle(data.tts_limit_alert_enabled, true);
+          if (data.tts_limit_alert_volume !== undefined) syncTtsLimitAlertVol(data.tts_limit_alert_volume, true);
+          if (data.tts_limit_alert_custom_sound !== undefined) syncTtsLimitAlertSound(data.tts_limit_alert_custom_sound, data.tts_limit_alert_custom_name || '', true);
         })
         .catch(() => {});
     }
@@ -51370,6 +51693,22 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
     }
 
     // Restore saved translate mode immediately on startup
+    function initTtsLimitSettings() {
+      try {
+        const _initStep = localStorage.getItem('bp3_tts_max_chars_step') ?? 4;
+        const _initAlertEnabled = (localStorage.getItem('bp3_tts_limit_alert_enabled') ?? 'true') !== 'false';
+        const _initAlertVol = localStorage.getItem('bp3_tts_limit_alert_vol') ?? 70;
+        const _initCustomSound = localStorage.getItem('bp3_tts_limit_alert_custom_sound') ?? '';
+        const _initCustomName = localStorage.getItem('bp3_tts_limit_alert_custom_name') ?? '';
+        syncTtsMaxChars(_initStep, true);
+        syncTtsLimitAlertToggle(_initAlertEnabled, true);
+        syncTtsLimitAlertVol(_initAlertVol, true);
+        syncTtsLimitAlertSound(_initCustomSound, _initCustomName, true);
+      } catch(e) {
+        console.warn('[BP3] TTS limit init error:', e);
+      }
+    }
+
     function initTranslateMode() {
       let saved = null;
       try {
@@ -51395,6 +51734,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
       window.addEventListener('DOMContentLoaded', initTranslateMode);
     } else {
       initTranslateMode();
+    initTtsLimitSettings();
     }
 
 
@@ -60941,6 +61281,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
       const spokenText=block.mute ? '' : getSpeakableChatText(spokenWithoutCode);
+      const ttsCharLimit = (typeof getTtsMaxCharsLimit === 'function') ? getTtsMaxCharsLimit() : Infinity;
+      const isOverTtsLimit = isFinite(ttsCharLimit) && spokenText && spokenText.length > ttsCharLimit;
 
 
 
@@ -61157,7 +61499,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-                ${emoteOnly ? '' : `<span class="chat-tts-time ${commandMessage ? 'tts-skipped' : 'tts-pending'}">${commandMessage ? (msg.suppress_self_tts ? 'ไม่อ่านเสียง' : block.mute ? 'บล็อก TTS' : moderation.matched ? 'คำต้องห้าม · ไม่อ่านเสียง' : 'คำสั่ง · ไม่อ่านเสียง') : (_masterTtsEnabled ? 'รออ่าน' : 'ไม่อ่านเสียง')}</span>`}
+                ${emoteOnly ? '' : `<span class="chat-tts-time ${commandMessage || isOverTtsLimit ? 'tts-skipped' : 'tts-pending'}" title="${isOverTtsLimit ? ('ข้อความยาว ' + spokenText.length + ' ตัวอักษร (เกินกำหนด ' + ttsCharLimit + ' ตัวอักษร)') : ''}">${isOverTtsLimit ? 'ข้อความยาวเกิน · ไม่อ่านเสียง' : commandMessage ? (msg.suppress_self_tts ? 'ไม่อ่านเสียง' : block.mute ? 'บล็อก TTS' : moderation.matched ? 'คำต้องห้าม · ไม่อ่านเสียง' : 'คำสั่ง · ไม่อ่านเสียง') : (_masterTtsEnabled ? 'รออ่าน' : 'ไม่อ่านเสียง')}</span>`}
 
 
 
@@ -61449,7 +61791,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      if (_masterTtsEnabled && !isHostEcho && spokenText) {
+      if (_masterTtsEnabled && !isHostEcho && spokenText && !isOverTtsLimit) {
 
 
 
@@ -61457,6 +61799,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+      } else if (isOverTtsLimit && !isHostEcho && !block.mute) {
+        if (typeof playTtsLimitAlertSound === 'function') playTtsLimitAlertSound();
       }
 
 
@@ -66373,6 +66717,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
     function playChatMessageSpeech(author, text, platform = '', messageId = null) {
       if (typeof isPopoutOrChildWindow === 'function' && isPopoutOrChildWindow()) return;
+      const _lim = (typeof getTtsMaxCharsLimit === 'function') ? getTtsMaxCharsLimit() : Infinity;
+      if (isFinite(_lim) && text && text.trim().length > _lim) return;
 
 
 

@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.35"
+CURRENT_VERSION = "3.36"
 
 REPO_OWNER = "zepiam"
 
@@ -647,7 +647,7 @@ def _merge_platform_settings_dicts(target_dict: dict, source_dict: dict):
                     target_dict['hidden_platforms'] = v
             elif 'hidden_platforms' not in target_dict:
                 target_dict['hidden_platforms'] = v
-        elif k not in target_dict:
+        else:
             target_dict[k] = v
 
 def backup_user_settings(install_dir: str):
