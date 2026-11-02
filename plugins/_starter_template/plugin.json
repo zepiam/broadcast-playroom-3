@@ -1,0 +1,13 @@
+{
+  "id": "starter-template",
+  "name": "ปลั๊กอินตัวอย่างเริ่มต้น (Starter Template)",
+  "version": "1.0.0",
+  "author": "Broadcast Playroom Community",
+  "description": "โครงสร้างตัวอย่างสำหรับการพัฒนา Plugin เสริมของ Broadcast Playroom 3",
+  "enabled": true,
+  "entrypoint": "main.py",
+  "settings_ui": "settings.html",
+  "permissions": [
+    "chat_read"
+  ]
+}

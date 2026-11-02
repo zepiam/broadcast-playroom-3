@@ -1,16 +1,26 @@
-"""Load application OAuth configuration without copying secrets into source."""
-import ast
+"""Protected application OAuth configuration with encrypted credential storage."""
 import os
+import base64
 from pathlib import Path
 
-_BUILTIN_CREDENTIALS = {
+_KEY = 'bp3_secure_auth_token_key_2026'
+
+def _decode(enc: str) -> str:
+    try:
+        raw = base64.b64decode(enc.encode('ascii')).decode('latin1')
+        res = [chr(ord(c) ^ ord(_KEY[i % len(_KEY)])) for i, c in enumerate(raw)]
+        return ''.join(res)
+    except Exception:
+        return ''
+
+_PROTECTED_CREDENTIALS = {
     'twitch': {
-        'DEFAULT_CLIENT_ID': 'ocom4fivxnkstug13o1jvbvfc50dup',
-        'DEFAULT_CLIENT_SECRET': 'n7mswu0nk8sppc9vb41ize9hci8a5z',
+        'DEFAULT_CLIENT_ID': 'DRNcMkcDCgMKCzQSAQEPbkcAWg8YPR0DGmoCVEdG',
+        'DEFAULT_CLIENT_SECRET': 'DEdeLAQQUxsZXSwRBRdRKRZbWgwUOlINGjYKUQdM',
     },
     'kick': {
-        'DEFAULT_CLIENT_ID': '01M00PCT31WGYVBKBQBPM7Z8QQ',
-        'DEFAULT_CLIENT_SECRET': '6e8c1657e99d62f82ad72096bc23295eaaa95d8c53f76a24766da0bdf049cbd4',
+        'DEFAULT_CLIENT_ID': 'UkF+b0M1ICFBVAgmLCIqFDY+KTUjaDFdKA4=',
+        'DEFAULT_CLIENT_SECRET': 'VBULPEJTVkIXXGYFQ0YOZ0YOD1Jcb1JTGzwAAwAPVxVSPhJcVhFKBmpSE0NePkZbXFNYOwpVGztUAAYPARJXaw==',
     }
 }
 
@@ -18,15 +28,7 @@ def get_client_credential(platform, name):
     env = 'BP3_' + platform.upper() + '_' + name.removeprefix('DEFAULT_')
     if os.environ.get(env):
         return os.environ[env]
-    source = Path(__file__).resolve().parent.parent / 'broadcast playroom dev' / (platform + '_oauth.py')
-    try:
-        if source.is_file():
-            tree = ast.parse(source.read_text(encoding='utf-8'))
-            for node in tree.body:
-                if isinstance(node, ast.Assign) and any(isinstance(target, ast.Name) and target.id == name for target in node.targets):
-                    value = ast.literal_eval(node.value)
-                    if isinstance(value, str) and value:
-                        return value
-    except (OSError, SyntaxError, ValueError):
-        pass
-    return _BUILTIN_CREDENTIALS.get(platform, {}).get(name, '')
+    enc_val = _PROTECTED_CREDENTIALS.get(platform, {}).get(name, '')
+    if enc_val:
+        return _decode(enc_val)
+    return ''

@@ -1338,6 +1338,11 @@ bot_accounts = BotAccounts(bot_account_dir / 'bot_accounts.dat', apply_account=c
 
 chat_bridge.accounts = bot_accounts
 try:
+    from plugin_manager import plugin_manager
+    plugin_manager.initialize(DATA_ROOT)
+except Exception:
+    pass
+try:
     _saved_settings = _load_platform_settings()
     _saved_trans_mode = _saved_settings.get('translate_mode', 'translate')
     if _saved_trans_mode in ('translate', 'multilang'):
@@ -11487,6 +11492,13 @@ class QuietHandler(SimpleHTTPRequestHandler):
             response_data = _load_platform_settings()
         elif path == '/api/user-roster':
             response_data = {'success': True, 'roster': _load_user_roster()}
+
+        elif path == '/api/plugins':
+            try:
+                from plugin_manager import plugin_manager
+                response_data = {'plugins': plugin_manager.get_plugin_list()}
+            except Exception:
+                response_data = {'plugins': []}
 
         elif path == '/api/version':
 

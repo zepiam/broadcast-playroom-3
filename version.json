@@ -1,43 +1,43 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.33",
-  "latest_version": "3.33",
+  "version": "3.34",
+  "latest_version": "3.34",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.33\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.33:\n- **จดจำการตั้งค่าโหมดแปลภาษา (Translate Mode Persistence)**:\n  - แก้ไขปุ่ม แปลภาษา / อ่านทุกภาษา ให้บันทึกการตั้งค่าลงเครื่องอย่างถาวร ปิดเปิดโปรแกรมใหม่ไม่คืนค่า\n  - ซิงค์สถานะระหว่างหน้าเว็บหลักและระบบเซิร์ฟเวอร์แบบ Real-time ทันทีที่กดเปลี่ยนโหมด\n  - กู้คืนสถานะโหมดล่าสุดทันทีที่เปิดโปรแกรมโดยไม่มีความหน่วง (Zero Delay UI Restore)\n- **ฐานข้อมูลคนดูถาวร (User Manager Local Disk Persistence)**:\n  - เชื่อมต่อการบันทึกรายชื่อคนดูลงฮาร์ดดิสก์จริง (`data/user_roster.json`) ผ่านระบบ API `/api/user-roster`\n  - ข้อมูลคนดู (ชื่อ, แพลตฟอร์ม, รูปโปรไฟล์, จำนวนข้อความ, ประวัติแชท, สถานะ VIP/บล็อก) จะคงอยู่อย่างถาวรแม้ปิดหรือรีสตาร์ตโปรแกรม\n  - รองรับการแสดงผลและนับจำนวนคนดูแบบเรียลไทม์ครบทุกแท็บ (ทั้งหมด, 🌟 ผู้สนับสนุน, 🛑 ถูกบล็อก, 🟢 ล่าสุด)\n  - เพิ่มระบบสำรองและกู้คืนอัตโนมัติใน `updater.py` ทำให้เวลาอัปเดตเวอร์ชันใหม่ในอนาคต ข้อมูลรายชื่อคนดูจะไม่สูญหาย\n  - วางระบบ Strict Isolation Gatekeeper บล็อกข้อความจากปุ่มทดสอบ, แชทจำลอง, และข้อความที่สตรีมเมอร์พิมพ์เอง ไม่ให้เข้าสู่ฐานข้อมูลคนดู บันทึกเฉพาะคนดูจริงจาก Live Stream เท่านั้น\n- **ปรับแต่งแถบเมนูด้านบน (Topbar Cleanup)**:\n  - นำตัวคั่น `|` ที่อยู่ขวามือถัดจากปุ่ม แปลภาษา, Overlay, Game Overlay ออกเพื่อความเรียบร้อยและสะอาดตา\n- **เพิ่มแถบลิงก์ทางลัดด้านล่างขวา (Status Footer Quick Links)**:\n  - เพิ่มลิงก์: `เว็บไซต์ | แจ้งบัค | สนับสนุนการพัฒนาโปรแกรม` พร้อมเส้นคั่นสีเทาบางๆ\n  - ลิงก์ `เว็บไซต์` เปิด `https://www.men9ch.com`\n  - ลิงก์ `แจ้งบัค` เปิด Discord Support `https://discord.gg/nj4KNs6b92`\n  - ลิงก์ `สนับสนุนการพัฒนาโปรแกรม` เปิดหน้าต่างสนับสนุนในโปรแกรม\n",
+  "changelog": "# Broadcast Playroom v3.34\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.34:\n- **ระบบสำรองและผสานข้อมูลแพลตฟอร์มแบบ Deep Merge (Zero Data Loss Protection)**:\n  - แก้ไขปัญหาข้อมูลชื่อช่อง, สถานะซ่อนแพลตฟอร์ม, และการเชื่อมต่ออัตโนมัติหายหลังอัปเดต โดยใช้ระบบ Deep Merge ใน `updater.py` และ `launch_dev.py`\n  - ผสานรวมข้อมูลคอนฟิกจากทุกจุด (`data/`, `full/data/`, `%LOCALAPPDATA%`, `settings_backup`) เข้าด้วยกันอย่างปลอดภัย\n  - ป้องกันการเขียนทับไฟล์คอนฟิกด้วยไฟล์ว่างหรือไฟล์ที่ยังไม่สมบูรณ์\n- **จดจำการตั้งค่าโหมดแปลภาษา (Translate Mode Persistence)**:\n  - บันทึกและจดจำสถานะปุ่ม `แปลภาษา` / `อ่านทุกภาษา` อย่างถาวรข้ามการปิดเปิดโปรแกรม\n  - ซิงค์ค่าตรงกับ backend `chat_bridge` ทันทีที่เปิดโปรแกรมโดยไม่มีความหน่วง\n- **ปรับปรุง FindUpdate.bat สำหรับ Windows**:\n  - แก้ไขข้อผิดพลาด Unicode/Multi-byte parsing error บน Windows cmd ให้ทำงานได้อย่างสมบูรณ์\n- **ระบบฐานข้อมูลคนดูจริง (User Manager Local Disk Persistence)**:\n  - บันทึกรายชื่อคนดูที่มาแชทจริงใน Live Stream ลงดิสก์ถาวร (`data/user_roster.json`)\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.34/patch-v3.34-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.34-lite.zip"
     ],
-    "sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
-    "size": 50031248
+    "sha256": "544b7cad0827f24c2c575ecc834ea7735a0bbdee025374b80c127b0c29b87d7d",
+    "size": 50032376
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.34/patch-v3.34-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.34-full.zip"
     ],
-    "sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
-    "size": 50031248
+    "sha256": "544b7cad0827f24c2c575ecc834ea7735a0bbdee025374b80c127b0c29b87d7d",
+    "size": 50032376
   },
   "packages": {
     "lite": {
-      "version": "3.33",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-lite.zip",
+      "version": "3.34",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.34/patch-v3.34-lite.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.34-lite.zip"
       ],
-      "patch_sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
-      "patch_size": 50031248
+      "patch_sha256": "544b7cad0827f24c2c575ecc834ea7735a0bbdee025374b80c127b0c29b87d7d",
+      "patch_size": 50032376
     },
     "full": {
-      "version": "3.33",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-full.zip",
+      "version": "3.34",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.34/patch-v3.34-full.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.34-full.zip"
       ],
-      "patch_sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
-      "patch_size": 50031248
+      "patch_sha256": "544b7cad0827f24c2c575ecc834ea7735a0bbdee025374b80c127b0c29b87d7d",
+      "patch_size": 50032376
     }
   }
 }

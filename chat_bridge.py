@@ -428,6 +428,11 @@ class ChatBridge:
             }
 
             self._messages.append(payload)
+            try:
+                from plugin_manager import plugin_manager
+                plugin_manager.emit_event('chat_message', payload)
+            except Exception:
+                pass
 
             if len(self._messages) > 1000:
 
