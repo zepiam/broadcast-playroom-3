@@ -9,16 +9,16 @@
     "mirrors": [
       "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-lite.zip"
     ],
-    "sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
-    "size": 50031418
+    "sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
+    "size": 50031248
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.33/patch-v3.33-full.zip",
     "mirrors": [
       "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-full.zip"
     ],
-    "sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
-    "size": 50031418
+    "sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
+    "size": 50031248
   },
   "packages": {
     "lite": {
@@ -27,8 +27,8 @@
       "patch_mirrors": [
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-lite.zip"
       ],
-      "patch_sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
-      "patch_size": 50031418
+      "patch_sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
+      "patch_size": 50031248
     },
     "full": {
       "version": "3.33",
@@ -36,8 +36,8 @@
       "patch_mirrors": [
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.33-full.zip"
       ],
-      "patch_sha256": "98ea9a94e0f28bac55a8f481de4ed4ebd195d8efd9845979b704eb1f1a8f144f",
-      "patch_size": 50031418
+      "patch_sha256": "ac4b5905ef9ab4ea36fb9f6a58fd60408a0904458038cd345d06b31349788880",
+      "patch_size": 50031248
     }
   }
 }

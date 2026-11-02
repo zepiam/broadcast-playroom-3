@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.33"
+CURRENT_VERSION = "3.34"
 
 REPO_OWNER = "zepiam"
 
@@ -630,8 +630,28 @@ def download_update_file(
     logger.error(f"Download update failed after all attempts: {last_error}")
     return False
 
+def _merge_platform_settings_dicts(target_dict: dict, source_dict: dict):
+    if not isinstance(source_dict, dict):
+        return
+    for k, v in source_dict.items():
+        if k.startswith('channel_'):
+            if v and str(v).strip():
+                if k not in target_dict or not target_dict[k]:
+                    target_dict[k] = str(v).strip()
+        elif k.startswith('auto_connect_'):
+            if k not in target_dict:
+                target_dict[k] = bool(v)
+        elif k == 'hidden_platforms':
+            if isinstance(v, list) and v:
+                if 'hidden_platforms' not in target_dict or not target_dict['hidden_platforms']:
+                    target_dict['hidden_platforms'] = v
+            elif 'hidden_platforms' not in target_dict:
+                target_dict['hidden_platforms'] = v
+        elif k not in target_dict:
+            target_dict[k] = v
+
 def backup_user_settings(install_dir: str):
-    """สำรองข้อมูลการตั้งค่าและช่องทางสตรีมของผู้ใช้ทั้งหมดก่อนลงอัปเดตใหม่"""
+    """สำรองข้อมูลการตั้งค่าและช่องทางสตรีมของผู้ใช้ทั้งหมดก่อนลงอัปเดตใหม่ โดยใช้ Deep Merge เพื่อป้องกันข้อมูลสูญหาย 100%"""
     import shutil
     try:
         lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
@@ -657,6 +677,29 @@ def backup_user_settings(install_dir: str):
         ]
         
         for c_name in config_names:
+            if c_name == 'platform_settings.json':
+                merged_settings = {}
+                found_any = False
+                for s_dir in search_dirs:
+                    src_file = s_dir / c_name
+                    if src_file.is_file() and src_file.stat().st_size > 0:
+                        try:
+                            with open(src_file, 'r', encoding='utf-8') as sf:
+                                s_data = json.load(sf)
+                            if isinstance(s_data, dict):
+                                _merge_platform_settings_dicts(merged_settings, s_data)
+                                found_any = True
+                        except Exception:
+                            pass
+                if found_any and merged_settings:
+                    for b_dir in backup_dirs:
+                        try:
+                            with open(b_dir / c_name, 'w', encoding='utf-8') as bf:
+                                json.dump(merged_settings, bf, ensure_ascii=False, indent=2)
+                        except Exception:
+                            pass
+                continue
+
             best_src = None
             best_mtime = -1
             for s_dir in search_dirs:
@@ -680,7 +723,7 @@ def backup_user_settings(install_dir: str):
         logger.warning(f"Failed to backup user settings: {e}")
 
 def restore_user_settings(install_dir: str):
-    """กู้คืนข้อมูลการตั้งค่าของผู้ใช้หลังลงแพตช์เสร็จสิ้น เพื่อให้ข้อมูลช่องและแพลตฟอร์มไม่หายเด็ดขาด"""
+    """กู้คืนไฟล์คอนฟิกกลับมายังไดเรกทอรี data โดยใช้ Deep Merge เพื่อผสานข้อมูลเดิมและใหม่เข้าด้วยกัน ไม่มีการเขียนทับจนข้อมูลหาย"""
     import shutil
     try:
         lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
@@ -699,6 +742,37 @@ def restore_user_settings(install_dir: str):
             'replace_words.json', 'rvc_settings.json', 'user_roster.json'
         ]
         for c_name in config_names:
+            if c_name == 'platform_settings.json':
+                merged_settings = {}
+                for b_dir in backup_dirs:
+                    b_file = b_dir / c_name
+                    if b_file.is_file() and b_file.stat().st_size > 0:
+                        try:
+                            with open(b_file, 'r', encoding='utf-8') as bf:
+                                b_data = json.load(bf)
+                            if isinstance(b_data, dict):
+                                _merge_platform_settings_dicts(merged_settings, b_data)
+                        except Exception:
+                            pass
+                if merged_settings:
+                    for t_dir in target_dirs:
+                        if t_dir.exists():
+                            try:
+                                cur_data = {}
+                                t_file = t_dir / c_name
+                                if t_file.is_file() and t_file.stat().st_size > 0:
+                                    try:
+                                        with open(t_file, 'r', encoding='utf-8') as tf:
+                                            cur_data = json.load(tf)
+                                    except Exception:
+                                        cur_data = {}
+                                _merge_platform_settings_dicts(cur_data, merged_settings)
+                                with open(t_file, 'w', encoding='utf-8') as tf:
+                                    json.dump(cur_data, tf, ensure_ascii=False, indent=2)
+                            except Exception:
+                                pass
+                continue
+
             found_src = None
             best_mtime = -1
             for b_dir in backup_dirs:

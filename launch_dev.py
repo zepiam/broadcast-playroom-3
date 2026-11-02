@@ -1117,6 +1117,8 @@ def _load_platform_settings():
                         if isinstance(v, list) and v:
                             if 'hidden_platforms' not in merged or not merged['hidden_platforms']:
                                 merged['hidden_platforms'] = v
+                        elif 'hidden_platforms' not in merged:
+                            merged['hidden_platforms'] = v
                     elif k not in merged:
                         merged[k] = v
         except Exception:
