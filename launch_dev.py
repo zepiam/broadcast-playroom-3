@@ -1224,6 +1224,11 @@ def _load_user_roster():
 def _save_user_roster(roster_data):
     if not isinstance(roster_data, list):
         return
+    # Guard against accidental wipe: never overwrite existing non-empty roster with an empty list
+    if len(roster_data) == 0:
+        existing = _load_user_roster()
+        if len(existing) > 0:
+            return
     for pt in _get_user_roster_paths():
         try:
             pt.parent.mkdir(parents=True, exist_ok=True)
@@ -2206,6 +2211,8 @@ def handle_tool_popout(tool_name, main_url, section=None):
     if section and name == 'settings':
         url = url + f"&section={section}"
 
+    storage_path = os.path.join(str(DATA_ROOT), 'webview_data')
+    os.makedirs(storage_path, exist_ok=True)
     api = PopoutJsApi(name)
     tw = webview.create_window(
         title=title,
@@ -2213,6 +2220,7 @@ def handle_tool_popout(tool_name, main_url, section=None):
         width=sz[0],
         height=sz[1],
         min_size=(480, 360),
+        storage_path=storage_path,
         js_api=api
     )
     api.win_ref = tw

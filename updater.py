@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.39"
+CURRENT_VERSION = "3.40"
 
 REPO_OWNER = "zepiam"
 
@@ -810,6 +810,17 @@ def restore_user_settings(install_dir: str):
                                         t_data.update(s_data)
                                         with open(target_file, 'w', encoding='utf-8') as tf:
                                             json.dump(t_data, tf, ensure_ascii=False, indent=2)
+                                        continue
+                                    elif isinstance(t_data, list) and isinstance(s_data, list):
+                                        merged_map = {}
+                                        for item in t_data + s_data:
+                                            if isinstance(item, dict) and item.get('username'):
+                                                k = f"{item.get('platform', 'twitch')}:{item.get('username')}".lower()
+                                                if k not in merged_map or (item.get('lastSeen', 0) >= merged_map[k].get('lastSeen', 0)):
+                                                    merged_map[k] = item
+                                        merged_list = list(merged_map.values())
+                                        with open(target_file, 'w', encoding='utf-8') as tf:
+                                            json.dump(merged_list, tf, ensure_ascii=False, indent=2)
                                         continue
                                 except Exception:
                                     pass

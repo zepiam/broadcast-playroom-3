@@ -58,8 +58,31 @@ function getActiveManagerRoots() {
  return roots;
 }
 
+if (typeof BroadcastChannel !== 'undefined' && !window._userRosterChannel) {
+ window._userRosterChannel = new BroadcastChannel('bp3_user_roster_channel');
+ window._userRosterChannel.onmessage = (e) => {
+  if (e?.data?.action === 'roster_updated' && Array.isArray(e.data.roster) && e.data.roster.length > 0) {
+   let changed = false;
+   for (const person of e.data.roster) {
+    if (!person || !person.username) continue;
+    const key = (person.platform || 'Twitch').toLowerCase() + ':' + person.username.toLowerCase();
+    const existing = people.get(key);
+    if (!existing || (person.lastSeen || 0) >= (existing.lastSeen || 0)) {
+     people.set(key, person);
+     changed = true;
+    }
+   }
+   if (changed) {
+    try{localStorage.setItem('bp3_user_roster',JSON.stringify([...people.values()]));}catch(_){}
+    render();
+   }
+  }
+ };
+}
+
 const save=()=>{
  const rosterList = [...people.values()];
+ if (!rosterList.length) return;
  try{localStorage.setItem('bp3_user_roster',JSON.stringify(rosterList));}catch{
   try{localStorage.setItem('bp3_user_roster',JSON.stringify(rosterList.map(person=>({...person,history:(person.history || []).slice(-1)}))));}catch{}
  }
@@ -69,6 +92,11 @@ const save=()=>{
    headers:{'Content-Type':'application/json'},
    body:JSON.stringify({roster:rosterList})
   }).catch(()=>{});
+ }
+ if (window._userRosterChannel) {
+  try {
+   window._userRosterChannel.postMessage({ action: 'roster_updated', roster: rosterList });
+  } catch(_) {}
  }
 };
 
@@ -353,6 +381,7 @@ window.BP3FilterUserCategory = value => { category = value; render(); };
 window.filterUserCategory = window.BP3FilterUserCategory;
 
 window.BP3RenderUserRoster = render;
+window.BP3SyncRosterFromBackend = syncRosterFromBackend;
 
 window.blockUserFromProfile=function(){
  const name=window._activeUserRecord?.username || (typeof _activeUserRecord !== 'undefined' ? _activeUserRecord?.username : null);
