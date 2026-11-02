@@ -1095,7 +1095,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.36</span>
+      <span class="desktop-titlebar-tag">v3.37</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -14082,21 +14082,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
             <div class="voice-setting-card-title">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span>📏 จำกัดความยาวข้อความที่อ่าน</span>
-                <span id="secTtsLimitBadge" style="font-size: 12px; color: #38bdf8; font-weight: 700;">ไม่กำหนด</span>
+                <span id="secTtsLimitBadge" style="font-size: 12px; color: #38bdf8; font-weight: 700;">ไม่จำกัด</span>
               </div>
             </div>
 
             <div class="voice-slider-group" style="margin-top: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <span style="font-size: 12.5px; font-weight: 600; color: #e2e8f0;">ความยาวสูงสุดที่ให้อ่านเสียง:</span>
-                <span id="secTtsLimitStepText" style="color: #38bdf8; font-weight: 700; font-size: 13px;">ไม่กำหนด (อ่านทุกข้อความ)</span>
+                <span id="secTtsLimitStepText" style="color: #38bdf8; font-weight: 700; font-size: 13px;">ไม่จำกัด (อ่านทุกข้อความ)</span>
               </div>
               <input type="range" class="plat-vol-slider" id="secSliderTtsMaxChars" min="1" max="4" step="1" value="4" oninput="syncTtsMaxChars(this.value)" style="width: 100%;">
               <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 4px; padding: 0 2px;">
-                <span>50 ตัวอักษร</span>
                 <span>100 ตัวอักษร</span>
-                <span>150 ตัวอักษร</span>
-                <span>ไม่กำหนด</span>
+                <span>200 ตัวอักษร</span>
+                <span>300 ตัวอักษร</span>
+                <span>ไม่จำกัด</span>
               </div>
               <div style="font-size: 11.5px; color: #fbbf24; margin-top: 8px; line-height: 1.4;">
                 💡 คำแนะนำ: หากให้ระบบอ่านข้อความที่ยาวมากๆ จะทำให้มีดีเลย์ในการอ่านนานขึ้น
@@ -22820,21 +22820,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
             <div class="voice-setting-card-title">
               <div style="display: flex; align-items: center; gap: 8px;">
                 <span>📏 จำกัดความยาวข้อความที่อ่าน</span>
-                <span id="winTtsLimitBadge" style="font-size: 12px; color: #38bdf8; font-weight: 700;">ไม่กำหนด</span>
+                <span id="winTtsLimitBadge" style="font-size: 12px; color: #38bdf8; font-weight: 700;">ไม่จำกัด</span>
               </div>
             </div>
 
             <div class="voice-slider-group" style="margin-top: 6px;">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <span style="font-size: 12.5px; font-weight: 600; color: #e2e8f0;">ความยาวสูงสุดที่ให้อ่านเสียง:</span>
-                <span id="winTtsLimitStepText" style="color: #38bdf8; font-weight: 700; font-size: 13px;">ไม่กำหนด (อ่านทุกข้อความ)</span>
+                <span id="winTtsLimitStepText" style="color: #38bdf8; font-weight: 700; font-size: 13px;">ไม่จำกัด (อ่านทุกข้อความ)</span>
               </div>
               <input type="range" class="plat-vol-slider" id="winSliderTtsMaxChars" min="1" max="4" step="1" value="4" oninput="syncTtsMaxChars(this.value)" style="width: 100%;">
               <div style="display: flex; justify-content: space-between; font-size: 11px; color: #94a3b8; margin-top: 4px; padding: 0 2px;">
-                <span>50 ตัวอักษร</span>
                 <span>100 ตัวอักษร</span>
-                <span>150 ตัวอักษร</span>
-                <span>ไม่กำหนด</span>
+                <span>200 ตัวอักษร</span>
+                <span>300 ตัวอักษร</span>
+                <span>ไม่จำกัด</span>
               </div>
               <div style="font-size: 11.5px; color: #fbbf24; margin-top: 8px; line-height: 1.4;">
                 💡 คำแนะนำ: หากให้ระบบอ่านข้อความที่ยาวมากๆ จะทำให้มีดีเลย์ในการอ่านนานขึ้น
@@ -41983,10 +41983,10 @@ try {
 
     function getTtsMaxCharsLimit() {
       const step = Number(window._ttsMaxCharsStep ?? localStorage.getItem('bp3_tts_max_chars_step') ?? 4);
-      if (step === 1) return 50;
-      if (step === 2) return 100;
-      if (step === 3) return 150;
-      return Infinity; // step 4: ไม่กำหนด
+      if (step === 1) return 100;
+      if (step === 2) return 200;
+      if (step === 3) return 300;
+      return Infinity; // step 4: ไม่จำกัด
     }
     window.getTtsMaxCharsLimit = getTtsMaxCharsLimit;
 
@@ -41995,11 +41995,11 @@ try {
       window._ttsMaxCharsStep = step;
       try { localStorage.setItem('bp3_tts_max_chars_step', step); } catch(_) {}
 
-      let label = 'ไม่กำหนด';
-      let desc = 'ไม่กำหนด (อ่านทุกข้อความ)';
-      if (step === 1) { label = '50 ตัวอักษร'; desc = 'สูงสุด 50 ตัวอักษร'; }
-      else if (step === 2) { label = '100 ตัวอักษร'; desc = 'สูงสุด 100 ตัวอักษร'; }
-      else if (step === 3) { label = '150 ตัวอักษร'; desc = 'สูงสุด 150 ตัวอักษร'; }
+      let label = 'ไม่จำกัด';
+      let desc = 'ไม่จำกัด (อ่านทุกข้อความ)';
+      if (step === 1) { label = '100 ตัวอักษร'; desc = 'สูงสุด 100 ตัวอักษร'; }
+      else if (step === 2) { label = '200 ตัวอักษร'; desc = 'สูงสุด 200 ตัวอักษร'; }
+      else if (step === 3) { label = '300 ตัวอักษร'; desc = 'สูงสุด 300 ตัวอักษร'; }
 
       document.querySelectorAll('#secSliderTtsMaxChars, #winSliderTtsMaxChars').forEach(el => el.value = step);
       document.querySelectorAll('#secTtsLimitBadge, #winTtsLimitBadge').forEach(el => el.textContent = label);

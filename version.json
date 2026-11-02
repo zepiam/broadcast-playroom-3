@@ -1,43 +1,43 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.36",
-  "latest_version": "3.36",
+  "version": "3.37",
+  "latest_version": "3.37",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.36\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.36:\n- **ระบบจำกัดความยาวข้อความที่อ่านเสียง (TTS Character Length Limit)**:\n  - เพิ่มแถบสไลเดอร์ 4 ระดับในหน้าตั้งค่าเสียงอ่าน (Voice Settings):\n    - ระดับ 1: `50 ตัวอักษร` (ลดดีเลย์ เหมาะสำหรับสตรีมที่ต้องการความไวสูงสุด)\n    - ระดับ 2: `100 ตัวอักษร`\n    - ระดับ 3: `150 ตัวอักษร`\n    - ระดับ 4: `ไม่กำหนด` (ค่าเริ่มต้น - อ่านทุกข้อความ)\n  - มีคำแนะนำใต้สไลเดอร์: *\"💡 คำแนะนำ: หากให้ระบบอ่านข้อความที่ยาวมากๆ จะทำให้มีดีเลย์ในการอ่านนานขึ้น\"*\n  - หากข้อความยาวเกินที่กำหนด ระบบจะข้ามการสังเคราะห์เสียงทันที (0ms delay) โดยข้อความยังคงแสดงในหน้าแชทตามปกติ พร้อมป้ายกำกับ `ข้อความยาวเกิน · ไม่อ่านเสียง`\n- **ระบบเสียงแจ้งเตือนข้อความยาวเกินกำหนด (Over-limit Alert SFX)**:\n  - สวิตช์เปิด/ปิดเสียงเตือนเพื่อแจ้งสตรีมเมอร์เมื่อมีข้อความที่ถูกข้ามเข้ามา\n  - สไลเดอร์ปรับระดับความดังเสียงเตือน (Volume 0% - 100%)\n  - รองรับการอัปโหลดไฟล์เสียงเตือนกำหนดเอง (.mp3, .wav) พร้อมปุ่มกดทดลองฟังเสียง (▶️)\n  - ปุ่มรีเซ็ต / คืนค่าเสียงเตือนเริ่มต้นของระบบ (`default_skip_notify.wav`)\n- **การันตีความคงทนของการตั้งค่า (Persistent Configuration Guarantee)**:\n  - บันทึกการตั้งค่าลง `platform_settings.json` และผสานเข้ากับระบบ Deep Merge อัตโนมัติ\n  - ค่าที่ตั้งไว้จะไม่หายหลังปิดโปรแกรม รีสตาร์ท หรือกดอัปเดตเวอร์ชันใหม่ 100%\n",
+  "changelog": "# Broadcast Playroom v3.37\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.37:\n- **ปรับสเกลตัวเลขอ่านเสียง TTS ให้เข้ากับภาษาไทย (Optimized Thai TTS Character Limits)**:\n  - ปรับระดับสไลเดอร์ 4 สเต็ปใหม่เพื่อรองรับการนับสระบน/ล่างและวรรณยุกต์ของภาษาไทยได้อย่างเป็นธรรมชาติ:\n    - สเต็ป 1: `100 ตัวอักษร` (เหมาะสำหรับทักทาย ถาม-ตอบสั้นๆ รวดเร็วทันใจ)\n    - สเต็ป 2: `200 ตัวอักษร` (ความยาวมาตรฐาน เล่าเรื่องหรือคอมเมนต์ทั่วไปได้ครบถ้วน)\n    - สเต็ป 3: `300 ตัวอักษร` (สำหรับข้อความขนาดยาว หรือพิมพ์อธิบายยาวๆ หลายบรรทัด)\n    - สเต็ป 4: `ไม่จำกัด` (ค่าเริ่มต้น - อ่านทุกข้อความ)\n  - อัปเดตคำกำกับแสดงผลและป้ายสถานะเป็น *\"ไม่จำกัด\"* แทน *\"ไม่กำหนด\"* เพื่อความชัดเจนยิ่งขึ้น\n- **ระบบเสียงแจ้งเตือนข้อความยาวเกินกำหนด (Over-limit Alert SFX)**:\n  - สวิตช์เปิด/ปิดเสียงเตือน\n  - สไลเดอร์ปรับความดังเสียงเตือน (Volume 0% - 100%)\n  - รองรับการอัปโหลดไฟล์เสียงเตือนกำหนดเอง (.mp3, .wav) พร้อมปุ่มทดลองฟังเสียง (▶️)\n  - ปุ่มคืนค่าเป็นเสียงเริ่มต้น (`default_skip_notify.wav`)\n- **การันตีความคงทนของการตั้งค่า (Persistent Settings Guarantee)**:\n  - บันทึกการตั้งค่าลง `platform_settings.json` และผสานเข้ากับระบบ Deep Merge อัตโนมัติ ค่าไม่หายหลังปิดโปรแกรมหรืออัปเดต 100%\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.36/patch-v3.36-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.37/patch-v3.37-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.36-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.37-lite.zip"
     ],
-    "sha256": "54f2dde1bd6dd2f117929c31f9ba07001d98b238e4a0576ecdd71cb71ced07a6",
-    "size": 50054542
+    "sha256": "548a4cd4d9ceb4a1e5e4fc665c536907abeaca6903564bb918286bb574444b2d",
+    "size": 50054554
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.36/patch-v3.36-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.37/patch-v3.37-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.36-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.37-full.zip"
     ],
-    "sha256": "54f2dde1bd6dd2f117929c31f9ba07001d98b238e4a0576ecdd71cb71ced07a6",
-    "size": 50054542
+    "sha256": "548a4cd4d9ceb4a1e5e4fc665c536907abeaca6903564bb918286bb574444b2d",
+    "size": 50054554
   },
   "packages": {
     "lite": {
-      "version": "3.36",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.36/patch-v3.36-lite.zip",
+      "version": "3.37",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.37/patch-v3.37-lite.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.36-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.37-lite.zip"
       ],
-      "patch_sha256": "54f2dde1bd6dd2f117929c31f9ba07001d98b238e4a0576ecdd71cb71ced07a6",
-      "patch_size": 50054542
+      "patch_sha256": "548a4cd4d9ceb4a1e5e4fc665c536907abeaca6903564bb918286bb574444b2d",
+      "patch_size": 50054554
     },
     "full": {
-      "version": "3.36",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.36/patch-v3.36-full.zip",
+      "version": "3.37",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.37/patch-v3.37-full.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.36-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.37-full.zip"
       ],
-      "patch_sha256": "54f2dde1bd6dd2f117929c31f9ba07001d98b238e4a0576ecdd71cb71ced07a6",
-      "patch_size": 50054542
+      "patch_sha256": "548a4cd4d9ceb4a1e5e4fc665c536907abeaca6903564bb918286bb574444b2d",
+      "patch_size": 50054554
     }
   }
 }
