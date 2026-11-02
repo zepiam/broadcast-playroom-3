@@ -182,15 +182,11 @@ class TTSService:
 
     def _start_warmup_worker(self):
         def _warmup_loop():
-            import time, socket, ssl
+            import time, socket
             while True:
-                time.sleep(180)  # Pre-warm DNS & TLS session every 3 minutes so Edge-TTS never goes cold
+                time.sleep(300)  # Keep DNS pre-resolved every 5 minutes safely without raw TLS disconnects
                 try:
                     socket.getaddrinfo('speech.platform.bing.com', 443, socket.AF_INET)
-                    raw_s = socket.create_connection(('speech.platform.bing.com', 443), timeout=3.0)
-                    ctx = ssl.create_default_context()
-                    with ctx.wrap_socket(raw_s, server_hostname='speech.platform.bing.com') as s:
-                        pass
                 except Exception:
                     pass
         import threading
