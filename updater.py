@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.38"
+CURRENT_VERSION = "3.39"
 
 REPO_OWNER = "zepiam"
 
@@ -150,11 +150,21 @@ def get_current_version() -> str:
 
             pass
 
-    if highest_ver:
+    # Self-heal: If CURRENT_VERSION in code is newer than stale version.json on disk, trust CURRENT_VERSION
+    if highest_ver is None or is_version_newer(CURRENT_VERSION, highest_ver):
+        highest_ver = CURRENT_VERSION
+        for path in candidates:
+            try:
+                if os.path.isfile(path):
+                    with open(path, "r", encoding="utf-8") as f:
+                        d = json.load(f)
+                    d["version"] = highest_ver
+                    with open(path, "w", encoding="utf-8") as f:
+                        json.dump(d, f, indent=2, ensure_ascii=False)
+            except Exception:
+                pass
 
-        return highest_ver
-
-    return CURRENT_VERSION
+    return highest_ver
 
 
 

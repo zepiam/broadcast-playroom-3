@@ -1,43 +1,43 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.38",
-  "latest_version": "3.38",
+  "version": "3.39",
+  "latest_version": "3.39",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.38\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.38:\n- **ปรับปรุงหน้าต่างโปรไฟล์คนดู (Spacious Viewer Profile Modal Layout)**:\n  - ขยายขนาดหน้าต่างเริ่มต้นเป็น 780x800 พิกเซล ทั้งโหมดหน้าต่างลอยและ Popout อิสระ\n  - จัดระเบียบส่วนข้อมูลด้านบน (Hero Card, แท็ก VIP, กล่องสถิติ 3 ช่อง และปุ่มลัด) ให้กะทัดรัด สบายตา\n  - เพิ่มพื้นที่สำหรับเนื้อหาด้านล่างอย่างเต็มที่:\n    - แสดง **กฎการบล็อก (Block Rules)** ครบทั้งบล็อกทั้งหมดและ 3 ตัวเลือกย่อย (ซ่อนจาก OBS, ปิดเสียง TTS, ปิดบอท Replie) ชัดเจนโดยไม่ต้องเลื่อนหน้าจอ\n    - เพิ่มความสูงของพื้นที่ **ประวัติแชท**, **ประวัติกิจกรรม**, และ **โน้ตความจำ** ให้อ่านและบันทึกข้อความได้สะดวก ทันทีที่เปิดโดยไม่ต้องคอยลากขยายหน้าต่างเอง\n    - ปุ่มควบคุมด้านล่าง (ตั้งค่าการบล็อก, Export ข้อความ, บันทึก) อยู่ในตำแหน่งที่กดง่าย ไม่ถูกบีบหรือบัง\n- **ปรับปรุงระบบ TTS Idle และข้อความแจ้งเตือนเสียงสำรอง (TTS Idle Resilience & Badge Clarification)**:\n  - แก้ไขปัญหา Microsoft Bing WAF ตัดการเชื่อมต่อหลังจากเปิดทิ้งไว้นาน โดยปรับระบบเชื่อมต่อเบื้องหลังให้ปลอดภัย ไม่ยิง TCP handshake ค้าง\n  - ปรับปรุงข้อความ Tooltip เมื่อเกิดกรณีสลับไปใช้เสียงสำรองเป็น *\"ใช้เสียงสำรองของระบบ (TTS ออนไลน์ไม่ตอบสนองชั่วคราว)\"*\n  - คงคุณภาพเสียงธรรมชาติ (Natural Pitch 1.0) สำหรับเสียงสำรอง ไม่บิดเบือนโทนเสียง\n",
+  "changelog": "# Broadcast Playroom v3.39\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.39:\n- **แก้ไขและเพิ่มระบบ Self-Healing Version Tag & Sync**:\n  - บรรจุ `version.json` และ `_internal/version.json` เข้าในไฟล์แพตช์อย่างเป็นทางการ เพื่อให้อัปเดตและแสดงเวอร์ชันถูกต้องทันทีหลังแตกไฟล์\n  - เพิ่มระบบตรวจจับและซิงค์เวอร์ชันอัตโนมัติ (Self-Healing) ใน `updater.py` หากพบว่าตัวเลขในไฟล์บนเครื่องเก่ากว่าโค้ดที่รันจริง ระบบจะอัปเดตไฟล์ให้ตรงกับเวอร์ชันปัจจุบันทันที ไม่ค้างอยู่ที่เลขเวอร์ชันเดิม\n- **ปรับปรุงหน้าต่างโปรไฟล์คนดู (Spacious Viewer Profile Modal Layout)**:\n  - ขยายขนาดหน้าต่างเริ่มต้นเป็น 780x800 พิกเซล ทั้งโหมดหน้าต่างลอยและ Popout อิสระ\n  - กฎการบล็อก (Block Rules) ทั้งหมดแสดงผลครบถ้วน ชัดเจน 100% ไม่ถูกตัดขอบหรือบีบแคบ\n  - พื้นที่ประวัติแชท ประวัติกิจกรรม และโน้ตความจำ กว้างขวางอ่านง่ายตั้งแต่แรกเปิด ไม่ต้องลากขยายหน้าต่างเอง\n- **ปรับปรุงระบบ TTS Idle และข้อความแจ้งเตือนเสียงสำรอง**:\n  - ลบ TCP socket probe เพื่อป้องกัน Microsoft Bing WAF ตัดการเชื่อมต่อเมื่อเปิดทิ้งไว้นาน\n  - อัปเดตข้อความ Tooltip เป็น *\"ใช้เสียงสำรองของระบบ (TTS ออนไลน์ไม่ตอบสนองชั่วคราว)\"*\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.38/patch-v3.38-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.39/patch-v3.39-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.38-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.39-lite.zip"
     ],
-    "sha256": "da037786366fb9abd37309de1c8788a7953f2c54fe13f29d34483d8ed9b58271",
-    "size": 50054532
+    "sha256": "3d826f3894f697c46ae60c69e3516215c52417c2af8fbfffd50e7219d01bce4b",
+    "size": 50057628
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.38/patch-v3.38-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.39/patch-v3.39-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.38-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.39-full.zip"
     ],
-    "sha256": "da037786366fb9abd37309de1c8788a7953f2c54fe13f29d34483d8ed9b58271",
-    "size": 50054532
+    "sha256": "3d826f3894f697c46ae60c69e3516215c52417c2af8fbfffd50e7219d01bce4b",
+    "size": 50057628
   },
   "packages": {
     "lite": {
-      "version": "3.38",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.38/patch-v3.38-lite.zip",
+      "version": "3.39",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.39/patch-v3.39-lite.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.38-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.39-lite.zip"
       ],
-      "patch_sha256": "da037786366fb9abd37309de1c8788a7953f2c54fe13f29d34483d8ed9b58271",
-      "patch_size": 50054532
+      "patch_sha256": "3d826f3894f697c46ae60c69e3516215c52417c2af8fbfffd50e7219d01bce4b",
+      "patch_size": 50057628
     },
     "full": {
-      "version": "3.38",
-      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.38/patch-v3.38-full.zip",
+      "version": "3.39",
+      "patch_url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.39/patch-v3.39-full.zip",
       "patch_mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.38-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.39-full.zip"
       ],
-      "patch_sha256": "da037786366fb9abd37309de1c8788a7953f2c54fe13f29d34483d8ed9b58271",
-      "patch_size": 50054532
+      "patch_sha256": "3d826f3894f697c46ae60c69e3516215c52417c2af8fbfffd50e7219d01bce4b",
+      "patch_size": 50057628
     }
   }
 }
