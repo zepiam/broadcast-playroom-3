@@ -809,7 +809,21 @@ GAME_CHAT_LOCK = threading.RLock()
 
 
 
-DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'dist'))
+def _resolve_dist_dir():
+    candidates = []
+    if getattr(sys, 'frozen', False):
+        exe_dir = os.path.dirname(sys.executable)
+        candidates.append(os.path.join(exe_dir, 'dist'))
+        candidates.append(os.path.join(exe_dir, '_internal', 'dist'))
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates.append(os.path.join(file_dir, 'dist'))
+    candidates.append(os.path.join(os.path.dirname(file_dir), 'dist'))
+    for c in candidates:
+        if os.path.isfile(os.path.join(c, 'index.html')):
+            return os.path.abspath(c)
+    return os.path.abspath(os.path.join(file_dir, 'dist'))
+
+DIST_DIR = _resolve_dist_dir()
 
 def ensure_frontend_integrity():
     """Runtime Self-Healing: If dist/index.html ever loses critical stylesheets or constraints,

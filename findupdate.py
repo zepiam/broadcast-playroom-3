@@ -113,7 +113,16 @@ def run_findupdate_cli(force_repair: bool = False) -> int:
 
         print("\n[2/3] ตรวจสอบความถูกต้องของไฟล์แพ็กเกจ: ผ่าน 100%")
 
-        print("\n[3/3] กำลังแตกไฟล์และซ่อมแซมระบบโปรแกรม...")
+        print("\n[3/3] กำลังปิดโปรแกรมและแตกไฟล์เพื่อซ่อมแซมระบบ...")
+        try:
+            import subprocess
+            subprocess.run(['taskkill', '/F', '/IM', 'BroadcastPlayroom3-Full.exe'], capture_output=True)
+            subprocess.run(['taskkill', '/F', '/IM', 'BroadcastPlayroom3-Lite.exe'], capture_output=True)
+            subprocess.run(['taskkill', '/F', '/IM', 'msedgewebview2.exe'], capture_output=True)
+            time.sleep(1.5)
+        except Exception:
+            pass
+
         try:
             applied = apply_update_patch(str(target_zip))
             if not applied:

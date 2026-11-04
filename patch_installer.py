@@ -183,7 +183,8 @@ def fetch_latest_metadata():
             with urllib.request.urlopen(req, timeout=8) as resp:
                 if resp.status == 200:
                     data = json.loads(resp.read().decode('utf-8'))
-                    if 'latest_version' in data:
+                    if 'latest_version' in data or 'version' in data:
+                        data.setdefault('latest_version', data.get('version'))
                         return data
         except Exception:
             pass
@@ -294,7 +295,7 @@ class PatchInstallerApp:
         self.root.after(0, self._render_initial_state)
 
     def _render_initial_state(self):
-        latest_ver = self.metadata.get('latest_version', '3.52') if self.metadata else '3.52'
+        latest_ver = self.metadata.get('latest_version', '3.53') if self.metadata else '3.53'
         self.ver_label.config(text=f"✨ เวอร์ชันล่าสุดจากเซิร์ฟเวอร์: v{latest_ver}", fg="#22c55e")
         
         notes = []
@@ -326,7 +327,7 @@ class PatchInstallerApp:
             return
 
         self.btn_action.config(state="normal", bg="#2563eb")
-        target_ver = self.metadata.get('latest_version', '3.52') if self.metadata else '3.52'
+        target_ver = self.metadata.get('latest_version', '3.53') if self.metadata else '3.53'
 
         for path_str, b_type in self.instances.items():
             cur_ver = get_folder_version(path_str)
@@ -406,7 +407,7 @@ class PatchInstallerApp:
 
             # Determine what packages we need
             needed_types = set(self.instances.values())
-            latest_ver = self.metadata.get('latest_version', '3.52') if self.metadata else '3.52'
+            latest_ver = self.metadata.get('latest_version', '3.53') if self.metadata else '3.53'
 
             downloaded_zips = {}
 
