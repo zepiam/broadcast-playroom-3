@@ -6909,13 +6909,31 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-        if path == '/api/apply-update':
+        if path in ['/api/apply-update', '/api/updater/apply']:
 
             try:
 
                 res = restart_and_apply_update()
 
                 self.send_json(res)
+
+            except Exception as e:
+
+                self.send_json({'success': False, 'message': str(e)}, 500)
+
+            return
+
+        if path in ['/api/updater/start-download']:
+
+            try:
+
+                up_info = check_for_update()
+
+                if up_info.get('has_update'):
+
+                    start_background_download(up_info)
+
+                self.send_json({'success': True, 'update_info': up_info})
 
             except Exception as e:
 
@@ -11613,7 +11631,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-        elif path == '/api/update-status':
+        elif path in ['/api/update-status', '/api/updater/status']:
 
             response_data = get_update_runtime_status()
 

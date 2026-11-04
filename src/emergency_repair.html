@@ -112,21 +112,22 @@
         if (checkRes && checkRes.has_update) {
           status.textContent = `พบเวอร์ชัน ${checkRes.latest_version} กำลังเริ่มดาวน์โหลดแพ็กเกจซ่อมแซม...`;
           bar.style.width = '50%';
-          await fetch('/api/updater/start-download', { method: 'POST' });
+          // Start update download via standard endpoint
+          await fetch('/api/check-update');
 
           const poll = setInterval(async () => {
             try {
-              const st = await fetch('/api/updater/status').then(r => r.json());
+              const st = await fetch('/api/update-status').then(r => r.json());
               if (st.progress != null) {
                 bar.style.width = Math.max(50, st.progress) + '%';
                 status.textContent = `กำลังดาวน์โหลด: ${st.progress}%`;
               }
-              if (st.ready_to_apply) {
+              if (st.ready_to_apply || st.state === 'ready') {
                 clearInterval(poll);
                 bar.style.width = '100%';
                 status.textContent = 'ดาวน์โหลดเสร็จสิ้น กำลังรีสตาร์ทโปรแกรมเพื่อติดตั้ง...';
                 setTimeout(() => {
-                  fetch('/api/updater/apply', { method: 'POST' });
+                  fetch('/api/apply-update', { method: 'POST' });
                 }, 1000);
               }
             } catch (_) {}

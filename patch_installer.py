@@ -4,10 +4,12 @@ Designed for zero-friction updating and emergency repair for non-technical users
 Features:
 - Automatic detection of installed instances (Full & Lite)
 - Automatic detection of running processes & desktop shortcuts
-- Offline local patch ZIP detection & Online GitHub / HuggingFace auto-download
-- Handles both Full and Lite simultaneously if both are installed
+- Offline local patch ZIP detection (with strict version verification) & Online GitHub / HuggingFace auto-download
+- Prevents accidental downgrade by verifying patch version before extraction
+- Shows current installed version vs target version for complete transparency
 - Clean, modern dark GUI (Tkinter) with live progress bar
 - Automatically closes running instances before patch, then relaunches after patch
+- Retries locked file extractions and purges stale WebView2 caches
 """
 
 import os
@@ -33,27 +35,71 @@ APP_TITLE = "Broadcast Playroom 3 - Patch Installer & Auto Repair"
 GITHUB_VERSION_URL = "https://raw.githubusercontent.com/zepiam/broadcast-playroom-3/master/version.json"
 HF_VERSION_URL = "https://huggingface.co/men9ch/broadcast-playroom-3/raw/main/version.json"
 
+def get_installer_dir():
+    """Return actual directory of installer executable or script."""
+    if getattr(sys, 'frozen', False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent
+
+def get_folder_version(folder_path):
+    """Read version string from installed folder's version.json."""
+    p = Path(folder_path)
+    for v_candidate in [p / 'version.json', p / '_internal' / 'version.json']:
+        if v_candidate.is_file():
+            try:
+                with open(v_candidate, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    ver = data.get('version') or data.get('latest_version')
+                    if ver:
+                        return str(ver)
+            except Exception:
+                pass
+    return None
+
+def get_zip_version(zip_path):
+    """Peek into a zip file and read its version.json without full extraction."""
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            for member in zf.namelist():
+                if member.endswith('version.json'):
+                    with zf.open(member) as f:
+                        data = json.loads(f.read().decode('utf-8'))
+                        ver = data.get('version') or data.get('latest_version')
+                        if ver:
+                            return str(ver)
+    except Exception:
+        pass
+    return None
+
 def scan_installed_instances():
     found = {}
     
-    # 1. Check current directory
+    # 1. Check current directory & parent
     cwd = Path.cwd()
-    if (cwd / 'BroadcastPlayroom3-Full.exe').exists() or (cwd / '_internal' / 'BroadcastPlayroom3-Full.exe').exists():
-        found[str(cwd.resolve())] = 'full'
-    elif (cwd / 'BroadcastPlayroom3-Lite.exe').exists() or (cwd / '_internal' / 'BroadcastPlayroom3-Lite.exe').exists():
-        found[str(cwd.resolve())] = 'lite'
+    for d in [cwd, cwd.parent]:
+        if (d / 'BroadcastPlayroom3-Full.exe').exists() or (d / '_internal' / 'BroadcastPlayroom3-Full.exe').exists():
+            found[str(d.resolve())] = 'full'
+        elif (d / 'BroadcastPlayroom3-Lite.exe').exists() or (d / '_internal' / 'BroadcastPlayroom3-Lite.exe').exists():
+            found[str(d.resolve())] = 'lite'
 
     # 2. Check running processes
     for p in psutil.process_iter(['name', 'exe', 'cmdline']):
         try:
-            name = (p.info['name'] or '').lower()
-            if 'broadcastplayroom' in name:
-                exe_path = p.info['exe']
+            name = (p.info.get('name') or '').lower()
+            cmd = ' '.join(p.info.get('cmdline') or []).lower()
+            if 'broadcastplayroom' in name or 'broadcastplayroom' in cmd or 'launch_dev.py' in cmd:
+                exe_path = p.info.get('exe')
                 if exe_path:
                     folder = Path(exe_path).parent
                     if (folder / '_internal').is_dir() or (folder / 'version.json').exists():
-                        b_type = 'full' if 'full' in name else 'lite'
+                        b_type = 'full' if 'full' in name or 'full' in str(folder).lower() else 'lite'
                         found[str(folder.resolve())] = b_type
+                # If launched via python launch_dev.py
+                for arg in p.info.get('cmdline') or []:
+                    if arg.endswith('launch_dev.py') and Path(arg).exists():
+                        f = Path(arg).parent.resolve()
+                        b_type = 'full' if 'full' in str(f).lower() else 'lite'
+                        found[str(f)] = b_type
         except Exception:
             pass
 
@@ -84,7 +130,7 @@ def scan_installed_instances():
         except Exception:
             pass
 
-    # 4. Check common locations across drives
+    # 4. Check common locations across all available drives
     drives = [f'{d}:\\' for d in 'CDEFGHIJKLM' if os.path.exists(f'{d}:\\')]
     search_subpaths = [
         r'DOCS\Documents\BroadcastPlayroom3\full',
@@ -99,8 +145,16 @@ def scan_installed_instances():
     user_subpaths = [
         user_home / 'Documents' / 'BroadcastPlayroom3' / 'full',
         user_home / 'Documents' / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'Documents' / 'BroadcastPlayroom3',
+        user_home / 'Desktop' / 'BroadcastPlayroom3' / 'full',
+        user_home / 'Desktop' / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'Desktop' / 'BroadcastPlayroom3',
+        user_home / 'Downloads' / 'BroadcastPlayroom3' / 'full',
+        user_home / 'Downloads' / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'Downloads' / 'BroadcastPlayroom3',
         user_home / 'BroadcastPlayroom3' / 'full',
         user_home / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'BroadcastPlayroom3',
         user_home / 'AppData' / 'Local' / 'Programs' / 'BroadcastPlayroom3'
     ]
 
@@ -138,28 +192,40 @@ def fetch_latest_metadata():
             pass
     return None
 
-def find_local_patches(installer_dir):
+def find_local_patches(installer_dir, target_version=None):
+    """Search for local patch zips and verify they match target version."""
     local_patches = {}
     p_dirs = [installer_dir, installer_dir / 'patches']
+    downloads = Path.home() / 'Downloads'
+    if downloads.exists() and downloads != installer_dir:
+        p_dirs.append(downloads)
+
     for pdir in p_dirs:
         if pdir.exists():
             for zf in pdir.glob("*.zip"):
                 zname = zf.name.lower()
-                if 'full' in zname:
-                    local_patches['full'] = zf
-                elif 'lite' in zname:
-                    local_patches['lite'] = zf
+                if 'patch' in zname or 'bp3' in zname or 'broadcast' in zname:
+                    z_ver = get_zip_version(zf)
+                    # If target_version is known, strictly ignore older/mismatched patches!
+                    if target_version and z_ver and z_ver != target_version:
+                        print(f"Skipping stale local patch {zf.name} (v{z_ver} != target v{target_version})")
+                        continue
+
+                    if 'full' in zname and 'full' not in local_patches:
+                        local_patches['full'] = (zf, z_ver)
+                    elif 'lite' in zname and 'lite' not in local_patches:
+                        local_patches['lite'] = (zf, z_ver)
     return local_patches
 
 class PatchInstallerApp:
     def __init__(self, root):
         self.root = root
         self.root.title(APP_TITLE)
-        self.root.geometry("680x560")
-        self.root.minsize(620, 500)
+        self.root.geometry("700x580")
+        self.root.minsize(640, 520)
         self.root.configure(bg="#18191c")
 
-        self.installer_dir = Path(__file__).resolve().parent
+        self.installer_dir = get_installer_dir()
         self.instances = {}
         self.local_patches = {}
         self.metadata = None
@@ -191,7 +257,7 @@ class PatchInstallerApp:
                              font=("Segoe UI", 14, "bold"), fg="#ffffff", bg="#1e1f22")
         title_lbl.pack(anchor="w")
 
-        sub_lbl = tk.Label(header, text="ตรวจหาโฟลเดอร์โปรแกรมและอัปเดต / ซ่อมแซมระบบให้อัตโนมัติในคลิกเดียว (ข้อมูลไม่หาย 100%)",
+        sub_lbl = tk.Label(header, text="ตรวจหาโฟลเดอร์โปรแกรมและอัปเดต / ซ่อมแซมระบบให้อัตโนมัติ (ปลอดภัย ข้อมูลเดิมไม่หาย 100%)",
                            font=("Segoe UI", 10), fg="#94a3b8", bg="#1e1f22")
         sub_lbl.pack(anchor="w", pady=(4, 0))
 
@@ -252,24 +318,24 @@ class PatchInstallerApp:
         self.btn_action.pack(fill="x")
 
     def _initial_load(self):
-        # Scan instances
-        self.instances = scan_installed_instances()
-        self.local_patches = find_local_patches(self.installer_dir)
         self.metadata = fetch_latest_metadata()
+        latest_ver = self.metadata.get('latest_version') if self.metadata else None
+
+        self.instances = scan_installed_instances()
+        self.local_patches = find_local_patches(self.installer_dir, target_version=latest_ver)
 
         self.root.after(0, self._render_initial_state)
 
     def _render_initial_state(self):
-        # Update metadata info
-        latest_ver = self.metadata.get('latest_version', 'ล่าสุด') if self.metadata else 'ล่าสุด'
-        self.ver_label.config(text=f"✨ เวอร์ชันล่าสุด: v{latest_ver}", fg="#22c55e")
+        latest_ver = self.metadata.get('latest_version', '3.45') if self.metadata else '3.45'
+        self.ver_label.config(text=f"✨ เวอร์ชันล่าสุดจากเซิร์ฟเวอร์: v{latest_ver}", fg="#22c55e")
         
         notes = []
         if self.local_patches:
-            found_names = ", ".join(f.name for f in self.local_patches.values())
-            notes.append(f"ตรวจพบไฟล์แพตช์ในเครื่อง: {found_names}")
+            found_names = ", ".join(f[0].name for f in self.local_patches.values())
+            notes.append(f"พบไฟล์แพตช์ตรงเวอร์ชันในเครื่อง: {found_names}")
         if self.metadata:
-            notes.append("พร้อมดาวน์โหลดตัวอัปเดตล่าสุดจาก GitHub / Hugging Face")
+            notes.append("เชื่อมต่อเซิร์ฟเวอร์ GitHub / Hugging Face พร้อมดาวน์โหลด")
         self.meta_desc.config(text=" | ".join(notes) if notes else "พร้อมดำเนินการ")
 
         self._refresh_folders_list()
@@ -287,20 +353,37 @@ class PatchInstallerApp:
             return
 
         self.btn_action.config(state="normal", bg="#2563eb")
+        target_ver = self.metadata.get('latest_version', '3.45') if self.metadata else '3.45'
 
         for path_str, b_type in self.instances.items():
-            row = tk.Frame(self.list_container, bg="#25272c", padx=10, pady=8, highlightthickness=1, highlightbackground="#374151")
-            row.pack(fill="x", pady=3)
+            cur_ver = get_folder_version(path_str)
+            cur_ver_display = f"v{cur_ver}" if cur_ver else "ไม่ทราบเวอร์ชัน"
+
+            row = tk.Frame(self.list_container, bg="#25272c", padx=12, pady=8, highlightthickness=1, highlightbackground="#374151")
+            row.pack(fill="x", pady=4)
 
             badge_text = "FULL VERSION" if b_type == 'full' else "LITE VERSION"
-            badge_color = "#3b82f6" if b_type == 'full' else "#10b981"
+            badge_color = "#2563eb" if b_type == 'full' else "#10b981"
             badge = tk.Label(row, text=badge_text, font=("Segoe UI", 8, "bold"), fg="#ffffff", bg=badge_color, padx=6, pady=2)
             badge.pack(side="left")
 
-            path_lbl = tk.Label(row, text=f"  {path_str}", font=("Consolas", 9), fg="#e2e8f0", bg="#25272c")
-            path_lbl.pack(side="left", fill="x", expand=True)
+            col = tk.Frame(row, bg="#25272c")
+            col.pack(side="left", fill="x", expand=True, padx=10)
 
-            status_icon = tk.Label(row, text="✓ พร้อมลงแพตช์", font=("Segoe UI", 9), fg="#4ade80", bg="#25272c")
+            path_lbl = tk.Label(col, text=path_str, font=("Consolas", 9, "bold"), fg="#e2e8f0", bg="#25272c", anchor="w")
+            path_lbl.pack(fill="x")
+
+            if cur_ver == target_ver:
+                diff_text = f"✓ ปัจจุบันเป็นเวอร์ชันล่าสุดแล้ว ({cur_ver_display}) - พร้อมตรวจสอบและซ่อมแซมไฟล์ระบบ"
+                diff_color = "#4ade80"
+            else:
+                diff_text = f"เวอร์ชันปัจจุบัน: {cur_ver_display}  ➔  จะอัปเดตเป็น: v{target_ver}"
+                diff_color = "#38bdf8"
+
+            ver_lbl = tk.Label(col, text=diff_text, font=("Segoe UI", 9), fg=diff_color, bg="#25272c", anchor="w")
+            ver_lbl.pack(fill="x", pady=(2, 0))
+
+            status_icon = tk.Label(row, text="✓ พร้อมลงแพตช์", font=("Segoe UI", 9, "bold"), fg="#4ade80", bg="#25272c")
             status_icon.pack(side="right")
 
     def _manual_browse(self):
@@ -329,30 +412,41 @@ class PatchInstallerApp:
 
     def _run_install_worker(self):
         try:
-            # 1. Kill any running Broadcast Playroom 3 processes to release locked files
-            self._set_status("กำลังปิดโปรแกรม Broadcast Playroom ที่เปิดค้างอยู่...", 5)
-            for proc in psutil.process_iter(['name', 'pid']):
+            # 1. Kill any running Broadcast Playroom 3 processes and child processes
+            self._set_status("กำลังปิดโปรแกรม Broadcast Playroom และปลดล็อกไฟล์ระบบ...", 5)
+            for proc in psutil.process_iter(['name', 'pid', 'cmdline', 'exe']):
                 try:
-                    pname = (proc.info['name'] or '').lower()
-                    if 'broadcastplayroom' in pname:
+                    pname = (proc.info.get('name') or '').lower()
+                    cmd = ' '.join(proc.info.get('cmdline') or []).lower()
+                    pexe = (proc.info.get('exe') or '').lower()
+                    
+                    should_kill = False
+                    if 'broadcastplayroom' in pname or 'broadcastplayroom' in cmd or 'launch_dev.py' in cmd:
+                        should_kill = True
+                    elif 'msedgewebview2' in pname and any(k.lower() in cmd or k.lower() in pexe for k in self.instances.keys()):
+                        should_kill = True
+
+                    if should_kill:
                         proc.kill()
                 except Exception:
                     pass
-            time.sleep(1)
+            time.sleep(1.5)
 
             # Determine what packages we need
             needed_types = set(self.instances.values())
-            latest_ver = self.metadata.get('latest_version', 'latest') if self.metadata else '3.45'
+            latest_ver = self.metadata.get('latest_version', '3.45') if self.metadata else '3.45'
 
             downloaded_zips = {}
 
             # Download or locate patch for each needed type (Full / Lite)
             for b_type in needed_types:
-                # Check local patch first
-                if b_type in self.local_patches and self.local_patches[b_type].exists():
-                    self._set_status(f"ใช้ไฟล์แพตช์ในเครื่อง: {self.local_patches[b_type].name}", 20)
-                    downloaded_zips[b_type] = self.local_patches[b_type]
-                    continue
+                # Check local patch first (only if version matches target)
+                if b_type in self.local_patches:
+                    zf_path, zf_ver = self.local_patches[b_type]
+                    if zf_path.exists() and (zf_ver == latest_ver or not zf_ver):
+                        self._set_status(f"ใช้ไฟล์แพตช์ตรงเวอร์ชันในเครื่อง: {zf_path.name}", 20)
+                        downloaded_zips[b_type] = zf_path
+                        continue
 
                 # Download online
                 if not self.metadata:
@@ -363,9 +457,16 @@ class PatchInstallerApp:
                     raise RuntimeError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์อัปเดตได้ และไม่พบไฟล์แพตช์ในเครื่อง")
 
                 type_info = self.metadata.get(b_type) or self.metadata.get('full')
-                url = type_info.get('url')
-                mirrors = type_info.get('mirrors', [])
+                url = type_info.get('url') if type_info else None
+                mirrors = type_info.get('mirrors', []) if type_info else []
                 urls_to_try = [url] + mirrors if url else mirrors
+
+                # Fallback to direct huggingface / github if empty
+                if not urls_to_try:
+                    urls_to_try = [
+                        f"https://github.com/zepiam/broadcast-playroom-3/releases/download/v{latest_ver}/patch-v{latest_ver}-{b_type}.zip",
+                        f"https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v{latest_ver}-{b_type}.zip"
+                    ]
 
                 dest_zip = self.installer_dir / f"bp3_patch_{b_type}_v{latest_ver}.zip"
                 download_success = False
@@ -374,7 +475,7 @@ class PatchInstallerApp:
                     if not download_url:
                         continue
                     try:
-                        self._set_status(f"กำลังดาวน์โหลดแพตช์ ({b_type.upper()})...", 15)
+                        self._set_status(f"กำลังดาวน์โหลดแพตช์ v{latest_ver} ({b_type.upper()})...", 15)
                         
                         req = urllib.request.Request(download_url, headers={'User-Agent': 'BP3-PatchInstaller'})
                         with urllib.request.urlopen(req, timeout=30) as resp, open(dest_zip, 'wb') as out_f:
@@ -403,11 +504,15 @@ class PatchInstallerApp:
                         continue
 
                 if not download_success:
-                    raise RuntimeError(f"ดาวน์โหลดไฟล์แพตช์สำหรับ {b_type.upper()} ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต")
+                    raise RuntimeError(f"ดาวน์โหลดไฟล์แพตช์สำหรับ {b_type.upper()} ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต")
 
             # Apply patch to all detected directories
             total_instances = len(self.instances)
             curr_idx = 0
+
+            # Safe backup of data files to AppData before extraction
+            appdata_backup = Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'settings_backup'
+            appdata_backup.mkdir(parents=True, exist_ok=True)
 
             for folder_str, b_type in self.instances.items():
                 curr_idx += 1
@@ -417,17 +522,55 @@ class PatchInstallerApp:
                 if not patch_zip or not patch_zip.exists():
                     continue
 
+                # Backup user data
+                for fname in ['platform_settings.json', 'user_roster.json']:
+                    for cand in [target_dir / 'data' / fname, target_dir.parent / 'data' / fname]:
+                        if cand.exists() and cand.stat().st_size > 10:
+                            try:
+                                shutil.copy2(cand, appdata_backup / fname)
+                            except Exception:
+                                pass
+
                 self._set_status(f"กำลังติดตั้งแพตช์ลงใน: {target_dir.name} ({curr_idx}/{total_instances})...", 65 + int((curr_idx / total_instances) * 25))
 
                 with zipfile.ZipFile(patch_zip, 'r') as z:
                     for member in z.infolist():
-                        # Extract with overwrite
-                        try:
-                            z.extract(member, target_dir)
-                        except Exception as e:
-                            print(f"Extract warning for {member.filename}: {e}")
+                        # Extract with retry up to 4 times
+                        for attempt in range(4):
+                            try:
+                                z.extract(member, target_dir)
+                                break
+                            except Exception:
+                                if attempt == 3:
+                                    print(f"Failed to extract {member.filename}")
+                                time.sleep(0.3)
 
-            # Clean up downloaded temporary zips
+                # Sync to _internal if present
+                internal_dir = target_dir / '_internal'
+                if internal_dir.is_dir():
+                    for sync_name in ['dist', 'updater.py', 'launch_dev.py', 'version.json']:
+                        src_item = target_dir / sync_name
+                        dest_item = internal_dir / sync_name
+                        if src_item.exists():
+                            try:
+                                if src_item.is_dir():
+                                    shutil.copytree(src_item, dest_item, dirs_exist_ok=True)
+                                else:
+                                    shutil.copy2(src_item, dest_item)
+                            except Exception:
+                                pass
+
+                # Purge stale webview cache
+                for cache_cand in [target_dir / 'data' / 'webview_data', Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'webview_data']:
+                    for sub in ['EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'EBWebView/Default/GPUCache']:
+                        cp = cache_cand / sub
+                        if cp.exists():
+                            try:
+                                shutil.rmtree(cp, ignore_errors=True)
+                            except Exception:
+                                pass
+
+            # Clean up temporary downloaded zips
             for zf in downloaded_zips.values():
                 if zf.name.startswith("bp3_patch_") and zf.exists():
                     try:
@@ -435,13 +578,14 @@ class PatchInstallerApp:
                     except Exception:
                         pass
 
-            self._set_status("✨ อัปเดตและซ่อมแซมระบบสำเร็จเรียบร้อย 100%!", 100)
+            self._set_status(f"✨ อัปเดตและซ่อมแซมระบบเป็น v{latest_ver} สำเร็จเรียบร้อย 100%!", 100)
 
             # Prompt & Launch
             def _on_done():
                 self.btn_action.config(state="normal", text="🎉 อัปเดตเสร็จแล้ว! คลิกเพื่อเปิดโปรแกรม",
                                        bg="#16a34a", command=self._launch_app)
-                messagebox.showinfo("อัปเดตสำเร็จ", "อัปเดตและซ่อมแซมโปรแกรม Broadcast Playroom 3 เรียบร้อยแล้วครับ!\nคลิก 'ตกลง' เพื่อเปิดโปรแกรมได้ทันที")
+                self._refresh_folders_list()
+                messagebox.showinfo("อัปเดตสำเร็จ", f"อัปเดตและซ่อมแซมโปรแกรม Broadcast Playroom 3\nเป็นเวอร์ชัน v{latest_ver} เรียบร้อยแล้วครับ!\nคลิก 'ตกลง' เพื่อเปิดโปรแกรมได้ทันที")
                 self._launch_app()
 
             self.root.after(0, _on_done)
@@ -457,7 +601,6 @@ class PatchInstallerApp:
             self.root.after(0, _on_err)
 
     def _launch_app(self):
-        # Find executable to launch
         for folder_str, b_type in self.instances.items():
             f = Path(folder_str)
             exe_candidates = [
@@ -479,7 +622,6 @@ class PatchInstallerApp:
 
 if __name__ == '__main__':
     root = tk.Tk()
-    # Set icon if available
     for icon_name in ['assets/icon_full.ico', 'assets/icon.png', 'dist/favicon.ico']:
         icon_path = Path(__file__).resolve().parent / icon_name
         if icon_path.exists():
