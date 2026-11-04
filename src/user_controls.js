@@ -114,28 +114,70 @@ async function syncRosterFromBackend(){
   if (res.ok) {
    const data = await res.json();
    const serverRoster = data.roster || data;
+   let changed = false;
    if (Array.isArray(serverRoster) && serverRoster.length > 0) {
-    let changed = false;
     for (const person of serverRoster) {
      if (!person || !person.username) continue;
      const key = (person.platform || 'Twitch').toLowerCase() + ':' + person.username.toLowerCase();
      const existing = people.get(key);
-     if (!existing || (person.lastSeen || 0) >= (existing.lastSeen || 0)) {
+     if (!existing) {
       people.set(key, person);
       changed = true;
+     } else {
+      let personUpdated = false;
+      const mergedCount = Math.max(Number(existing.count || 0), Number(person.count || 0));
+      if (mergedCount !== existing.count) { existing.count = mergedCount; personUpdated = true; }
+      const mergedJoin = Math.max(Number(existing.joinCount || 0), Number(person.joinCount || 0));
+      if (mergedJoin !== existing.joinCount) { existing.joinCount = mergedJoin; personUpdated = true; }
+      const mergedLastSeen = Math.max(Number(existing.lastSeen || 0), Number(person.lastSeen || 0));
+      if (mergedLastSeen !== existing.lastSeen) { existing.lastSeen = mergedLastSeen; personUpdated = true; }
+      if (!existing.avatar && person.avatar) { existing.avatar = person.avatar; personUpdated = true; }
+      if (!existing.nickname && person.nickname) { existing.nickname = person.nickname; personUpdated = true; }
+      if (!existing.isVip && person.isVip) { existing.isVip = true; personUpdated = true; }
+      const hMap = new Map();
+      for (const h of (existing.history || [])) {
+       if (h && (h.text || h.time)) hMap.set(String(h.time)+':'+String(h.text), h);
+      }
+      for (const h of (person.history || [])) {
+       if (h && (h.text || h.time)) hMap.set(String(h.time)+':'+String(h.text), h);
+      }
+      const newHistory = [...hMap.values()].sort((a,b) => (a.time || 0) - (b.time || 0)).slice(-250);
+      if (newHistory.length !== (existing.history || []).length) {
+       existing.history = newHistory;
+       personUpdated = true;
+      }
+      if (personUpdated) changed = true;
      }
     }
-    if (changed) {
-     try{localStorage.setItem('bp3_user_roster',JSON.stringify([...people.values()]));}catch(_){}
-     render();
+   }
+   if (changed || people.size > 0) {
+    try{localStorage.setItem('bp3_user_roster',JSON.stringify([...people.values()]));}catch(_){}
+    render();
+    if (people.size > (Array.isArray(serverRoster) ? serverRoster.length : 0) || changed) {
+     save();
     }
-   } else if (people.size > 0) {
-    save();
    }
   }
  }catch(err){
   console.warn('Could not sync user roster from backend:', err);
  }
+}
+
+if (typeof window !== 'undefined') {
+  const flushRoster = () => {
+    try {
+      const list = [...people.values()];
+      if (list.length > 0) {
+        localStorage.setItem('bp3_user_roster', JSON.stringify(list));
+        if (typeof navigator !== 'undefined' && navigator.sendBeacon) {
+          const blob = new Blob([JSON.stringify({ roster: list })], { type: 'application/json' });
+          navigator.sendBeacon('/api/user-roster', blob);
+        }
+      }
+    } catch(_) {}
+  };
+  window.addEventListener('beforeunload', flushRoster);
+  window.addEventListener('pagehide', flushRoster);
 }
 syncRosterFromBackend();
 
@@ -335,6 +377,10 @@ window.BP3RegisterUserToRoster = function(msg){
     history:historyList
 
   });
+
+  try {
+    localStorage.setItem('bp3_user_roster', JSON.stringify([...people.values()]));
+  } catch(_) {}
 
   schedule();
 

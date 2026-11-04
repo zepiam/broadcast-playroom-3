@@ -1200,48 +1200,116 @@ def _get_user_roster_paths():
             res.append(pt)
     return res
 
+def _merge_user_rosters(base_list, incoming_list):
+    """ผสานรายชื่อผู้ชม รายละเอียดประวัติ และกิจกรรมเข้าด้วยกัน ป้องกันการสูญหายข้ามโฟลเดอร์/อัปเดต"""
+    merged = {}
+    for item in (base_list or []) + (incoming_list or []):
+        if not isinstance(item, dict):
+            continue
+        u = str(item.get('username') or item.get('name') or '').strip()
+        if not u:
+            continue
+        plat = str(item.get('platform') or 'Twitch').strip()
+        k = f"{plat}:{u}".lower()
+        if k not in merged:
+            merged[k] = dict(item)
+            merged[k]['username'] = u
+            merged[k]['platform'] = plat
+        else:
+            cur = merged[k]
+            cur['count'] = max(int(cur.get('count') or 0), int(item.get('count') or 0))
+            cur['joinCount'] = max(int(cur.get('joinCount') or 0), int(item.get('joinCount') or 0))
+            cur['lastSeen'] = max(int(cur.get('lastSeen') or 0), int(item.get('lastSeen') or 0))
+            cur['isVip'] = bool(cur.get('isVip') or item.get('isVip'))
+            if not cur.get('avatar') and item.get('avatar'):
+                cur['avatar'] = item['avatar']
+            if not cur.get('nickname') and item.get('nickname'):
+                cur['nickname'] = item['nickname']
+            # merge history
+            h_combined = (cur.get('history') or []) + (item.get('history') or [])
+            h_seen = set()
+            h_unique = []
+            for h in h_combined:
+                if isinstance(h, dict):
+                    hk = (h.get('time'), str(h.get('text') or '').strip())
+                    if hk not in h_seen:
+                        h_seen.add(hk)
+                        h_unique.append(h)
+            h_unique.sort(key=lambda x: x.get('time') or 0)
+            cur['history'] = h_unique[-250:]
+            # merge events
+            ev_combined = (cur.get('events') or []) + (item.get('events') or [])
+            ev_seen = set()
+            ev_unique = []
+            for ev in ev_combined:
+                if isinstance(ev, dict):
+                    evk = (ev.get('time'), ev.get('event'), str(ev.get('text') or '').strip())
+                    if evk not in ev_seen:
+                        ev_seen.add(evk)
+                        ev_unique.append(ev)
+            ev_unique.sort(key=lambda x: x.get('time') or 0)
+            cur['events'] = ev_unique[-250:]
+    return list(merged.values())
+
 def _load_user_roster():
-    candidates = []
+    merged_roster = []
+    found_any = False
     for pt in _get_user_roster_paths():
         if pt.is_file() and pt.stat().st_size > 0:
-            candidates.append(pt)
-    try:
-        candidates.sort(key=lambda p: p.stat().st_mtime, reverse=True)
-    except Exception:
-        pass
-    for pt in candidates:
-        try:
-            with open(pt, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            if isinstance(data, list):
-                return data
-            if isinstance(data, dict) and 'roster' in data and isinstance(data['roster'], list):
-                return data['roster']
-        except Exception:
-            pass
-    return []
+            try:
+                with open(pt, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                items = data.get('roster') if isinstance(data, dict) and isinstance(data.get('roster'), list) else data
+                if isinstance(items, list) and len(items) > 0:
+                    merged_roster = _merge_user_rosters(merged_roster, items)
+                    found_any = True
+            except Exception:
+                pass
+    # If merged roster has records, ensure all candidate paths are synced with the full merged roster
+    if found_any and len(merged_roster) > 0:
+        for pt in _get_user_roster_paths():
+            try:
+                if not pt.exists() or pt.stat().st_size <= 10:
+                    pt.parent.mkdir(parents=True, exist_ok=True)
+                    with open(pt, 'w', encoding='utf-8') as f:
+                        json.dump(merged_roster, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+    return merged_roster
 
 def _save_user_roster(roster_data):
     if not isinstance(roster_data, list):
         return
-    # Guard against accidental wipe: never overwrite existing non-empty roster with an empty list
+    existing = _load_user_roster()
+    # Guard against accidental wipe: if incoming is empty, preserve existing
     if len(roster_data) == 0:
-        existing = _load_user_roster()
         if len(existing) > 0:
             return
+        to_save = []
+    else:
+        to_save = _merge_user_rosters(existing, roster_data)
+        
     for pt in _get_user_roster_paths():
         try:
             pt.parent.mkdir(parents=True, exist_ok=True)
-            with open(pt, 'w', encoding='utf-8') as f:
-                json.dump(roster_data, f, ensure_ascii=False, indent=2)
+            tmp = pt.with_suffix('.tmp')
+            with open(tmp, 'w', encoding='utf-8') as f:
+                json.dump(to_save, f, ensure_ascii=False, indent=2)
+            tmp.replace(pt)
         except Exception:
-            pass
+            try:
+                with open(pt, 'w', encoding='utf-8') as f:
+                    json.dump(to_save, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
     try:
         lad = os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local')
         bak = Path(lad) / 'BroadcastPlayroom3' / 'settings_backup' / 'user_roster.json'
         bak.parent.mkdir(parents=True, exist_ok=True)
-        with open(bak, 'w', encoding='utf-8') as f:
-            json.dump(roster_data, f, ensure_ascii=False, indent=2)
+        tmp = bak.with_suffix('.tmp')
+        with open(tmp, 'w', encoding='utf-8') as f:
+            json.dump(to_save, f, ensure_ascii=False, indent=2)
+        tmp.replace(bak)
     except Exception:
         pass
 

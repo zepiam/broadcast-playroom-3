@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.44"
+CURRENT_VERSION = "3.45"
 
 REPO_OWNER = "zepiam"
 
@@ -660,6 +660,57 @@ def _merge_platform_settings_dicts(target_dict: dict, source_dict: dict):
         else:
             target_dict[k] = v
 
+def _merge_user_roster_lists(base_list: list, incoming_list: list) -> list:
+    """ผสานรายชื่อผู้ชมและประวัติการแชทเข้าด้วยกัน ไม่ให้ข้อมูลผู้ชมคนใดคนหนึ่งสูญหายจากการอัปเดต"""
+    merged_map = {}
+    for item in (base_list or []) + (incoming_list or []):
+        if not isinstance(item, dict):
+            continue
+        u = str(item.get('username') or item.get('name') or '').strip()
+        if not u:
+            continue
+        plat = str(item.get('platform') or 'Twitch').strip()
+        k = f"{plat}:{u}".lower()
+        if k not in merged_map:
+            merged_map[k] = dict(item)
+            merged_map[k]['username'] = u
+            merged_map[k]['platform'] = plat
+        else:
+            cur = merged_map[k]
+            cur['count'] = max(int(cur.get('count') or 0), int(item.get('count') or 0))
+            cur['joinCount'] = max(int(cur.get('joinCount') or 0), int(item.get('joinCount') or 0))
+            cur['lastSeen'] = max(int(cur.get('lastSeen') or 0), int(item.get('lastSeen') or 0))
+            cur['isVip'] = bool(cur.get('isVip') or item.get('isVip'))
+            if not cur.get('avatar') and item.get('avatar'):
+                cur['avatar'] = item['avatar']
+            if not cur.get('nickname') and item.get('nickname'):
+                cur['nickname'] = item['nickname']
+            # merge history
+            h_combined = (cur.get('history') or []) + (item.get('history') or [])
+            h_seen = set()
+            h_unique = []
+            for h in h_combined:
+                if isinstance(h, dict):
+                    hk = (h.get('time'), str(h.get('text') or '').strip())
+                    if hk not in h_seen:
+                        h_seen.add(hk)
+                        h_unique.append(h)
+            h_unique.sort(key=lambda x: x.get('time') or 0)
+            cur['history'] = h_unique[-250:]
+            # merge events
+            ev_combined = (cur.get('events') or []) + (item.get('events') or [])
+            ev_seen = set()
+            ev_unique = []
+            for ev in ev_combined:
+                if isinstance(ev, dict):
+                    evk = (ev.get('time'), ev.get('event'), str(ev.get('text') or '').strip())
+                    if evk not in ev_seen:
+                        ev_seen.add(evk)
+                        ev_unique.append(ev)
+            ev_unique.sort(key=lambda x: x.get('time') or 0)
+            cur['events'] = ev_unique[-250:]
+    return list(merged_map.values())
+
 def backup_user_settings(install_dir: str):
     """สำรองข้อมูลการตั้งค่าและช่องทางสตรีมของผู้ใช้ทั้งหมดก่อนลงอัปเดตใหม่ โดยใช้ Deep Merge เพื่อป้องกันข้อมูลสูญหาย 100%"""
     import shutil
@@ -706,6 +757,30 @@ def backup_user_settings(install_dir: str):
                         try:
                             with open(b_dir / c_name, 'w', encoding='utf-8') as bf:
                                 json.dump(merged_settings, bf, ensure_ascii=False, indent=2)
+                        except Exception:
+                            pass
+                continue
+
+            if c_name == 'user_roster.json':
+                merged_roster = []
+                found_any = False
+                for s_dir in search_dirs:
+                    src_file = s_dir / c_name
+                    if src_file.is_file() and src_file.stat().st_size > 0:
+                        try:
+                            with open(src_file, 'r', encoding='utf-8') as sf:
+                                s_data = json.load(sf)
+                            items = s_data.get('roster') if isinstance(s_data, dict) and isinstance(s_data.get('roster'), list) else s_data
+                            if isinstance(items, list) and len(items) > 0:
+                                merged_roster = _merge_user_roster_lists(merged_roster, items)
+                                found_any = True
+                        except Exception:
+                            pass
+                if found_any and len(merged_roster) > 0:
+                    for b_dir in backup_dirs:
+                        try:
+                            with open(b_dir / c_name, 'w', encoding='utf-8') as bf:
+                                json.dump(merged_roster, bf, ensure_ascii=False, indent=2)
                         except Exception:
                             pass
                 continue
@@ -812,13 +887,7 @@ def restore_user_settings(install_dir: str):
                                             json.dump(t_data, tf, ensure_ascii=False, indent=2)
                                         continue
                                     elif isinstance(t_data, list) and isinstance(s_data, list):
-                                        merged_map = {}
-                                        for item in t_data + s_data:
-                                            if isinstance(item, dict) and item.get('username'):
-                                                k = f"{item.get('platform', 'twitch')}:{item.get('username')}".lower()
-                                                if k not in merged_map or (item.get('lastSeen', 0) >= merged_map[k].get('lastSeen', 0)):
-                                                    merged_map[k] = item
-                                        merged_list = list(merged_map.values())
+                                        merged_list = _merge_user_roster_lists(t_data, s_data)
                                         with open(target_file, 'w', encoding='utf-8') as tf:
                                             json.dump(merged_list, tf, ensure_ascii=False, indent=2)
                                         continue
@@ -1388,10 +1457,14 @@ timeout /t 1 /nobreak >nul
 goto wait_for_exit
 :apply_patch
 if not exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup" mkdir "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup"
+if exist "{install_dir}\..\data\platform_settings.json" copy /y "{install_dir}\..\data\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 if exist "{install_dir}\data\platform_settings.json" copy /y "{install_dir}\data\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
-if exist "{install_dir}\data\user_roster.json" copy /y "{install_dir}\data\user_roster.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
-if exist "%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
+
+rem Backup user roster safely: only copy if non-empty (>10 bytes)
+if exist "{install_dir}\..\data\user_roster.json" for %%F in ("{install_dir}\..\data\user_roster.json") do if %%~zF GTR 10 copy /y "%%~fF" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
+if exist "{install_dir}\data\user_roster.json" for %%F in ("{install_dir}\data\user_roster.json") do if %%~zF GTR 10 copy /y "%%~fF" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
+if exist "%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json" for %%F in ("%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json") do if %%~zF GTR 10 copy /y "%%~fF" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 
 tar -xf "{patch_zip}" -C "{install_dir}"
 if errorlevel 1 goto update_failed
@@ -1411,9 +1484,11 @@ if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.js
     copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
 )
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" (
-    if exist "{install_dir}\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" "{install_dir}\data\" >nul
-    if exist "{install_dir}\..\data" copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" "{install_dir}\..\data\" >nul
-    copy /y "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
+    for %%F in ("%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\user_roster.json") do if %%~zF GTR 10 (
+        if exist "{install_dir}\data" copy /y "%%~fF" "{install_dir}\data\" >nul
+        if exist "{install_dir}\..\data" copy /y "%%~fF" "{install_dir}\..\data\" >nul
+        copy /y "%%~fF" "%LOCALAPPDATA%\BroadcastPlayroom3\" >nul
+    )
 )
 
 del "{patch_zip}"
