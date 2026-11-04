@@ -367,7 +367,7 @@ class InstallWorker(QThread):
 
     def _apply_defender_exclusion(self, folder_path):
         folder_clean = folder_path.replace("'", "''")
-        cmd = f"Add-MpPreference -ExclusionPath '{folder_clean}' -ErrorAction SilentlyContinue"
+        cmd = f"Add-MpPreference -ExclusionPath '{folder_clean}'; Add-MpPreference -ExclusionProcess 'BroadcastPlayroom3-Lite.exe'; Add-MpPreference -ExclusionProcess 'BroadcastPlayroom3-Full.exe'"
         runner = f"Start-Process powershell -ArgumentList '-NoProfile -ExecutionPolicy Bypass -Command \"{cmd}\"' -Verb RunAs -WindowStyle Hidden"
         try:
             subprocess.Popen(["powershell", "-Command", runner], shell=False)

@@ -97,9 +97,9 @@ class DefenderExclusionManager:
         norm_current = os.path.normpath(str(current_dir)).lower()
         norm_saved = os.path.normpath(str(saved_path)).lower()
 
-        if norm_current != norm_saved:
-            return "relocated"
-        return "active"
+        if norm_current == norm_saved or norm_current.startswith(norm_saved + os.sep) or norm_saved.startswith(norm_current + os.sep):
+            return "active"
+        return "relocated"
 
     @staticmethod
     def apply_one_click_exclusion() -> bool:

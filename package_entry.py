@@ -45,5 +45,41 @@ if __name__ == '__main__':
         os.environ.setdefault('NUMBA_CACHE_DIR', str(cache_dir))
         if edition == 'full':
             os.environ.setdefault('NUMBA_CACHE_LOCATOR_CLASSES', 'package_numba_cache.FrozenDataCacheLocator,UserWideCacheLocator')
+
+        # DISK-FIRST IMPORT LOADER:
+        # Ensure files on disk (updated by patch zip or installer) take precedence over frozen archive
+        exe_dir_str = str(exe_dir)
+        int_dir_str = str(exe_dir / '_internal')
+        for p in [exe_dir_str, int_dir_str]:
+            if p in sys.path:
+                sys.path.remove(p)
+            sys.path.insert(0, p)
+
+        # Re-order sys.meta_path so standard disk PathFinder runs before PyiFrozenImporter
+        try:
+            path_finders = [imp for imp in sys.meta_path if hasattr(imp, 'find_spec') and imp.__class__.__name__ == 'PathFinder']
+            frozen_imps = [imp for imp in sys.meta_path if 'Frozen' in imp.__class__.__name__ or 'Pyi' in imp.__class__.__name__]
+            other_imps = [imp for imp in sys.meta_path if imp not in path_finders and imp not in frozen_imps]
+            if path_finders and frozen_imps:
+                sys.meta_path = path_finders + frozen_imps + other_imps
+        except Exception:
+            pass
+
+        # Explicitly load launch_dev.py from disk if present
+        for candidate in [exe_dir / 'launch_dev.py', exe_dir / '_internal' / 'launch_dev.py']:
+            if candidate.is_file():
+                try:
+                    import importlib.util
+                    spec = importlib.util.spec_from_file_location('launch_dev', str(candidate))
+                    if spec and spec.loader:
+                        mod = importlib.util.module_from_spec(spec)
+                        sys.modules['launch_dev'] = mod
+                        spec.loader.exec_module(mod)
+                        raise SystemExit(mod.main())
+                except SystemExit:
+                    raise
+                except Exception as ex:
+                    print(f"[WARN] Failed to load disk launch_dev.py ({ex}), falling back to frozen...", flush=True)
+
         from launch_dev import main
         raise SystemExit(main())

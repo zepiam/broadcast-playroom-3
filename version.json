@@ -1,47 +1,20 @@
 {
-  "product": "broadcast-playroom-3",
-  "version": "3.49",
-  "latest_version": "3.49",
-  "critical": true,
-  "changelog": "# Broadcast Playroom v3.49\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.49:\n- **มาตรฐานระบบหน้าต่างแบบ Native Chrome/Edge App Mode 100% เหมือนกันทุกเครื่อง**:\n  - แก้ไขปัญหาความแตกต่างระหว่างเครื่อง Dev และเครื่องผู้ใช้งานทั่วไป โดยเปลี่ยนมาใช้ Chrome/Edge App Mode เป็นมาตรฐานหลักเดียวกันทั้งหมด\n  - แสดงผล Windows Native Title Bar ด้านบนสุด พร้อมปุ่มย่อ ขยาย และปิดหน้าต่างมาตรฐานของ Windows อย่างสมบูรณ์แบบ\n  - นำแถบ Title Bar ภายในโปรแกรมที่ซ้ำซ้อนออก เพื่อให้หน้าตาคลีนตาและมี Title Bar เพียงชั้นเดียว\n- **เปิดหน้าต่างเครื่องมือย่อยแยกออกนอกจอโปรแกรมได้อิสระ (Multi-Monitor Floating Windows)**:\n  - เพิ่มแฟล็ก `--disable-popup-blocking` ในคำสั่งรันเบราว์เซอร์ App Mode\n  - ทำให้หน้าต่างแชท, การตั้งค่า, วงล้อสุ่ม, คำถาม และเครื่องมืออื่นๆ สามารถ Popout ออกเป็นหน้าต่างแยกอิสระ สามารถลากไปวางที่หน้าจอที่ 2 หรือ 3 ได้อย่างราบรื่น\n- **แก้ไขปุ่มแก้ไขสตรีม (Edit Link) และกำจัด `javascript:void(0)`**:\n  - เปลี่ยนลิงก์ Edit ของ Twitch/YouTube/Kick ให้ทำงานผ่าน handler ที่ถูกต้อง ไม่แสดง `javascript:void(0)` ที่มุมซ้ายล่างอีกต่อไป\n  - เปิดหน้าแดชบอร์ดแก้ไขข้อมูลสตรีมบนเบราว์เซอร์หลักของผู้ใช้ได้ทันที\n- **แก้ไขการดึงและรีเฟรชชื่อห้องสตรีม Twitch (SSL & Emojis Support)**:\n  - เพิ่มระบบโหลดใบรับรอง SSL มาตรฐานของระบบ Windows ป้องกันปัญหาดึงชื่อห้องสตรีมไม่สำเร็จบนเครื่องที่ไม่มี Certificate Bundle\n  - รองรับการถอดรหัสตัวอักษรพิเศษและอิโมจิในชื่อห้องสตรีมโดยไม่เกิดข้อผิดพลาด\n",
-  "lite": {
-    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
-    "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
-      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-lite.zip",
-      "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-lite.zip"
-    ],
-    "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992",
-    "size": 71686794
-  },
-  "full": {
-    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
-    "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
-      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-full.zip",
-      "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-full.zip"
-    ],
-    "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992",
-    "size": 71686794
-  },
-  "packages": {
+  "version": "3.50",
+  "release_date": "2026-11-04",
+  "mandatory": false,
+  "changelog": "# Broadcast Playroom v3.50\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชั่น 3.50:\n- **Disk-First Module Loader สำหรับตัวรัน (.exe)**:\n  - แก้ไขปัญหาตัวรัน PyInstaller onedir (.exe) ไม่ยอมอ่านไฟล์ `.py` ที่อัปเดตจากแพตช์ โดยปรับให้ระบบค้นหาไฟล์บน Disk มาก่อน bytecode เก่าที่ฝังไว้\n  - ทำให้ระบบเช็คอัปเดต (In-App Updater) ตรวจพบเวอร์ชั่นใหม่ผ่าน Hugging Face CDN อย่างแม่นยำทุกเครื่อง\n- **แก้ไขหน้าต่าง Windows Defender (1-Click Exclusion) ค้างกำลังโหลด**:\n  - เชื่อมโยงระบบตรวจจับโฟลเดอร์ปัจจุบันและสถานะการยกเว้นทันทีเมื่อคลิกแท็บ Windows Defender ในหน้าตั้งค่า\n  - รองรับการตรวจจับโฟลเดอร์แม่ที่ Setup เพิ่มข้อยกเว้นไว้ ไม่ฟ้องว่าถูกย้ายโฟลเดอร์อีกต่อไป\n  - เพิ่มการยกเว้น Process ของตัวรันโปรแกรมทั้ง Lite และ Full เพื่อป้องกัน Defender ล็อกไฟล์\n- **แก้ไขปุ่ม Edit สตรีม และปุ่ม Refresh Title**:\n  - เปลี่ยนปุ่มลิงก์เป็น Native Button หมดปัญหา URL ติด `#` หรือข้อความ `javascript:void(0)`\n  - ใช้คำสั่งระบบ Windows (`os.startfile`) เพื่อเปิดหน้าจัดการสตรีมบน Default Browser ของผู้ใช้โดยตรงที่มีการล็อกอินบัญชีไว้อยู่แล้ว\n  - ปรับปรุงให้กล่องแสดง Title และปุ่มควบคุมแสดงผลอย่างสมบูรณ์แบบ\n",
+  "patches": {
     "lite": {
-      "patch_url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
-      "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-lite.zip",
-        "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-lite.zip"
-      ],
-      "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992"
+      "file": "patch-v3.50-lite.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.50-lite.zip",
+      "sha256": "5dfa6174d3b69ce2138dd10fe4480ba51d7fa74c2d6dc8bbf614c8be4021976c",
+      "size": 48687150
     },
     "full": {
-      "patch_url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
-      "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-full.zip",
-        "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-full.zip"
-      ],
-      "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992"
+      "file": "patch-v3.50-full.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.50-full.zip",
+      "sha256": "c2f6d2ee3c00a5dbbcc98cf4fd12fefe0642b07ab4e16a915e4ffc8c96ebf71f",
+      "size": 101350801
     }
   }
 }

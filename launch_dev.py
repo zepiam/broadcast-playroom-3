@@ -6827,22 +6827,16 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                import webbrowser
-
-
-
-
-
-
-
-                webbrowser.open(url)
-
-
-
-
-
-
-
+                opened = False
+                if os.name == 'nt':
+                    try:
+                        os.startfile(url)
+                        opened = True
+                    except Exception:
+                        pass
+                if not opened:
+                    import webbrowser
+                    webbrowser.open(url)
                 self.send_json({'ok': True})
 
 
@@ -11741,22 +11735,16 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                import webbrowser
-
-
-
-
-
-
-
-                webbrowser.open(url)
-
-
-
-
-
-
-
+                opened = False
+                if os.name == 'nt':
+                    try:
+                        os.startfile(url)
+                        opened = True
+                    except Exception:
+                        pass
+                if not opened:
+                    import webbrowser
+                    webbrowser.open(url)
                 response_data = {'ok': True}
 
 

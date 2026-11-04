@@ -52,7 +52,21 @@
       object-fit: contain !important;
       display: inline-block !important;
     }
-  </style>
+  button.plat-edit-link {
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #5865f2 !important;
+  padding: 0 !important;
+  text-decoration: underline !important;
+  line-height: inherit !important;
+}
+button.plat-edit-link:hover {
+  color: #7983f5 !important;
+}
+</style>
 
   <!-- Critical Popout Suppression (Guarantees 0ms Flash on Native Tool Windows) -->
   <script>
@@ -532,7 +546,7 @@
 
 
 
-  <title>Broadcast Playroom v3.49</title>
+  <title>Broadcast Playroom v3.50</title>
 
 
 
@@ -1146,7 +1160,7 @@ window.addEventListener('keydown', (e) => {
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.49</span>
+      <span class="desktop-titlebar-tag">v3.50</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -2520,7 +2534,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <a href="#" class="plat-edit-link" onclick="editPlatformStreamInfo('twitch'); return false;" title="แก้ไขข้อมูลสตรีม Twitch">Edit</a>
+              <button type="button" class="plat-edit-link" onclick="editPlatformStreamInfo('twitch');" title="แก้ไขข้อมูลสตรีม Twitch">Edit</button>
 
 
 
@@ -2752,7 +2766,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <a href="#" class="plat-edit-link" onclick="editPlatformStreamInfo('youtube'); return false;" title="แก้ไขข้อมูลสตรีม YouTube">Edit</a>
+              <button type="button" class="plat-edit-link" onclick="editPlatformStreamInfo('youtube');" title="แก้ไขข้อมูลสตรีม YouTube">Edit</button>
 
 
 
@@ -2984,7 +2998,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <a href="#" class="plat-edit-link" onclick="editPlatformStreamInfo('kick'); return false;" title="แก้ไขข้อมูลสตรีม Kick">Edit</a>
+              <button type="button" class="plat-edit-link" onclick="editPlatformStreamInfo('kick');" title="แก้ไขข้อมูลสตรีม Kick">Edit</button>
 
 
 
@@ -18685,7 +18699,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.49</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.50</span>
 
 
 
@@ -31552,6 +31566,7 @@ window.addEventListener('keydown', (e) => {
 
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane(); }, 1200);
 
 
 
@@ -41880,6 +41895,9 @@ try {
 
 
       if (sectionId === 'supporters') window.SupportersUI?.load();
+      if (sectionId === 'defender') {
+        if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane();
+      }
 
 
 
@@ -49956,29 +49974,19 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
         fetch('/api/open-external', {
-
-
-
           method: 'POST',
-
-
-
           headers: { 'Content-Type': 'application/json' },
-
-
-
           body: JSON.stringify({ url: url })
-
-
-
+        }).then(res => {
+          if (!res.ok) {
+            fetch('/api/open-external?url=' + encodeURIComponent(url)).catch(() => {
+              window.open(url, '_blank');
+            });
+          }
         }).catch(() => {
-
-
-
-          window.open(url, '_blank');
-
-
-
+          fetch('/api/open-external?url=' + encodeURIComponent(url)).catch(() => {
+            window.open(url, '_blank');
+          });
         });
 
 
@@ -50133,6 +50141,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
         const titleEl = document.getElementById('stream-title-' + key);
+        const infoEl = document.getElementById('stream-info-' + key);
+        if (infoEl) infoEl.style.display = 'flex';
 
 
 
@@ -51617,6 +51627,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane(); }, 1200);
 
 
 
@@ -54955,6 +54966,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane(); }, 1200);
 
 
 
@@ -58765,6 +58777,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane(); }, 1200);
 
 
 
@@ -59017,6 +59030,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane(); }, 1200);
 
 
 
@@ -70659,6 +70673,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane(); }, 1200);
 
 
 
@@ -73598,6 +73613,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane(); }, 1200);
 
 
 
