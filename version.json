@@ -1,23 +1,23 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.42",
-  "latest_version": "3.42",
+  "version": "3.43",
+  "latest_version": "3.43",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.42\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.42:\n- **แก้ไขปัญหาปุ่มเมนูฝั่งซ้ายไม่ตอบสนอง (Left Rail Popout Window Fix)**:\n  - นำพารามิเตอร์ `storage_path` ที่ไม่ถูกต้องออกจากคำสั่งสร้างหน้าต่างเครื่องมือย่อยใน `launch_dev.py` ทำให้ระบบเปิดหน้าต่างแยก (Popout) ทำงานได้ปกติ 100%\n  - เพิ่ม Fallback Inline อัตโนมัติในสคริปต์หน้าเว็บ: หากการสร้างหน้าต่างแยกเกิดปัญหา ระบบจะเปิดหน้าต่างเครื่องมือภายในโปรแกรมให้ทันที ปุ่มจะไม่นิ่งเงียบอีกต่อไป\n- **แก้ไขปัญหาจัดการผู้ชม (User Manager) แสดง 0 คนดู (Roster Null-Safety Guard)**:\n  - ปรับปรุงการโหลด `bp3_user_roster` ให้ปลอดภัยยิ่งขึ้น ป้องกันข้อผิดพลาด TypeError หากมีข้อมูลผู้ใช้ที่ไม่มีฟิลด์ platform หรือ username\n- **ปรับปรุงขนาดและการแสดงผลหน้าต่าง \"โปรไฟล์ผู้ชม\" (User Profile UI)**:\n  - ปรับลดความสูงขั้นต่ำและระยะบีบอัด เพื่อให้แท็บประวัติแชท ประวัติกิจกรรม และกฎการบล็อกแสดงผลได้เต็มพื้นที่ โดยไม่ต้องคอยขยายหน้าต่างเอง\n",
+  "changelog": "# Broadcast Playroom v3.43\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.43:\n- **แก้ไขบั๊กหน้าต่างขยายขนาดเองขณะกดลากย้าย (Window Drag Resizing Fix)**:\n  - ยกเลิกการส่งคำสั่ง `set-bounds` ซ้ำซ้อนขณะลากเมาส์ ซึ่งเกิดผลกระทบจากการคูณสเกล DPI ของหน้าจอ ทำให้หน้าต่างไม่ขยายขนาดเองอย่างผิดปกติอีกต่อไป\n- **ยกระดับ FindUpdate.bat ให้เป็นระบบกู้คืนและอัปเดตอัตโนมัติ 100%**:\n  - ปรับสคริปต์ `FindUpdate.bat` ไม่ให้เรียกตัวแอป GUI ขึ้นมาทับ แต่ให้ดาวน์โหลดไฟล์แพตช์ล่าสุดตรงจาก GitHub และแตกไฟล์ซ่อมแซมระบบโดยอัตโนมัติ ผู้ใช้ที่โปรแกรมมีปัญหาสามารถกดดับเบิลคลิกไฟล์นี้เพื่ออัปเดตและซ่อมแซมได้ทันที\n- **รวมการแก้ไขจาก v3.42**: ปลดล็อกปุ่มเมนูฝั่งซ้ายทั้งหมด, เพิ่มระบบ Fallback Inline, แก้ไข User Manager แสดง 0 คนดู และปรับปรุงหน้าต่างโปรไฟล์ผู้ชม\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.42/patch-v3.42-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.43/patch-v3.43-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.42-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.43-lite.zip"
     ],
-    "sha256": "edd0e36aece0926cba4cbd07883cd1513f381588ba2080581cd3c8b572775a4c",
-    "size": 50065708
+    "sha256": "e7d26c8c88d147262e609542c66ee2993a0623a6b400f6f026d764baad66c044",
+    "size": 50066016
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.42/patch-v3.42-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.43/patch-v3.43-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.42-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.43-full.zip"
     ],
-    "sha256": "edd0e36aece0926cba4cbd07883cd1513f381588ba2080581cd3c8b572775a4c",
-    "size": 50065708
+    "sha256": "e7d26c8c88d147262e609542c66ee2993a0623a6b400f6f026d764baad66c044",
+    "size": 50066016
   }
 }

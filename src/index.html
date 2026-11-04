@@ -1120,7 +1120,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.42</span>
+      <span class="desktop-titlebar-tag">v3.43</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -72548,21 +72548,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
             return;
           }
         }
-        if (!dragThrottled && !titlebar.classList.contains('is-maximized')) {
-          dragThrottled = true;
-          requestAnimationFrame(() => {
-            const dx = e.screenX - startDragScreenX;
-            const dy = e.screenY - startDragScreenY;
-            const newX = startWinX + dx;
-            const newY = startWinY + dy;
-            fetch('/api/window/frame', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'set-bounds', x: newX, y: newY, w: window.outerWidth, h: window.outerHeight })
-            }).catch(() => {});
-            dragThrottled = false;
-          });
-        }
+        // Native OS HTCAPTION drag handles movement smoothly without DPI resize expansion
       });
 
       window.addEventListener('mousemove', (e) => {
