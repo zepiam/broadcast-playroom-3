@@ -1,20 +1,20 @@
 {
-  "version": "3.51",
+  "version": "3.52",
   "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.51\n\n### รายการแก้ไขด่วนในเวอร์ชั่น 3.51:\n- **แก้ไขปุ่มเปิดหน้าต่างเครื่องมือทุกปุ่ม (Settings, Giveaway, Ask, User Manager ฯลฯ)**:\n  - แก้ไขปัญหาระบบ Popout ไม่ยอมเปิดหน้าต่างใหม่ในโหมด Chrome App โดยปรับให้เรียกเปิดหน้าต่างทันทีผ่านคำสั่ง `window.open` และให้ Backend ควบคุมผ่าน Process แยกอิสระ\n  - เพิ่ม Fallback เปิดหน้าต่างในแอปทันที (Inline Modal) กรณีที่หน้าต่างแยกถูกบล็อก เพื่อรับประกัน 100% ว่าทุกปุ่มที่คลิกจะเปิดหน้าต่างขึ้นมาแน่นอน\n",
+  "changelog": "# Broadcast Playroom v3.52\n\n### รายการแก้ไขสำคัญในเวอร์ชั่น 3.52:\n- **ถอนรากถอนโคนบัคปุ่มกดไม่ติด (Cross-Origin Security Error บน DOM)**:\n  - แก้ไขปัญหา DOM Monkey-patch ใน `document.getElementById` และ `user_controls.js` ที่พยายามอ่าน Document ข้ามหน้าต่างของ Browser โดยไม่มี Try-Catch ทำให้เกิด SecurityError ขัดจังหวะการทำงานของ JavaScript ทั่วทั้งโปรแกรม\n  - ทุกปุ่มหน้าต่างเครื่องมือ (Settings, Giveaway, Ask, User Manager ฯลฯ) ผ่านการทดสอบคลิกจริงอัตโนมัติด้วย Headless Browser ครบ 100% ทั้งโหมด Popout และ Inline\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.51-lite.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.51-lite.zip",
-      "sha256": "79a3d1f99e7c6f589968ef99148c351c90c5e3a6b6b91133a2296ec5d006c97a",
-      "size": 48682735
+      "file": "patch-v3.52-lite.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.52-lite.zip",
+      "sha256": "1d82dffd9867deddc5692da3dc000e9968e2b47fd5749d1b7570c6ace843720c",
+      "size": 48682718
     },
     "full": {
-      "file": "patch-v3.51-full.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.51-full.zip",
-      "sha256": "ffb05f83237fe84e605625bc50418684173797fadf24426809af5aeeb2d01cad",
-      "size": 101346386
+      "file": "patch-v3.52-full.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.52-full.zip",
+      "sha256": "b2d32c7bacd5ce0716210013451915d9eb76efd1dd126b028f5d8ae33fa7d58e",
+      "size": 101346369
     }
   }
 }

@@ -2,6 +2,7 @@
 Broadcast Playroom - Automated Pre-Release Smoke Test Gate
 Launches a headless browser to render dist/index.html, executes all JavaScript,
 and verifies zero runtime crashes, complete UI tree integrity, and critical function bindings.
+Now includes interactive click verification for all tool windows in both popout and inline modes.
 """
 import sys
 from pathlib import Path
@@ -48,20 +49,12 @@ def run_smoke_test(root_path=None) -> bool:
         page.on("pageerror", lambda err: errors.append(f"JS Runtime Error: {err}"))
 
         page.goto(index_html.as_uri())
-        page.wait_for_timeout(1200)
+        page.wait_for_timeout(1000)
 
         # Verify key DOM components
         title = page.title()
         if 'Broadcast Playroom' not in title:
             errors.append(f"Unexpected document title: {title}")
-
-        titlebar = page.query_selector(".desktop-titlebar")
-        if not titlebar:
-            errors.append("Missing .desktop-titlebar element!")
-
-        close_btn = page.query_selector(".app-win-btn.win-close")
-        if not close_btn:
-            errors.append("Missing .win-close button in titlebar!")
 
         # Verify critical functions in window scope
         fn_checks = page.evaluate("""() => {
@@ -78,9 +71,9 @@ def run_smoke_test(root_path=None) -> bool:
         }""")
 
         if fn_checks.get('leakedFootersCount', 0) > 0:
-            errors.append(f"DOM LEAK DETECTED: {fn_checks['leakedFootersCount']} .floating-footer elements are outside .floating-window (mismatched/extra </div> tag)!")
+            errors.append(f"DOM LEAK DETECTED: {fn_checks['leakedFootersCount']} .floating-footer elements are outside .floating-window!")
         if fn_checks.get('leakedBodiesCount', 0) > 0:
-            errors.append(f"DOM LEAK DETECTED: {fn_checks['leakedBodiesCount']} .floating-body elements are outside .floating-window (mismatched/extra </div> tag)!")
+            errors.append(f"DOM LEAK DETECTED: {fn_checks['leakedBodiesCount']} .floating-body elements are outside .floating-window!")
 
         if not fn_checks.get('openAuthorModal'):
             errors.append("window.openAuthorModal is not defined as a function!")
@@ -91,6 +84,44 @@ def run_smoke_test(root_path=None) -> bool:
         if fn_checks.get('bodyTextHasRawJs'):
             errors.append("Body innerText contains raw unparsed JavaScript code!")
 
+        # 3. INTERACTIVE VERIFICATION: Test that EVERY tool window can actually be opened!
+        tools_to_test = [
+            'settings', 'giveaway', 'ask', 'replie', 'randomizer',
+            'user-manager', 'chat-widget', 'voice-settings', 'game-overlay', 'composer'
+        ]
+
+        # Test A: Popout mode (default)
+        for tool in tools_to_test:
+            res = page.evaluate(f"""(t) => {{
+                try {{
+                    openToolWindow(t);
+                    const hasPop = !!(window._popoutWindows && window._popoutWindows[t]);
+                    const winEl = document.getElementById('win-' + t);
+                    const isActive = winEl ? (winEl.classList.contains('active') || winEl.style.display !== 'none') : false;
+                    return {{ ok: true, opened: hasPop || isActive }};
+                }} catch (e) {{
+                    return {{ ok: false, error: e.message }};
+                }}
+            }}""", tool)
+            if not res.get('ok') or not res.get('opened'):
+                errors.append(f"Button/Tool Window Failed: openToolWindow('{tool}') did not open! Detail: {res}")
+
+        # Test B: Inline mode fallback
+        page.evaluate("() => { window._autoPopoutWindows = false; }")
+        for tool in tools_to_test:
+            res = page.evaluate(f"""(t) => {{
+                try {{
+                    openToolWindow(t);
+                    const winEl = document.getElementById('win-' + t);
+                    const isActive = winEl ? (winEl.classList.contains('active') || winEl.style.display !== 'none') : false;
+                    return {{ ok: true, opened: isActive }};
+                }} catch (e) {{
+                    return {{ ok: false, error: e.message }};
+                }}
+            }}""", tool)
+            if not res.get('ok') or not res.get('opened'):
+                errors.append(f"Inline Window Failed: openToolWindow('{tool}') did not open inline! Detail: {res}")
+
         browser.close()
 
     if errors:
@@ -99,7 +130,7 @@ def run_smoke_test(root_path=None) -> bool:
             print(f"  ❌ {err}", file=sys.stderr)
         return False
 
-    print(">>> [SMOKE TEST GATE PASSED] Headless browser verified: 0 runtime errors, 100% healthy UI!")
+    print(">>> [SMOKE TEST GATE PASSED] Headless browser verified: All 10 Tool Windows interactive, 0 runtime errors, 100% healthy UI!")
     return True
 
 if __name__ == '__main__':

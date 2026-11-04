@@ -546,7 +546,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.51</title>
+  <title>Broadcast Playroom v3.52</title>
 
 
 
@@ -1160,7 +1160,7 @@ window.addEventListener('keydown', (e) => {
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.51</span>
+      <span class="desktop-titlebar-tag">v3.52</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -18699,7 +18699,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.51</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.52</span>
 
 
 
@@ -31778,382 +31778,53 @@ window.addEventListener('keydown', (e) => {
 
 
 
-    const _origGetElementById = document.getElementById.bind(document);
-
-
-
-
-
-
-
+const _origGetElementById = document.getElementById.bind(document);
     document.getElementById = function(id) {
-
-
-
-
-
-
-
-      let el = _origGetElementById(id);
-
-
-
-
-
-
-
+      const el = _origGetElementById(id);
       if (el) return el;
-
-
-
-
-
-
-
       if (window._popoutWindows) {
-
-
-
-
-
-
-
         for (const pop of Object.values(window._popoutWindows)) {
-
-
-
-
-
-
-
-          if (pop && !pop.closed && pop.document) {
-
-
-
-
-
-
-
-            try {
-
-
-
-
-
-
-
-              el = pop.document.getElementById(id);
-
-
-
-
-
-
-
-              if (el) return el;
-
-
-
-
-
-
-
-            } catch (e) {}
-
-
-
-
-
-
-
-          }
-
-
-
-
-
-
-
+          try {
+            if (pop && !pop.closed && pop.document) {
+              const found = pop.document.getElementById(id);
+              if (found) return found;
+            }
+          } catch (_) {}
         }
-
-
-
-
-
-
-
       }
-
-
-
-
-
-
-
       return null;
-
-
-
-
-
-
-
     };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     const _origQuerySelector = document.querySelector.bind(document);
-
-
-
-
-
-
-
     document.querySelector = function(sel) {
-
-
-
-
-
-
-
-      let el = _origQuerySelector(sel);
-
-
-
-
-
-
-
+      const el = _origQuerySelector(sel);
       if (el) return el;
-
-
-
-
-
-
-
       if (window._popoutWindows) {
-
-
-
-
-
-
-
         for (const pop of Object.values(window._popoutWindows)) {
-
-
-
-
-
-
-
-          if (pop && !pop.closed && pop.document) {
-
-
-
-
-
-
-
-            try {
-
-
-
-
-
-
-
-              el = pop.document.querySelector(sel);
-
-
-
-
-
-
-
-              if (el) return el;
-
-
-
-
-
-
-
-            } catch (e) {}
-
-
-
-
-
-
-
-          }
-
-
-
-
-
-
-
+          try {
+            if (pop && !pop.closed && pop.document) {
+              const found = pop.document.querySelector(sel);
+              if (found) return found;
+            }
+          } catch (_) {}
         }
-
-
-
-
-
-
-
       }
-
-
-
-
-
-
-
       return null;
-
-
-
-
-
-
-
     };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     const _origQuerySelectorAll = document.querySelectorAll.bind(document);
-
-
-
-
-
-
-
     document.querySelectorAll = function(sel) {
-
-
-
-
-
-
-
       let list = Array.from(_origQuerySelectorAll(sel));
-
-
-
-
-
-
-
       if (window._popoutWindows) {
-
-
-
-
-
-
-
         for (const pop of Object.values(window._popoutWindows)) {
-
-
-
-
-
-
-
-          if (pop && !pop.closed && pop.document) {
-
-
-
-
-
-
-
-            try {
-
-
-
-
-
-
-
+          try {
+            if (pop && !pop.closed && pop.document) {
               list = list.concat(Array.from(pop.document.querySelectorAll(sel)));
-
-
-
-
-
-
-
-            } catch (e) {}
-
-
-
-
-
-
-
-          }
-
-
-
-
-
-
-
+            }
+          } catch (_) {}
         }
-
-
-
-
-
-
-
       }
-
-
-
-
-
-
-
       return list;
-
-
-
-
-
-
-
     };
 
 
@@ -72369,5 +72040,4 @@ try {
 
 
 </html>
-
 

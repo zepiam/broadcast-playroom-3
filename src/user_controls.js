@@ -56,13 +56,17 @@ function getActiveManagerRoots() {
  if (mainWin && mainWin.classList.contains('active') && !mainWin.classList.contains('minimized')) {
   roots.push(mainWin);
  }
- const popup = window._popoutWindows?.['user-manager'];
- if (popup && !popup.closed && popup.document) {
-  const popWin = popup.document.getElementById('win-user-manager');
-  if (popWin && !roots.includes(popWin)) roots.push(popWin);
- }
- const t = (typeof tool === 'function') ? tool() : null;
- if (t && !roots.includes(t)) roots.push(t);
+ try {
+  const popup = window._popoutWindows?.['user-manager'];
+  if (popup && !popup.closed && popup.document) {
+   const popWin = popup.document.getElementById('win-user-manager');
+   if (popWin && !roots.includes(popWin)) roots.push(popWin);
+  }
+ } catch (_) {}
+ try {
+  const t = (typeof tool === 'function') ? tool() : null;
+  if (t && !roots.includes(t)) roots.push(t);
+ } catch (_) {}
  return roots;
 }
 
