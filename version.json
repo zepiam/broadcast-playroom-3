@@ -1,23 +1,47 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.48",
-  "latest_version": "3.48",
+  "version": "3.49",
+  "latest_version": "3.49",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.48\n\n### สิ่งที่ได้รับการปรับปรุงในเวอร์ชัน 3.48:\n- **กลับมาใช้ Native Windows Title Bar มาตรฐานเหมือนกันทุกเครื่อง 100%**:\n  - ยกเลิกการใช้ Frameless Custom Title Bar ภายในหน้าเว็บ เพื่อตัดปัญหา Title Bar ซ้อน 2 ชั้นและปัญหาการย่อ/ขยาย/ลากหน้าต่าง\n  - คืนค่า Title Bar ของระบบ Windows มาตรฐาน พร้อมปุ่ม ย่อ (Minimize), ขยาย (Maximize), และ ปิด (Close) แท้ๆ ของระบบปฏิบัติการ\n  - เอาแถบควบคุมภายในแอป (Fake Title Bar & Resizers) ออกทั้งหมด ทำให้หน้าจอคลีน สวยงาม และเสถียร 100%\n- **รองรับคีย์ลัด Ctrl+R / Ctrl+Shift+R / F5 เพื่อ Hard-Reload ล้างแคชได้ทุกเครื่อง**:\n  - เพิ่ม Global Keyboard Shortcut ดักจับการกด `Ctrl+R`, `Ctrl+Shift+R`, หรือ `F5` เพื่อสั่งโหลดหน้าจอใหม่และสลัดแคชทิ้ง (Cache Bust) ทันทีในทุกโหมด\n- **ระบบเช็คอัปเดต Multi-CDN ไม่ค้างและไม่ติดบล็อกเน็ตในไทย**:\n  - ดึงข้อมูลผ่าน Hugging Face CDN (Cloudflare) + jsDelivr Mirror เช็คผ่านได้ใน 0.5 วินาที\n  - แก้ไขป้ายกำกับเป็น 'เวอร์ชันล่าสุด' และแสดงเลขเวอร์ชันปัจจุบัน v3.48 อย่างถูกต้อง\n",
+  "changelog": "# Broadcast Playroom v3.49\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.49:\n- **มาตรฐานระบบหน้าต่างแบบ Native Chrome/Edge App Mode 100% เหมือนกันทุกเครื่อง**:\n  - แก้ไขปัญหาความแตกต่างระหว่างเครื่อง Dev และเครื่องผู้ใช้งานทั่วไป โดยเปลี่ยนมาใช้ Chrome/Edge App Mode เป็นมาตรฐานหลักเดียวกันทั้งหมด\n  - แสดงผล Windows Native Title Bar ด้านบนสุด พร้อมปุ่มย่อ ขยาย และปิดหน้าต่างมาตรฐานของ Windows อย่างสมบูรณ์แบบ\n  - นำแถบ Title Bar ภายในโปรแกรมที่ซ้ำซ้อนออก เพื่อให้หน้าตาคลีนตาและมี Title Bar เพียงชั้นเดียว\n- **เปิดหน้าต่างเครื่องมือย่อยแยกออกนอกจอโปรแกรมได้อิสระ (Multi-Monitor Floating Windows)**:\n  - เพิ่มแฟล็ก `--disable-popup-blocking` ในคำสั่งรันเบราว์เซอร์ App Mode\n  - ทำให้หน้าต่างแชท, การตั้งค่า, วงล้อสุ่ม, คำถาม และเครื่องมืออื่นๆ สามารถ Popout ออกเป็นหน้าต่างแยกอิสระ สามารถลากไปวางที่หน้าจอที่ 2 หรือ 3 ได้อย่างราบรื่น\n- **แก้ไขปุ่มแก้ไขสตรีม (Edit Link) และกำจัด `javascript:void(0)`**:\n  - เปลี่ยนลิงก์ Edit ของ Twitch/YouTube/Kick ให้ทำงานผ่าน handler ที่ถูกต้อง ไม่แสดง `javascript:void(0)` ที่มุมซ้ายล่างอีกต่อไป\n  - เปิดหน้าแดชบอร์ดแก้ไขข้อมูลสตรีมบนเบราว์เซอร์หลักของผู้ใช้ได้ทันที\n- **แก้ไขการดึงและรีเฟรชชื่อห้องสตรีม Twitch (SSL & Emojis Support)**:\n  - เพิ่มระบบโหลดใบรับรอง SSL มาตรฐานของระบบ Windows ป้องกันปัญหาดึงชื่อห้องสตรีมไม่สำเร็จบนเครื่องที่ไม่มี Certificate Bundle\n  - รองรับการถอดรหัสตัวอักษรพิเศษและอิโมจิในชื่อห้องสตรีมโดยไม่เกิดข้อผิดพลาด\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.48/patch-v3.48-lite.zip",
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.48-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
+      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-lite.zip",
+      "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-lite.zip"
     ],
-    "sha256": "5d80a9f68249fe9583eaf409dd951f57373be42c5f3ed2c5a2f2e565cf1beceb",
-    "size": 93283830
+    "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992",
+    "size": 71686794
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.48/patch-v3.48-full.zip",
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.48-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
+      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-full.zip",
+      "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-full.zip"
     ],
-    "sha256": "5d80a9f68249fe9583eaf409dd951f57373be42c5f3ed2c5a2f2e565cf1beceb",
-    "size": 93283830
+    "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992",
+    "size": 71686794
+  },
+  "packages": {
+    "lite": {
+      "patch_url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
+      "mirrors": [
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-lite.zip",
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-lite.zip",
+        "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-lite.zip"
+      ],
+      "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992"
+    },
+    "full": {
+      "patch_url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
+      "mirrors": [
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.49-full.zip",
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.49/patch-v3.49-full.zip",
+        "https://cdn.jsdelivr.net/gh/zepiam/broadcast-playroom-3@v3.49/patches/patch-v3.49-full.zip"
+      ],
+      "sha256": "6878c93342be7fa566865eeeeda79338d51ad9e4a1ade20fe1765bbfc4ecb992"
+    }
   }
 }

@@ -116,20 +116,22 @@ def fetch_stream_title(platform: str, channel: str) -> str:
 
         try:
 
-            import urllib.request, json
-
+            import urllib.request, json, ssl
+            ctx = None
+            try:
+                ctx = ssl.create_default_context()
+                if hasattr(ctx, 'load_default_certs'):
+                    ctx.load_default_certs()
+            except Exception:
+                pass
+            if not ctx:
+                ctx = ssl._create_unverified_context()
             q = 'query { user(login: "%s") { broadcastSettings { title } stream { title } } }' % ch
-
-            req = urllib.request.Request('https://gql.twitch.tv/gql', data=json.dumps({'query': q}).encode(), headers={'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'})
-
-            with urllib.request.urlopen(req, timeout=5) as res:
-
-                data = json.loads(res.read())
-
+            req = urllib.request.Request('https://gql.twitch.tv/gql', data=json.dumps({'query': q}).encode('utf-8'), headers={'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko', 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, context=ctx, timeout=5) as res:
+                data = json.loads(res.read().decode('utf-8', errors='replace'))
                 user = data.get('data', {}).get('user', {}) or {}
-
                 stream = user.get('stream') or {}
-
                 return stream.get('title') or (user.get('broadcastSettings') or {}).get('title') or ''
 
         except Exception:

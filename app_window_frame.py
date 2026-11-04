@@ -52,8 +52,8 @@ def bring_main_window_to_front():
 
     hwnd = _main_hwnd
     if not hwnd or not user32.IsWindow(hwnd):
-        # 1. Try finding window with title 'Broadcast Playroom 3'
-        hwnd = user32.FindWindowW(None, 'Broadcast Playroom 3')
+        # 1. Try finding window with title 'Broadcast Playroom'
+        hwnd = user32.FindWindowW(None, 'Broadcast Playroom')
         if not hwnd:
             # 2. Enumerate visible windows looking for 'Broadcast Playroom' in title
             candidates = []
@@ -133,7 +133,7 @@ def _ensure_app_shortcut(app_id, ico_path):
         from win32com.propsys import propsys, pscon
         import pythoncom
         import win32com.client
-        programs_dir = Path(os.environ.get('APPDATA', '')) / 'Microsoft' / 'Windows' / 'Start Menu' / 'Programs' / 'Broadcast Playroom 3'
+        programs_dir = Path(os.environ.get('APPDATA', '')) / 'Microsoft' / 'Windows' / 'Start Menu' / 'Programs' / 'Broadcast Playroom'
         programs_dir.mkdir(parents=True, exist_ok=True)
         target_lnk = programs_dir / 'Broadcast Playroom 3 (Full).lnk'
         if not target_lnk.exists():
@@ -142,7 +142,7 @@ def _ensure_app_shortcut(app_id, ico_path):
             sc.TargetPath = sys.executable
             sc.WorkingDirectory = str(Path(ico_path).parents[2])
             sc.IconLocation = f"{ico_path},0"
-            sc.Description = "Broadcast Playroom 3"
+            sc.Description = "Broadcast Playroom"
             sc.Save()
         # Set AppUserModelID on shortcut
         st = propsys.SHGetPropertyStoreFromParsingName(str(target_lnk), None, 2, propsys.IID_IPropertyStore)
@@ -230,7 +230,7 @@ def apply_icon_to_app_windows():
                 return
             txt = win32gui.GetWindowText(hwnd)
             cls = win32gui.GetClassName(hwnd)
-            if 'Broadcast Playroom 3' not in txt and cls != 'Chrome_WidgetWin_1':
+            if 'Broadcast Playroom' not in txt and cls != 'Chrome_WidgetWin_1':
                 return
             try:
                 pid = win32process.GetWindowThreadProcessId(hwnd)[1]
@@ -238,7 +238,7 @@ def apply_icon_to_app_windows():
                 pname = proc.name().lower()
                 if pname not in ('chrome.exe', 'msedge.exe', 'broadcastplayroom3-full.exe', 'broadcastplayroom3-lite.exe', 'python.exe'):
                     return
-                if 'Broadcast Playroom 3' in txt or any('index.html' in a or 'browser_profile' in a for a in proc.cmdline()):
+                if 'Broadcast Playroom' in txt or any('index.html' in a or 'browser_profile' in a for a in proc.cmdline()):
                     if setup_app_window_icon(hwnd):
                         applied = True
             except Exception:
@@ -293,13 +293,9 @@ def setup_discord_frame(hwnd):
     try:
         import win32gui, win32con
         style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
-        style |= win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX | win32con.WS_MINIMIZEBOX
-        style &= ~win32con.WS_CAPTION
+        style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX | win32con.WS_MINIMIZEBOX | win32con.WS_SYSMENU
         win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
-
-        margins = MARGINS(0, 0, 1, 0)
-        ctypes.windll.dwmapi.DwmExtendFrameIntoClientArea(hwnd, ctypes.byref(margins))
-
+        win32gui.SetWindowRgn(hwnd, 0, True)
         win32gui.SetWindowPos(
             hwnd, 0, 0, 0, 0, 0,
             win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_FRAMECHANGED
@@ -513,7 +509,7 @@ def action(command, data=None):
     import psutil, win32gui, win32process, win32con
     windows = []
     def collect(hwnd, _):
-        if not win32gui.IsWindowVisible(hwnd) or 'Broadcast Playroom 3' not in win32gui.GetWindowText(hwnd):
+        if not win32gui.IsWindowVisible(hwnd) or 'Broadcast Playroom' not in win32gui.GetWindowText(hwnd):
             return
         try:
             pid = win32process.GetWindowThreadProcessId(hwnd)[1]
@@ -539,25 +535,12 @@ def action(command, data=None):
             _remember_window(hwnd)
         return {'ok': True}
     if command == 'init':
-        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
-        client_x, client_y = win32gui.ClientToScreen(hwnd, (0, 0))
-        user32 = ctypes.windll.user32
-        try:
-            user32.GetDpiForWindow.argtypes = [ctypes.c_void_p]
-            dpi = user32.GetDpiForWindow(hwnd) or 96
-            caption = user32.GetSystemMetricsForDpi(4, dpi) + user32.GetSystemMetricsForDpi(33, dpi) + user32.GetSystemMetricsForDpi(92, dpi)
-        except AttributeError:
-            caption = user32.GetSystemMetrics(4) + user32.GetSystemMetrics(33) + user32.GetSystemMetrics(92)
-        inset = max(0, client_y - top, caption)
-        if inset:
-            from ctypes import wintypes
-            create_region = ctypes.windll.gdi32.CreateRectRgn
-            create_region.argtypes = [ctypes.c_int] * 4
-            create_region.restype = wintypes.HANDLE
-            region = create_region(0, inset, right - left, bottom - top)
-            if not region:
-                return {'ok': False}
-            win32gui.SetWindowRgn(hwnd, region, True)
+        win32gui.SetWindowRgn(hwnd, 0, True)
+        style = win32gui.GetWindowLong(hwnd, win32con.GWL_STYLE)
+        style |= win32con.WS_CAPTION | win32con.WS_THICKFRAME | win32con.WS_MAXIMIZEBOX | win32con.WS_MINIMIZEBOX | win32con.WS_SYSMENU
+        win32gui.SetWindowLong(hwnd, win32con.GWL_STYLE, style)
+        win32gui.SetWindowPos(hwnd, 0, 0, 0, 0, 0, win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOZORDER | win32con.SWP_FRAMECHANGED)
+        return {'ok': True}
     elif command == 'drag':
         _do_native_drag(hwnd)
         return {'ok': True}

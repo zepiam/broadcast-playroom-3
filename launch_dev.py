@@ -6766,37 +6766,11 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
         if path == '/api/open-external':
-
-
-
-
-
-
-
             try:
-
-
-
-
-
-
-
+                client_ip = self.client_address[0] if hasattr(self, 'client_address') and self.client_address else ''
                 origin = urllib.parse.urlparse(self.headers.get('Origin', ''))
-
-
-
-
-
-
-
-                if origin.scheme != 'http' or origin.hostname not in ('localhost', '127.0.0.1') or origin.port != self.server.server_port:
-
-
-
-
-
-
-
+                is_local = client_ip in ('127.0.0.1', '::1', 'localhost') or origin.hostname in ('localhost', '127.0.0.1')
+                if not is_local:
                     self.send_json({'error': 'Invalid origin'}, 403); return
 
 
@@ -12070,61 +12044,17 @@ def start_server():
 
 
 def find_browser():
-
-
-
-
-
-
-
-    chrome_path = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
-
-
-
-
-
-
-
-    edge_path = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
-
-
-
-
-
-
-
-    if os.path.exists(chrome_path):
-
-
-
-
-
-
-
-        return chrome_path
-
-
-
-
-
-
-
-    if os.path.exists(edge_path):
-
-
-
-
-
-
-
-        return edge_path
-
-
-
-
-
-
-
+    candidates = [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"),
+    ]
+    for c in candidates:
+        if os.path.isfile(c):
+            return c
     return None
 
 
@@ -12142,547 +12072,82 @@ def find_browser():
 
 
 def open_app_window(main_url):
-    # 1. Prefer native frameless desktop window (removes browser titlebar completely)
-    if '--browser' not in sys.argv:
-        try:
-            import webview
-            webview.settings['DRAG_REGION_SELECTOR'] = '.pywebview-drag-region, .desktop-titlebar'
-            try:
-                from webview.platforms.edgechromium import EdgeChrome
-                def _allow_child_popups(browser, sender, args):
-                    uri = str(args.get_Uri() or '')
-                    if uri.startswith(('http://', 'https://')) and not ('127.0.0.1' in uri or 'localhost' in uri):
-                        args.set_Handled(True)
-                        import webbrowser
-                        webbrowser.open(uri)
-                    else:
-                        args.set_Handled(True)
-                EdgeChrome.on_new_window_request = _allow_child_popups
-            except Exception:
-                pass
-            storage_path = os.path.join(str(DATA_ROOT), 'webview_data')
-            os.makedirs(storage_path, exist_ok=True)
-            # Purge stale WebView2 HTTP/Code caches so updates are applied 100% immediately
-            try:
-                candidate_paths = [
-                    storage_path,
-                    os.path.join(str(DATA_ROOT), 'webview_data'),
-                    os.path.join(os.environ.get('LOCALAPPDATA', '') or str(Path.home() / 'AppData' / 'Local'), 'BroadcastPlayroom3', 'webview_data'),
-                    os.path.join(str(Path(sys.executable).parent.parent / 'data'), 'webview_data') if getattr(sys, 'frozen', False) else None,
-                    os.path.join(str(Path(sys.executable).parent / 'data'), 'webview_data') if getattr(sys, 'frozen', False) else None
-                ]
-                for sp in candidate_paths:
-                    if not sp or not os.path.isdir(sp):
-                        continue
-                    for sub in ['EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'EBWebView/Default/GPUCache', 'EBWebView/Default/DawnCache', 'Default/Cache', 'Default/Code Cache']:
-                        c_dir = os.path.join(sp, os.path.normpath(sub))
-                        if os.path.isdir(c_dir):
-                            import shutil
-                            shutil.rmtree(c_dir, ignore_errors=True)
-            except Exception:
-                pass
-            # Pre-flight asset integrity check
-            try:
-                from dist_integrity import verify_dist_health
-                healthy, health_msg = verify_dist_health(ROOT_DIR)
-                if not healthy:
-                    print(f"[WARN] Startup integrity check detected issue: {health_msg}", flush=True)
-                    main_url = re.sub(r"/index\.html.*$", "/emergency_repair.html", main_url)
-                else:
-                    print(f"[INTEGRITY PASS] {health_msg}", flush=True)
-            except Exception as e:
-                print(f"[WARN] Integrity checker error: {e}", flush=True)
-
-            cache_delim = '&' if '?' in main_url else '?'
-            main_url_busted = f"{main_url}{cache_delim}_v={CURRENT_VERSION}_{int(time.time())}"
-
-            w = webview.create_window(
-                title=f"Broadcast Playroom v{CURRENT_VERSION}",
-                url=main_url_busted,
-                width=1600,
-                height=950,
-                min_size=(600, 420),
-                frameless=False,
-                easy_drag=False
-            )
-            from app_window_frame import set_webview_window, setup_app_window_icon, is_app_shutting_down
-            set_webview_window(w)
-
-            def _on_closing():
-                if is_app_shutting_down():
-                    return True
-                try:
-                    w.evaluate_js("if (typeof requestAppExit === 'function') requestAppExit();")
-                except Exception:
-                    pass
-                return False
-
-            w.events.closing += _on_closing
-            
-            _configured_lock = threading.Lock()
-            _configured = False
-            _app_frontend_ready = False
-
-            def _setup_icon_ui():
-                nonlocal _configured
-                with _configured_lock:
-                    if _configured:
-                        return
-                    _configured = True
-                try:
-                    h = w.native.Handle.ToInt64() if hasattr(w.native, 'Handle') else int(w.native)
-                    setup_app_window_icon(h)
-                    # Native Windows title bar retained (no discord frameless strip)
-                except Exception as e:
-                    print(f"[WARN] _setup_icon / discord_frame error: {e}", flush=True)
-
-            def _trigger_setup():
-                try:
-                    if w and w.native:
-                        from System import Action
-                        w.native.BeginInvoke(Action(_setup_icon_ui))
-                except Exception as e:
-                    print(f"[WARN] _trigger_setup dispatch error: {e}", flush=True)
-
-            def _on_page_loaded():
-                _trigger_setup()
-
-            w.events.loaded += _on_page_loaded
-
-            def _setup_icon_timer():
-                time.sleep(1.0)
-                _trigger_setup()
-
-            threading.Thread(target=_setup_icon_timer, daemon=True).start()
-            
-            def _safe_splash_closer():
-                start_w = time.monotonic()
-                while time.monotonic() - start_w < 2.5:
-                    if _app_frontend_ready:
-                        break
-                    time.sleep(0.04)
-                try:
-                    close_splash()
-                except Exception:
-                    pass
-
-            threading.Thread(target=_safe_splash_closer, daemon=True).start()
-
-            print("[LAUNCH] Opening Native Frameless Desktop window (No browser bar)...", flush=True)
-            webview.start(storage_path=storage_path)
-            print("[INFO] Native Desktop window closed; stopping owned services.", flush=True)
-            sys.exit(0)
-        except Exception as e:
-            print(f"[WARN] Native frameless window failed ({e}), falling back to Chrome/Edge app mode...", flush=True)
-
+    curr_ver = get_current_version()
     browser_bin = find_browser()
     launched = False
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # Create dedicated, isolated application profile directory so that:
-
-
-
-
-
-
-
-    # 1. It NEVER touches or shares the user's personal Chrome profile, history, or cookies.
-
-
-
-
-
-
-
-    # 2. Chrome plugins/extensions (Bitwarden, LastPass, etc.) are 100% excluded and disabled.
-
-
-
-
-
-
-
-    # 3. Autofill, password popups, and translate banners are strictly suppressed.
-
-
-
-
-
-
-
     app_profile_dir = os.path.join(str(DATA_ROOT), 'browser_profile')
-
-
-
-
-
-
-
     os.makedirs(app_profile_dir, exist_ok=True)
     # Purge stale browser cache to guarantee immediate UI update without requiring Ctrl+Shift+R
     for cache_sub in ['Default/Cache', 'Default/Code Cache', 'Default/GPUCache', 'ShaderCache', 'GrShaderCache']:
         cp = os.path.join(app_profile_dir, *cache_sub.split('/'))
         if os.path.isdir(cp):
             try:
+                import shutil
                 shutil.rmtree(cp, ignore_errors=True)
             except Exception:
                 pass
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+    cache_delim = '&' if '?' in main_url else '?'
+    main_url_busted = f"{main_url}{cache_delim}_v={curr_ver}_{int(time.time())}"
 
     if browser_bin:
-
-
-
-
-
-
-
         cmd = [
-
-
-
-
-
-
-
             browser_bin,
-
-
-
-
-
-
-
-            f"--app={main_url}",
-
-
-
-
-
-
-
+            f"--app={main_url_busted}",
             f"--user-data-dir={app_profile_dir}",
+            "--disable-popup-blocking",
+            "--new-window",
             "--disable-background-timer-throttling",
             "--disable-backgrounding-occluded-windows",
             "--disable-renderer-backgrounding",
-            "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading",
+            "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading,WebAppWindowControlsOverlay",
             "--disable-http-cache",
             "--disable-application-cache",
             "--disk-cache-size=1",
             "--media-cache-size=1",
-            "--enable-features=WebAppWindowControlsOverlay",
             "--autoplay-policy=no-user-gesture-required",
             "--disable-extensions",
-
-
-
-
-
-
-
             "--disable-plugins",
-
-
-
-
-
-
-
             "--disable-component-extensions-with-background-pages",
-
-
-
-
-
-
-
             "--disable-default-apps",
-
-
-
-
-
-
-
             "--disable-features=Translate,AutofillServerCommunication,AutofillEnableAccountWalletStorage,PasswordGeneration",
-
-
-
-
-
-
-
             "--disable-save-password-bubble",
-
-
-
-
-
-
-
             "--disable-single-click-autofill",
-
-
-
-
-
-
-
             "--disable-autofill-keyboard-accessory-view",
-
-
-
-
-
-
-
             "--password-store=basic",
-
-
-
-
-
-
-
             "--no-default-browser-check",
-
-
-
-
-
-
-
             "--no-first-run",
-
-
-
-
-
-
-
             "--window-size=1600,950",
-
-
-
-
-
-
-
             "--window-position=100,50"
-
-
-
-
-
-
-
         ]
-
-
-
-
-
-
-
-        print(f"[LAUNCH] Opening Desktop App window...", flush=True)
-
-
-
-
-
-
-
+        print(f"[LAUNCH] Opening Desktop App window via {os.path.basename(browser_bin)} (Popouts & Title Bar Native)...", flush=True)
         try:
-
-
-
-
-
-
-
             proc = subprocess.Popen(cmd)
-
-
-
-
-
-
-
             launched = True
-
-
-
-
-
-
-
             def _watch_app_window_icon():
-
-
-
                 start_t = time.time()
-
-
-
                 while time.time() - start_t < 35:
-
-
-
                     try:
-
-
-
                         from app_window_frame import apply_icon_to_app_windows
-
-
-
                         if apply_icon_to_app_windows():
-
-
-
                             time.sleep(1.0)
-
-
-
                         else:
-
-
-
                             time.sleep(0.3)
-
-
-
                     except Exception:
-
-
-
                         time.sleep(0.5)
-
-
-
             threading.Thread(target=_watch_app_window_icon, daemon=True).start()
-
-
-
-
-
-
-
             time.sleep(1.0)
-
-
-
-
-
-
-
             if proc.poll() is not None and proc.returncode != 0:
-
-
-
-
-
-
-
                 print(f"[WARN] App mode exited unexpectedly (code {proc.returncode}), opening browser...", flush=True)
-
-
-
-
-
-
-
                 webbrowser.open(main_url)
-
-
-
-
-
-
-
         except Exception as e:
-
-
-
-
-
-
-
             print(f"[WARN] Failed to open app mode ({e}), falling back to default browser...", flush=True)
-
-
-
-
-
-
-
             webbrowser.open(main_url)
-
-
-
-
-
-
-
             launched = True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     if not launched:
-
-
-
-
-
-
-
         print("[LAUNCH] Opening in default web browser...", flush=True)
-
-
-
-
-
-
-
         webbrowser.open(main_url)
 
 
