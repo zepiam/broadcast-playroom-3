@@ -55,13 +55,11 @@ if __name__ == '__main__':
                 sys.path.remove(p)
             sys.path.insert(0, p)
 
-        # Re-order sys.meta_path so standard disk PathFinder runs before PyiFrozenImporter
+        # Re-order sys.meta_path so standard disk PathFinder runs before PyInstaller FrozenImporter
         try:
-            path_finders = [imp for imp in sys.meta_path if hasattr(imp, 'find_spec') and imp.__class__.__name__ == 'PathFinder']
-            frozen_imps = [imp for imp in sys.meta_path if 'Frozen' in imp.__class__.__name__ or 'Pyi' in imp.__class__.__name__]
-            other_imps = [imp for imp in sys.meta_path if imp not in path_finders and imp not in frozen_imps]
-            if path_finders and frozen_imps:
-                sys.meta_path = path_finders + frozen_imps + other_imps
+            path_finders = [imp for imp in sys.meta_path if getattr(imp, '__name__', '') == 'PathFinder' or imp.__class__.__name__ == 'PathFinder']
+            if path_finders:
+                sys.meta_path = path_finders + [i for i in sys.meta_path if i not in path_finders]
         except Exception:
             pass
 

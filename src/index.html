@@ -546,7 +546,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.52</title>
+  <title>Broadcast Playroom v3.55</title>
 
 
 
@@ -1160,7 +1160,7 @@ window.addEventListener('keydown', (e) => {
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.52</span>
+      <span class="desktop-titlebar-tag">v3.55</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -18699,7 +18699,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.53</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.55</span>
 
 
 
@@ -56188,12 +56188,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     let _ttsLatencyMs = null;
-
-
-
     let _ttsHealthChecking = false;
-
-
+    let _ttsHasRetriedOnce = false;
 
     async function checkTtsServerHealth(interactive = false) {
 
@@ -56243,18 +56239,20 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      } catch (_) {
-
-
-
-        _ttsLatencyMs=null;_ttsServerHealthState='red';dot.className='server-status-dot red';txt.textContent='ทดสอบไม่สำเร็จ';
-
-
-
-        if(wrap)wrap.title='ทดสอบสร้างเสียงไม่สำเร็จ คลิกเพื่อลองอีกครั้ง';
-
-
-
+      } catch (err) {
+        if(!interactive && !_ttsHasRetriedOnce) {
+          _ttsHasRetriedOnce = true;
+          clearTimeout(timer);
+          _ttsHealthChecking = false;
+          setTimeout(() => { checkTtsServerHealth(false); }, 2500);
+          return;
+        }
+        _ttsLatencyMs=null;
+        _ttsServerHealthState='red';
+        dot.className='server-status-dot red';
+        txt.textContent='ทดสอบไม่สำเร็จ';
+        const msg = (err && err.message) ? err.message : 'เกิดข้อผิดพลาด';
+        if(wrap)wrap.title='ทดสอบสร้างเสียงไม่สำเร็จ (' + msg + ') คลิกเพื่อลองอีกครั้ง';
       } finally {clearTimeout(timer);_ttsHealthChecking=false;}
 
 
@@ -56348,7 +56346,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      setTimeout(() => { checkTtsServerHealth(false); }, 600);
+      setTimeout(() => { checkTtsServerHealth(false); }, 1500);
 
 
 

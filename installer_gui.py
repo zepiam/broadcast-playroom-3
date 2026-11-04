@@ -36,16 +36,16 @@ from PySide6.QtWidgets import (
 # -------------------------------------------------------------
 DOWNLOAD_MIRRORS = {
     "lite": [
-        # Mirror 1: Google Drive (ความเร็วสูง)
-        "https://drive.google.com/uc?export=download&id=15J6EGBD3fIveLuwoJkTWBBxBbUkvdEyx",
-        # Mirror 2: Hugging Face (สำรอง CDN)
+        # Mirror 1: Hugging Face (Primary CDN - v3.54 Direct)
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Lite.zip",
+        # Mirror 2: Google Drive (สำรอง)
+        "https://drive.google.com/uc?export=download&id=15J6EGBD3fIveLuwoJkTWBBxBbUkvdEyx",
     ],
     "full": [
-        # Mirror 1: Google Drive (ความเร็วสูง)
-        "https://drive.google.com/uc?export=download&id=17gpfsUfVM7wt1sAS6pGj7UnAcfs6werV",
-        # Mirror 2: Hugging Face (สำรอง CDN)
+        # Mirror 1: Hugging Face (Primary CDN - v3.54 Direct)
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Full.zip",
+        # Mirror 2: Google Drive (สำรอง)
+        "https://drive.google.com/uc?export=download&id=17gpfsUfVM7wt1sAS6pGj7UnAcfs6werV",
     ]
 }
 
@@ -767,9 +767,9 @@ class SetupWindow(QMainWindow):
             if not _vpath:
                 _vpath = os.path.join(os.path.dirname(__file__), "version.json")
             with open(_vpath, "r", encoding="utf-8") as _vf:
-                _cur_v = json.load(_vf).get("version", "3.53")
+                _cur_v = json.load(_vf).get("version", "3.54")
         except Exception:
-            _cur_v = "3.53"
+            _cur_v = "3.54"
         lbl_tag = QLabel(f"v{_cur_v} Stable")
         lbl_tag.setStyleSheet("font-size: 11px; font-weight: 700; color: #5865f2; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.35); border-radius: 6px; padding: 2px 8px;")
         h_title_row.addWidget(lbl_title)

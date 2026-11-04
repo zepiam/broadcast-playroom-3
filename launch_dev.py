@@ -30,6 +30,13 @@ if "--disable-background-timer-throttling" not in _wv_existing:
 
 
 import sys
+# DISK-FIRST IMPORT LOADER: Ensure disk PathFinder runs before PyInstaller FrozenImporter
+try:
+    _pfs = [imp for imp in sys.meta_path if getattr(imp, '__name__', '') == 'PathFinder' or imp.__class__.__name__ == 'PathFinder']
+    if _pfs:
+        sys.meta_path = _pfs + [i for i in sys.meta_path if i not in _pfs]
+except Exception:
+    pass
 
 
 
@@ -664,6 +671,33 @@ from dictionary_manager import dict_manager
 
 
 
+
+def _force_disk_module(mod_name):
+    # Ensure updated .py files on disk take precedence over PyInstaller frozen bytecode
+    bases = []
+    if getattr(sys, 'frozen', False):
+        exe_dir = os.path.dirname(sys.executable)
+        bases.extend([exe_dir, os.path.join(exe_dir, '_internal')])
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    bases.extend([file_dir, os.path.join(file_dir, '_internal')])
+    for base in bases:
+        fpath = os.path.join(base, f"{mod_name}.py")
+        if os.path.isfile(fpath):
+            try:
+                import importlib.util
+                spec = importlib.util.spec_from_file_location(mod_name, fpath)
+                if spec and spec.loader:
+                    mod = importlib.util.module_from_spec(spec)
+                    sys.modules[mod_name] = mod
+                    spec.loader.exec_module(mod)
+                    return mod
+            except Exception:
+                pass
+            break
+    return None
+
+_force_disk_module('tts_service')
+_force_disk_module('updater')
 
 from tts_service import tts_service
 

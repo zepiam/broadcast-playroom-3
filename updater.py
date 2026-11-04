@@ -1219,16 +1219,13 @@ def start_background_download(info: dict) -> dict:
 
 
 
-            # Candidate URLs prioritizing Hugging Face for Thailand/Asia
+            # Candidate URLs: primary download_url first, mirrors as backup fallback
             urls_to_try = []
+            if download_url:
+                urls_to_try.append(download_url)
             mirrors = info.get("mirrors") or []
             for m in mirrors:
-                if "huggingface" in m and m not in urls_to_try:
-                    urls_to_try.append(m)
-            if download_url and download_url not in urls_to_try:
-                urls_to_try.append(download_url)
-            for m in mirrors:
-                if m not in urls_to_try:
+                if m and m not in urls_to_try:
                     urls_to_try.append(m)
 
             ok = False

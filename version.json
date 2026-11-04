@@ -1,39 +1,39 @@
 {
-  "version": "3.54",
-  "latest_version": "3.54",
+  "version": "3.55",
+  "latest_version": "3.55",
   "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.54\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชั่น 3.54:\n- **แก้ไขสถานะเซิร์ฟเวอร์เสียงอ่าน TTS หลุดเชื่อมต่อ (Server Status 100% Fixed)**:\n  - เพิ่มโมดูล `language_detect.py` และ `network_dns.py` เข้าชุดแพตช์อัปเดตและโปรแกรมหลักอย่างสมบูรณ์แบบ\n  - เสริมระบบ Fallback ความทนทานสูงใน `tts_service.py` แม้ขาดโมดูลเสริมเสียงอ่านก็ยังสังเคราะห์เสียงภาษาไทยได้ลื่นไหล 0% ล่ม\n  - แถบสถานะด้านบนจะแสดงเป็นสีเขียว `🟢 ทดสอบเสียงสำเร็จ` ทั้งในโหมด Dev และตัวติดตั้งจริง\n- **ปรับปรุงตัวติดตั้ง Setup สลับตำแหน่งเวอร์ชัน**:\n  - สลับตำแหน่งตัวเลือกในหน้าติดตั้งให้ **⚡ Lite Edition (ขนาดกะทัดรัด)** อยู่ด้านบน และ **🚀 Full Edition (ครบวงจร)** อยู่ด้านล่างตามลำดับการใช้งาน\n  - ตั้งค่า Google Drive เป็นช่องทางดาวน์โหลดหลักความเร็วสูง พร้อม Hugging Face สำรองอัตโนมัติ\n- **ระบบอัปเดต In-App Updater ราบรื่น ไม่เปิดซ้ำ 2 หน้าต่าง**:\n  - รองรับการรีสตาร์ทแตกไฟล์ทับและปิดหน้าต่างเดิมอย่างหมดจด ไม่เกิดการเปิดโปรแกรมซ้ำซ้อน\n",
+  "changelog": "# Broadcast Playroom v3.55\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชั่น 3.55:\n- **ทดสอบระบบอัปเดตอัตโนมัติในแอป (In-App Self-Updater Test)**:\n  - แก้ไข UnboundLocalError ในฟังก์ชันดาวน์โหลดอัปเดตเบื้องหลัง (nonlocal download_url)\n  - ตั้งค่า GitHub Releases เป็นช่องทางดาวน์โหลดหลักความเร็วสูง พร้อม Hugging Face สำรองอัตโนมัติ\n- **แก้ปัญหาสถานะเซิร์ฟเวอร์เสียงอ่าน TTS (Server Status 100% Fixed)**:\n  - เพิ่มโมดูล `app_presence.py` ในชุดติดตั้ง ทำให้โมดูลล่าสุดบนดิสก์ทำงานได้อย่างสมบูรณ์\n  - ปรับปรุงการตรวจสอบสถานะเสียงอ่านเริ่มต้นให้รอ 1.5 วินาที พร้อมระบบลองใหม่อัตโนมัติ (Auto-Retry)\n  - ปรับปรุงการโหลดโมดูลดิสก์ (_force_disk_module) ให้อ่านจากไดเรกทอรีของโปรแกรมโดยตรง\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.54-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-lite.zip",
-      "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
-      "size": 35855036,
+      "file": "patch-v3.55-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-lite.zip",
+      "sha256": "4a01c0045c821006190b08bbc92625817f741b5d1b8c1c2248255e1ebb2fca67",
+      "size": 35854975,
       "mirrors": [
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.55-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.54-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-full.zip",
-      "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
-      "size": 35855036,
+      "file": "patch-v3.55-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-full.zip",
+      "sha256": "4a01c0045c821006190b08bbc92625817f741b5d1b8c1c2248255e1ebb2fca67",
+      "size": 35854975,
       "mirrors": [
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.55-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.54-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-lite.zip",
-    "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
-    "size": 35855036
+    "file": "patch-v3.55-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-lite.zip",
+    "sha256": "4a01c0045c821006190b08bbc92625817f741b5d1b8c1c2248255e1ebb2fca67",
+    "size": 35854975
   },
   "full": {
-    "file": "patch-v3.54-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-full.zip",
-    "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
-    "size": 35855036
+    "file": "patch-v3.55-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-full.zip",
+    "sha256": "4a01c0045c821006190b08bbc92625817f741b5d1b8c1c2248255e1ebb2fca67",
+    "size": 35854975
   }
 }
