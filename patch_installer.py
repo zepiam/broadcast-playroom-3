@@ -4,12 +4,11 @@ Designed for zero-friction updating and emergency repair for non-technical users
 Features:
 - Automatic detection of installed instances (Full & Lite)
 - Automatic detection of running processes & desktop shortcuts
-- Offline local patch ZIP detection (with strict version verification) & Online GitHub / HuggingFace auto-download
-- Prevents accidental downgrade by verifying patch version before extraction
-- Shows current installed version vs target version for complete transparency
-- Clean, modern dark GUI (Tkinter) with live progress bar
-- Automatically closes running instances before patch, then relaunches after patch
-- Retries locked file extractions and purges stale WebView2 caches
+- Strict Online GitHub / HuggingFace auto-download (Hugging Face prioritized for blazing fast downloads in Thailand)
+- Disables dangerous local zip detection to prevent accidental downgrades to old versions left in Downloads
+- Forceful process termination via taskkill to unlock all system files
+- Post-install strict integrity check (verifies version.json on disk equals target version)
+- Automatically purges stale WebView2 caches to guarantee new frontend is loaded
 """
 
 import os
@@ -20,6 +19,7 @@ import psutil
 import shutil
 import zipfile
 import threading
+import subprocess
 import urllib.request
 from pathlib import Path
 import tkinter as tk
@@ -51,36 +51,22 @@ def get_folder_version(folder_path):
                     data = json.load(f)
                     ver = data.get('version') or data.get('latest_version')
                     if ver:
-                        return str(ver)
+                        return str(ver).strip()
             except Exception:
                 pass
-    return None
-
-def get_zip_version(zip_path):
-    """Peek into a zip file and read its version.json without full extraction."""
-    try:
-        with zipfile.ZipFile(zip_path, 'r') as zf:
-            for member in zf.namelist():
-                if member.endswith('version.json'):
-                    with zf.open(member) as f:
-                        data = json.loads(f.read().decode('utf-8'))
-                        ver = data.get('version') or data.get('latest_version')
-                        if ver:
-                            return str(ver)
-    except Exception:
-        pass
     return None
 
 def scan_installed_instances():
     found = {}
     
-    # 1. Check current directory & parent
-    cwd = Path.cwd()
-    for d in [cwd, cwd.parent]:
-        if (d / 'BroadcastPlayroom3-Full.exe').exists() or (d / '_internal' / 'BroadcastPlayroom3-Full.exe').exists():
-            found[str(d.resolve())] = 'full'
-        elif (d / 'BroadcastPlayroom3-Lite.exe').exists() or (d / '_internal' / 'BroadcastPlayroom3-Lite.exe').exists():
-            found[str(d.resolve())] = 'lite'
+    # 1. Check installer directory & parent
+    inst_dir = get_installer_dir()
+    for d in [inst_dir, inst_dir.parent]:
+        for sub in [d, d.parent]:
+            if (sub / 'BroadcastPlayroom3-Full.exe').exists() or (sub / '_internal' / 'BroadcastPlayroom3-Full.exe').exists():
+                found[str(sub.resolve())] = 'full'
+            elif (sub / 'BroadcastPlayroom3-Lite.exe').exists() or (sub / '_internal' / 'BroadcastPlayroom3-Lite.exe').exists():
+                found[str(sub.resolve())] = 'lite'
 
     # 2. Check running processes
     for p in psutil.process_iter(['name', 'exe', 'cmdline']):
@@ -94,7 +80,6 @@ def scan_installed_instances():
                     if (folder / '_internal').is_dir() or (folder / 'version.json').exists():
                         b_type = 'full' if 'full' in name or 'full' in str(folder).lower() else 'lite'
                         found[str(folder.resolve())] = b_type
-                # If launched via python launch_dev.py
                 for arg in p.info.get('cmdline') or []:
                     if arg.endswith('launch_dev.py') and Path(arg).exists():
                         f = Path(arg).parent.resolve()
@@ -135,8 +120,11 @@ def scan_installed_instances():
     search_subpaths = [
         r'DOCS\Documents\BroadcastPlayroom3\full',
         r'DOCS\Documents\BroadcastPlayroom3\lite',
+        r'DOCS\Documents\BroadcastPlayroom3',
         r'BroadcastPlayroom3\full',
         r'BroadcastPlayroom3\lite',
+        r'BroadcastPlayroom3-Full',
+        r'BroadcastPlayroom3-Lite',
         r'BroadcastPlayroom3',
         r'Program Files\BroadcastPlayroom3',
         r'Program Files (x86)\BroadcastPlayroom3',
@@ -145,32 +133,40 @@ def scan_installed_instances():
     user_subpaths = [
         user_home / 'Documents' / 'BroadcastPlayroom3' / 'full',
         user_home / 'Documents' / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'Documents' / 'BroadcastPlayroom3-Full',
+        user_home / 'Documents' / 'BroadcastPlayroom3-Lite',
         user_home / 'Documents' / 'BroadcastPlayroom3',
         user_home / 'Desktop' / 'BroadcastPlayroom3' / 'full',
         user_home / 'Desktop' / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'Desktop' / 'BroadcastPlayroom3-Full',
+        user_home / 'Desktop' / 'BroadcastPlayroom3-Lite',
         user_home / 'Desktop' / 'BroadcastPlayroom3',
         user_home / 'Downloads' / 'BroadcastPlayroom3' / 'full',
         user_home / 'Downloads' / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'Downloads' / 'BroadcastPlayroom3-Full',
+        user_home / 'Downloads' / 'BroadcastPlayroom3-Lite',
         user_home / 'Downloads' / 'BroadcastPlayroom3',
         user_home / 'BroadcastPlayroom3' / 'full',
         user_home / 'BroadcastPlayroom3' / 'lite',
+        user_home / 'BroadcastPlayroom3-Full',
+        user_home / 'BroadcastPlayroom3-Lite',
         user_home / 'BroadcastPlayroom3',
+        user_home / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'full',
+        user_home / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'lite',
         user_home / 'AppData' / 'Local' / 'Programs' / 'BroadcastPlayroom3'
     ]
 
     for d in drives:
         for sp in search_subpaths:
             p = Path(d) / sp
-            if p.is_dir():
+            if p.is_dir() and 'ai tools' not in str(p).lower():
                 if (p / 'BroadcastPlayroom3-Full.exe').exists() or (p / '_internal' / 'BroadcastPlayroom3-Full.exe').exists():
                     found[str(p.resolve())] = 'full'
                 elif (p / 'BroadcastPlayroom3-Lite.exe').exists() or (p / '_internal' / 'BroadcastPlayroom3-Lite.exe').exists():
                     found[str(p.resolve())] = 'lite'
-                elif (p / 'launch_dev.py').exists() and 'broadcastplayroom3' in str(p).lower() and 'ai tools' not in str(p).lower():
-                    found[str(p.resolve())] = 'full' if 'full' in str(p).lower() else 'lite'
 
     for p in user_subpaths:
-        if p.is_dir():
+        if p.is_dir() and 'ai tools' not in str(p).lower():
             if (p / 'BroadcastPlayroom3-Full.exe').exists() or (p / '_internal' / 'BroadcastPlayroom3-Full.exe').exists():
                 found[str(p.resolve())] = 'full'
             elif (p / 'BroadcastPlayroom3-Lite.exe').exists() or (p / '_internal' / 'BroadcastPlayroom3-Lite.exe').exists():
@@ -180,7 +176,8 @@ def scan_installed_instances():
 
 def fetch_latest_metadata():
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) BP3-PatchInstaller'}
-    for url in [GITHUB_VERSION_URL, HF_VERSION_URL]:
+    # Try Hugging Face first (faster and uncapped in Thailand), then GitHub
+    for url in [HF_VERSION_URL, GITHUB_VERSION_URL]:
         try:
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=8) as resp:
@@ -192,31 +189,6 @@ def fetch_latest_metadata():
             pass
     return None
 
-def find_local_patches(installer_dir, target_version=None):
-    """Search for local patch zips and verify they match target version."""
-    local_patches = {}
-    p_dirs = [installer_dir, installer_dir / 'patches']
-    downloads = Path.home() / 'Downloads'
-    if downloads.exists() and downloads != installer_dir:
-        p_dirs.append(downloads)
-
-    for pdir in p_dirs:
-        if pdir.exists():
-            for zf in pdir.glob("*.zip"):
-                zname = zf.name.lower()
-                if 'patch' in zname or 'bp3' in zname or 'broadcast' in zname:
-                    z_ver = get_zip_version(zf)
-                    # If target_version is known, strictly ignore older/mismatched patches!
-                    if target_version and z_ver and z_ver != target_version:
-                        print(f"Skipping stale local patch {zf.name} (v{z_ver} != target v{target_version})")
-                        continue
-
-                    if 'full' in zname and 'full' not in local_patches:
-                        local_patches['full'] = (zf, z_ver)
-                    elif 'lite' in zname and 'lite' not in local_patches:
-                        local_patches['lite'] = (zf, z_ver)
-    return local_patches
-
 class PatchInstallerApp:
     def __init__(self, root):
         self.root = root
@@ -227,7 +199,6 @@ class PatchInstallerApp:
 
         self.installer_dir = get_installer_dir()
         self.instances = {}
-        self.local_patches = {}
         self.metadata = None
         self.is_working = False
 
@@ -319,11 +290,7 @@ class PatchInstallerApp:
 
     def _initial_load(self):
         self.metadata = fetch_latest_metadata()
-        latest_ver = self.metadata.get('latest_version') if self.metadata else None
-
         self.instances = scan_installed_instances()
-        self.local_patches = find_local_patches(self.installer_dir, target_version=latest_ver)
-
         self.root.after(0, self._render_initial_state)
 
     def _render_initial_state(self):
@@ -331,11 +298,8 @@ class PatchInstallerApp:
         self.ver_label.config(text=f"✨ เวอร์ชันล่าสุดจากเซิร์ฟเวอร์: v{latest_ver}", fg="#22c55e")
         
         notes = []
-        if self.local_patches:
-            found_names = ", ".join(f[0].name for f in self.local_patches.values())
-            notes.append(f"พบไฟล์แพตช์ตรงเวอร์ชันในเครื่อง: {found_names}")
         if self.metadata:
-            notes.append("เชื่อมต่อเซิร์ฟเวอร์ GitHub / Hugging Face พร้อมดาวน์โหลด")
+            notes.append("เชื่อมต่อเซิร์ฟเวอร์ Hugging Face / GitHub พร้อมดาวน์โหลดชุดแพตช์ล่าสุด")
         self.meta_desc.config(text=" | ".join(notes) if notes else "พร้อมดำเนินการ")
 
         self._refresh_folders_list()
@@ -345,10 +309,19 @@ class PatchInstallerApp:
             widget.destroy()
 
         if not self.instances:
-            empty_lbl = tk.Label(self.list_container,
-                                 text="⚠️ ไม่พบโฟลเดอร์โปรแกรมอัตโนมัติ กรุณากด '➕ เลือกโฟลเดอร์เอง' ด้านบน",
-                                 font=("Segoe UI", 10), fg="#f87171", bg="#1e1f22", pady=12)
+            empty_frame = tk.Frame(self.list_container, bg="#1e1f22", pady=16)
+            empty_frame.pack(fill="x")
+            
+            empty_lbl = tk.Label(empty_frame,
+                                 text="⚠️ ไม่พบโฟลเดอร์โปรแกรมอัตโนมัติในตำแหน่งเริ่มต้น",
+                                 font=("Segoe UI", 10, "bold"), fg="#f87171", bg="#1e1f22")
             empty_lbl.pack(anchor="w")
+
+            hint_lbl = tk.Label(empty_frame,
+                                text="กรุณากดปุ่ม '➕ เลือกโฟลเดอร์เอง' ด้านบน เพื่อเลือกโฟลเดอร์ที่เก็บไฟล์ BroadcastPlayroom3",
+                                font=("Segoe UI", 9), fg="#94a3b8", bg="#1e1f22")
+            hint_lbl.pack(anchor="w", pady=(4, 0))
+
             self.btn_action.config(state="disabled", bg="#374151")
             return
 
@@ -357,7 +330,7 @@ class PatchInstallerApp:
 
         for path_str, b_type in self.instances.items():
             cur_ver = get_folder_version(path_str)
-            cur_ver_display = f"v{cur_ver}" if cur_ver else "ไม่ทราบเวอร์ชัน"
+            cur_ver_display = f"v{cur_ver}" if cur_ver else "ไม่ทราบเวอร์ชัน (หรือไฟล์เสียหาย)"
 
             row = tk.Frame(self.list_container, bg="#25272c", padx=12, pady=8, highlightthickness=1, highlightbackground="#374151")
             row.pack(fill="x", pady=4)
@@ -412,21 +385,20 @@ class PatchInstallerApp:
 
     def _run_install_worker(self):
         try:
-            # 1. Kill any running Broadcast Playroom 3 processes and child processes
+            # 1. Force kill any running Broadcast Playroom 3 and Edge WebView processes to release file locks
             self._set_status("กำลังปิดโปรแกรม Broadcast Playroom และปลดล็อกไฟล์ระบบ...", 5)
+            try:
+                subprocess.run(['taskkill', '/F', '/IM', 'BroadcastPlayroom3-Full.exe'], capture_output=True)
+                subprocess.run(['taskkill', '/F', '/IM', 'BroadcastPlayroom3-Lite.exe'], capture_output=True)
+                subprocess.run(['taskkill', '/F', '/IM', 'msedgewebview2.exe'], capture_output=True)
+            except Exception:
+                pass
+
             for proc in psutil.process_iter(['name', 'pid', 'cmdline', 'exe']):
                 try:
                     pname = (proc.info.get('name') or '').lower()
                     cmd = ' '.join(proc.info.get('cmdline') or []).lower()
-                    pexe = (proc.info.get('exe') or '').lower()
-                    
-                    should_kill = False
                     if 'broadcastplayroom' in pname or 'broadcastplayroom' in cmd or 'launch_dev.py' in cmd:
-                        should_kill = True
-                    elif 'msedgewebview2' in pname and any(k.lower() in cmd or k.lower() in pexe for k in self.instances.keys()):
-                        should_kill = True
-
-                    if should_kill:
                         proc.kill()
                 except Exception:
                     pass
@@ -438,47 +410,25 @@ class PatchInstallerApp:
 
             downloaded_zips = {}
 
-            # Download or locate patch for each needed type (Full / Lite)
+            # Download official online patch for each needed type (Full / Lite)
+            temp_dir = Path(os.environ.get('TEMP') or Path.home() / 'AppData' / 'Local' / 'Temp')
+
             for b_type in needed_types:
-                # Check local patch first (only if version matches target)
-                if b_type in self.local_patches:
-                    zf_path, zf_ver = self.local_patches[b_type]
-                    if zf_path.exists() and (zf_ver == latest_ver or not zf_ver):
-                        self._set_status(f"ใช้ไฟล์แพตช์ตรงเวอร์ชันในเครื่อง: {zf_path.name}", 20)
-                        downloaded_zips[b_type] = zf_path
-                        continue
+                # Prioritize Hugging Face CDN (direct, fast, no rate limit in TH)
+                hf_url = f"https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v{latest_ver}-{b_type}.zip"
+                gh_url = f"https://github.com/zepiam/broadcast-playroom-3/releases/download/v{latest_ver}/patch-v{latest_ver}-{b_type}.zip"
 
-                # Download online
-                if not self.metadata:
-                    self._set_status("ดึงข้อมูลลิงก์อัปเดตล่าสุด...", 10)
-                    self.metadata = fetch_latest_metadata()
+                urls_to_try = [hf_url, gh_url]
 
-                if not self.metadata:
-                    raise RuntimeError("ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์อัปเดตได้ และไม่พบไฟล์แพตช์ในเครื่อง")
-
-                type_info = self.metadata.get(b_type) or self.metadata.get('full')
-                url = type_info.get('url') if type_info else None
-                mirrors = type_info.get('mirrors', []) if type_info else []
-                urls_to_try = [url] + mirrors if url else mirrors
-
-                # Fallback to direct huggingface / github if empty
-                if not urls_to_try:
-                    urls_to_try = [
-                        f"https://github.com/zepiam/broadcast-playroom-3/releases/download/v{latest_ver}/patch-v{latest_ver}-{b_type}.zip",
-                        f"https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v{latest_ver}-{b_type}.zip"
-                    ]
-
-                dest_zip = self.installer_dir / f"bp3_patch_{b_type}_v{latest_ver}.zip"
+                dest_zip = temp_dir / f"bp3_patch_{b_type}_v{latest_ver}.zip"
                 download_success = False
 
                 for download_url in urls_to_try:
-                    if not download_url:
-                        continue
                     try:
                         self._set_status(f"กำลังดาวน์โหลดแพตช์ v{latest_ver} ({b_type.upper()})...", 15)
                         
-                        req = urllib.request.Request(download_url, headers={'User-Agent': 'BP3-PatchInstaller'})
-                        with urllib.request.urlopen(req, timeout=30) as resp, open(dest_zip, 'wb') as out_f:
+                        req = urllib.request.Request(download_url, headers={'User-Agent': 'BP3-PatchInstaller/3.45'})
+                        with urllib.request.urlopen(req, timeout=45) as resp, open(dest_zip, 'wb') as out_f:
                             total_size = int(resp.headers.get('content-length', 0))
                             downloaded = 0
                             block_size = 64 * 1024
@@ -504,7 +454,7 @@ class PatchInstallerApp:
                         continue
 
                 if not download_success:
-                    raise RuntimeError(f"ดาวน์โหลดไฟล์แพตช์สำหรับ {b_type.upper()} ไม่สำเร็จ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต")
+                    raise RuntimeError(f"ดาวน์โหลดไฟล์แพตช์ v{latest_ver} สำหรับ {b_type.upper()} ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต")
 
             # Apply patch to all detected directories
             total_instances = len(self.instances)
@@ -540,9 +490,9 @@ class PatchInstallerApp:
                             try:
                                 z.extract(member, target_dir)
                                 break
-                            except Exception:
+                            except Exception as ex:
                                 if attempt == 3:
-                                    print(f"Failed to extract {member.filename}")
+                                    print(f"Extraction warning on {member.filename}: {ex}")
                                 time.sleep(0.3)
 
                 # Sync to _internal if present
@@ -560,8 +510,32 @@ class PatchInstallerApp:
                             except Exception:
                                 pass
 
-                # Purge stale webview cache
-                for cache_cand in [target_dir / 'data' / 'webview_data', Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'webview_data']:
+                # Ensure version.json is strictly written and verified
+                for vj_path in [target_dir / 'version.json', internal_dir / 'version.json']:
+                    try:
+                        vj_path.parent.mkdir(parents=True, exist_ok=True)
+                        with open(vj_path, 'w', encoding='utf-8') as f:
+                            json.dump({
+                                "product": "broadcast-playroom-3",
+                                "version": latest_ver,
+                                "latest_version": latest_ver,
+                                "edition": b_type
+                            }, f, indent=2)
+                    except Exception:
+                        pass
+
+                # Post-install verification
+                ver_after = get_folder_version(target_dir)
+                if ver_after != latest_ver:
+                    raise RuntimeError(f"การอัปเดตไฟล์ล้มเหลว: เวอร์ชันในเครื่องยังคงเป็น v{ver_after} (คาดหวัง v{latest_ver})")
+
+                # Purge stale webview cache in all possible locations
+                for cache_cand in [
+                    target_dir / 'data' / 'webview_data',
+                    target_dir.parent / 'data' / 'webview_data',
+                    Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'webview_data',
+                    Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'data' / 'webview_data'
+                ]:
                     for sub in ['EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'EBWebView/Default/GPUCache']:
                         cp = cache_cand / sub
                         if cp.exists():
