@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 def _extract_tiktok_avatar(user) -> str:
     if not user:
         return ""
@@ -46,7 +48,6 @@ Callback ได้รับ ChatMessage dataclass (ร่วมกับ Twitch/
 
 """
 
-from __future__ import annotations
 
 
 import asyncio
