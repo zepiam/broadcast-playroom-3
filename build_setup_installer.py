@@ -17,6 +17,7 @@ cmd = [
     '--icon', str(icon_path),
     '--add-data', f'{root / "src" / "assets"};src/assets',
     '--add-data', f'{root / "assets" / "icons"};assets/icons',
+    '--add-data', f'{root / "version.json"};.',
     '--exclude-module', 'torch',
     '--exclude-module', 'torchaudio',
     '--exclude-module', 'torchvision',

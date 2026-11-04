@@ -36,16 +36,16 @@ from PySide6.QtWidgets import (
 # -------------------------------------------------------------
 DOWNLOAD_MIRRORS = {
     "lite": [
-        # Mirror 1: Google Drive (Primary - สปีดดาวน์โหลดสูงสุดในประเทศ)
-        "https://drive.google.com/uc?export=download&id=15J6EGBD3fIveLuwoJkTWBBxBbUkvdEyx",
-        # Mirror 2: Hugging Face (สำรอง - ไม่จำกัด Quota/Bandwidth)
+        # Mirror 1: Hugging Face (Primary CDN - อัปเดตล่าสุดตรงจาก Release เสมอ ไม่จำกัด Quota)
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Lite.zip",
+        # Mirror 2: Google Drive (สำรอง)
+        "https://drive.google.com/uc?export=download&id=15J6EGBD3fIveLuwoJkTWBBxBbUkvdEyx",
     ],
     "full": [
-        # Mirror 1: Google Drive (Primary - สปีดดาวน์โหลดสูงสุดในประเทศ)
-        "https://drive.google.com/uc?export=download&id=17gpfsUfVM7wt1sAS6pGj7UnAcfs6werV",
-        # Mirror 2: Hugging Face (สำรอง - ไม่จำกัด Quota/Bandwidth)
+        # Mirror 1: Hugging Face (Primary CDN - อัปเดตล่าสุดตรงจาก Release เสมอ ไม่จำกัด Quota)
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Full.zip",
+        # Mirror 2: Google Drive (สำรอง)
+        "https://drive.google.com/uc?export=download&id=17gpfsUfVM7wt1sAS6pGj7UnAcfs6werV",
     ]
 }
 
@@ -298,7 +298,7 @@ class InstallWorker(QThread):
             cj = http.cookiejar.CookieJar()
             opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cj))
             init_url = f'https://drive.google.com/uc?export=download&id={file_id}'
-            req = urllib.request.Request(init_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) BroadcastPlayroomSetup/3.0"})
+            req = urllib.request.Request(init_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) BroadcastPlayroomSetup/3.53"})
             resp = opener.open(req, timeout=35)
             content_type = resp.headers.get('Content-Type', '')
 
@@ -317,13 +317,13 @@ class InstallWorker(QThread):
                     params[inp.group(2)] = inp.group(1)
 
                 download_url = f"{action_url}?{urllib.parse.urlencode(params)}"
-                req2 = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) BroadcastPlayroomSetup/3.0"})
+                req2 = urllib.request.Request(download_url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) BroadcastPlayroomSetup/3.53"})
                 resp = opener.open(req2, timeout=35)
                 ct2 = resp.headers.get('Content-Type', '')
                 if 'html' in ct2.lower():
                     raise RuntimeError("โควตาดาวน์โหลด Google Drive เกินขีดจำกัดชั่วคราว (กำลังสลับไปช่องทางสำรองอัตโนมัติ)")
         else:
-            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) BroadcastPlayroomSetup/3.0"}
+            headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) BroadcastPlayroomSetup/3.53"}
             req = urllib.request.Request(url, headers=headers)
             resp = urllib.request.urlopen(req, timeout=35)
 
@@ -762,7 +762,15 @@ class SetupWindow(QMainWindow):
         h_title_row = QHBoxLayout()
         lbl_title = QLabel("Broadcast Playroom 3")
         lbl_title.setStyleSheet("font-size: 20px; font-weight: 800; color: #ffffff;")
-        lbl_tag = QLabel("v3.1 Stable")
+        try:
+            _vpath = get_asset_path("version.json")
+            if not _vpath:
+                _vpath = os.path.join(os.path.dirname(__file__), "version.json")
+            with open(_vpath, "r", encoding="utf-8") as _vf:
+                _cur_v = json.load(_vf).get("version", "3.53")
+        except Exception:
+            _cur_v = "3.53"
+        lbl_tag = QLabel(f"v{_cur_v} Stable")
         lbl_tag.setStyleSheet("font-size: 11px; font-weight: 700; color: #5865f2; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.35); border-radius: 6px; padding: 2px 8px;")
         h_title_row.addWidget(lbl_title)
         h_title_row.addWidget(lbl_tag)

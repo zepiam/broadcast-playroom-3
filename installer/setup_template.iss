@@ -6,7 +6,7 @@
 ; =====================================================================
 
 #define AppName "Broadcast Playroom 3"
-#define AppVersion "3.0.0"
+#define AppVersion "3.53"
 #define AppPublisher "Zepiam"
 #define AppURL "https://github.com/zepiam/broadcast-playroom-3"
 

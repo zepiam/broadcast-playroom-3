@@ -5,7 +5,7 @@ a = Analysis(
     ['E:\\DOCS\\Documents\\AI TOOLS\\broadcast playroom 3\\installer_gui.py'],
     pathex=[],
     binaries=[],
-    datas=[('E:\\DOCS\\Documents\\AI TOOLS\\broadcast playroom 3\\src\\assets', 'src/assets'), ('E:\\DOCS\\Documents\\AI TOOLS\\broadcast playroom 3\\assets\\icons', 'assets/icons')],
+    datas=[('E:\\DOCS\\Documents\\AI TOOLS\\broadcast playroom 3\\src\\assets', 'src/assets'), ('E:\\DOCS\\Documents\\AI TOOLS\\broadcast playroom 3\\assets\\icons', 'assets/icons'), ('E:\\DOCS\\Documents\\AI TOOLS\\broadcast playroom 3\\version.json', '.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
