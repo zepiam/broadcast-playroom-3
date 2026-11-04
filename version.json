@@ -7,7 +7,7 @@
   "patches": {
     "lite": {
       "file": "patch-v3.54-lite.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-lite.zip",
       "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
       "size": 35855036,
       "mirrors": [
@@ -16,7 +16,7 @@
     },
     "full": {
       "file": "patch-v3.54-full.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-full.zip",
       "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
       "size": 35855036,
       "mirrors": [
@@ -26,13 +26,13 @@
   },
   "lite": {
     "file": "patch-v3.54-lite.zip",
-    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-lite.zip",
     "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
     "size": 35855036
   },
   "full": {
     "file": "patch-v3.54-full.zip",
-    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-full.zip",
     "sha256": "f2e1ff710fba7373a430f2959ff6833721e683f51c2c3a2ea87f24de7ac05652",
     "size": 35855036
   }
