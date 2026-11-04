@@ -75,7 +75,10 @@ def split_text_by_language(text: str) -> list[tuple[str, str]]:
     English is grouped into 'th' so it is read together with Thai using the Thai voice model.
     Other languages (ja, ko, zh, fr, etc.) form their own segments to be read by their native models.
     """
-    from language_detect import _char_lang
+    try:
+        from language_detect import _char_lang
+    except Exception:
+        return [(text, 'th')]
     segments = []
     current_text = ''
     current_lang = None
@@ -213,10 +216,14 @@ class TTSService:
                 options = {'family': socket.AF_INET}
                 dns = self.dns_settings.public() if self.dns_settings else {'enabled': False}
                 if dns.get('enabled'):
-                    from network_dns import AppDnsResolver
-                    options['resolver'] = AppDnsResolver(SimpleNamespace(dns_service=dns['service'], dns_custom=dns['custom']))
+                    try:
+                        from network_dns import AppDnsResolver
+                        options['resolver'] = AppDnsResolver(SimpleNamespace(dns_service=dns['service'], dns_custom=dns['custom']))
+                    except Exception:
+                        pass
                 async with aiohttp.TCPConnector(**options) as connector:
-                    c_to = 10 if attempt == 0 else 8
+                    c_to = 10 if attempt == 0 else 8
+
                     r_to = 15 if attempt == 0 else 10
                     comm = edge_tts.Communicate(text, voice=voice, connector=connector,
                                                 connect_timeout=c_to, receive_timeout=r_to, **kwargs)

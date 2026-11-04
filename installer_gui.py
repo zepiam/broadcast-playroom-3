@@ -36,16 +36,16 @@ from PySide6.QtWidgets import (
 # -------------------------------------------------------------
 DOWNLOAD_MIRRORS = {
     "lite": [
-        # Mirror 1: Hugging Face (Primary CDN - อัปเดตล่าสุดตรงจาก Release เสมอ ไม่จำกัด Quota)
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Lite.zip",
-        # Mirror 2: Google Drive (สำรอง)
+        # Mirror 1: Google Drive (ความเร็วสูง)
         "https://drive.google.com/uc?export=download&id=15J6EGBD3fIveLuwoJkTWBBxBbUkvdEyx",
+        # Mirror 2: Hugging Face (สำรอง CDN)
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Lite.zip",
     ],
     "full": [
-        # Mirror 1: Hugging Face (Primary CDN - อัปเดตล่าสุดตรงจาก Release เสมอ ไม่จำกัด Quota)
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Full.zip",
-        # Mirror 2: Google Drive (สำรอง)
+        # Mirror 1: Google Drive (ความเร็วสูง)
         "https://drive.google.com/uc?export=download&id=17gpfsUfVM7wt1sAS6pGj7UnAcfs6werV",
+        # Mirror 2: Hugging Face (สำรอง CDN)
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/BroadcastPlayroom3-Full.zip",
     ]
 }
 
@@ -797,20 +797,10 @@ class SetupWindow(QMainWindow):
         lbl_select.setStyleSheet("font-size: 13px; font-weight: 700; color: #dbdee1;")
         main_layout.addWidget(lbl_select)
 
-        self.selected_edition = "full"
+        self.selected_edition = "lite"
 
         cards_layout = QVBoxLayout()
         cards_layout.setSpacing(16)
-
-        self.card_full = EditionCard(
-            edition_id="full",
-            title="🚀 Full Edition (ครบวงจร)",
-            badge_text="✨ แนะนำสำหรับสตรีมเมอร์",
-            desc="บรรจุโมเดลแปลงเสียง AI Voice RVC, PyTorch, CUDA และเอฟเฟกต์เสียงอ่านสดครบครัน",
-            specs="ดาวน์โหลด ~4.0 GB • พื้นที่ติดตั้ง ~6.7 GB (รองรับ GPU และ CPU)",
-            is_selected=True
-        )
-        self.card_full.clicked.connect(self._select_edition)
 
         self.card_lite = EditionCard(
             edition_id="lite",
@@ -818,12 +808,22 @@ class SetupWindow(QMainWindow):
             badge_text="รุ่นประหยัดพื้นที่",
             desc="เน้นดึงแชทสดทุกแพลตฟอร์ม โอเวอร์เลย์ วิดเจ็ต และเสียงอ่าน TTS ทั่วไป (ไม่มี AI แปลงเสียง)",
             specs="ดาวน์โหลด ~318 MB • พื้นที่ติดตั้ง ~800 MB (เปิดโปรแกรมได้รวดเร็วทันใจ)",
-            is_selected=False
+            is_selected=True
         )
         self.card_lite.clicked.connect(self._select_edition)
 
-        cards_layout.addWidget(self.card_full)
+        self.card_full = EditionCard(
+            edition_id="full",
+            title="🚀 Full Edition (ครบวงจร)",
+            badge_text="✨ แนะนำสำหรับสตรีมเมอร์",
+            desc="บรรจุโมเดลแปลงเสียง AI Voice RVC, PyTorch, CUDA และเอฟเฟกต์เสียงอ่านสดครบครัน",
+            specs="ดาวน์โหลด ~4.0 GB • พื้นที่ติดตั้ง ~6.7 GB (รองรับ GPU และ CPU)",
+            is_selected=False
+        )
+        self.card_full.clicked.connect(self._select_edition)
+
         cards_layout.addWidget(self.card_lite)
+        cards_layout.addWidget(self.card_full)
         main_layout.addLayout(cards_layout)
 
         # 3. Destination Root Folder

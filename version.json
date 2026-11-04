@@ -1,65 +1,39 @@
 {
-  "version": "3.53",
-  "latest_version": "3.53",
+  "version": "3.54",
+  "latest_version": "3.54",
   "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.53\n\n### รายการแก้ไขสำคัญในเวอร์ชั่น 3.53:\n- **แก้ไขข้อผิดพลาด UnboundLocalError ในตัวดาวน์โหลดเบื้องหลัง**:\n  - แก้ไขตัวแปร `download_url` ใน `start_background_download` ให้อ้างอิงแบบ `nonlocal` อย่างถูกต้อง หมดปัญหาข้อความ `local variable 'download_url' referenced before assignment`\n  - กล่องดาวน์โหลดอัปเดตสามารถดาวน์โหลดแพตช์จาก Hugging Face CDN ได้อย่างราบรื่น 100%\n- **ซ่อมแซมไฟล์ FindUpdate.bat และ BP3_PatchInstaller.exe ให้ใช้งานได้จริง 100%**:\n  - `FindUpdate.bat` เพิ่มการเรียก `BP3_PatchInstaller.exe` อัตโนมัติ พร้อมระบบ PowerShell Fallback สั่งปิด Process โปรแกรมที่เปิดค้างอยู่ ตรวจจับเวอร์ชัน Lite/Full แตกไฟล์ ซิงค์เข้า `_internal` และล้าง Cache ครบถ้วน\n- **แก้ปัญหาโปรแกรมเด้งซ้อน 2 หน้าต่าง (Duplicate Window on Update Fix)**:\n  - แก้ไขในหน้าต่างเว็บให้สั่ง `window.close()` ปิดหน้าต่างเดิมลงอย่างหมดจดเมื่อกดอัปเดต ไม่ปล่อยให้ Chrome Reload ค้างซ้ำกับโปรแกรมใหม่ที่กำลังเปิดขึ้นมา\n",
-  "lite": {
-    "file": "patch-v3.53-lite.zip",
-    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
-    "sha256": "786490ed5bd7a8aefd4fb0b79c060ce48c608ae26c428e02876c987f23ee5a04",
-    "size": 48685459,
-    "mirrors": [
-      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
-    ]
-  },
-  "full": {
-    "file": "patch-v3.53-full.zip",
-    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
-    "sha256": "eecdd0e9a7511cd7e417d3f7518cc7db53b5f241fdd198d3d4a46e27170f0a75",
-    "size": 101349110,
-    "mirrors": [
-      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
-    ]
-  },
-  "packages": {
-    "lite": {
-      "file": "patch-v3.53-lite.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
-      "sha256": "786490ed5bd7a8aefd4fb0b79c060ce48c608ae26c428e02876c987f23ee5a04",
-      "size": 48685459,
-      "mirrors": [
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
-      ]
-    },
-    "full": {
-      "file": "patch-v3.53-full.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
-      "sha256": "eecdd0e9a7511cd7e417d3f7518cc7db53b5f241fdd198d3d4a46e27170f0a75",
-      "size": 101349110,
-      "mirrors": [
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
-      ]
-    }
-  },
+  "changelog": "# Broadcast Playroom v3.54\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชั่น 3.54:\n- **แก้ไขสถานะเซิร์ฟเวอร์เสียงอ่าน TTS หลุดเชื่อมต่อ (Server Status 100% Fixed)**:\n  - เพิ่มโมดูล `language_detect.py` และ `network_dns.py` เข้าชุดแพตช์อัปเดตและโปรแกรมหลักอย่างสมบูรณ์แบบ\n  - เสริมระบบ Fallback ความทนทานสูงใน `tts_service.py` แม้ขาดโมดูลเสริมเสียงอ่านก็ยังสังเคราะห์เสียงภาษาไทยได้ลื่นไหล 0% ล่ม\n  - แถบสถานะด้านบนจะแสดงเป็นสีเขียว `🟢 ทดสอบเสียงสำเร็จ` ทั้งในโหมด Dev และตัวติดตั้งจริง\n- **ปรับปรุงตัวติดตั้ง Setup สลับตำแหน่งเวอร์ชัน**:\n  - สลับตำแหน่งตัวเลือกในหน้าติดตั้งให้ **⚡ Lite Edition (ขนาดกะทัดรัด)** อยู่ด้านบน และ **🚀 Full Edition (ครบวงจร)** อยู่ด้านล่างตามลำดับการใช้งาน\n  - ตั้งค่า Google Drive เป็นช่องทางดาวน์โหลดหลักความเร็วสูง พร้อม Hugging Face สำรองอัตโนมัติ\n- **ระบบอัปเดต In-App Updater ราบรื่น ไม่เปิดซ้ำ 2 หน้าต่าง**:\n  - รองรับการรีสตาร์ทแตกไฟล์ทับและปิดหน้าต่างเดิมอย่างหมดจด ไม่เกิดการเปิดโปรแกรมซ้ำซ้อน\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.53-lite.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
-      "sha256": "786490ed5bd7a8aefd4fb0b79c060ce48c608ae26c428e02876c987f23ee5a04",
-      "size": 48685459,
+      "file": "patch-v3.54-lite.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-lite.zip",
+      "sha256": "7609327c87000ac8f9d9fe426a1126d83f18b40081dc9a4544dae942601bbbe0",
+      "size": 35853680,
       "mirrors": [
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.53-full.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
-      "sha256": "eecdd0e9a7511cd7e417d3f7518cc7db53b5f241fdd198d3d4a46e27170f0a75",
-      "size": 101349110,
+      "file": "patch-v3.54-full.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-full.zip",
+      "sha256": "7609327c87000ac8f9d9fe426a1126d83f18b40081dc9a4544dae942601bbbe0",
+      "size": 35853680,
       "mirrors": [
-        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.54/patch-v3.54-full.zip"
       ]
     }
+  },
+  "lite": {
+    "file": "patch-v3.54-lite.zip",
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-lite.zip",
+    "sha256": "7609327c87000ac8f9d9fe426a1126d83f18b40081dc9a4544dae942601bbbe0",
+    "size": 35853680
+  },
+  "full": {
+    "file": "patch-v3.54-full.zip",
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.54-full.zip",
+    "sha256": "7609327c87000ac8f9d9fe426a1126d83f18b40081dc9a4544dae942601bbbe0",
+    "size": 35853680
   }
 }
