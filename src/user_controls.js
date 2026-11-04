@@ -6,7 +6,15 @@
 
 const read=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key)) ?? fallback;}catch{return fallback;}};
 
-const people=new Map(read('bp3_user_roster',[]).map(person=>[person.platform.toLowerCase()+':'+person.username.toLowerCase(),person]));
+const rawRoster = read('bp3_user_roster', []);
+const validPeople = Array.isArray(rawRoster)
+  ? rawRoster.filter(p => p && (p.username || p.name)).map(p => {
+      const u = String(p.username || p.name).trim();
+      const plat = String(p.platform || 'Twitch').trim();
+      return [plat.toLowerCase() + ':' + u.toLowerCase(), { ...p, username: u, platform: plat }];
+    })
+  : [];
+const people = new Map(validPeople);
 
 const CHAT_RETENTION_MS=7*24*60*60*1000;
 
@@ -941,7 +949,7 @@ window.openAuthorModal=function(username,platform,avatar,nickname,isVip){
 
 const entry=window.checkRealGwEntry;window.checkRealGwEntry=function(msg,name){
 
- const find=()=>window._gwParticipants.find(person=>person.username.toLowerCase()===String(name).toLowerCase() && person.platform.toLowerCase()===String(msg.platform || 'Twitch').toLowerCase());
+ const find=()=>window._gwParticipants.find(person=>person && String(person.username||'').toLowerCase()===String(name).toLowerCase() && String(person.platform || 'Twitch').toLowerCase()===String(msg?.platform || 'Twitch').toLowerCase());
 
  const previous=find();const before=previous?(previous.checkins || [1]).length:0;entry(msg,name);const after=find();
 
@@ -951,7 +959,7 @@ const entry=window.checkRealGwEntry;window.checkRealGwEntry=function(msg,name){
 
 const open=window.openToolWindow;window.openToolWindow=function(name, section){const fn=open || window.openToolWindowBase;const win=document.getElementById(`win-${name}`);if(fn)fn(name, section);else if(win){win.classList.add('active');win.classList.remove('minimized');if(name==='settings' && section && typeof switchSettingsSection==='function')switchSettingsSection(section);}if(name==='user-manager')setTimeout(()=>{render();const root=tool();const exportButton=root && [...root.querySelectorAll('button')].find(button=>button.textContent.includes('Export CSV'));if(exportButton){exportButton.id='btnUserRosterExport';exportButton.onclick=exportUserRosterCsv;}},100);};
 
-const vip=window.toggleUserVip;window.toggleUserVip=function(){vip();for(const person of people.values())if(person.username.toLowerCase()===_activeUserRecord.username.toLowerCase())person.isVip=_activeUserRecord.isVip;save();render();};
+const vip=window.toggleUserVip;window.toggleUserVip=function(){vip();for(const person of people.values())if(_activeUserRecord?.username && String(person.username||'').toLowerCase()===String(_activeUserRecord.username).toLowerCase())person.isVip=_activeUserRecord.isVip;save();render();};
 
 const nickname=window.editUserNickname;window.editUserNickname=function(name){nickname(name);render();};
 

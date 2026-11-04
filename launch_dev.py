@@ -2211,18 +2211,19 @@ def handle_tool_popout(tool_name, main_url, section=None):
     if section and name == 'settings':
         url = url + f"&section={section}"
 
-    storage_path = os.path.join(str(DATA_ROOT), 'webview_data')
-    os.makedirs(storage_path, exist_ok=True)
     api = PopoutJsApi(name)
-    tw = webview.create_window(
-        title=title,
-        url=url,
-        width=sz[0],
-        height=sz[1],
-        min_size=(480, 360),
-        storage_path=storage_path,
-        js_api=api
-    )
+    try:
+        tw = webview.create_window(
+            title=title,
+            url=url,
+            width=sz[0],
+            height=sz[1],
+            min_size=(480, 360),
+            js_api=api
+        )
+    except Exception as e:
+        print(f"[ERROR] Failed to create popout window for '{name}': {e}", flush=True)
+        return {'ok': False, 'error': str(e)}
     api.win_ref = tw
     _tool_popout_windows[name] = tw
     def on_closed():

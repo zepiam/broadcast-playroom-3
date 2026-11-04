@@ -1120,7 +1120,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.41</span>
+      <span class="desktop-titlebar-tag">v3.42</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -21072,7 +21072,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      <div id="paneProfTab1" style="flex:1 1 auto; min-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
+      <div id="paneProfTab1" style="flex:1 1 auto; min-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:6px;">
         <div style="text-align:center; padding:24px; color:var(--dc-text-dim); font-size:12.5px;">ยังไม่มีประวัติแชท</div>
 
 
@@ -21137,7 +21137,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      <div id="paneProfTab2" style="display:none; flex:1 1 auto; min-height:280px; overflow-y:auto; flex-direction:column; gap:6px;">
+      <div id="paneProfTab2" style="display:none; flex:1 1 auto; min-height:180px; overflow-y:auto; flex-direction:column; gap:6px;">
 
 
 
@@ -21233,7 +21233,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-      <div id="paneProfTab3" style="display:none; flex:1 1 auto; min-height:280px; flex-direction:column;">
+      <div id="paneProfTab3" style="display:none; flex:1 1 auto; min-height:180px; flex-direction:column;">
 
 
 
@@ -21252,7 +21252,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
       </div>
 
       <!-- Pane 4: Block Settings (Master + 3-Grid Layout) -->
-      <div id="paneProfTab4" style="display:none; flex:1 1 auto; min-height:280px; overflow-y:auto; flex-direction:column; gap:10px;">
+      <div id="paneProfTab4" style="display:none; flex:1 1 auto; min-height:180px; overflow-y:auto; flex-direction:column; gap:10px;">
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;">
           <span style="font-size:12px; font-weight:700; color:#ef4444;">🚫 ตัวเลือกและกฎการบล็อก</span>
           <span style="font-size:11px; color:var(--dc-text-muted);">เปิดใช้งานเฉพาะส่วนได้</span>
@@ -32194,6 +32194,21 @@ document.addEventListener('DOMContentLoaded',async()=>{
         } catch (_) {}
       }
 
+      const fallbackInline = () => {
+        try {
+          const win = document.getElementById(`win-${name}`) || window._toolWindowNodes?.[name];
+          if (win) {
+            win.classList.add('active');
+            win.classList.remove('minimized');
+            win.style.display = 'flex';
+            if (typeof bringWindowToFront === 'function') bringWindowToFront(win);
+            if (name === 'settings' && section) {
+              if (typeof switchSettingsSection === 'function') switchSettingsSection(section);
+            }
+          }
+        } catch (_) {}
+      };
+
       if (window.pywebview || location.hostname === '127.0.0.1' || location.hostname === 'localhost') {
         fetch('/api/window/popout?tool=' + encodeURIComponent(name) + (section ? '&section=' + encodeURIComponent(section) : ''), { 
           method: 'POST',
@@ -32224,8 +32239,14 @@ document.addEventListener('DOMContentLoaded',async()=>{
               } else {
                 showToast(`⧉ แยกหน้าต่าง ${title} ออกเป็นหน้าต่างอิสระแล้ว`);
               }
+            } else {
+              console.warn('[popoutToolWindow] Popout failed or returned non-ok, falling back to inline modal:', res);
+              fallbackInline();
             }
-          }).catch(() => {});
+          }).catch(err => {
+            console.warn('[popoutToolWindow] Popout fetch error, falling back to inline modal:', err);
+            fallbackInline();
+          });
         return;
       }
 
