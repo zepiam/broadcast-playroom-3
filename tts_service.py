@@ -216,8 +216,8 @@ class TTSService:
                     from network_dns import AppDnsResolver
                     options['resolver'] = AppDnsResolver(SimpleNamespace(dns_service=dns['service'], dns_custom=dns['custom']))
                 async with aiohttp.TCPConnector(**options) as connector:
-                    c_to = 5.0 if attempt == 0 else 4.0
-                    r_to = 8.0 if attempt == 0 else 6.0
+                    c_to = 10 if attempt == 0 else 8
+                    r_to = 15 if attempt == 0 else 10
                     comm = edge_tts.Communicate(text, voice=voice, connector=connector,
                                                 connect_timeout=c_to, receive_timeout=r_to, **kwargs)
                     buf = io.BytesIO()

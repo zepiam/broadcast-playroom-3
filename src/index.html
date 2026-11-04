@@ -18699,7 +18699,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.52</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.53</span>
 
 
 
@@ -39193,230 +39193,93 @@ try {
 
 
 
+    function updateAllSettingsPanes(updater) {
+      const docs = [document];
+      try {
+        if (window._popoutWindows?.['settings'] && !window._popoutWindows['settings'].closed && window._popoutWindows['settings'].document) {
+          if (!docs.includes(window._popoutWindows['settings'].document)) {
+            docs.push(window._popoutWindows['settings'].document);
+          }
+        }
+      } catch (_) {}
+      try {
+        if (window.opener && !window.opener.closed && window.opener.document) {
+          if (!docs.includes(window.opener.document)) {
+            docs.push(window.opener.document);
+          }
+        }
+      } catch (_) {}
+      for (const doc of docs) {
+        try { updater(doc); } catch (_) {}
+      }
+    }
+
     function switchSettingsSection(sectionId, fromBroadcast = false) {
       if (!sectionId) return;
+      try { localStorage.setItem('bp3_settings_target_section', sectionId); } catch (_) {}
       if (!fromBroadcast && window._settingsSectionChannel) {
         try { window._settingsSectionChannel.postMessage({ action: 'switchSection', sectionId }); } catch (_) {}
       }
 
+      updateAllSettingsPanes(doc => {
+        try {
+          doc.querySelectorAll('.settings-nav-item').forEach(el => el.classList.remove('active'));
+          const activeNav = doc.getElementById(`nav-sec-${sectionId}`);
+          if (activeNav) activeNav.classList.add('active');
 
-
-
-
-
-
-      let win = document.getElementById('win-settings');
-
-
-
-
-
-
-
-      let doc = win ? win.ownerDocument : document;
-
-
-
-
-
-
-
-      if (!win && window._popoutWindows && window._popoutWindows['settings']) {
-
-
-
-
-
-
-
-        const pop = window._popoutWindows['settings'];
-
-
-
-
-
-
-
-        if (pop && !pop.closed && pop.document) {
-
-
-
-
-
-
-
-          doc = pop.document;
-
-
-
-
-
-
-
-          win = doc.getElementById('win-settings');
-
-
-
-
-
-
-
+          const targetPane = doc.getElementById(`sec-${sectionId}`);
+          if (targetPane) {
+            doc.querySelectorAll('.settings-section-pane').forEach(el => {
+              if (el !== targetPane) el.style.display = 'none';
+            });
+            targetPane.style.display = 'block';
+          }
+          const contentArea = doc.getElementById('settingsContentArea');
+          if (contentArea) contentArea.scrollTop = 0;
+        } catch (err) {
+          console.warn('[Settings] Error switching section:', err);
         }
+      });
 
-
-
-
-
-
-
+      try {
+        if (sectionId === 'supporters' && window.SupportersUI?.load) window.SupportersUI.load();
+        if (sectionId === 'defender') {
+          if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane();
+        }
+        if (sectionId === 'log') {
+          if (typeof startLogStream === 'function') startLogStream();
+        } else {
+          if (typeof stopLogStream === 'function') stopLogStream();
+        }
+        if (sectionId === 'replace' && typeof loadDictionaryTable === 'function') {
+          loadDictionaryTable();
+        }
+        if (sectionId === 'about') {
+          fetch('/api/version').then(r => r.json()).then(v => {
+            updateAllSettingsPanes(doc => {
+              const b = doc.getElementById('appVersionBadge');
+              if (b && v.version) b.textContent = 'v' + v.version;
+            });
+          }).catch(() => {});
+        }
+      } catch (err) {
+        console.warn('[Settings Callback] Error:', err);
       }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      doc.querySelectorAll('.settings-nav-item').forEach(el => el.classList.remove('active'));
-
-
-
-
-
-
-
-      const activeNav = doc.getElementById(`nav-sec-${sectionId}`);
-
-
-
-
-
-
-
-      if (activeNav) activeNav.classList.add('active');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      doc.querySelectorAll('.settings-section-pane').forEach(el => el.style.display = 'none');
-
-
-
-
-
-
-
-      const targetPane = doc.getElementById(`sec-${sectionId}`);
-
-
-
-
-
-
-
-      if (targetPane) targetPane.style.display = 'block';
-
-
-
-
-
-
-
-      if (sectionId === 'supporters') window.SupportersUI?.load();
-      if (sectionId === 'defender') {
-        if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane();
-      }
-
-
-
-
-
-
-
-      if (sectionId === 'log') {
-
-
-
-
-
-
-
-        startLogStream();
-
-
-
-
-
-
-
-      } else {
-
-
-
-
-
-
-
-        stopLogStream();
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
-      if (sectionId === 'replace' && typeof loadDictionaryTable === 'function') {
-
-
-
-
-
-
-
-        loadDictionaryTable();
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -69690,53 +69553,51 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     async function checkDefenderSettingsPane() {
-      let popDoc = null;
-      try {
-        if (window._popoutWindows && window._popoutWindows['settings'] && !window._popoutWindows['settings'].closed) {
-          popDoc = window._popoutWindows['settings'].document;
-        }
-      } catch (_) {}
-
-      const statusEl = (popDoc && popDoc.getElementById('lblDefenderStatus')) || document.getElementById('lblDefenderStatus');
-      const pathEl = (popDoc && popDoc.getElementById('lblDefenderPath')) || document.getElementById('lblDefenderPath');
-
       try {
         const res = await fetch('/api/defender/status');
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
 
-        if (pathEl) {
-          pathEl.textContent = data.current_dir || '-';
-        }
-
-        if (statusEl) {
-          if (data.is_excluded) {
-            statusEl.textContent = '✅ ยกเว้นเรียบร้อย';
-            statusEl.style.color = '#10b981';
-            statusEl.style.background = 'rgba(16,185,129,0.15)';
-            statusEl.style.borderColor = 'rgba(16,185,129,0.3)';
-          } else if (data.status === 'relocated') {
-            statusEl.textContent = '⚠️ โฟลเดอร์ถูกย้ายที่ตั้ง';
-            statusEl.style.color = '#f59e0b';
-            statusEl.style.background = 'rgba(245,158,11,0.15)';
-            statusEl.style.borderColor = 'rgba(245,158,11,0.3)';
-          } else {
-            statusEl.textContent = '❌ ยังไม่ได้ยกเว้น';
-            statusEl.style.color = '#ef4444';
-            statusEl.style.background = 'rgba(239,68,68,0.15)';
-            statusEl.style.borderColor = 'rgba(239,68,68,0.3)';
+        updateAllSettingsPanes(doc => {
+          const pathEl = doc.getElementById('lblDefenderPath');
+          const statusEl = doc.getElementById('lblDefenderStatus');
+          if (pathEl) {
+            pathEl.textContent = data.current_dir || '-';
           }
-        }
+          if (statusEl) {
+            if (data.is_excluded) {
+              statusEl.textContent = '✅ ยกเว้นเรียบร้อย';
+              statusEl.style.color = '#10b981';
+              statusEl.style.background = 'rgba(16,185,129,0.15)';
+              statusEl.style.borderColor = 'rgba(16,185,129,0.3)';
+            } else if (data.status === 'relocated') {
+              statusEl.textContent = '⚠️ โฟลเดอร์ถูกย้ายที่ตั้ง';
+              statusEl.style.color = '#f59e0b';
+              statusEl.style.background = 'rgba(245,158,11,0.15)';
+              statusEl.style.borderColor = 'rgba(245,158,11,0.3)';
+            } else {
+              statusEl.textContent = '❌ ยังไม่ได้ยกเว้น';
+              statusEl.style.color = '#ef4444';
+              statusEl.style.background = 'rgba(239,68,68,0.15)';
+              statusEl.style.borderColor = 'rgba(239,68,68,0.3)';
+            }
+          }
+        });
       } catch (e) {
-        if (pathEl && (pathEl.textContent === 'กำลังโหลด...' || !pathEl.textContent.trim())) {
-          pathEl.textContent = 'ไม่สามารถตรวจสอบตำแหน่งโฟลเดอร์ได้';
-        }
-        if (statusEl) {
-          statusEl.textContent = '⚠️ ตรวจสอบไม่สำเร็จ (ลองใหม่อีกครั้ง)';
-          statusEl.style.color = '#f59e0b';
-        }
+        updateAllSettingsPanes(doc => {
+          const pathEl = doc.getElementById('lblDefenderPath');
+          const statusEl = doc.getElementById('lblDefenderStatus');
+          if (pathEl && (pathEl.textContent === 'กำลังโหลด...' || !pathEl.textContent.trim())) {
+            pathEl.textContent = 'ไม่สามารถตรวจสอบตำแหน่งโฟลเดอร์ได้';
+          }
+          if (statusEl) {
+            statusEl.textContent = '⚠️ ตรวจสอบไม่สำเร็จ (ลองใหม่อีกครั้ง)';
+            statusEl.style.color = '#f59e0b';
+          }
+        });
       }
     }
+
 
 
 
