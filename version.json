@@ -3,12 +3,12 @@
   "latest_version": "3.53",
   "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.53\n\n### รายการแก้ไขสำคัญในเวอร์ชั่น 3.53:\n- **ถอนรากถอนโคนลูปอัปเดต (Stuck on v3.50 Update Loop Fix)**:\n  - แก้ไขโครงสร้าง `version.json` ให้รองรับคีย์แพตช์ทุกรูปแบบทั้ง Root (`full`/`lite`), `packages`, และ `patches` เพื่อให้ In-App Updater ของ v3.48 - v3.52 ตรวจจับ URL ดาวน์โหลดแพตช์ได้ 100% ไม่พลาดอีกต่อไป\n  - แก้ไขปัญหา Permission Denied (Error 13) เมื่อพยายามติดตั้งแพตช์ขณะโปรแกรมทำงาน โดยปรับให้ระบบส่งต่อการแตกไฟล์ไปยัง Updater Batch หลังปิด Process เดิมแล้วอย่างสมบูรณ์\n- **แก้ปัญหาโปรแกรมเด้งซ้อน 2 หน้าต่าง (Duplicate Window on Update Fix)**:\n  - แก้ไขในหน้าต่างเว็บให้สั่ง `window.close()` ปิดหน้าต่างเดิมลงอย่างหมดจดเมื่อกดอัปเดต ไม่ปล่อยให้ Chrome Reload ค้างซ้ำกับโปรแกรมใหม่ที่กำลังเปิดขึ้นมา\n- **ซ่อมแซมไฟล์ FindUpdate.bat และ BP3_PatchInstaller.exe ให้ใช้งานได้จริง 100%**:\n  - `FindUpdate.bat` เพิ่มการเรียก `BP3_PatchInstaller.exe` อัตโนมัติ พร้อมระบบ PowerShell Fallback สั่งปิด Process โปรแกรมที่เปิดค้างอยู่ ตรวจจับเวอร์ชัน Lite/Full แตกไฟล์ ซิงค์เข้า `_internal` และล้าง Cache ครบถ้วน\n- **ปรับปรุงแท็บ Windows Defender (1-Click Exclusion) ในหน้าตั้งค่า**:\n  - รองรับการตรวจจับ Path ของโฟลเดอร์โปรแกรมแบบเรียลไทม์ทั้งแบบ Inline Modal และ Popout Window หมดปัญหาค้างที่ \"กำลังโหลด...\"\n- **ปุ่มเปิดหน้าต่างเครื่องมือและปุ่มภายนอกผ่านการทดสอบอัตโนมัติ 100%**:\n  - ทุกปุ่มเครื่องมือ (Settings, Giveaway, Ask, Chat Widget ฯลฯ) และปุ่ม Edit สตรีม ผ่านการตรวจสอบความถูกต้องด้วย Headless Browser Smoke Test ก่อน Release ทุกครั้ง\n",
+  "changelog": "# Broadcast Playroom v3.53\n\n### รายการแก้ไขสำคัญในเวอร์ชั่น 3.53:\n- **แก้ไขข้อผิดพลาด UnboundLocalError ในตัวดาวน์โหลดเบื้องหลัง**:\n  - แก้ไขตัวแปร `download_url` ใน `start_background_download` ให้อ้างอิงแบบ `nonlocal` อย่างถูกต้อง หมดปัญหาข้อความ `local variable 'download_url' referenced before assignment`\n  - กล่องดาวน์โหลดอัปเดตสามารถดาวน์โหลดแพตช์จาก Hugging Face CDN ได้อย่างราบรื่น 100%\n- **ซ่อมแซมไฟล์ FindUpdate.bat และ BP3_PatchInstaller.exe ให้ใช้งานได้จริง 100%**:\n  - `FindUpdate.bat` เพิ่มการเรียก `BP3_PatchInstaller.exe` อัตโนมัติ พร้อมระบบ PowerShell Fallback สั่งปิด Process โปรแกรมที่เปิดค้างอยู่ ตรวจจับเวอร์ชัน Lite/Full แตกไฟล์ ซิงค์เข้า `_internal` และล้าง Cache ครบถ้วน\n- **แก้ปัญหาโปรแกรมเด้งซ้อน 2 หน้าต่าง (Duplicate Window on Update Fix)**:\n  - แก้ไขในหน้าต่างเว็บให้สั่ง `window.close()` ปิดหน้าต่างเดิมลงอย่างหมดจดเมื่อกดอัปเดต ไม่ปล่อยให้ Chrome Reload ค้างซ้ำกับโปรแกรมใหม่ที่กำลังเปิดขึ้นมา\n",
   "lite": {
     "file": "patch-v3.53-lite.zip",
     "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
-    "sha256": "e1d4c42bfa14bc93fc3b11b1def53af3f0038f2905496b4cb7d181709b51455f",
-    "size": 48685253,
+    "sha256": "786490ed5bd7a8aefd4fb0b79c060ce48c608ae26c428e02876c987f23ee5a04",
+    "size": 48685459,
     "mirrors": [
       "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
     ]
@@ -16,8 +16,8 @@
   "full": {
     "file": "patch-v3.53-full.zip",
     "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
-    "sha256": "1129cbe5317cfd0cd24d72d12ca7c901412a10067a87da4817c66a8b6dfed689",
-    "size": 101348904,
+    "sha256": "eecdd0e9a7511cd7e417d3f7518cc7db53b5f241fdd198d3d4a46e27170f0a75",
+    "size": 101349110,
     "mirrors": [
       "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
     ]
@@ -26,8 +26,8 @@
     "lite": {
       "file": "patch-v3.53-lite.zip",
       "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
-      "sha256": "e1d4c42bfa14bc93fc3b11b1def53af3f0038f2905496b4cb7d181709b51455f",
-      "size": 48685253,
+      "sha256": "786490ed5bd7a8aefd4fb0b79c060ce48c608ae26c428e02876c987f23ee5a04",
+      "size": 48685459,
       "mirrors": [
         "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
       ]
@@ -35,8 +35,8 @@
     "full": {
       "file": "patch-v3.53-full.zip",
       "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
-      "sha256": "1129cbe5317cfd0cd24d72d12ca7c901412a10067a87da4817c66a8b6dfed689",
-      "size": 101348904,
+      "sha256": "eecdd0e9a7511cd7e417d3f7518cc7db53b5f241fdd198d3d4a46e27170f0a75",
+      "size": 101349110,
       "mirrors": [
         "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
       ]
@@ -46,8 +46,8 @@
     "lite": {
       "file": "patch-v3.53-lite.zip",
       "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
-      "sha256": "e1d4c42bfa14bc93fc3b11b1def53af3f0038f2905496b4cb7d181709b51455f",
-      "size": 48685253,
+      "sha256": "786490ed5bd7a8aefd4fb0b79c060ce48c608ae26c428e02876c987f23ee5a04",
+      "size": 48685459,
       "mirrors": [
         "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
       ]
@@ -55,8 +55,8 @@
     "full": {
       "file": "patch-v3.53-full.zip",
       "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
-      "sha256": "1129cbe5317cfd0cd24d72d12ca7c901412a10067a87da4817c66a8b6dfed689",
-      "size": 101348904,
+      "sha256": "eecdd0e9a7511cd7e417d3f7518cc7db53b5f241fdd198d3d4a46e27170f0a75",
+      "size": 101349110,
       "mirrors": [
         "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
       ]

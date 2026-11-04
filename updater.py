@@ -1198,7 +1198,7 @@ def start_background_download(info: dict) -> dict:
 
 
     def _worker():
-
+        nonlocal download_url
         try:
 
             PENDING_UPDATE_DIR.mkdir(parents=True, exist_ok=True)
