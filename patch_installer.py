@@ -529,14 +529,21 @@ class PatchInstallerApp:
                 if ver_after != latest_ver:
                     raise RuntimeError(f"การอัปเดตไฟล์ล้มเหลว: เวอร์ชันในเครื่องยังคงเป็น v{ver_after} (คาดหวัง v{latest_ver})")
 
-                # Purge stale webview cache in all possible locations
+                # Purge stale browser profile & webview cache in all possible locations
                 for cache_cand in [
+                    target_dir / 'data' / 'browser_profile',
+                    target_dir.parent / 'data' / 'browser_profile',
                     target_dir / 'data' / 'webview_data',
                     target_dir.parent / 'data' / 'webview_data',
+                    Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'browser_profile',
+                    Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'data' / 'browser_profile',
                     Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'webview_data',
                     Path.home() / 'AppData' / 'Local' / 'BroadcastPlayroom3' / 'data' / 'webview_data'
                 ]:
-                    for sub in ['EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'EBWebView/Default/GPUCache']:
+                    for sub in [
+                        'Default/Cache', 'Default/Code Cache', 'Default/GPUCache', 'ShaderCache', 'GrShaderCache',
+                        'EBWebView/Default/Cache', 'EBWebView/Default/Code Cache', 'EBWebView/Default/GPUCache'
+                    ]:
                         cp = cache_cand / sub
                         if cp.exists():
                             try:

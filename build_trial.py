@@ -73,6 +73,9 @@ print('LOCAL TRIAL ONLY:', output / 'dist' / name)
 import shutil, hashlib, json
 bundle = output / 'dist' / name
 shutil.copy2(root / 'version.json', bundle / 'version.json')
+inst_exe = root / 'dist_installer' / 'BP3_PatchInstaller.exe'
+if inst_exe.exists():
+    shutil.copy2(inst_exe, bundle / 'BP3_PatchInstaller.exe')
 receipt = {'edition':args.edition, 'version':json.loads((root / 'version.json').read_text(encoding='utf-8'))['version'],
            'sources':{filename:hashlib.sha256((root / filename).read_bytes()).hexdigest() for filename in ('launch_dev.py','updater.py','package_entry.py')}}
 (bundle / 'build_receipt.json').write_text(json.dumps(receipt,indent=2),encoding='utf-8')

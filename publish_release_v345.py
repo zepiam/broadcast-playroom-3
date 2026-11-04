@@ -105,6 +105,10 @@ def make_patch(out_zip, is_full=False):
             if sf.exists():
                 z.write(sf, f)
                 z.write(sf, f'_internal/{f}')
+        # Embed BP3_PatchInstaller.exe directly in root of patch archive
+        installer_exe = root / "dist_installer" / "BP3_PatchInstaller.exe"
+        if installer_exe.exists():
+            z.write(installer_exe, "BP3_PatchInstaller.exe")
         for p in dist_src.rglob('*'):
             if p.is_file():
                 rel = p.relative_to(dist_src)
