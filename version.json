@@ -1,23 +1,23 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.47",
-  "latest_version": "3.47",
+  "version": "3.48",
+  "latest_version": "3.48",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.47\n\n### สิ่งที่ได้รับการปรับปรุงในเวอร์ชัน 3.47:\n- **แก้ปัญหาระบบเช็คอัปเดตค้าง / เชื่อมต่อไม่ได้ในไทย (Multi-CDN Resilient Updater)**:\n  - เพิ่ม Hugging Face CDN (Cloudflare) และ jsDelivr Mirror เข้าสู่ระบบเช็คอัปเดตของตัวแอปหลัก ทำให้เช็คอัปเดตผ่านได้ใน 0.5 วินาที ไม่ติดบล็อกเน็ตในไทย 100%\n  - รองรับการดาวน์โหลดแพตช์ผ่าน Hugging Face อัตโนมัติหากดาวน์โหลดจาก GitHub ช้าหรือไม่สำเร็จ\n- **แก้ไขข้อความและป้ายเวอร์ชันในหน้าต่างการตั้งค่า**:\n  - แก้ไขป้ายกำกับสีเขียวจาก 'วาร์ชันล่าสุด' เป็น 'เวอร์ชันล่าสุด' ให้ถูกต้อง 100%\n  - แก้ไขข้อความเวอร์ชันเริ่มต้นที่เคยค้าง v3.6 ให้แสดง v3.47 อย่างถูกต้อง\n  - แก้ไขสถานะป้ายตรวจสอบอัปเดต ไม่ค้างอยู่ที่ 'กำลังตรวจสอบ' เมื่อการเชื่อมต่อขัดข้อง\n  - เมื่อกดปุ่มตรวจสอบการอัปเดตแล้วพบเวอร์ชันใหม่ ระบบจะเปิดหน้าต่าง Fast Update ให้ทันที\n- **ปรับปรุงตัวติดตั้งแพตช์ (BP3_PatchInstaller.exe)**:\n  - ฝังตัวติดตั้งแพตช์เวอร์ชันล่าสุดลงในโฟลเดอร์โปรแกรม\n  - รองรับการกู้คืนและอัปเดตข้ามเวอร์ชันสำหรับทุกเครื่อง\n",
+  "changelog": "# Broadcast Playroom v3.48\n\n### สิ่งที่ได้รับการปรับปรุงในเวอร์ชัน 3.48:\n- **กลับมาใช้ Native Windows Title Bar มาตรฐานเหมือนกันทุกเครื่อง 100%**:\n  - ยกเลิกการใช้ Frameless Custom Title Bar ภายในหน้าเว็บ เพื่อตัดปัญหา Title Bar ซ้อน 2 ชั้นและปัญหาการย่อ/ขยาย/ลากหน้าต่าง\n  - คืนค่า Title Bar ของระบบ Windows มาตรฐาน พร้อมปุ่ม ย่อ (Minimize), ขยาย (Maximize), และ ปิด (Close) แท้ๆ ของระบบปฏิบัติการ\n  - เอาแถบควบคุมภายในแอป (Fake Title Bar & Resizers) ออกทั้งหมด ทำให้หน้าจอคลีน สวยงาม และเสถียร 100%\n- **รองรับคีย์ลัด Ctrl+R / Ctrl+Shift+R / F5 เพื่อ Hard-Reload ล้างแคชได้ทุกเครื่อง**:\n  - เพิ่ม Global Keyboard Shortcut ดักจับการกด `Ctrl+R`, `Ctrl+Shift+R`, หรือ `F5` เพื่อสั่งโหลดหน้าจอใหม่และสลัดแคชทิ้ง (Cache Bust) ทันทีในทุกโหมด\n- **ระบบเช็คอัปเดต Multi-CDN ไม่ค้างและไม่ติดบล็อกเน็ตในไทย**:\n  - ดึงข้อมูลผ่าน Hugging Face CDN (Cloudflare) + jsDelivr Mirror เช็คผ่านได้ใน 0.5 วินาที\n  - แก้ไขป้ายกำกับเป็น 'เวอร์ชันล่าสุด' และแสดงเลขเวอร์ชันปัจจุบัน v3.48 อย่างถูกต้อง\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.47/patch-v3.47-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.48/patch-v3.48-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.47-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.48-lite.zip"
     ],
-    "sha256": "12665d15052fb89275be7dfe3920084185588448df93014d52409f2299f10c12",
-    "size": 71681696
+    "sha256": "5d80a9f68249fe9583eaf409dd951f57373be42c5f3ed2c5a2f2e565cf1beceb",
+    "size": 93283830
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.47/patch-v3.47-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.48/patch-v3.48-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.47-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.48-full.zip"
     ],
-    "sha256": "12665d15052fb89275be7dfe3920084185588448df93014d52409f2299f10c12",
-    "size": 71681696
+    "sha256": "5d80a9f68249fe9583eaf409dd951f57373be42c5f3ed2c5a2f2e565cf1beceb",
+    "size": 93283830
   }
 }

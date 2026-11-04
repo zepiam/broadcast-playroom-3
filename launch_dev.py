@@ -12197,13 +12197,13 @@ def open_app_window(main_url):
             main_url_busted = f"{main_url}{cache_delim}_v={CURRENT_VERSION}_{int(time.time())}"
 
             w = webview.create_window(
-                title='Broadcast Playroom 3',
+                title=f"Broadcast Playroom v{CURRENT_VERSION}",
                 url=main_url_busted,
                 width=1600,
                 height=950,
                 min_size=(600, 420),
-                frameless=True,
-                easy_drag=True
+                frameless=False,
+                easy_drag=False
             )
             from app_window_frame import set_webview_window, setup_app_window_icon, is_app_shutting_down
             set_webview_window(w)
@@ -12232,8 +12232,7 @@ def open_app_window(main_url):
                 try:
                     h = w.native.Handle.ToInt64() if hasattr(w.native, 'Handle') else int(w.native)
                     setup_app_window_icon(h)
-                    from app_window_frame import setup_discord_frame
-                    setup_discord_frame(h)
+                    # Native Windows title bar retained (no discord frameless strip)
                 except Exception as e:
                     print(f"[WARN] _setup_icon / discord_frame error: {e}", flush=True)
 
