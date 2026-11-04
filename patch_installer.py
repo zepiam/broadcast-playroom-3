@@ -294,7 +294,7 @@ class PatchInstallerApp:
         self.root.after(0, self._render_initial_state)
 
     def _render_initial_state(self):
-        latest_ver = self.metadata.get('latest_version', '3.50') if self.metadata else '3.50'
+        latest_ver = self.metadata.get('latest_version', '3.51') if self.metadata else '3.51'
         self.ver_label.config(text=f"✨ เวอร์ชันล่าสุดจากเซิร์ฟเวอร์: v{latest_ver}", fg="#22c55e")
         
         notes = []
@@ -326,7 +326,7 @@ class PatchInstallerApp:
             return
 
         self.btn_action.config(state="normal", bg="#2563eb")
-        target_ver = self.metadata.get('latest_version', '3.50') if self.metadata else '3.50'
+        target_ver = self.metadata.get('latest_version', '3.51') if self.metadata else '3.51'
 
         for path_str, b_type in self.instances.items():
             cur_ver = get_folder_version(path_str)
@@ -406,7 +406,7 @@ class PatchInstallerApp:
 
             # Determine what packages we need
             needed_types = set(self.instances.values())
-            latest_ver = self.metadata.get('latest_version', '3.50') if self.metadata else '3.50'
+            latest_ver = self.metadata.get('latest_version', '3.51') if self.metadata else '3.51'
 
             downloaded_zips = {}
 
@@ -427,7 +427,7 @@ class PatchInstallerApp:
                     try:
                         self._set_status(f"กำลังดาวน์โหลดแพตช์ v{latest_ver} ({b_type.upper()})...", 15)
                         
-                        req = urllib.request.Request(download_url, headers={'User-Agent': 'BP3-PatchInstaller/3.50'})
+                        req = urllib.request.Request(download_url, headers={'User-Agent': 'BP3-PatchInstaller/3.51'})
                         with urllib.request.urlopen(req, timeout=45) as resp, open(dest_zip, 'wb') as out_f:
                             total_size = int(resp.headers.get('content-length', 0))
                             downloaded = 0

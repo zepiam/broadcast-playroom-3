@@ -2203,29 +2203,26 @@ def normalize_tool_name(tool_name):
 
 def handle_tool_popout(tool_name, main_url, section=None):
     name = normalize_tool_name(tool_name)
-    if not name: return {'ok': False, 'error': 'empty tool'}
-    
+    if not name:
+        return {'ok': False, 'error': 'empty tool'}
+
     global _tool_popout_windows
-    if name in _tool_popout_windows:
-        tw = _tool_popout_windows[name]
-        try:
-            tw.show()
-            tw.restore()
-            if section and name == 'settings':
-                try:
-                    tw.evaluate_js(f"try {{ (window.switchSettingsSection || switchSettingsSection)('{section}'); }} catch(e) {{}}")
-                except Exception:
-                    pass
-            if name == 'author-profile':
-                try:
-                    tw.evaluate_js("try { if (window.syncAuthorProfile) window.syncAuthorProfile(); } catch(e) {}")
-                except Exception:
-                    pass
-            return {'ok': True, 'focused': True}
-        except Exception:
-            _tool_popout_windows.pop(name, None)
-            
-    import webview
+    existing = _tool_popout_windows.get(name)
+    if existing:
+        # If it's a subprocess, check if alive
+        if hasattr(existing, 'poll'):
+            if existing.poll() is None:
+                return {'ok': True, 'focused': True}
+            else:
+                _tool_popout_windows.pop(name, None)
+        else:
+            try:
+                existing.show()
+                existing.restore()
+                return {'ok': True, 'focused': True}
+            except Exception:
+                _tool_popout_windows.pop(name, None)
+
     titles = {
         'giveaway': 'Giveaway Tool สุ่มแจกรางวัล',
         'ask': 'ASK Widget ตั้งคำถามโหวต',
@@ -2263,41 +2260,41 @@ def handle_tool_popout(tool_name, main_url, section=None):
     if section:
         url += f"&section={urllib.parse.quote(str(section))}"
     url += f"&_v={int(time.time() * 1000)}"
-    
-    class PopoutJsApi:
-        def __init__(self, tool_name, win_ref=None):
-            self.tool_name = tool_name
-            self.win_ref = win_ref
-        def close(self):
-            target = self.win_ref or _tool_popout_windows.pop(self.tool_name, None)
-            if self.tool_name in _tool_popout_windows:
-                _tool_popout_windows.pop(self.tool_name, None)
-            if target:
-                threading.Thread(target=safe_destroy_window, args=(target,), daemon=True).start()
-            return {'ok': True}
 
-    if section and name == 'settings':
-        url = url + f"&section={section}"
+    # 1. Try launching via browser_bin (Chrome/Edge App Mode)
+    browser_bin = find_browser()
+    if browser_bin:
+        app_profile_dir = os.path.join(str(DATA_ROOT), 'browser_profile')
+        cmd = [
+            browser_bin,
+            f"--app={url}",
+            f"--user-data-dir={app_profile_dir}",
+            "--disable-popup-blocking",
+            f"--window-size={sz[0]},{sz[1]}",
+            "--no-first-run",
+            "--no-default-browser-check"
+        ]
+        try:
+            proc = subprocess.Popen(cmd)
+            _tool_popout_windows[name] = proc
+            return {'ok': True, 'created': True}
+        except Exception as e:
+            print(f"[ERROR] Failed to launch popout process for '{name}': {e}", flush=True)
 
-    api = PopoutJsApi(name)
+    # 2. Try webview only if webview event loop is active
     try:
-        tw = webview.create_window(
-            title=title,
-            url=url,
-            width=sz[0],
-            height=sz[1],
-            min_size=(480, 360),
-            js_api=api
-        )
-    except Exception as e:
-        print(f"[ERROR] Failed to create popout window for '{name}': {e}", flush=True)
-        return {'ok': False, 'error': str(e)}
-    api.win_ref = tw
-    _tool_popout_windows[name] = tw
-    def on_closed():
-        _tool_popout_windows.pop(name, None)
-    tw.events.closed += on_closed
-    return {'ok': True, 'created': True}
+        import webview
+        if getattr(webview, 'windows', None):
+            tw = webview.create_window(title=title, url=url, width=sz[0], height=sz[1], min_size=(480, 360))
+            _tool_popout_windows[name] = tw
+            def on_closed():
+                _tool_popout_windows.pop(name, None)
+            tw.events.closed += on_closed
+            return {'ok': True, 'created': True}
+    except Exception:
+        pass
+
+    return {'ok': False, 'error': 'No launcher available'}
 
 class QuietHandler(SimpleHTTPRequestHandler):
 

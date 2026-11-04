@@ -1,20 +1,20 @@
 {
-  "version": "3.50",
-  "release_date": "2026-11-04",
+  "version": "3.51",
+  "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.50\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชั่น 3.50:\n- **Disk-First Module Loader สำหรับตัวรัน (.exe)**:\n  - แก้ไขปัญหาตัวรัน PyInstaller onedir (.exe) ไม่ยอมอ่านไฟล์ `.py` ที่อัปเดตจากแพตช์ โดยปรับให้ระบบค้นหาไฟล์บน Disk มาก่อน bytecode เก่าที่ฝังไว้\n  - ทำให้ระบบเช็คอัปเดต (In-App Updater) ตรวจพบเวอร์ชั่นใหม่ผ่าน Hugging Face CDN อย่างแม่นยำทุกเครื่อง\n- **แก้ไขหน้าต่าง Windows Defender (1-Click Exclusion) ค้างกำลังโหลด**:\n  - เชื่อมโยงระบบตรวจจับโฟลเดอร์ปัจจุบันและสถานะการยกเว้นทันทีเมื่อคลิกแท็บ Windows Defender ในหน้าตั้งค่า\n  - รองรับการตรวจจับโฟลเดอร์แม่ที่ Setup เพิ่มข้อยกเว้นไว้ ไม่ฟ้องว่าถูกย้ายโฟลเดอร์อีกต่อไป\n  - เพิ่มการยกเว้น Process ของตัวรันโปรแกรมทั้ง Lite และ Full เพื่อป้องกัน Defender ล็อกไฟล์\n- **แก้ไขปุ่ม Edit สตรีม และปุ่ม Refresh Title**:\n  - เปลี่ยนปุ่มลิงก์เป็น Native Button หมดปัญหา URL ติด `#` หรือข้อความ `javascript:void(0)`\n  - ใช้คำสั่งระบบ Windows (`os.startfile`) เพื่อเปิดหน้าจัดการสตรีมบน Default Browser ของผู้ใช้โดยตรงที่มีการล็อกอินบัญชีไว้อยู่แล้ว\n  - ปรับปรุงให้กล่องแสดง Title และปุ่มควบคุมแสดงผลอย่างสมบูรณ์แบบ\n",
+  "changelog": "# Broadcast Playroom v3.51\n\n### รายการแก้ไขด่วนในเวอร์ชั่น 3.51:\n- **แก้ไขปุ่มเปิดหน้าต่างเครื่องมือทุกปุ่ม (Settings, Giveaway, Ask, User Manager ฯลฯ)**:\n  - แก้ไขปัญหาระบบ Popout ไม่ยอมเปิดหน้าต่างใหม่ในโหมด Chrome App โดยปรับให้เรียกเปิดหน้าต่างทันทีผ่านคำสั่ง `window.open` และให้ Backend ควบคุมผ่าน Process แยกอิสระ\n  - เพิ่ม Fallback เปิดหน้าต่างในแอปทันที (Inline Modal) กรณีที่หน้าต่างแยกถูกบล็อก เพื่อรับประกัน 100% ว่าทุกปุ่มที่คลิกจะเปิดหน้าต่างขึ้นมาแน่นอน\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.50-lite.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.50-lite.zip",
-      "sha256": "5dfa6174d3b69ce2138dd10fe4480ba51d7fa74c2d6dc8bbf614c8be4021976c",
-      "size": 48687150
+      "file": "patch-v3.51-lite.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.51-lite.zip",
+      "sha256": "79a3d1f99e7c6f589968ef99148c351c90c5e3a6b6b91133a2296ec5d006c97a",
+      "size": 48682735
     },
     "full": {
-      "file": "patch-v3.50-full.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.50-full.zip",
-      "sha256": "c2f6d2ee3c00a5dbbcc98cf4fd12fefe0642b07ab4e16a915e4ffc8c96ebf71f",
-      "size": 101350801
+      "file": "patch-v3.51-full.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.51-full.zip",
+      "sha256": "ffb05f83237fe84e605625bc50418684173797fadf24426809af5aeeb2d01cad",
+      "size": 101346386
     }
   }
 }
