@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.46"
+CURRENT_VERSION = "3.47"
 
 REPO_OWNER = "zepiam"
 
@@ -94,6 +94,11 @@ _download_thread = None
 
 # 1. Static raw manifest จาก master branch (ไม่ติด rate limit)
 
+# 1. Hugging Face CDN (ความเร็วสูง ไม่ติดบล็อกเน็ตในไทย)
+HF_MANIFEST_URL = "https://huggingface.co/men9ch/broadcast-playroom-3/raw/main/version.json"
+# 2. jsDelivr Fastly CDN
+JSDELIVR_MANIFEST_URL = f"https://cdn.jsdelivr.net/gh/{REPO_OWNER}/{REPO_NAME}@master/version.json"
+# 3. Static raw manifest จาก master branch
 RAW_MANIFEST_URL = f"https://raw.githubusercontent.com/{REPO_OWNER}/{REPO_NAME}/master/version.json"
 
 # 2. Release asset manifest (สำหรับ release build)
@@ -262,8 +267,11 @@ def fetch_remote_manifest(timeout: int = 8) -> Optional[dict]:
         urls = [override_url]
     else:
         urls = [
+            HF_MANIFEST_URL + f"?t={int(time.time())}",
+            JSDELIVR_MANIFEST_URL + f"?t={int(time.time())}",
             RELEASE_MANIFEST_URL,
             RAW_MANIFEST_URL + f"?t={int(time.time())}",
+            HF_MANIFEST_URL,
             RAW_MANIFEST_URL,
         ]
 
@@ -1229,17 +1237,29 @@ def start_background_download(info: dict) -> dict:
 
 
 
-            ok = download_update_file(
+            # Candidate URLs prioritizing Hugging Face for Thailand/Asia
+            urls_to_try = []
+            mirrors = info.get("mirrors") or []
+            for m in mirrors:
+                if "huggingface" in m and m not in urls_to_try:
+                    urls_to_try.append(m)
+            if download_url and download_url not in urls_to_try:
+                urls_to_try.append(download_url)
+            for m in mirrors:
+                if m not in urls_to_try:
+                    urls_to_try.append(m)
 
-                download_url,
-
-                str(target_zip),
-
-                on_progress=_on_prog,
-
-                expected_sha256=expected_sha,
-
-            )
+            ok = False
+            for cand_url in urls_to_try:
+                ok = download_update_file(
+                    cand_url,
+                    str(target_zip),
+                    on_progress=_on_prog,
+                    expected_sha256=expected_sha,
+                )
+                if ok:
+                    download_url = cand_url
+                    break
 
 
 

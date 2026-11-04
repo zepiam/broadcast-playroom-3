@@ -1123,7 +1123,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.46</span>
+      <span class="desktop-titlebar-tag">v3.47</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -18662,11 +18662,11 @@ document.addEventListener('DOMContentLoaded',async()=>{
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.6</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.47</span>
 
 
 
-              <span id="appUpdateStatusBadge" style="font-size:12px; color:#23a55a; font-weight:600; background:rgba(35,165,90,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(35,165,90,0.25);">✅ วาร์ชันล่าสุด</span>
+              <span id="appUpdateStatusBadge" style="font-size:12px; color:#23a55a; font-weight:600; background:rgba(35,165,90,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(35,165,90,0.25);">✅ เวอร์ชันล่าสุด</span>
 
 
 
@@ -73540,10 +73540,13 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
         }
-
-
-
-        if (detail) detail.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์';
+        if (badge) {
+          badge.textContent = '❌ ตรวจสอบไม่สำเร็จ';
+          badge.style.color = '#ef4444';
+          badge.style.background = 'rgba(239,68,68,0.12)';
+          badge.style.borderColor = 'rgba(239,68,68,0.25)';
+        }
+        if (detail) detail.textContent = 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์อัปเดตได้ กรุณาลองใหม่อีกครั้ง';
 
 
 

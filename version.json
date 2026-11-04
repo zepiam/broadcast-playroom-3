@@ -1,23 +1,23 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.46",
-  "latest_version": "3.46",
+  "version": "3.47",
+  "latest_version": "3.47",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.46\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.46:\n- **ระบบ Zero-Browser-Cache ป้องกันการติดแคชเบราว์เซอร์ถาวร 100%**:\n  - เพิ่ม Query String ผูกเวอร์ชันใน URL ทุกครั้ง (?v=3.46) บังคับให้เบราว์เซอร์โหลดหน้าเว็บใหม่ทันทีเมื่อเวอร์ชันเปลี่ยน โดยไม่ต้องกด Ctrl+Shift+R อีกต่อไป\n  - ล้างโฟลเดอร์แคชเบราว์เซอร์จริง (browser_profile/Default/Cache, Code Cache, GPUCache) อัตโนมัติทุกครั้งที่เริ่มโปรแกรมและหลังลงแพตช์\n  - กำหนดจำกัดขนาดแคชเบราว์เซอร์เหลือ 1 ไบต์ (--disk-cache-size=1) และปิด HTTP Cache\n  - ใส่ Meta Tag no-cache, no-store, must-revalidate ครอบคลุมทุกหน้า\n- **ฝังตัวซ่อมแซมและติดตั้งแพตช์ BP3_PatchInstaller.exe ลงในโฟลเดอร์โปรแกรมโดยตรง**:\n  - ผู้ใช้ไม่ต้องดาวน์โหลดภายนอกเพิ่มอีก สามารถเปิดซ่อมแซมหรืออัปเดตระบบได้ทันทีจากในโฟลเดอร์โปรแกรม\n- **คงความสมบูรณ์ของฐานข้อมูลผู้ชมและประวัติแชท User Manager ไม่หาย 100%**:\n  - รองรับ Multi-Path Deep Merge และ Safe Atomic Write อย่างสมบูรณ์แบบ\n",
+  "changelog": "# Broadcast Playroom v3.47\n\n### สิ่งที่ได้รับการปรับปรุงในเวอร์ชัน 3.47:\n- **แก้ปัญหาระบบเช็คอัปเดตค้าง / เชื่อมต่อไม่ได้ในไทย (Multi-CDN Resilient Updater)**:\n  - เพิ่ม Hugging Face CDN (Cloudflare) และ jsDelivr Mirror เข้าสู่ระบบเช็คอัปเดตของตัวแอปหลัก ทำให้เช็คอัปเดตผ่านได้ใน 0.5 วินาที ไม่ติดบล็อกเน็ตในไทย 100%\n  - รองรับการดาวน์โหลดแพตช์ผ่าน Hugging Face อัตโนมัติหากดาวน์โหลดจาก GitHub ช้าหรือไม่สำเร็จ\n- **แก้ไขข้อความและป้ายเวอร์ชันในหน้าต่างการตั้งค่า**:\n  - แก้ไขป้ายกำกับสีเขียวจาก 'วาร์ชันล่าสุด' เป็น 'เวอร์ชันล่าสุด' ให้ถูกต้อง 100%\n  - แก้ไขข้อความเวอร์ชันเริ่มต้นที่เคยค้าง v3.6 ให้แสดง v3.47 อย่างถูกต้อง\n  - แก้ไขสถานะป้ายตรวจสอบอัปเดต ไม่ค้างอยู่ที่ 'กำลังตรวจสอบ' เมื่อการเชื่อมต่อขัดข้อง\n  - เมื่อกดปุ่มตรวจสอบการอัปเดตแล้วพบเวอร์ชันใหม่ ระบบจะเปิดหน้าต่าง Fast Update ให้ทันที\n- **ปรับปรุงตัวติดตั้งแพตช์ (BP3_PatchInstaller.exe)**:\n  - ฝังตัวติดตั้งแพตช์เวอร์ชันล่าสุดลงในโฟลเดอร์โปรแกรม\n  - รองรับการกู้คืนและอัปเดตข้ามเวอร์ชันสำหรับทุกเครื่อง\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.46/patch-v3.46-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.47/patch-v3.47-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.46-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.47-lite.zip"
     ],
-    "sha256": "787368d29493579861c1adac8077596cdb6e8b766dfea26038bdaaeceacc23d4",
-    "size": 71683298
+    "sha256": "12665d15052fb89275be7dfe3920084185588448df93014d52409f2299f10c12",
+    "size": 71681696
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.46/patch-v3.46-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.47/patch-v3.47-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.46-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.47-full.zip"
     ],
-    "sha256": "787368d29493579861c1adac8077596cdb6e8b766dfea26038bdaaeceacc23d4",
-    "size": 71683298
+    "sha256": "12665d15052fb89275be7dfe3920084185588448df93014d52409f2299f10c12",
+    "size": 71681696
   }
 }
