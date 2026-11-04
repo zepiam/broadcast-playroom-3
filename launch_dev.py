@@ -12334,6 +12334,14 @@ def open_app_window(main_url):
 
 
     os.makedirs(app_profile_dir, exist_ok=True)
+    # Purge stale browser cache to guarantee immediate UI update without requiring Ctrl+Shift+R
+    for cache_sub in ['Default/Cache', 'Default/Code Cache', 'Default/GPUCache', 'ShaderCache', 'GrShaderCache']:
+        cp = os.path.join(app_profile_dir, *cache_sub.split('/'))
+        if os.path.isdir(cp):
+            try:
+                shutil.rmtree(cp, ignore_errors=True)
+            except Exception:
+                pass
 
 
 
@@ -13300,7 +13308,7 @@ def main():
 
 
 
-    main_url = f"http://127.0.0.1:{PORT}/index.html"
+    main_url = f"http://127.0.0.1:{PORT}/index.html?v={get_current_version()}"
 
 
 

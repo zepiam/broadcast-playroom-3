@@ -9,15 +9,15 @@
     "mirrors": [
       "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.45-lite.zip"
     ],
-    "sha256": "8c903848ec2ae6453ce3b3b02c012ab8bf4da988a2349dbc5dfd5cb1bc50be9a",
-    "size": 50083136
+    "sha256": "4e6597b4ea8f49836c5cc9d262af4033884d5d16c23ce6466a5bb1dfe51335fd",
+    "size": 50083890
   },
   "full": {
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.45/patch-v3.45-full.zip",
     "mirrors": [
       "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.45-full.zip"
     ],
-    "sha256": "8c903848ec2ae6453ce3b3b02c012ab8bf4da988a2349dbc5dfd5cb1bc50be9a",
-    "size": 50083136
+    "sha256": "4e6597b4ea8f49836c5cc9d262af4033884d5d16c23ce6466a5bb1dfe51335fd",
+    "size": 50083890
   }
 }
