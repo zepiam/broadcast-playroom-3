@@ -1,23 +1,23 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.43",
-  "latest_version": "3.43",
+  "version": "3.44",
+  "latest_version": "3.44",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.43\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.43:\n- **แก้ไขบั๊กหน้าต่างขยายขนาดเองขณะกดลากย้าย (Window Drag Resizing Fix)**:\n  - ยกเลิกการส่งคำสั่ง `set-bounds` ซ้ำซ้อนขณะลากเมาส์ ซึ่งเกิดผลกระทบจากการคูณสเกล DPI ของหน้าจอ ทำให้หน้าต่างไม่ขยายขนาดเองอย่างผิดปกติอีกต่อไป\n- **ยกระดับ FindUpdate.bat ให้เป็นระบบกู้คืนและอัปเดตอัตโนมัติ 100%**:\n  - ปรับสคริปต์ `FindUpdate.bat` ไม่ให้เรียกตัวแอป GUI ขึ้นมาทับ แต่ให้ดาวน์โหลดไฟล์แพตช์ล่าสุดตรงจาก GitHub และแตกไฟล์ซ่อมแซมระบบโดยอัตโนมัติ ผู้ใช้ที่โปรแกรมมีปัญหาสามารถกดดับเบิลคลิกไฟล์นี้เพื่ออัปเดตและซ่อมแซมได้ทันที\n- **รวมการแก้ไขจาก v3.42**: ปลดล็อกปุ่มเมนูฝั่งซ้ายทั้งหมด, เพิ่มระบบ Fallback Inline, แก้ไข User Manager แสดง 0 คนดู และปรับปรุงหน้าต่างโปรไฟล์ผู้ชม\n",
+  "changelog": "# Broadcast Playroom v3.44\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.44:\n- **แก้ไขปุ่มอัปเดตวนลูป (Fast Update Modal Click Loop Fix)**:\n  - แก้ไขเหตุการณ์เมื่อดาวน์โหลดไฟล์อัปเดตขัดข้องแล้วกด \"ลองใหม่อีกครั้ง\" ตัวปุ่ม \"OK (รีสตาร์ทเพื่ออัปเดต)\" จะไม่คืนค่า event handler ทำให้กดแล้ววนกลับไปดาวน์โหลดใหม่\n  - ปรับระบบให้ผูก event `startFastUpdateProcess()` เสมอเมื่อไฟล์ดาวน์โหลดเสร็จสมบูรณ์ 100% และพร้อมติดตั้ง\n  - ปรับปรุงการแสดงผลให้เปลี่ยนเป็น \"ดาวน์โหลดพร้อมติดตั้งแล้ว\" ทันทีที่ครบ 100%\n- **แก้ไขและยกระดับระบบเชื่อมต่อแชท Twitch (Self-Healing Twitch Auto-Reconnect & Resilient Chat)**:\n  - แก้ไขปัญหาห้องแชท Twitch หลุดแล้วไม่รับข้อความใหม่ด้วยระบบตรวจจับและ Reconnect อัตโนมัติในตัวลูปอ่านข้อความ (Continuous Self-Healing Reconnect Loop)\n  - นำคำสั่ง keepalive ping แบบเดิมที่อาจถูกเซิร์ฟเวอร์ Twitch IRC ตัดการเชื่อมต่อออก และเปลี่ยนมารองรับการตอบรับ PING/PONG ตามมาตรฐาน Twitch อย่างสมบูรณ์\n  - ใน `chat_bridge`: ปรับปรุงให้พยายามเชื่อมต่อใหม่อย่างต่อเนื่อง ไม่หยุดตัดการทำงานหลังลองครบ 5 ครั้ง เพื่อให้ระบบแชทกู้คืนตัวเองได้ทันทีที่อินเทอร์เน็ตกลับมา\n- **รวมการปรับปรุง Patch Installer (BP3_PatchInstaller.exe)**: ซ่อมแซมและอัปเดตได้ด้วยคลิกเดียว ค้นหาโฟลเดอร์ติดตั้งอัตโนมัติ\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.43/patch-v3.43-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.44/patch-v3.44-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.43-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.44-lite.zip"
     ],
-    "sha256": "e7d26c8c88d147262e609542c66ee2993a0623a6b400f6f026d764baad66c044",
-    "size": 50066016
+    "sha256": "7b43b4cf1c41979e856fa8cb547c68eef8a449b8232c0c38772b18a395bb0250",
+    "size": 50068212
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.43/patch-v3.43-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.44/patch-v3.44-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.43-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.44-full.zip"
     ],
-    "sha256": "e7d26c8c88d147262e609542c66ee2993a0623a6b400f6f026d764baad66c044",
-    "size": 50066016
+    "sha256": "7b43b4cf1c41979e856fa8cb547c68eef8a449b8232c0c38772b18a395bb0250",
+    "size": 50068212
   }
 }

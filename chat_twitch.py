@@ -584,41 +584,99 @@ class TwitchChat:
     # ------------------------------------------------------------------ #
     # Reader loop (background thread)
     # ------------------------------------------------------------------ #
-    def _reader_loop(self) -> None:
-        """อ่านข้อมูลจาก socket ตลอด จนกว่าจะ disconnect"""
-        buf = ""
-        last_keepalive = time.time()
-        while not self._stop_event.is_set():
+    def _reconnect_socket_internal(self) -> bool:
+        """พยายาม reconnect Twitch socket และ join channel ใหม่อัตโนมัติ"""
+        if self._stop_event.is_set() or not self._channel:
+            return False
+
+        if self._sock is not None:
             try:
-                if self._sock is None:
+                self._sock.close()
+            except Exception:
+                pass
+            self._sock = None
+        self._is_connected = False
+
+        if self._can_send and self._oauth_token:
+            nick = self._bot_username
+            tok = self._oauth_token
+            if not tok.startswith("oauth:"):
+                tok = f"oauth:{tok}"
+        else:
+            nick = f"{ANON_NICK_PREFIX}{random.randint(10000, 99999)}"
+            tok = "oauth:1234567890"
+
+        try:
+            self._connect_socket(nick, tok)
+            self._send_raw(f"JOIN #{self._channel}\r\n")
+            self._is_connected = True
+            logger.info(f"Twitch auto-reconnected successfully to #{self._channel}")
+            self.on_status(f"✅ เชื่อมต่อ Twitch #{self._channel}")
+            return True
+        except Exception as e:
+            logger.debug(f"Twitch reconnect attempt failed: {e}")
+            return False
+
+    def _reader_loop(self) -> None:
+        """อ่านข้อมูลจาก socket ตลอด พร้อม auto-reconnect อัตโนมัติเมื่อหลุด"""
+        buf = ""
+        backoff = 2.0
+        while not self._stop_event.is_set():
+            if self._sock is None or not self._is_connected:
+                if self._stop_event.is_set():
                     break
-                now_ts = time.time()
-                if now_ts - last_keepalive >= 60.0:
-                    last_keepalive = now_ts
-                    try:
-                        self._send_raw("PING :bp3_keepalive\r\n")
-                    except Exception:
-                        pass
+                self.on_status("🔄 Twitch กำลังเชื่อมต่อใหม่...")
+                if self._reconnect_socket_internal():
+                    buf = ""
+                    backoff = 2.0
+                    continue
+                else:
+                    slept = 0.0
+                    while slept < backoff and not self._stop_event.is_set():
+                        time.sleep(0.5)
+                        slept += 0.5
+                    backoff = min(backoff * 1.5, 12.0)
+                    continue
+
+            try:
                 data = self._sock.recv(4096)
             except socket.timeout:
-                continue  # timeout = loop ใหม่ (ตรวจ _stop_event)
+                continue
             except (OSError, ssl.SSLError) as exc:
-                if not self._stop_event.is_set():
-                    self.on_error(f"การเชื่อมต่อ Twitch หลุด: {exc}")
-                break
+                if self._stop_event.is_set():
+                    break
+                logger.warning(f"Twitch connection dropped: {exc}")
+                self.on_status("⚠️ การเชื่อมต่อ Twitch หลุด — กำลังเชื่อมต่อใหม่...")
+                if self._sock:
+                    try:
+                        self._sock.close()
+                    except Exception:
+                        pass
+                    self._sock = None
+                self._is_connected = False
+                continue
 
             if not data:
-                # socket ถูกปิดจากฝั่งเซิร์ฟเวอร์
-                if not self._stop_event.is_set():
-                    self.on_error("การเชื่อมต่อ Twitch ถูกปิดจากเซิร์ฟเวอร์")
-                break
+                if self._stop_event.is_set():
+                    break
+                logger.warning("Twitch socket closed by server")
+                self.on_status("⚠️ การเชื่อมต่อ Twitch ถูกปิดจากเซิร์ฟเวอร์ — กำลังเชื่อมต่อใหม่...")
+                if self._sock:
+                    try:
+                        self._sock.close()
+                    except Exception:
+                        pass
+                    self._sock = None
+                self._is_connected = False
+                continue
+
+            backoff = 2.0
 
             try:
                 buf += data.decode("utf-8", errors="replace")
             except UnicodeDecodeError:
                 buf += data.decode("latin-1", errors="replace")
 
-            # แยกตามบรรทัด (IRC ปิดท้ายด้วย \r\n)
             while "\r\n" in buf:
                 line, buf = buf.split("\r\n", 1)
                 if line:
@@ -626,57 +684,13 @@ class TwitchChat:
 
         self._is_connected = False
 
-        # ★ ถ้า _need_reconnect = True → reconnect อัตโนมัติ
-        #   ถ้า refresh สำเร็จ → reconnect ด้วย token ใหม่ (ส่งแชทได้)
-        #   ถ้า refresh fail → reconnect เป็น anonymous (อ่านได้อย่างเดียว)
-        if getattr(self, '_need_reconnect', False):
-            self._need_reconnect = False
-            import time as _t
-            _t.sleep(2)  # รอ 2 วิ ก่อน reconnect
-            if not self._stop_event.is_set() and self._channel:
-                try:
-                    # ★ ตัดสินใจ login mode สำหรับ reconnect
-                    if self._can_send and self._oauth_token:
-                        # ★ OAuth login (token ใหม่จาก refresh)
-                        nick = self._bot_username
-                        tok = self._oauth_token
-                        if not tok.startswith("oauth:"):
-                            tok = f"oauth:{tok}"
-                        logger.info(f"Twitch reconnect with OAuth (user={nick})")
-                    else:
-                        # ★ Anonymous login (fallback)
-                        nick = f"{ANON_NICK_PREFIX}{random.randint(10000, 99999)}"
-                        tok = "oauth:1234567890"
-                        logger.info("Twitch reconnect as anonymous (fallback)")
-
-                    # ★ close socket เก่าก่อน
-                    if self._sock:
-                        try: self._sock.close()
-                        except: pass
-                        self._sock = None
-
-                    self._connect_socket(nick, tok)
-                    self._send_raw(f"JOIN #{self._channel}\r\n")
-                    self._is_connected = True
-                    # ★ restart reader + viewer threads
-                    self._stop_event.clear()
-                    self._thread = threading.Thread(
-                        target=self._reader_loop, name="TwitchIRCReader2", daemon=True
-                    )
-                    self._thread.start()
-                    self._viewer_thread = threading.Thread(
-                        target=self._viewer_poll_loop, name="TwitchViewerPoll2", daemon=True,
-                    )
-                    self._viewer_thread.start()
-                except Exception as e:
-                    logger.error(f"Twitch reconnect failed: {e}")
     def _handle_line(self, line: str) -> None:
         """parse และ dispatch IRC line เดียว"""
         # PING/PONG keepalive
         if line.startswith("PING"):
             self._send_raw("PONG " + line.split(" ", 1)[1] + "\r\n")
             return
-        if line.startswith("PONG"):
+        if " PONG " in line or line.startswith("PONG"):
             return  # Server responded to our keepalive PING
 
         # LOGIN FAILED — token หมดอายุ → refresh + reconnect หรือ fallback anonymous
@@ -717,9 +731,15 @@ class TwitchChat:
                 self._can_send = False
                 self._fallback_anonymous = True  # ★ ปิดช่องพิมพ์แชท
                 self.on_status("⚠️ Twitch: ใช้โหมดอ่านอย่างเดียว (token หมดอายุ)")
-            # ★ สั่ง reconnect (ใช้ token ใหม่ถ้า refresh สำเร็จ, หรือ anonymous ถ้า fail)
-            self._need_reconnect = True
-            return  # ไม่ set _stop_event — ปล่อยให้ reader loop จบเอง (socket ปิดจาก Twitch)
+            # ปิด socket เดิมเพื่อให้ _reader_loop ทำการ reconnect ทันที
+            if self._sock is not None:
+                try:
+                    self._sock.close()
+                except Exception:
+                    pass
+                self._sock = None
+            self._is_connected = False
+            return
 
         # JOIN สำเร็จ
         if "JOIN" in line and f"#{self._channel}" in line:

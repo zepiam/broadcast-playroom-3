@@ -559,7 +559,17 @@ class ChatBridge:
 
             if state['attempts'] >= 5:
 
-                self._statuses[platform]['status'] = 'หยุดเชื่อมต่ออัตโนมัติหลังลอง 5 ครั้ง: ' + error
+                token = state['token']
+
+                self._statuses[platform]['status'] = f'🔄 กำลังพยายามเชื่อมต่อใหม่ต่อเนื่อง ({state["attempts"]} ครั้ง): {error}'
+
+                timer = threading.Timer(25.0, self._retry_connection, args=(platform, token))
+
+                timer.daemon = True
+
+                state['timer'] = timer
+
+                timer.start()
 
                 return
 
