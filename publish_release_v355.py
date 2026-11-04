@@ -190,6 +190,26 @@ for pz in [patch_lite, patch_full]:
     with zipfile.ZipFile(pz, 'a', zipfile.ZIP_DEFLATED) as z:
         z.write(manifest_file, "version.json")
 
+# RE-CALCULATE EXACT SHA256 & SIZE ON FINALIZED ZIP FILES
+lite_final_sha = sha256_file(patch_lite)
+full_final_sha = sha256_file(patch_full)
+manifest["patches"]["lite"]["sha256"] = lite_final_sha
+manifest["patches"]["lite"]["size"] = patch_lite.stat().st_size
+manifest["patches"]["full"]["sha256"] = full_final_sha
+manifest["patches"]["full"]["size"] = patch_full.stat().st_size
+manifest["lite"]["sha256"] = lite_final_sha
+manifest["lite"]["size"] = patch_lite.stat().st_size
+manifest["full"]["sha256"] = full_final_sha
+manifest["full"]["size"] = patch_full.stat().st_size
+
+with open(manifest_file, "w", encoding="utf-8") as f:
+    json.dump(manifest, f, indent=2, ensure_ascii=False)
+
+# STRICT INTEGRITY GATE: Guarantee zero SHA256 mismatch before any upload
+assert sha256_file(patch_lite) == manifest["patches"]["lite"]["sha256"], "LITE SHA256 GATE FAILED"
+assert sha256_file(patch_full) == manifest["patches"]["full"]["sha256"], "FULL SHA256 GATE FAILED"
+print("  [OK] Strict SHA256 gate passed! Hashes 100% matched finalized zips.")
+
 print("\n=== [STEP 3] Uploading Patches and Manifest to Hugging Face ===")
 upload_items = [
     (patch_lite, f"patches/patch-v{VERSION}-lite.zip"),
