@@ -12396,6 +12396,8 @@ def open_app_window(main_url):
             "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading",
             "--disable-http-cache",
             "--disable-application-cache",
+            "--disk-cache-size=1",
+            "--media-cache-size=1",
             "--enable-features=WebAppWindowControlsOverlay",
             "--autoplay-policy=no-user-gesture-required",
             "--disable-extensions",
