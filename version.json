@@ -1,20 +1,65 @@
 {
-  "version": "3.52",
+  "version": "3.53",
+  "latest_version": "3.53",
   "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.52\n\n### รายการแก้ไขสำคัญในเวอร์ชั่น 3.52:\n- **ถอนรากถอนโคนบัคปุ่มกดไม่ติด (Cross-Origin Security Error บน DOM)**:\n  - แก้ไขปัญหา DOM Monkey-patch ใน `document.getElementById` และ `user_controls.js` ที่พยายามอ่าน Document ข้ามหน้าต่างของ Browser โดยไม่มี Try-Catch ทำให้เกิด SecurityError ขัดจังหวะการทำงานของ JavaScript ทั่วทั้งโปรแกรม\n  - ทุกปุ่มหน้าต่างเครื่องมือ (Settings, Giveaway, Ask, User Manager ฯลฯ) ผ่านการทดสอบคลิกจริงอัตโนมัติด้วย Headless Browser ครบ 100% ทั้งโหมด Popout และ Inline\n",
-  "patches": {
+  "changelog": "# Broadcast Playroom v3.53\n\n### รายการแก้ไขสำคัญในเวอร์ชั่น 3.53:\n- **ถอนรากถอนโคนลูปอัปเดต (Stuck on v3.50 Update Loop Fix)**:\n  - แก้ไขโครงสร้าง `version.json` ให้รองรับคีย์แพตช์ทุกรูปแบบทั้ง Root (`full`/`lite`), `packages`, และ `patches` เพื่อให้ In-App Updater ของ v3.48 - v3.52 ตรวจจับ URL ดาวน์โหลดแพตช์ได้ 100% ไม่พลาดอีกต่อไป\n  - แก้ไขปัญหา Permission Denied (Error 13) เมื่อพยายามติดตั้งแพตช์ขณะโปรแกรมทำงาน โดยปรับให้ระบบส่งต่อการแตกไฟล์ไปยัง Updater Batch หลังปิด Process เดิมแล้วอย่างสมบูรณ์\n- **แก้ปัญหาโปรแกรมเด้งซ้อน 2 หน้าต่าง (Duplicate Window on Update Fix)**:\n  - แก้ไขในหน้าต่างเว็บให้สั่ง `window.close()` ปิดหน้าต่างเดิมลงอย่างหมดจดเมื่อกดอัปเดต ไม่ปล่อยให้ Chrome Reload ค้างซ้ำกับโปรแกรมใหม่ที่กำลังเปิดขึ้นมา\n- **ปรับปรุงแท็บ Windows Defender (1-Click Exclusion) ในหน้าตั้งค่า**:\n  - รองรับการตรวจจับ Path ของโฟลเดอร์โปรแกรมแบบเรียลไทม์ทั้งแบบ Inline Modal และ Popout Window หมดปัญหาค้างที่ \"กำลังโหลด...\"\n- **ปุ่มเปิดหน้าต่างเครื่องมือและปุ่มภายนอกผ่านการทดสอบอัตโนมัติ 100%**:\n  - ทุกปุ่มเครื่องมือ (Settings, Giveaway, Ask, Chat Widget ฯลฯ) และปุ่ม Edit สตรีม ผ่านการตรวจสอบความถูกต้องด้วย Headless Browser Smoke Test ก่อน Release ทุกครั้ง\n",
+  "lite": {
+    "file": "patch-v3.53-lite.zip",
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
+    "sha256": "af7a6b1711929495a54f8b1d4e3d22e983189cc7c3ed3e2781abd7045ffad2ab",
+    "size": 48683227,
+    "mirrors": [
+      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
+    ]
+  },
+  "full": {
+    "file": "patch-v3.53-full.zip",
+    "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
+    "sha256": "99629bc98b553610752c1b4978ca736bd8f54681ea6c3d2acfc10d09a4855f39",
+    "size": 101346878,
+    "mirrors": [
+      "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
+    ]
+  },
+  "packages": {
     "lite": {
-      "file": "patch-v3.52-lite.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.52-lite.zip",
-      "sha256": "1d82dffd9867deddc5692da3dc000e9968e2b47fd5749d1b7570c6ace843720c",
-      "size": 48682718
+      "file": "patch-v3.53-lite.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
+      "sha256": "af7a6b1711929495a54f8b1d4e3d22e983189cc7c3ed3e2781abd7045ffad2ab",
+      "size": 48683227,
+      "mirrors": [
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
+      ]
     },
     "full": {
-      "file": "patch-v3.52-full.zip",
-      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.52-full.zip",
-      "sha256": "b2d32c7bacd5ce0716210013451915d9eb76efd1dd126b028f5d8ae33fa7d58e",
-      "size": 101346369
+      "file": "patch-v3.53-full.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
+      "sha256": "99629bc98b553610752c1b4978ca736bd8f54681ea6c3d2acfc10d09a4855f39",
+      "size": 101346878,
+      "mirrors": [
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
+      ]
+    }
+  },
+  "patches": {
+    "lite": {
+      "file": "patch-v3.53-lite.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-lite.zip",
+      "sha256": "af7a6b1711929495a54f8b1d4e3d22e983189cc7c3ed3e2781abd7045ffad2ab",
+      "size": 48683227,
+      "mirrors": [
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-lite.zip"
+      ]
+    },
+    "full": {
+      "file": "patch-v3.53-full.zip",
+      "url": "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.53-full.zip",
+      "sha256": "99629bc98b553610752c1b4978ca736bd8f54681ea6c3d2acfc10d09a4855f39",
+      "size": 101346878,
+      "mirrors": [
+        "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.53/patch-v3.53-full.zip"
+      ]
     }
   }
 }

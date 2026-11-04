@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.52"
+CURRENT_VERSION = "3.53"
 
 REPO_OWNER = "zepiam"
 
@@ -490,6 +490,8 @@ def check_for_update(build_type: Optional[str] = None) -> dict:
     edition_info = manifest.get(bt, {})
     if not edition_info and "packages" in manifest:
         edition_info = manifest.get("packages", {}).get(bt, {})
+    if not edition_info and "patches" in manifest:
+        edition_info = manifest.get("patches", {}).get(bt, {})
 
 
 
@@ -1033,80 +1035,60 @@ def restart_application():
 
 
 def perform_update_and_restart(build_type: Optional[str] = None) -> dict:
-
     """ดาวน์โหลด ติดตั้งแพตช์อัปเดต และรีสตาร์ทโปรแกรมอัตโนมัติ"""
-
     info = check_for_update(build_type)
 
+    if not info.get("has_update"):
+        return {
+            "success": False,
+            "message": "โปรแกรมเป็นเวอร์ชันล่าสุดแล้ว",
+            "restarting": False,
+        }
 
+    download_url = info.get("download_url", "")
+    expected_sha = info.get("sha256", "")
 
-    if info.get("has_update"):
+    if not download_url:
+        return {
+            "success": False,
+            "message": "ไม่พบที่อยู่ดาวน์โหลดไฟล์อัปเดต",
+            "restarting": False,
+        }
 
-        download_url = info.get("download_url", "")
+    if download_url.endswith(".zip"):
+        import tempfile
+        temp_dir = tempfile.gettempdir()
+        dest_zip = os.path.join(temp_dir, f"bp3_update_{info.get('latest_version')}.zip")
 
-        expected_sha = info.get("sha256", "")
+        candidate_urls = [download_url] + [m for m in info.get("mirrors", []) if m and m != download_url]
+        downloaded = False
+        for cur_url in candidate_urls:
+            if cur_url != download_url:
+                logger.info(f"Failing over to mirror: {cur_url}")
+            downloaded = download_update_file(cur_url, dest_zip, expected_sha256=expected_sha)
+            if downloaded:
+                break
 
-        if download_url and download_url.endswith(".zip"):
+        if not downloaded:
+            return {
+                "success": False,
+                "message": "ดาวน์โหลดไฟล์อัปเดตไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
+                "restarting": False,
+            }
 
-            import tempfile
-
-            temp_dir = tempfile.gettempdir()
-
-            dest_zip = os.path.join(temp_dir, f"bp3_update_{info.get('latest_version')}.zip")
-
-            candidate_urls = [download_url] + [m for m in info.get("mirrors", []) if m and m != download_url]
-            downloaded = False
-            for cur_url in candidate_urls:
-                if cur_url != download_url:
-                    logger.info(f"Failing over to mirror: {cur_url}")
-                downloaded = download_update_file(cur_url, dest_zip, expected_sha256=expected_sha)
-                if downloaded:
-                    break
-
-            if not downloaded:
-
-                return {
-
-                    "success": False,
-
-                    "message": "ดาวน์โหลดไฟล์อัปเดตไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
-
-                    "restarting": False,
-
-                }
-
-            applied = apply_update_patch(dest_zip)
-
-            if not applied:
-
-                return {
-
-                    "success": False,
-
-                    "message": "ติดตั้งแพตช์อัปเดตไม่สำเร็จ กรุณาลองใหม่อีกครั้ง",
-
-                    "restarting": False,
-
-                }
-
-
-
-    # สั่งรีสตาร์ทโปรแกรมอัตโนมัติ
-
-    restart_application()
+        # รัน restart_application_with_patch เพื่อให้ process ปิดตัวลงก่อนคลายไฟล์ทับ ป้องกัน Error 13 Permission Denied
+        restart_application_with_patch(dest_zip)
+        return {
+            "success": True,
+            "message": "ดาวน์โหลดสำเร็จ กำลังรีสตาร์ทเพื่อติดตั้งอัปเดต...",
+            "restarting": True,
+        }
 
     return {
-
-        "success": True,
-
-        "message": "กำลังรีสตาร์ทโปรแกรมเพื่อเริ่มใช้งานเวอร์ชันใหม่...",
-
-        "restarting": True,
-
+        "success": False,
+        "message": "รูปแบบไฟล์อัปเดตไม่ถูกต้อง",
+        "restarting": False,
     }
-
-
-
 
 
 def get_update_runtime_status() -> dict:
@@ -1470,11 +1452,15 @@ def restart_application_with_patch(patch_zip: Optional[str] = None):
 set "BP3_WAIT_COUNT=0"
 :wait_for_exit
 tasklist /FI "PID eq {os.getpid()}" /NH | findstr /R /C:" {os.getpid()} " >nul
-if errorlevel 1 goto apply_patch
+if errorlevel 1 goto wait_extra
 set /a BP3_WAIT_COUNT+=1
 if %BP3_WAIT_COUNT% GEQ 120 goto update_failed
 timeout /t 1 /nobreak >nul
 goto wait_for_exit
+
+:wait_extra
+rem Allow OS and Windows Defender 2 seconds to release file handles completely
+timeout /t 2 /nobreak >nul
 :apply_patch
 if not exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup" mkdir "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup"
 if exist "{install_dir}\..\data\platform_settings.json" copy /y "{install_dir}\..\data\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
@@ -1486,8 +1472,15 @@ if exist "{install_dir}\..\data\user_roster.json" for %%F in ("{install_dir}\..\
 if exist "{install_dir}\data\user_roster.json" for %%F in ("{install_dir}\data\user_roster.json") do if %%~zF GTR 10 copy /y "%%~fF" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json" for %%F in ("%LOCALAPPDATA%\BroadcastPlayroom3\user_roster.json") do if %%~zF GTR 10 copy /y "%%~fF" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
 
+set "BP3_TAR_RETRY=0"
+:do_tar
 tar -xf "{patch_zip}" -C "{install_dir}"
-if errorlevel 1 goto update_failed
+if not errorlevel 1 goto tar_done
+set /a BP3_TAR_RETRY+=1
+if %BP3_TAR_RETRY% GEQ 5 goto update_failed
+timeout /t 2 /nobreak >nul
+goto do_tar
+:tar_done
 if exist "{install_dir}\_internal" (
     if exist "{install_dir}\dist" xcopy /e /y /q "{install_dir}\dist" "{install_dir}\_internal\dist\" >nul
     if exist "{install_dir}\updater.py" copy /y "{install_dir}\updater.py" "{install_dir}\_internal\" >nul

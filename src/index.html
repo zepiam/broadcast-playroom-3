@@ -69690,109 +69690,52 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     async function checkDefenderSettingsPane() {
+      let popDoc = null;
+      try {
+        if (window._popoutWindows && window._popoutWindows['settings'] && !window._popoutWindows['settings'].closed) {
+          popDoc = window._popoutWindows['settings'].document;
+        }
+      } catch (_) {}
 
-
-
-      const statusEl = document.getElementById('lblDefenderStatus');
-
-
-
-      const pathEl = document.getElementById('lblDefenderPath');
-
-
+      const statusEl = (popDoc && popDoc.getElementById('lblDefenderStatus')) || document.getElementById('lblDefenderStatus');
+      const pathEl = (popDoc && popDoc.getElementById('lblDefenderPath')) || document.getElementById('lblDefenderPath');
 
       try {
-
-
-
         const res = await fetch('/api/defender/status');
-
-
-
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const data = await res.json();
 
-
-
-        if (pathEl) pathEl.textContent = data.current_dir || '-';
-
-
-
-        if (statusEl) {
-
-
-
-          if (data.is_excluded) {
-
-
-
-            statusEl.textContent = '✅ ยกเว้นเรียบร้อย';
-
-
-
-            statusEl.style.color = '#10b981';
-
-
-
-            statusEl.style.background = 'rgba(16,185,129,0.15)';
-
-
-
-            statusEl.style.borderColor = 'rgba(16,185,129,0.3)';
-
-
-
-          } else if (data.status === 'relocated') {
-
-
-
-            statusEl.textContent = '⚠️ โฟลเดอร์ถูกย้ายที่ตั้ง';
-
-
-
-            statusEl.style.color = '#f59e0b';
-
-
-
-            statusEl.style.background = 'rgba(245,158,11,0.15)';
-
-
-
-            statusEl.style.borderColor = 'rgba(245,158,11,0.3)';
-
-
-
-          } else {
-
-
-
-            statusEl.textContent = '❌ ยังไม่ได้ยกเว้น';
-
-
-
-            statusEl.style.color = '#ef4444';
-
-
-
-            statusEl.style.background = 'rgba(239,68,68,0.15)';
-
-
-
-            statusEl.style.borderColor = 'rgba(239,68,68,0.3)';
-
-
-
-          }
-
-
-
+        if (pathEl) {
+          pathEl.textContent = data.current_dir || '-';
         }
 
-
-
-      } catch (e) {}
-
-
-
+        if (statusEl) {
+          if (data.is_excluded) {
+            statusEl.textContent = '✅ ยกเว้นเรียบร้อย';
+            statusEl.style.color = '#10b981';
+            statusEl.style.background = 'rgba(16,185,129,0.15)';
+            statusEl.style.borderColor = 'rgba(16,185,129,0.3)';
+          } else if (data.status === 'relocated') {
+            statusEl.textContent = '⚠️ โฟลเดอร์ถูกย้ายที่ตั้ง';
+            statusEl.style.color = '#f59e0b';
+            statusEl.style.background = 'rgba(245,158,11,0.15)';
+            statusEl.style.borderColor = 'rgba(245,158,11,0.3)';
+          } else {
+            statusEl.textContent = '❌ ยังไม่ได้ยกเว้น';
+            statusEl.style.color = '#ef4444';
+            statusEl.style.background = 'rgba(239,68,68,0.15)';
+            statusEl.style.borderColor = 'rgba(239,68,68,0.3)';
+          }
+        }
+      } catch (e) {
+        if (pathEl && (pathEl.textContent === 'กำลังโหลด...' || !pathEl.textContent.trim())) {
+          pathEl.textContent = 'ไม่สามารถตรวจสอบตำแหน่งโฟลเดอร์ได้';
+        }
+        if (statusEl) {
+          statusEl.textContent = '⚠️ ตรวจสอบไม่สำเร็จ (ลองใหม่อีกครั้ง)';
+          statusEl.style.color = '#f59e0b';
+        }
+      }
     }
 
 
@@ -70569,57 +70512,18 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     async function startFastUpdateProcess() {
-
-
-
       const promptBox = document.getElementById('fastUpdatePromptBox');
-
-
-
       const progressBox = document.getElementById('fastUpdateProgressBox');
-
-
-
       const footer = document.getElementById('fastUpdateFooter');
-
-
-
       const statusText = document.getElementById('fastUpdateStatusText');
 
-
-
-
-
-
-
       if (promptBox) promptBox.style.display = 'none';
-
-
-
       if (footer) footer.style.display = 'none';
-
-
-
       if (progressBox) progressBox.style.display = 'block';
-
-
-
       if (statusText) statusText.textContent = 'กำลังดาวน์โหลดและติดตั้งอัปเดต...';
 
-
-
-
-
-
-
       try {
-
-
-
         const res = await fetch('/api/apply-update', { method: 'POST' });
-
-
-
         const data = await res.json();
 
         if (data && data.success === false) {
@@ -70641,48 +70545,28 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         }
 
         if (statusText) {
-          statusText.textContent = data.message || 'กำลังรีสตาร์ทโปรแกรม...';
+          statusText.textContent = data.message || 'กำลังปิดหน้าต่างและรีสตาร์ทเพื่ออัปเดต...';
         }
 
         setTimeout(() => {
-          location.reload();
-        }, 2200);
-
-
+          try {
+            window.close();
+          } catch (_) {
+            location.reload();
+          }
+        }, 1200);
 
       } catch (err) {
-
-
-
         if (statusText) {
-
-
-
-          statusText.textContent = 'กำลังรีสตาร์ทโปรแกรม...';
-
-
-
+          statusText.textContent = 'เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง';
         }
-
-
-
-        setTimeout(() => {
-
-
-
-          location.reload();
-
-
-
-        }, 2200);
-
-
-
+        if (footer) {
+          footer.style.display = 'flex';
+        }
       }
-
-
-
     }
+
+
 
 
 
