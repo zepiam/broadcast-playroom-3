@@ -1,23 +1,23 @@
 {
   "product": "broadcast-playroom-3",
-  "version": "3.45",
-  "latest_version": "3.45",
+  "version": "3.46",
+  "latest_version": "3.46",
   "critical": true,
-  "changelog": "# Broadcast Playroom v3.45\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.45:\n- **แก้ไขบั๊กข้อมูลผู้ชมใน User Manager หายถาวรเมื่ออัปเดตเวอร์ชัน (Permanent User Manager Persistence & Deep Merge Fix)**:\n  - แก้ไขตัวอัปเดต (`updater.py` / batch script) ไม่ให้เขียนทับไฟล์ `user_roster.json` ด้วยไฟล์ว่างเปล่า โดยเพิ่มเงื่อนไขตรวจสอบขนาดไฟล์ (`>10 bytes`) ก่อน Backup และ Restore ป้องกันไฟล์ว่างขนาด 2 bytes เขียนทับข้อมูลจริง\n  - ผสานรวมข้อมูลผู้ชม (`Deep Merge`) ทั้งใน `updater.py` และ `launch_dev.py` จากทุกไดเรกทอรี (`DATA_ROOT`, `LOCALAPPDATA`, `settings_backup`) อัตโนมัติ โดยไม่คัดเลือกไฟล์ใดไฟล์หนึ่งทิ้ง แต่รวมรายชื่อผู้ชม ประวัติการแชท และกิจกรรมเข้าด้วยกันทั้งหมด\n  - เพิ่มระบบ Safe Atomic Write (`.tmp` -> replace) และระบบป้องกันการเขียนทับด้วยข้อมูลว่าง (Zero-Wipe Guard)\n  - เพิ่มการบันทึก `localStorage` ทันทีเมื่อมีผู้ชมส่งข้อความ (Synchronous Persist) และส่งข้อมูลผ่าน `navigator.sendBeacon` ทันทีก่อนปิดหรือรีสตาร์ทโปรแกรม (`beforeunload` / `pagehide`)\n  - อัปเดตการซิงค์แบบ Two-Way Realtime Sync ใน `src/user_controls.js` เพื่อให้ฐานข้อมูลฝั่ง Backend และ Frontend ตรงกันตลอดเวลา\n  - กู้คืนประวัติและข้อมูลผู้ชม `MeN9CH` (Twitch: \"สวัสดีครับ\") กลับเข้าสู่ฐานข้อมูลระบบเรียบร้อย\n",
+  "changelog": "# Broadcast Playroom v3.46\n\n### รายละเอียดการอัปเดตเวอร์ชัน 3.46:\n- **ระบบ Zero-Browser-Cache ป้องกันการติดแคชเบราว์เซอร์ถาวร 100%**:\n  - เพิ่ม Query String ผูกเวอร์ชันใน URL ทุกครั้ง (?v=3.46) บังคับให้เบราว์เซอร์โหลดหน้าเว็บใหม่ทันทีเมื่อเวอร์ชันเปลี่ยน โดยไม่ต้องกด Ctrl+Shift+R อีกต่อไป\n  - ล้างโฟลเดอร์แคชเบราว์เซอร์จริง (browser_profile/Default/Cache, Code Cache, GPUCache) อัตโนมัติทุกครั้งที่เริ่มโปรแกรมและหลังลงแพตช์\n  - กำหนดจำกัดขนาดแคชเบราว์เซอร์เหลือ 1 ไบต์ (--disk-cache-size=1) และปิด HTTP Cache\n  - ใส่ Meta Tag no-cache, no-store, must-revalidate ครอบคลุมทุกหน้า\n- **ฝังตัวซ่อมแซมและติดตั้งแพตช์ BP3_PatchInstaller.exe ลงในโฟลเดอร์โปรแกรมโดยตรง**:\n  - ผู้ใช้ไม่ต้องดาวน์โหลดภายนอกเพิ่มอีก สามารถเปิดซ่อมแซมหรืออัปเดตระบบได้ทันทีจากในโฟลเดอร์โปรแกรม\n- **คงความสมบูรณ์ของฐานข้อมูลผู้ชมและประวัติแชท User Manager ไม่หาย 100%**:\n  - รองรับ Multi-Path Deep Merge และ Safe Atomic Write อย่างสมบูรณ์แบบ\n",
   "lite": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.45/patch-v3.45-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.46/patch-v3.46-lite.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.45-lite.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.46-lite.zip"
     ],
-    "sha256": "531a1c84d6bcb13bba7661403408884d26f1f06a416fc70d926b9ec406688d33",
-    "size": 72269186
+    "sha256": "787368d29493579861c1adac8077596cdb6e8b766dfea26038bdaaeceacc23d4",
+    "size": 71683298
   },
   "full": {
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.45/patch-v3.45-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.46/patch-v3.46-full.zip",
     "mirrors": [
-      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.45-full.zip"
+      "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.46-full.zip"
     ],
-    "sha256": "531a1c84d6bcb13bba7661403408884d26f1f06a416fc70d926b9ec406688d33",
-    "size": 72269186
+    "sha256": "787368d29493579861c1adac8077596cdb6e8b766dfea26038bdaaeceacc23d4",
+    "size": 71683298
   }
 }
