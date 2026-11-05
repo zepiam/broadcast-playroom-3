@@ -1,39 +1,39 @@
 {
-  "version": "3.57",
-  "latest_version": "3.57",
+  "version": "3.58",
+  "latest_version": "3.58",
   "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.57\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.57:\n- **ลบปุ่ม Overlay ด้านขวาบนอย่างถาวร (Clean Topbar UI)**:\n  - ถอดปุ่ม `🖥️ Overlay` ออกจากแถบ Topbar Sortable ขวาบน และตัดการโหลดจากระบบบันทึกปุ่ม เพื่อไม่ให้ปุ่มกลับมาแสดงซ้ำซ้อน\n  - สามารถเปิดและตั้งค่า OBS Overlay ผ่านปุ่ม `Composer` แถบเมนูด้านซ้ายได้สะดวกและเป็นระเบียบตามเดิม\n- **ระบบอัปเดตอัตโนมัติความแม่นยำสูง (High-Reliability Auto-Update)**:\n  - ยืนยันความปลอดภัยไฟล์อัปเดตผ่าน SHA256 Checksum สองชั้น ไร้ปัญหาดาวน์โหลดไม่สำเร็จ\n",
+  "changelog": "# Broadcast Playroom v3.58\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.58:\n- **แก้บั๊กปุ่มถังขยะลบเลเยอร์ใน Composer (Layer Trash Button)**:\n  - แก้ไขปุ่มลบเลเยอร์ในหน้าต่าง Composer Editor ให้ทำงานลบวิดเจ็ตได้อย่างถูกต้อง แทนการปิดหน้าต่าง Editor\n  - ปรับระบบป้องกัน Event Click Interceptor ไม่ให้รบกวนปุ่มควบคุมภายในหน้าต่างย่อย\n- **ยกระดับปุ่มตรวจสอบอัปเดตเป็นระบบ In-App Auto-Update 100%**:\n  - เมื่อกดปุ่ม \"ตรวจสอบการอัปเดต\" ในหน้าตั้งค่าและพบเวอร์ชันใหม่ ระบบจะเปิดหน้าต่าง In-App Update ทันที\n  - ดาวน์โหลดแพตช์และรีสตาร์ทอัปเดตให้อัตโนมัติในโปรแกรมโดยตรง ไม่ต้องดาวน์โหลดไฟล์ .zip มาแตกไฟล์เองอีกต่อไป\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.57-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.57/patch-v3.57-lite.zip",
-      "sha256": "934f5ab0af00e20c5b68b2bb69795b6e5f412ce55b1a0b68330e3753377985ae",
-      "size": 35855486,
+      "file": "patch-v3.58-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-lite.zip",
+      "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
+      "size": 35855671,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.57-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.58-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.57-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.57/patch-v3.57-full.zip",
-      "sha256": "934f5ab0af00e20c5b68b2bb69795b6e5f412ce55b1a0b68330e3753377985ae",
-      "size": 35855486,
+      "file": "patch-v3.58-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-full.zip",
+      "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
+      "size": 35855671,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.57-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.58-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.57-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.57/patch-v3.57-lite.zip",
-    "sha256": "934f5ab0af00e20c5b68b2bb69795b6e5f412ce55b1a0b68330e3753377985ae",
-    "size": 35855486
+    "file": "patch-v3.58-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-lite.zip",
+    "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
+    "size": 35855671
   },
   "full": {
-    "file": "patch-v3.57-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.57/patch-v3.57-full.zip",
-    "sha256": "934f5ab0af00e20c5b68b2bb69795b6e5f412ce55b1a0b68330e3753377985ae",
-    "size": 35855486
+    "file": "patch-v3.58-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-full.zip",
+    "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
+    "size": 35855671
   }
 }

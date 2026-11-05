@@ -2639,7 +2639,7 @@
           <button type="button" class="composer-btn-layer-action" data-action="toggle-lock" title="${w.locked ? 'ปลดล็อค' : 'ล็อค'}">
             ${w.locked ? svgLock : svgUnlock}
           </button>
-          <button type="button" class="composer-btn-layer-action close-red" data-action="delete" title="ลบวิดเจ็ต">
+          <button type="button" class="composer-btn-layer-action btn-layer-delete" data-action="delete" title="ลบวิดเจ็ต">
             ${svgTrash}
           </button>
         </div>
