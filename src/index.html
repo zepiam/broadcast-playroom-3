@@ -546,7 +546,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.56</title>
+  <title>Broadcast Playroom v3.57</title>
 
 
 
@@ -1160,7 +1160,7 @@ window.addEventListener('keydown', (e) => {
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.56</span>
+      <span class="desktop-titlebar-tag">v3.57</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -1543,46 +1543,6 @@ window.addEventListener('keydown', (e) => {
 
 
         <span id="txtTranslateIcon">🔄</span> <span id="txtTranslateLabel" class="btn-label-text"> แปลภาษา</span>
-
-
-
-
-
-
-
-      </button>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <!-- 2. Overlay (ปุ่มเดี่ยว คลิกซ้ายคัดลอก URL / คลิกขวาเปิดเมนู & ซ่อนปุ่ม) -->
-
-
-
-
-
-
-
-      <button class="topbar-single-btn active sortable-item" id="topbar-item-overlay" data-item-id="overlay" draggable="true" title="คลิกคัดลอก Overlay URL / คลิกขวาเพื่อเปิดเมนู & ซ่อนปุ่ม" onclick="handleSortableClick(event, () => copyObsUrl())" hidden style="display: none !important;">
-
-
-
-
-
-
-
-        <span>🖥️</span> <span class="btn-label-text">Overlay</span>
 
 
 
@@ -18699,7 +18659,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.56</span>
+              <span id="appVersionBadge" style="font-size:13px; color:var(--dc-blurple); font-weight:700; background:rgba(88,101,242,0.12); padding:3px 10px; border-radius:10px; border:1px solid rgba(88,101,242,0.25);">v3.57</span>
 
 
 
@@ -49234,86 +49194,6 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
           { text: '⚙️ ตั้งค่าการแปลภาษา...', run: () => openToolWindow('settings', 'translate') }
-
-
-
-
-
-
-
-        ]
-
-
-
-
-
-
-
-      },
-
-
-
-
-
-
-
-      'overlay': {
-
-
-
-
-
-
-
-        label: '🖥️ Overlay',
-
-
-
-
-
-
-
-        title: '🖥️ ตัวเลือก OBS Overlay',
-
-
-
-
-
-
-
-        actions: [
-
-
-
-
-
-
-
-          { text: '📋 คัดลอก Overlay URL (สำหรับ OBS)', run: () => copyObsUrl() },
-
-
-
-
-
-
-
-          { text: '🧪 เปิดทดสอบสดในเบราว์เซอร์', run: () => window.open(new URL('/composer.html?test=1', window.location.origin).href, '_blank') },
-
-
-
-
-
-
-
-          { text: '🖥️ เปิด Composer Canvas Studio', run: () => openToolWindow('composer') },
-
-
-
-
-
-
-
-          { text: '⚙️ ตั้งค่า OBS WebSocket...', run: () => openToolWindow('settings', 'obs') }
 
 
 

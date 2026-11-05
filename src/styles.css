@@ -4109,3 +4109,5 @@ body.popout-standalone-window .floating-window.active .win-resize-handle {
 }
 
 html.popout-standalone-window .settings-sidebar, #win-settings .settings-sidebar { display: flex !important; visibility: visible !important; }
+
+#topbar-item-overlay { display: none !important; }
