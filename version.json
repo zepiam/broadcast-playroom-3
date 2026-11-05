@@ -1,39 +1,39 @@
 {
-  "version": "3.55",
-  "latest_version": "3.55",
+  "version": "3.56",
+  "latest_version": "3.56",
   "release_date": "2026-11-05",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.55\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชั่น 3.55:\n- **ทดสอบระบบอัปเดตอัตโนมัติในแอป (In-App Self-Updater Test)**:\n  - แก้ไข UnboundLocalError ในฟังก์ชันดาวน์โหลดอัปเดตเบื้องหลัง (nonlocal download_url)\n  - ตั้งค่า GitHub Releases เป็นช่องทางดาวน์โหลดหลักความเร็วสูง พร้อม Hugging Face สำรองอัตโนมัติ\n- **แก้ปัญหาสถานะเซิร์ฟเวอร์เสียงอ่าน TTS (Server Status 100% Fixed)**:\n  - เพิ่มโมดูล `app_presence.py` ในชุดติดตั้ง ทำให้โมดูลล่าสุดบนดิสก์ทำงานได้อย่างสมบูรณ์\n  - ปรับปรุงการตรวจสอบสถานะเสียงอ่านเริ่มต้นให้รอ 1.5 วินาที พร้อมระบบลองใหม่อัตโนมัติ (Auto-Retry)\n  - ปรับปรุงการโหลดโมดูลดิสก์ (_force_disk_module) ให้อ่านจากไดเรกทอรีของโปรแกรมโดยตรง\n",
+  "changelog": "# Broadcast Playroom v3.56\n\n### รายการอัปเดตและปรับปรุงในเวอร์ชั่น 3.56:\n- **ปรับแต่งแถบเมนูด้านบน (UI Streamlining)**:\n  - ซ่อนปุ่ม Overlay ด้านขวาบนเรียบร้อย เพื่อลดความซ้ำซ้อน เนื่องจากมีปุ่มจัดหน้าจอ Composer Overlay & ลิงก์ OBS ที่แถบเครื่องมือหลักฝั่งซ้ายอยู่แล้ว\n- **ระบบตรวจสอบความปลอดภัย SHA256 อัตโนมัติ (Strict SHA256 Integrity Gate)**:\n  - บันทึกและคำนวณ Checksum หลังปิดแพตช์ไฟล์อย่างเด็ดขาด หมดปัญหา Checksum Mismatch ทุกประการ\n- **ความเสถียรของระบบเสียงอ่าน TTS & In-App Auto-Update**:\n  - รองรับการดาวน์โหลดแพตช์ผ่าน GitHub Releases ความเร็วสูง และ Hugging Face สำรองอย่างลื่นไหล\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.55-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-lite.zip",
-      "sha256": "a93d63f86c07ee9078d4da6c9484bacdca18acec7212a771e6b5c274bf0f7d72",
-      "size": 35856100,
+      "file": "patch-v3.56-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.56/patch-v3.56-lite.zip",
+      "sha256": "58c5d83090cc404c5e5e494ba2cafd8ec5f618cad28de40180c3c057ccc08daf",
+      "size": 35855804,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.55-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.56-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.55-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-full.zip",
-      "sha256": "a93d63f86c07ee9078d4da6c9484bacdca18acec7212a771e6b5c274bf0f7d72",
-      "size": 35856100,
+      "file": "patch-v3.56-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.56/patch-v3.56-full.zip",
+      "sha256": "58c5d83090cc404c5e5e494ba2cafd8ec5f618cad28de40180c3c057ccc08daf",
+      "size": 35855804,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.55-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.56-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.55-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-lite.zip",
-    "sha256": "a93d63f86c07ee9078d4da6c9484bacdca18acec7212a771e6b5c274bf0f7d72",
-    "size": 35856100
+    "file": "patch-v3.56-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.56/patch-v3.56-lite.zip",
+    "sha256": "58c5d83090cc404c5e5e494ba2cafd8ec5f618cad28de40180c3c057ccc08daf",
+    "size": 35855804
   },
   "full": {
-    "file": "patch-v3.55-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.55/patch-v3.55-full.zip",
-    "sha256": "a93d63f86c07ee9078d4da6c9484bacdca18acec7212a771e6b5c274bf0f7d72",
-    "size": 35856100
+    "file": "patch-v3.56-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.56/patch-v3.56-full.zip",
+    "sha256": "58c5d83090cc404c5e5e494ba2cafd8ec5f618cad28de40180c3c057ccc08daf",
+    "size": 35855804
   }
 }
