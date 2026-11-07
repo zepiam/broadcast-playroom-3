@@ -1,3 +1,84 @@
+## [2026-11-05 17:49] – Antigravity (Release v3.58: Fix Composer Layer Trash Button & In-App Auto-Update Flow)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.58 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **แก้ปัญหาปุ่มถังขยะลบเลเยอร์ใน Composer Studio ปิดหน้าต่างตัวเอง:**
+     - **สาเหตุ:** ปุ่มถังขยะเดิมใช้คลาส `.close-red` ซึ่งไปตรงกับ Global Click Capture Listener ของหน้าต่าง Popout Standalone Window ใน `src/index.html` ทำให้เมื่อกดปุ่มถังขยะ ระบบเข้าใจผิดว่ากดปุ่มปิดหน้าต่าง และสั่งปิดหน้าต่าง Composer ทันที
+     - **การแก้ไข:** 
+       - เปลี่ยนคลาสปุ่มถังขยะเป็น `.btn-layer-delete` ใน `src/composer_studio.js` พร้อมอัปเดตสไตล์สีแดงตอน Hover ใน `src/composer_studio.css`
+       - เพิ่มระบบป้องกัน (Exclusion Guard) ในตัวดักจับอีเวนต์ปิดหน้าต่าง เพื่อรับประกันว่าจะไม่ดักจับปุ่มที่อยู่ภายในคอนเทนเนอร์ของเลเยอร์ วิดเจ็ต ฟอร์ม หรือตารางอีกต่อไป
+  2. **ยกระดับปุ่ม "ตรวจสอบการอัปเดต" ในหน้าตั้งค่าเป็น In-App Auto-Update 100%:**
+     - **เดิม:** เมื่อตรวจพบเวอร์ชันใหม่ ระบบแสดงปุ่มเปิดเบราว์เซอร์ไปโหลดไฟล์ `.zip` มาแตกไฟล์เองแบบ Manual
+     - **ปรับปรุงใหม่:** เมื่อกดปุ่ม "ตรวจสอบการอัปเดต" และพบเวอร์ชันใหม่ ระบบจะเปิดหน้าต่าง **In-App Auto-Update Popup (`modal-fast-update`)** ทันที ผู้ใช้สามารถกด "OK (รีสตาร์ทเพื่ออัปเดต)" ให้โปรแกรมดาวน์โหลดและแตกไฟล์ติดตั้งอัตโนมัติได้ในคลิกเดียว
+     - เพิ่มปุ่มรองสำหรับเปิดดูบันทึกการอัปเดต (Changelog) บน GitHub
+
+---
+
+## [2026-11-05 14:19] – Antigravity (Release v3.57: Clean Topbar Overlay Button Removal)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.57 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **ถอดปุ่ม `🖥️ Overlay` ขวาบนออกอย่างถาวร:**
+     - **สาเหตุ:** เดิมใน v3.56 สั่งซ่อนปุ่ม Overlay ด้วย `hidden style="display: none !important;"` แต่เนื่องจาก `applyTopbarHiddenState()` ใน `src/index.html` มีการวนลูปอ่าน `_topbarHideableMeta` หากคีย์ไม่ได้ถูกสั่งซ่อนใน `localStorage` จะมีการล้างพร็อพเพอร์ตี้ display ออก ทำให้ปุ่มเด้งกลับมาแสดงผล
+     - **การแก้ไข:** ถอดโครงสร้าง `<button id="topbar-item-overlay">` ออกจาก HTML และลบข้อมูลออกจาก `_topbarHideableMeta` โดยสมบูรณ์ ทำให้ไม่มีการเรนเดอร์หรือกู้คืนปุ่มนี้กลับมาอีก ผู้ใช้สามารถจัดการ OBS Overlay และ Composer Canvas ได้อย่างเป็นระเบียบผ่านแถบเมนูด้านซ้ายตามเดิม
+
+---
+
+## [2026-11-05 14:10] – Antigravity (Release v3.56: Hide Topbar Overlay Button & Strict SHA256 Integrity Gate)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.56 สำเร็จ 100%
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **สถาปัตยกรรม Strict SHA256 Integrity Gate (แก้ปัญหา Checksum Mismatch 100%):**
+     - ตรวจพบสาเหตุที่คอมพิวเตอร์ผู้ใช้ดาวน์โหลดอัปเดตถึง 100% แล้วขึ้นแจ้งเตือนข้อผิดพลาด เกิดจากสคริปต์ Release เดิมมีการคำนวณ Checksum ก่อนที่จะนำ `version.json` ใส่กลับเข้าไปในแพตช์ zip ทำให้ Hash ไฟล์จริงกับใน Manifest ไม่ตรงกัน
+     - ปรับขั้นตอนสคริปต์ `publish_release_*.py` ให้เพิ่ม `version.json` เข้า zip ให้เสร็จสิ้นก่อน แล้วจึงคำนวณ SHA256 ของไฟล์ zip ขั้นสุดท้าย พร้อมใส่คำสั่ง `assert` ตรวจสอบความถูกต้องแบบเข้มงวดก่อนอนุญาตให้อัปโหลด
+  2. **ปรับปรุงความคล่องตัวของ In-App Updater:**
+     - เพิ่มระบบทางเลือกรองรับมิเรอร์ Hugging Face Direct Resolver ควบคู่กับ GitHub Releases เพื่อความเสถียรสูงสุดแม้ในสภาวะเน็ตเวิร์กที่ถูกจำกัด
+
+---
+
+## [2026-11-05 02:37] – Antigravity (Release v3.54 & v3.55: TTS Engine Status & Multi-Mirror Deployment)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.54 และ 3.55
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **แก้ปัญหา UnboundLocalError ใน updater.py:**
+     - แก้ไขฟังก์ชัน `start_background_download` ภายใน worker thread ให้ประกาศ `nonlocal download_url` ป้องกันตัวแปรถูกอ้างอิงก่อนกำหนดค่าเมื่อเกิดข้อผิดพลาดในการโหลด Primary URL
+  2. **ปรับปรุงการรายงานสถานะของระบบ TTS Engine & Windows Defender Pane:**
+     - ปรับแต่ง `tts_service.py` และ `launch_dev.py` ให้แปลงค่า timeout ให้เป็น integer อย่างถูกต้อง
+     - ปรับการโหลดหน้าต่างย่อยของ Settings ให้ซิงก์ส่วน (Section) ที่เลือกจากแท็บแม่ได้อย่างแม่นยำ
+
+---
+
+## [2026-11-05 01:14] – Antigravity (Release v3.53: Updater Loop Fix & BP3_PatchInstaller Integration)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.53
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **ปรับปรุง BP3_PatchInstaller.exe และ FindUpdate.bat:**
+     - แก้ไขปัญหา Loop อัปเดต และป้องกันการเปิดหน้าต่างโปรแกรมซ้ำซ้อน
+     - ปรับปรุงการสแกนและแทนที่โฟลเดอร์ `dist/` แบบ Multi-layer Resolver เพื่อให้การแตกไฟล์แพตช์สะอาดและไม่เกิดไฟล์ค้างเก่า
+  2. **Self-Healing Version Manifest:**
+     - ใน `updater.py` เพิ่มโค้ดตรวจสอบหาก `version.json` ในเครื่องเก่ากว่า `CURRENT_VERSION` ในโค้ด ให้ทำการอัปเดตไฟล์ Manifest ใน Local Disk อัตโนมัติ ป้องกันการแจ้งเตือนเวอร์ชันย้อนกลับ
+
+---
+
+## [2026-11-04 22:10 - 23:51] – Antigravity (Release v3.48 - v3.52: Zero-Cache Architecture & Native Window Frame Parity)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.48 ถึง 3.52
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **สถาปัตยกรรม Zero-Cache ป้องกันเบราว์เซอร์จำไฟล์เก่า:**
+     - เพิ่มพารามิเตอร์คอมมานด์ไลน์ `--disk-cache-size=1` และ `--media-cache-size=1` ในการเปิดเบราว์เซอร์ App Mode ของ Chrome/Edge
+     - ฝัง `BP3_PatchInstaller.exe` ในตัวติดตั้งและแพตช์โดยตรง เพื่อให้สามารถอัปเดตตัวเองได้แบบออฟไลน์
+  2. **ปรับแต่งหน้าต่างและปุ่มควบคุม Native Window Frame:**
+     - ควบคุมปุ่ม ย่อ/ขยาย/ปิดหน้าต่าง ทั้งในหน้าต่างหลักและหน้าต่าง Popout ให้ตอบสนองสอดคล้องกันทุกหน้าต่าง
+     - ปรับปรุงการคลิกทะลุและการเชื่อมต่อระหว่างหน้าต่างย่อย (Cross-window DOM Messaging) ให้เสถียร 100%
+
+---
+
 ## [2026-11-02 02:27] – Antigravity (Viewer Profile Block Rules Redesign: Master + 3-Grid Layout)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
