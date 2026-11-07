@@ -1,3 +1,19 @@
+## [2026-11-07 13:35] – Antigravity (Comprehensive Documentation: Root Causes & Solutions for Unclickable Buttons)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** บันทึกและสังเคราะห์องค์ความรู้ลง `HANDOFF.md` และ `WORKLOG.md` เรียบร้อย
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **สังเคราะห์ 5 สาเหตุหลักที่ทำให้ผู้ใช้งานคลิกปุ่มไม่ได้/ปุ่มไม่ตอบสนอง:**
+     - **สาเหตุ 1 (Event Capture Phase Hijack):** Global Listener `useCapture: true` ดักจับคลาสชื่อทั่วไป (เช่น `.close-red`) แล้วสั่ง `stopPropagation()` ขัดขวางปุ่มทำงานจริง
+     - **สาเหตุ 2 (Invisible Overlay / High z-index):** เลเยอร์โปร่งใสที่มองไม่เห็นแต่ยังเปิด `pointer-events: auto` บังหน้าจอ ดูดกลืนการคลิก
+     - **สาเหตุ 3 (Stale Browser Cache Desync):** แคชของ Chrome/Edge จำไฟล์ JS เก่า ทำให้หา ID ปุ่มใหม่ไม่เจอ กลายเป็นปุ่มตาย
+     - **สาเหตุ 4 (Click vs Drag Conflict):** ปุ่มใน Sortable Container ที่มี `draggable="true"` ถูกมองเป็นการลากแทนการคลิก
+     - **สาเหตุ 5 (Cross-Window Context Desync):** การเรียก `window.opener` ข้ามหน้าต่าง Popout แล้วเกิด Uncaught TypeError
+  2. **บันทึกแนวทางแก้ไขถาวร (Standardized Solutions):**
+     - วาง Exclusion Guard สำหรับ Event Capture, บังคับใช้ `display: none` + `pointer-events: none` บนเลเยอร์ที่ซ่อน, รันเบราว์เซอร์ด้วย Zero-Cache flags, ใช้ `handleSortableClick` แยกแยะการคลิกกับการลาก, และสื่อสารผ่าน Local REST API แทน DOM Opener
+
+---
+
 ## [2026-11-05 17:49] – Antigravity (Release v3.58: Fix Composer Layer Trash Button & In-App Auto-Update Flow)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
