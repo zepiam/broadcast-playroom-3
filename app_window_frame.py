@@ -314,6 +314,148 @@ HT_RESIZE_MAP = {
     'bottom-right': 17,
 }
 
+# ---- hard minimum size for the main window -------------------------------------------------
+# Chrome app windows have no native minimum size, so while the user drags a window edge we confine
+# the mouse cursor: it simply cannot move far enough to make the window smaller than the minimum.
+# Everything is wrapped so a failure can never leave the cursor clipped.
+MIN_APP_WIDTH_CSS = 884
+MIN_APP_HEIGHT_CSS = 720
+_clip_active = False
+_min_watching = set()
+_HT_EDGES = {10: 'l', 11: 'r', 12: 't', 13: 'lt', 14: 'rt', 15: 'b', 16: 'lb', 17: 'rb'}
+
+_u32_cache = None
+def _u32():
+    global _u32_cache
+    if _u32_cache is None:
+        from ctypes import wintypes
+        u = ctypes.WinDLL('user32', use_last_error=True)
+        u.IsZoomed.argtypes = [wintypes.HWND]; u.IsZoomed.restype = wintypes.BOOL
+        u.IsIconic.argtypes = [wintypes.HWND]; u.IsIconic.restype = wintypes.BOOL
+        u.IsWindow.argtypes = [wintypes.HWND]; u.IsWindow.restype = wintypes.BOOL
+        u.GetWindowRect.argtypes = [wintypes.HWND, ctypes.POINTER(wintypes.RECT)]; u.GetWindowRect.restype = wintypes.BOOL
+        u.GetCursorPos.argtypes = [ctypes.POINTER(wintypes.POINT)]; u.GetCursorPos.restype = wintypes.BOOL
+        u.ClipCursor.argtypes = [ctypes.c_void_p]; u.ClipCursor.restype = wintypes.BOOL
+        u.GetAsyncKeyState.argtypes = [ctypes.c_int]; u.GetAsyncKeyState.restype = ctypes.c_short
+        u.GetSystemMetrics.argtypes = [ctypes.c_int]; u.GetSystemMetrics.restype = ctypes.c_int
+        u.SendMessageTimeoutW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM, wintypes.UINT, wintypes.UINT, ctypes.POINTER(ctypes.c_size_t)]
+        u.SendMessageTimeoutW.restype = ctypes.c_size_t
+        try:
+            u.GetDpiForWindow.argtypes = [wintypes.HWND]; u.GetDpiForWindow.restype = wintypes.UINT
+        except Exception:
+            pass
+        try:
+            u.SetThreadDpiAwarenessContext.argtypes = [ctypes.c_void_p]; u.SetThreadDpiAwarenessContext.restype = ctypes.c_void_p
+        except Exception:
+            pass
+        _u32_cache = u
+    return _u32_cache
+
+def _begin_min_clip(hwnd, ht_code):
+    global _clip_active
+    if os.name != 'nt' or _clip_active:
+        return
+    edges = _HT_EDGES.get(ht_code)
+    if not edges:
+        return
+    _clip_active = True
+    def run():
+        global _clip_active
+        from ctypes import wintypes
+        u = _u32()
+        clipped = False
+        try:
+            try:
+                u.SetThreadDpiAwarenessContext(ctypes.c_void_p(-4))
+            except Exception:
+                pass
+            if u.IsZoomed(hwnd) or u.IsIconic(hwnd):
+                return
+            dpi = 96
+            try:
+                dpi = int(u.GetDpiForWindow(hwnd) or 96)
+            except Exception:
+                pass
+            scale = dpi / 96.0
+            minw = int(round(MIN_APP_WIDTH_CSS * scale))
+            minh = int(round(MIN_APP_HEIGHT_CSS * scale))
+            r = wintypes.RECT()
+            pt = wintypes.POINT()
+            if not u.GetWindowRect(hwnd, ctypes.byref(r)) or not u.GetCursorPos(ctypes.byref(pt)):
+                return
+            L = u.GetSystemMetrics(76)
+            T = u.GetSystemMetrics(77)
+            R = L + u.GetSystemMetrics(78)
+            B = T + u.GetSystemMetrics(79)
+            cl, ct, cr, cb = L, T, R, B
+            if 'r' in edges:
+                cl = max(cl, r.left + minw - (r.right - pt.x))
+            if 'l' in edges:
+                cr = min(cr, r.right - minw - (r.left - pt.x))
+            if 'b' in edges:
+                ct = max(ct, r.top + minh - (r.bottom - pt.y))
+            if 't' in edges:
+                cb = min(cb, r.bottom - minh - (r.top - pt.y))
+            if cl >= cr or ct >= cb:
+                return
+            # window already smaller than the minimum: do not trap the cursor
+            if (r.right - r.left) < minw - 2 or (r.bottom - r.top) < minh - 2:
+                return
+            rect = wintypes.RECT(int(cl), int(ct), int(cr), int(cb))
+            u.ClipCursor(ctypes.byref(rect))
+            clipped = True
+            t0 = time.time()
+            while (u.GetAsyncKeyState(0x01) & 0x8000) and (time.time() - t0) < 30 and u.IsWindow(hwnd):
+                time.sleep(0.01)
+        except Exception:
+            pass
+        finally:
+            try:
+                if clipped:
+                    u.ClipCursor(None)
+            except Exception:
+                pass
+            _clip_active = False
+    threading.Thread(target=run, daemon=True).start()
+
+def _ensure_min_watch(hwnd):
+    """Detect a left-button press on a native resize border of the main window and start the clip."""
+    if os.name != 'nt' or not hwnd or hwnd in _min_watching:
+        return
+    _min_watching.add(hwnd)
+    def watch():
+        from ctypes import wintypes
+        u = _u32()
+        try:
+            u.SetThreadDpiAwarenessContext(ctypes.c_void_p(-4))
+        except Exception:
+            pass
+        was_down = False
+        try:
+            while u.IsWindow(hwnd) and not _is_shutting_down:
+                time.sleep(0.008)
+                down = bool(u.GetAsyncKeyState(0x01) & 0x8000)
+                if down and not was_down and not _clip_active:
+                    try:
+                        pt = wintypes.POINT()
+                        r = wintypes.RECT()
+                        if u.GetCursorPos(ctypes.byref(pt)) and u.GetWindowRect(hwnd, ctypes.byref(r)):
+                            m = 14
+                            if r.left - m <= pt.x <= r.right + m and r.top - m <= pt.y <= r.bottom + m:
+                                res = ctypes.c_size_t(0)
+                                lparam = ((pt.y & 0xFFFF) << 16) | (pt.x & 0xFFFF)
+                                ok = u.SendMessageTimeoutW(hwnd, 0x0084, 0, lparam, 0x0002, 40, ctypes.byref(res))
+                                if ok and res.value in _HT_EDGES:
+                                    _begin_min_clip(hwnd, int(res.value))
+                    except Exception:
+                        pass
+                was_down = down
+        except Exception:
+            pass
+        finally:
+            _min_watching.discard(hwnd)
+    threading.Thread(target=watch, daemon=True).start()
+
 def _do_native_resize(dir_name, target_hwnd=None):
     try:
         code = HT_RESIZE_MAP.get(str(dir_name).lower())
@@ -330,6 +472,10 @@ def _do_native_resize(dir_name, target_hwnd=None):
             if not (ctypes.windll.user32.GetAsyncKeyState(VK_LBUTTON) & 0x8000):
                 return
             WM_NCLBUTTONDOWN = 0x00A1
+            try:
+                _begin_min_clip(h, code)
+            except Exception:
+                pass
             ctypes.windll.user32.ReleaseCapture()
             import win32gui
             win32gui.PostMessage(h, WM_NCLBUTTONDOWN, code, 0)
@@ -523,6 +669,10 @@ def action(command, data=None):
         return {'ok': False}
     hwnd = windows[0]
     setup_app_window_icon(hwnd)
+    try:
+        _ensure_min_watch(hwnd)
+    except Exception:
+        pass
     if command in ('set-icon',):
         return {'ok': True}
     if command == 'restore-frame':

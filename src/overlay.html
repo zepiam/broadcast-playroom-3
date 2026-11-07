@@ -283,7 +283,14 @@
           el.append(frame);stage.append(el);frame.contentWindow?.postMessage({type:'bp3-chat-widget',widget:w},location.origin);return;
         }
         if (typeof renderer === 'function') {
-          el.innerHTML = renderer(w);
+          // whole-widget scale set in the Composer (Alt + drag): lay the content out at frame/scale, then magnify it
+          const cs = (legacyView === 'composer' && !isFull && w.type !== 'chat' && Number(w.contentScale) > 0 && Number(w.contentScale) !== 1) ? Number(w.contentScale) : 1;
+          if (cs !== 1) {
+            const lw = {...w, width: (w.width || w.w || 300) / cs, height: (w.height || w.h || 200) / cs};
+            el.innerHTML = '<div class="bp-content-scale" style="position:absolute;left:0;top:0;width:' + lw.width + 'px;height:' + lw.height + 'px;transform:scale(' + cs + ');transform-origin:0 0;">' + renderer(lw) + '</div>';
+          } else {
+            el.innerHTML = renderer(w);
+          }
         } else {
           el.innerHTML = `<div class="composer-widget-inner">${w.title || w.type}</div>`;
         }

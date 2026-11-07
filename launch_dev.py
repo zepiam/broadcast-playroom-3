@@ -859,6 +859,15 @@ def _resolve_dist_dir():
 
 DIST_DIR = _resolve_dist_dir()
 
+# Dev-only convenience: run.bat sets BP3_DEV_SERVE_SRC=1 so edits made in src/ show up without running a build.
+# Never set in releases (and ignored by the packaged exe), so production keeps serving the compiled dist/ exactly as before.
+_DEV_SERVE_SRC = False
+if os.environ.get('BP3_DEV_SERVE_SRC') == '1' and not getattr(sys, 'frozen', False):
+    _dev_src = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'src')
+    if os.path.isfile(os.path.join(_dev_src, 'index.html')):
+        DIST_DIR = os.path.abspath(_dev_src)
+        _DEV_SERVE_SRC = True
+
 def ensure_frontend_integrity():
     """Runtime Self-Healing: If dist/index.html ever loses critical stylesheets or constraints,
     automatically patch it before pywebview loads it. This guarantees zero white-screen or giant-icon bugs."""
@@ -895,7 +904,8 @@ def ensure_frontend_integrity():
     except Exception as e:
         logger.warning(f"[INTEGRITY] Frontend check warning: {e}")
 
-ensure_frontend_integrity()
+if not _DEV_SERVE_SRC:  # never let the self-heal rewrite files inside src/
+    ensure_frontend_integrity()
 
 
 

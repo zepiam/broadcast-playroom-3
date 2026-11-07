@@ -1,39 +1,39 @@
 {
-  "version": "3.58",
-  "latest_version": "3.58",
-  "release_date": "2026-11-05",
+  "version": "3.59",
+  "latest_version": "3.59",
+  "release_date": "2026-11-08",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.58\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.58:\n- **แก้บั๊กปุ่มถังขยะลบเลเยอร์ใน Composer (Layer Trash Button)**:\n  - แก้ไขปุ่มลบเลเยอร์ในหน้าต่าง Composer Editor ให้ทำงานลบวิดเจ็ตได้อย่างถูกต้อง แทนการปิดหน้าต่าง Editor\n  - ปรับระบบป้องกัน Event Click Interceptor ไม่ให้รบกวนปุ่มควบคุมภายในหน้าต่างย่อย\n- **ยกระดับปุ่มตรวจสอบอัปเดตเป็นระบบ In-App Auto-Update 100%**:\n  - เมื่อกดปุ่ม \"ตรวจสอบการอัปเดต\" ในหน้าตั้งค่าและพบเวอร์ชันใหม่ ระบบจะเปิดหน้าต่าง In-App Update ทันที\n  - ดาวน์โหลดแพตช์และรีสตาร์ทอัปเดตให้อัตโนมัติในโปรแกรมโดยตรง ไม่ต้องดาวน์โหลดไฟล์ .zip มาแตกไฟล์เองอีกต่อไป\n",
+  "changelog": "# Broadcast Playroom v3.59\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.59:\n- **ปรับหน้าตั้งค่าการแสดงผลของ Replie ใหม่ทั้งหมด**:\n  - ลากวางตำแหน่งบนภาพจอสตรีมจำลองได้อิสระ ย่อ/ขยายด้วยการลากมุม และเลือกธีมการ์ดได้ 8 แบบ\n  - ปุ่ม DEMO แสดงตัวอย่างจริงบนจอ OBS ทันที และขยับตามที่ปรับแบบสด\n  - หน้าแก้ไขคำสั่งมีจอตัวอย่างให้ลากกล่องข้อความ/รูป เลือกแอนิเมชันเข้า-ออกพร้อมทดลองเล่นบน OBS และดูสดบน OBS ได้\n- **ปรับ ASK ใหม่ (หน้าปรับแต่ง Overlay)**: โหมดแถบนอนแบบ compact, แท่งคะแนน 17 แบบ, กรอบ 11 แบบ, แอนิเมชันเข้า/ออกปรับได้, ลากวางตำแหน่งและย่อขยายบนจอตัวอย่าง, ปุ่ม DEMO, แก้ปัญหาภาพกระพริบตอนเลื่อน slider\n- **Randomizer**: เหลือวงล้อรูเล็ตและสล็อต พร้อมแอนิเมชันหมุนที่ช้าลงจนหยุดที่ผู้ชนะ และลากวางตำแหน่ง/ย่อขยายบนจอตัวอย่างได้\n- **ลากวางตำแหน่งทุกหน้าต่าง (Replie / ASK / Randomizer)**: ค้าง Ctrl เพื่อลากอิสระไม่ดูดขอบ, คลิกกรอบแล้วกดลูกศรเพื่อขยับทีละ 1 พิกเซล และค้าง Shift เพื่อขยับทีละ 10 พิกเซล\n- **ตัวอย่าง DEMO ซ่อนอัตโนมัติ** เมื่อปิดหน้าต่างเครื่องมือ (ASK / Randomizer / Replie)\n- **หน้าต่างเครื่องมือ**: เปิดครั้งแรกเล็กกว่าหน้าต่างหลัก 15% แล้วจำขนาด ตำแหน่ง และจอที่ผู้ใช้ปรับไว้ต่อเครื่องมือ\n- **หน้าต่างหลัก**: ล็อกขนาดเล็กสุดแบบลากแล้วติด ไม่กระตุกเด้งกลับ\n- ลบวิดเจ็ต ASK / Replie / Randomizer เก่าที่ค้างใน Composer ให้อัตโนมัติ ไม่ให้แสดงซ้ำ\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.58-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-lite.zip",
-      "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
-      "size": 35855671,
+      "file": "patch-v3.59-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.59/patch-v3.59-lite.zip",
+      "sha256": "18ff45ed2af48f8522db29f32ac3a62d3e7b508792334e578f7c4a2ea013ac83",
+      "size": 35921259,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.58-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.59-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.58-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-full.zip",
-      "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
-      "size": 35855671,
+      "file": "patch-v3.59-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.59/patch-v3.59-full.zip",
+      "sha256": "18ff45ed2af48f8522db29f32ac3a62d3e7b508792334e578f7c4a2ea013ac83",
+      "size": 35921259,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.58-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.59-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.58-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-lite.zip",
-    "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
-    "size": 35855671
+    "file": "patch-v3.59-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.59/patch-v3.59-lite.zip",
+    "sha256": "18ff45ed2af48f8522db29f32ac3a62d3e7b508792334e578f7c4a2ea013ac83",
+    "size": 35921259
   },
   "full": {
-    "file": "patch-v3.58-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.58/patch-v3.58-full.zip",
-    "sha256": "8763959047b1323b38f532a060a9cacadd19176acea9fbae2b323a3dfe06ecde",
-    "size": 35855671
+    "file": "patch-v3.59-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.59/patch-v3.59-full.zip",
+    "sha256": "18ff45ed2af48f8522db29f32ac3a62d3e7b508792334e578f7c4a2ea013ac83",
+    "size": 35921259
   }
 }

@@ -62,15 +62,16 @@ function updateAskDynamic(inner, d, ctx) {
       const win = ended && maxI === i && maxC > 0 && !tie;
       el.classList.toggle('winner', win);
       const cntEl = el.querySelector('.ask-choice-count');
-      if (cntEl) cntEl.textContent = c;
+      if (cntEl && cntEl.textContent !== String(c)) cntEl.textContent = c;
       const barEl = el.querySelector('.ask-bar');
       if (barEl) barEl.style.width = pct + '%';
     });
     // footer — ยอดรวม
     const footer = inner.querySelector('.ask-footer span');
     if (footer) {
-      footer.innerHTML = (ended ? '<span class="ask-badge-ended">จบโหวต</span>' : '') +
+      const _fh = (ended ? '<span class="ask-badge-ended">จบโหวต</span>' : '') +
         'โหวตแล้ว ' + total + ' คน';
+      if (footer.dataset.fh !== _fh) { footer.dataset.fh = _fh; footer.innerHTML = _fh; }
     }
   } catch (e) { /* ไม่ให้พัง render */ }
 }
@@ -90,7 +91,7 @@ function renderAskInto(inner) {
   const _wEl = inner.closest ? inner.closest('.widget') : null;
   const baseW = (_wEl && typeof config !== 'undefined' && config.widgets)
     ? (config.widgets.find(x => x.id === _wEl.dataset.id) || {}) : {};
-  const _w = Object.assign({}, baseW, _lastAskData || {});
+  const _w = Object.assign({}, baseW, _lastAskData || {}, (_lastAskData && _lastAskData.widget) || {});
   const _mode = { card: 'minimal', bar: 'hband', tower: 'vright' }[_w.ask_layout] || _w.ask_layout || 'vright';
   const cdStyle = _w.ask_countdown_style || 'text';
 
@@ -107,7 +108,7 @@ function renderAskInto(inner) {
   }
   let html = '';
   // ★ แผงโพลจริง — anchor class แยกตามโหมด (hband ใช้ top/middle/bottom, minimal/lite ใช้มุม)
-  html += '<div class="ask-panel ' + (_mode === 'hband' ? 'hband-anchor' : '') +
+  html += '<div class="ask-panel ' + ((_mode === 'hband' || _mode === 'strip') ? 'hband-anchor' : '') +
           (_mode === 'minimal' || _mode === 'lite' ? ' min-anchor' : '') + '">';
   html += '<div class="ask-question"><span class="ask-question-text">' + (ended ? 'ผลสรุป : ' : '') + esc(d.question || '') + '</span></div>';
   html += '<div class="ask-choices">';
@@ -126,7 +127,7 @@ function renderAskInto(inner) {
     html += '<div class="ask-choice' + (win ? ' winner' : '') + '">';
     // ★ บรรทัด 1: ป้ายวิธีโหวต [พิมพ์ "A"] ซ้าย + ยอดโหวตขวา
     html += '<div class="ask-choice-top">';
-    html += '<span class="ask-choice-key">พิมพ์ &quot;' + esc(key) + '&quot;</span>';
+    html += '<span class="ask-choice-key" data-k="' + esc(key) + '">พิมพ์ &quot;' + esc(key) + '&quot;</span>';
     if (showCounts) html += '<span class="ask-choice-count">' + c + '</span>';
     html += '</div>';
     // ★ บรรทัด 2: เนื้อหาช้อยส์ (responsive wrap เต็มข้อความ ไม่มี ...)
@@ -166,7 +167,7 @@ function renderAskInto(inner) {
   // ★ ถ้าเป็นแค่ "โหวตเพิ่ม" (คำถาม+ช้อยส์+phase เดิม) → อัปเดตเฉพาะตัวเลข/แถบ
   //   ไม่ rebuild ทั้งแผง → marquee หัวข้อไม่ถูกรีเซ็ต + ไม่กระพริบ
   const _prevKey = inner.dataset.askSig || '';
-  const _thisKey = [d.question, d.choices.join('|'), d.phase, _mode].join('§');
+  const _thisKey = [d.question, d.choices.join('|'), d.phase, _mode, cdStyle, _w.ask_anchor || ''].join('§');
   if (_prevKey === _thisKey) {
     updateAskDynamic(inner, d, { ended, showCounts, counts, total, maxI, maxC, tie });
     return;  // ★ ไม่แตะ innerHTML → marquee ยังเลื่อนต่อเนื่อง
@@ -187,8 +188,8 @@ function askClampMinimal(wEl, ovX, ovY) {
   if (!wEl) return;
   const inner = wEl.querySelector('.widget-inner');
   if (!inner) return;
-  const _w = (typeof config !== 'undefined' && config.widgets)
-    ? (config.widgets.find(x => x.id === wEl.dataset.id) || {}) : {};
+  const _w = Object.assign({}, (typeof config !== 'undefined' && config.widgets)
+    ? (config.widgets.find(x => x.id === wEl.dataset.id) || {}) : {}, (_lastAskData && _lastAskData.widget) || {});
   const _mode = { card: 'minimal', bar: 'hband', tower: 'vright' }[_w.ask_layout] || _w.ask_layout || 'vright';
   if (_mode !== 'minimal' && _mode !== 'lite') return;
   const panel = inner.querySelector('.ask-panel');
@@ -211,7 +212,7 @@ function askWidgetClasses(w) {
   const _th = { glass: 'ice', mono: 'steel' }[w.ask_theme] || w.ask_theme || 'violet';
   // ★ โหมดวาง (vleft/vright/hband/minimal) — เดิม card/bar/tower map ให้อัตโนมัติ
   const _mode = { card: 'minimal', bar: 'hband', tower: 'vright' }[w.ask_layout] || w.ask_layout || 'vright';
-  const _anchor = w.ask_anchor || (_mode === 'hband' ? 'middle' : 'tr');
+  const _anchor = w.ask_anchor || ((_mode === 'hband' || _mode === 'strip') ? 'top' : 'tr');
   return [
     'ask-theme-' + _th,
     'ask-bar-' + (w.ask_bar_style || 'classic'),
@@ -249,6 +250,37 @@ function tickAskCountdowns() {
     }
   });
 }
+  // ── enter / exit animation ──
+  const ASK_ANIMS = ['none', 'auto', 'fade', 'left', 'right', 'up', 'down', 'zoom', 'bounce'];
+  function askAnimName(name, w, dir) {
+    let n = ASK_ANIMS.includes(name) ? name : 'auto';
+    if (n === 'auto') {
+      const m = { card: 'minimal', bar: 'hband', tower: 'vright' }[w.ask_layout] || w.ask_layout || 'vright';
+      if (m === 'vright') n = 'right';
+      else if (m === 'vleft') n = 'left';
+      else if (m === 'hband' || m === 'strip') n = (w.ask_anchor === 'bottom') ? 'up' : 'down';
+      else n = (dir === 'in') ? 'bounce' : 'zoom';
+    }
+    if (dir === 'out' && n === 'bounce') n = 'bounce';
+    return n;
+  }
+  function askPlay(inner, w, dir) {
+    const n = askAnimName(dir === 'in' ? w.ask_anim_in : w.ask_anim_out, w, dir);
+    if (n === 'none') return 0;
+    const ms = Math.max(100, Math.min(2000, Number(w.ask_anim_ms) || 600));
+    const panel = inner.querySelector('.ask-panel');
+    const dw = (panel ? panel.offsetWidth : 400) + 60, dh = (panel ? panel.offsetHeight : 200) + 60;
+    inner.style.setProperty('--ask-dw', dw + 'px'); inner.style.setProperty('--ask-dh', dh + 'px');
+    inner.style.animation = 'none'; void inner.offsetWidth;
+    inner.style.animation = 'ask' + dir + '-' + n + ' ' + ms + 'ms ' + (dir === 'in' ? 'cubic-bezier(.22,1,.36,1)' : 'cubic-bezier(.4,0,.8,.4)') + ' both';
+    return ms;
+  }
+  function askFinishHide(el, inner) {
+    el._askOutT = 0; inner.style.animation = ''; inner.dataset.askShown = '';
+    renderAskInto(inner);
+    inner.style.display = 'none';
+    if (el.id === 'on-demand-ask-overlay') el.remove();
+  }
   window.BP3LegacyAsk={render(data){
     _lastAskData = data && data.active ? {
       ...data, choices:(data.choices || []).map(c=>c.text),keys:(data.choices || []).map(c=>c.label),
@@ -267,23 +299,34 @@ function tickAskCountdowns() {
         document.body.appendChild(dynamic);
       }
       widgets = [dynamic];
-    } else if (!data || !data.active) {
-      document.getElementById('on-demand-ask-overlay')?.remove();
     }
     widgets.forEach(el=>{
-      const w={ ...(config.widgets?.find(item=>item.id===el.dataset.id) || {}), ...(data?.widget || {}) };
+      const w=(!_lastAskData && el._askCfg) ? el._askCfg : { ...(config.widgets?.find(item=>item.id===el.dataset.id) || {}), ...(data?.widget || {}) };
       Array.from(el.classList).filter(c=>/^ask-(theme|bar|frame|mode|anchor)-/.test(c)).forEach(c=>el.classList.remove(c));
       el.classList.add(...askWidgetClasses(w));
       let inner=el.querySelector('.widget-inner');
       if(!inner){inner=document.createElement('div');inner.className='widget-inner composer-widget-inner';inner.id='compAskPanel_'+w.id;el.replaceChildren(inner);}
-      inner.style.display=_lastAskData?'block':'none';
-      const props={'--ask-scale':w.ask_scale ?? 1,'--ask-extend':w.ask_extend_pct ?? 20,'--ask-px':w.ask_pos_x ?? 85,'--ask-py':w.ask_pos_y ?? 12,'--ask-ox':w.ask_offset_x ?? 0,'--ask-oy':w.ask_offset_y ?? 0,'--ask-opacity':(w.ask_opacity_pct ?? 100)/100,'--ask-minw':w.ask_min_width ?? 340,'--ask-qfs':w.ask_question_fs ?? 24,'--ask-cfs':w.ask_choice_fs ?? 18};
+      if (_lastAskData) el._askCfg = w;
+      const wasShown = inner.dataset.askShown === '1';
+      if (!_lastAskData) {
+        // poll finished: play the exit animation first, then clear
+        if (el._askOutT) return;
+        if (wasShown) {
+          const ms = askPlay(inner, el._askCfg || w, 'out');
+          if (ms > 0) { el._askOutT = setTimeout(() => askFinishHide(el, inner), ms + 30); return; }
+        }
+        askFinishHide(el, inner); return;
+      }
+      if (el._askOutT) { clearTimeout(el._askOutT); el._askOutT = 0; inner.style.animation = ''; }
+      inner.style.display='block';
+      const props={'--ask-scale':w.ask_scale ?? 1,'--ask-extend':w.ask_extend_pct ?? 20,'--ask-px':w.ask_pos_x ?? 85,'--ask-py':w.ask_pos_y ?? 12,'--ask-ox':w.ask_offset_x ?? 0,'--ask-oy':w.ask_offset_y ?? 0,'--ask-opacity':(w.ask_opacity_pct ?? 100)/100,'--ask-minw':w.ask_min_width ?? 340,'--ask-qfs':w.ask_question_fs ?? 24,'--ask-cfs':w.ask_choice_fs ?? 18,'--ask-sw':w.ask_strip_w ?? 1920};
       for(const [name,value] of Object.entries(props))inner.style.setProperty(name,value);
       renderAskInto(inner);askClampMinimal(el);
+      if (!wasShown) { inner.dataset.askShown = '1'; askPlay(inner, w, 'in'); }
       const choices=inner.querySelector('.ask-choices');if(choices)choices.id='compAskChoicesList_'+w.id;
       const question=inner.querySelector('.ask-question-text');if(question)question.id='compAskQ_'+w.id;
       const countdown=inner.querySelector('.ask-countdown');
-      if(countdown)countdown.textContent='จะหมดเวลาในอีก '+fmtAskCountdown(data.remainingSec || 0);
+      if(countdown){const _ct='จะหมดเวลาในอีก '+fmtAskCountdown(data.remainingSec || 0);if(countdown.textContent!==_ct)countdown.textContent=_ct;}
       if(data?.phase==='paused'){const footer=inner.querySelector('.ask-footer');if(footer)footer.lastElementChild.textContent='พักการโหวต';}
     });
   }};

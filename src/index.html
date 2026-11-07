@@ -15,6 +15,54 @@
 
 
 <head>
+<style id="bp3-giveaway-gate-style">
+/* Giveaway is hidden by default. 20 clicks on the green status dot (bottom-left) turns it on, 20 more turns it off. */
+html:not([data-gw="1"]) #btnRailGw,
+html:not([data-gw="1"]) #win-giveaway,
+html:not([data-gw="1"]) .btn-add-widget[data-widget-type="giveaway"]{display:none !important;}
+/* donation goal widget: hidden for now (existing widgets and saved data are untouched) */
+.btn-add-widget[data-widget-type="donate_goal"]{display:none !important;}
+/* Replie, ASK and Randomizer are built-in overlay layers now (always on top, no widget needed) */
+.btn-add-widget[data-widget-type="ask"],.btn-add-widget[data-widget-type="replie"],.btn-add-widget[data-widget-type="randomizer"]{display:none !important;}
+#composerCanvasStage .composer-widget.type-ask,#composerCanvasStage .composer-widget.type-replie,#composerCanvasStage .composer-widget.type-randomizer{display:none !important;}
+#statusDotLocal{position:relative;flex:none;}
+#statusDotLocal::after{content:"";position:absolute;inset:-9px;}
+#statusDotLocal.gw-tick{transform:scale(1.7);transition:transform .12s ease;}
+</style>
+<script id="bp3-giveaway-gate">
+(function(){
+  var KEY='bp3_giveaway_enabled',NEED=20,root=document.documentElement,mem=false;
+  function isOn(){try{return localStorage.getItem(KEY)==='1';}catch(e){return mem;}}
+  function paint(){if(isOn())root.setAttribute('data-gw','1');else root.removeAttribute('data-gw');}
+  function afterChange(on){
+    if(!on){try{if(window._isGwCodeBroadcasting&&typeof window.toggleGwLiveCode==='function')window.toggleGwLiveCode();}catch(e){}
+            try{if(typeof closeToolWindow==='function')closeToolWindow('giveaway');}catch(e){}}
+  }
+  function set(on){try{localStorage.setItem(KEY,on?'1':'0');}catch(e){mem=!!on;}paint();afterChange(on);}
+  paint();
+  window.BP3GiveawayGate={isEnabled:isOn,set:set,need:NEED};
+  window.addEventListener('storage',function(e){if(e.key===KEY){paint();afterChange(isOn());}});
+  var wired=false;
+  function wire(){
+    if(wired)return;
+    var dot=document.getElementById('statusDotLocal');if(!dot)return;
+    wired=true;
+    var o=window.openToolWindow;
+    if(typeof o==='function'&&!o.__gwGate){var g=function(name){if(name==='giveaway'&&!isOn())return;return o.apply(this,arguments);};g.__gwGate=1;window.openToolWindow=g;}
+    var n=0,label=document.getElementById('localServerStatus'),live=document.getElementById('gwGateLive'),restore=0,orig='';
+    dot.addEventListener('click',function(){
+      n++;dot.classList.add('gw-tick');setTimeout(function(){dot.classList.remove('gw-tick');},120);
+      if(n<NEED)return;
+      n=0;var on=!isOn();set(on);
+      var msg=on?'เปิดโหมด Giveaway แล้ว':'ซ่อนโหมด Giveaway แล้ว';
+      if(live)live.textContent=msg;
+      if(label){if(!restore)orig=label.textContent;label.textContent=msg;clearTimeout(restore);restore=setTimeout(function(){label.textContent=orig;restore=0;},2500);}
+    });
+  }
+  window.addEventListener('load',wire);
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(wire,0);});
+})();
+</script>
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -546,7 +594,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.58</title>
+  <title>Broadcast Playroom v3.59</title>
 
 
 
@@ -1165,7 +1213,7 @@ window.addEventListener('keydown', (e) => {
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.58</span>
+      <span class="desktop-titlebar-tag">v3.59</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -4571,7 +4619,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-        <span class="status-indicator-dot"></span>
+        <span class="status-indicator-dot" id="statusDotLocal" aria-hidden="true"></span><span id="gwGateLive" role="status" aria-live="polite" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);"></span>
 
 
 
@@ -4697,238 +4745,233 @@ window.addEventListener('keydown', (e) => {
 
 
 
-  <div class="floating-window" id="win-giveaway" style="width: 840px; top: 60px; left: 300px;">
-
-
-
-
-
-
-
-    <!-- Drag Handle Header -->
-
-
-
-
-
-
-
+<style id="giveaway-ui-style">
+#win-giveaway{--rz-text:var(--dc-text-primary,#f2f3f5);--rz-muted:var(--dc-text-muted,#949ba4);--rz-line:var(--dc-border-hover,rgba(255,255,255,.16));--rz-accent:var(--app-accent,var(--dc-blurple,#5865f2));--rz-focus:var(--app-accent,var(--dc-blurple,#5865f2));--rz-ink:#fff;--rz-surface:var(--dc-bg-input,#1e1f22);--rz-card:var(--dc-bg-card,#232428);--rz-ok:var(--dc-green,#23a55a);--rz-bad:var(--dc-red,#f23f43);}
+#win-giveaway .rz-wrap{container:rzbody/inline-size;width:100%;}
+#win-giveaway .rz-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,420px);gap:22px;align-items:start;}
+#win-giveaway .rz-steps{display:flex;flex-direction:column;gap:16px;min-width:0;}
+#win-giveaway .rz-step{background:var(--rz-card);border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:var(--radius-md,10px);padding:16px 18px 18px;margin:0;min-width:0;border-left:1px solid var(--dc-border,rgba(255,255,255,.08));}
+#win-giveaway .rz-step h3,#win-giveaway .rz-preview h3{margin:0 0 4px;font-size:15px;font-weight:700;color:var(--rz-text);display:flex;align-items:center;gap:10px;line-height:1.4;flex-direction:column;align-items:flex-start;gap:2px;}
+#win-giveaway .rz-num{display:block;font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--rz-accent);line-height:1.3;}
+#win-giveaway .rz-help{margin:0 0 12px;font-size:13px;line-height:1.55;color:var(--rz-muted);}
+#win-giveaway .rz-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;min-width:0;}
+#win-giveaway .rz-field:last-child{margin-bottom:0;}
+#win-giveaway .rz-label,#win-giveaway legend.rz-label{font-size:14px;font-weight:700;color:var(--rz-text);padding:0;}
+#win-giveaway fieldset{border:0;margin:0 0 16px;padding:0;min-width:0;}
+#win-giveaway fieldset:last-child{margin-bottom:0;}
+#win-giveaway legend{margin-bottom:8px;}
+#win-giveaway .rz-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+#win-giveaway .rz-row>select{flex:1 1 200px;min-width:0;margin:0;}
+#win-giveaway .rz-btn,#win-giveaway .btn-topbar-action{min-height:36px;height:auto;padding:6px 14px;font-size:13.5px;font-weight:600;line-height:1.4;border:1px solid var(--rz-line);color:var(--rz-text);background:rgba(255,255,255,.06);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+#win-giveaway .rz-btn:hover,#win-giveaway .btn-topbar-action:hover{background:rgba(255,255,255,.12);}
+#win-giveaway .btn-topbar-action.primary,#win-giveaway .rz-btn.primary{background:var(--rz-accent);color:var(--rz-ink);border-color:var(--rz-accent);font-weight:700;}
+#win-giveaway .btn-topbar-action.primary:hover,#win-giveaway .rz-btn.primary:hover{filter:brightness(1.12);}
+#win-giveaway .rz-btn[aria-pressed="true"]{background:#14532d;border-color:#86efac;color:#ecfdf5;}
+#win-giveaway [aria-disabled="true"]{opacity:.65;cursor:not-allowed;}
+#win-giveaway .btn-win-action{width:32px;height:32px;color:#d1d5db;}
+#win-giveaway textarea{width:100%;min-height:130px;padding:10px 12px;resize:vertical;font-size:15px;line-height:1.6;}
+#win-giveaway input[type=text],#win-giveaway input[type=number],#win-giveaway textarea,#win-giveaway select{border:1px solid var(--rz-line) !important;font-size:14.5px;}
+#win-giveaway input[type=text]{min-height:40px;width:100%;}
+#win-giveaway input[type=number]{width:84px;min-height:36px;text-align:right;}
+#win-giveaway .rz-count{font-size:13px;color:var(--rz-muted);}
+#win-giveaway .rz-error{font-size:13.5px;font-weight:700;color:var(--rz-bad);min-height:0;}
+#win-giveaway .rz-error:empty{display:none;}
+#win-giveaway .rz-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+#win-giveaway .rz-opt{position:relative;display:block;margin:0;cursor:pointer;}
+#win-giveaway .rz-opt input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1;}
+#win-giveaway .rz-face{display:flex;flex-direction:column;gap:4px;height:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid var(--rz-line);border-radius:10px;background:var(--rz-surface);color:var(--rz-text);position:relative;}
+#win-giveaway .rz-opt:hover .rz-face{background:var(--dc-bg-card-hover,#2b2d31);}
+#win-giveaway .rz-opt input:checked+.rz-face{border-color:var(--rz-accent);background:color-mix(in srgb,var(--app-accent,var(--dc-blurple,#5865f2)) 16%,transparent);box-shadow:inset 0 0 0 1px var(--rz-accent);}
+#win-giveaway .rz-opt input:focus-visible+.rz-face,#win-giveaway :is(button,select,textarea,input[type=text],input[type=number],input[type=range],input[type=checkbox]):focus-visible{outline:3px solid var(--rz-focus);outline-offset:2px;}
+#win-giveaway .rz-check{display:none;position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--rz-accent);color:var(--rz-ink);font-size:14px;font-weight:900;align-items:center;justify-content:center;}
+#win-giveaway .rz-opt input:checked+.rz-face .rz-check{display:inline-flex;}
+#win-giveaway .rz-face-icon{font-size:26px;line-height:1.2;}
+#win-giveaway .rz-face-name{font-size:14.5px;font-weight:700;line-height:1.35;padding-right:24px;}
+#win-giveaway .rz-face-hint{font-size:12.5px;line-height:1.5;color:var(--rz-muted);}
+#win-giveaway .rz-face.compact{flex-direction:row;align-items:center;gap:8px;}
+#win-giveaway .rz-swatch{flex:none;width:34px;height:22px;border-radius:6px;border:2px solid #fff;}
+#win-giveaway .rz-tick{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin:0 0 12px;min-height:36px;}
+#win-giveaway .rz-tick input{flex:none;width:22px;height:22px;margin:2px 0 0;accent-color:var(--app-accent,var(--dc-blurple,#5865f2));cursor:pointer;}
+#win-giveaway .rz-tick b{display:block;font-size:14px;color:var(--rz-text);}
+#win-giveaway .rz-tick span span{display:block;font-size:12.5px;line-height:1.5;color:var(--rz-muted);}
+#win-giveaway .rz-slider{display:grid;grid-template-columns:minmax(90px,130px) minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:12px;}
+#win-giveaway .rz-slider>label{font-size:14px;font-weight:700;color:var(--rz-text);}
+#win-giveaway .rz-slider input[type=range]{width:100%;min-height:28px;margin:0;accent-color:var(--app-accent,var(--dc-blurple,#5865f2));cursor:pointer;}
+#win-giveaway .rz-unit{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--rz-muted);}
+#win-giveaway .rz-anchors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:360px;}
+#win-giveaway .rz-anchors .rz-face{align-items:center;justify-content:center;text-align:center;padding:6px 4px;font-size:13px;font-weight:700;min-height:40px;}
+#win-giveaway .rz-anchors .rz-check{top:3px;right:3px;width:16px;height:16px;font-size:11px;}
+#win-giveaway .rz-preview{position:sticky;top:0;background:var(--rz-card);border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:var(--radius-md,10px);padding:16px 18px 18px;min-width:0;}
+#win-giveaway .rz-stage{background:var(--dc-bg-rail,#1e1f22);border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:10px;padding:10px;display:flex;justify-content:center;align-items:flex-start;overflow:hidden;margin-bottom:10px;min-height:120px;}
+#win-giveaway .rz-fit{position:relative;flex:none;}
+#win-giveaway .rz-locator{position:relative;width:100%;aspect-ratio:16/9;background:var(--dc-bg-rail,#1e1f22);border:1px solid var(--rz-line);border-radius:6px;overflow:hidden;margin:6px 0 8px;}
+#win-giveaway .rz-locator-rect{position:absolute;border:2px solid var(--rz-accent);background:color-mix(in srgb,var(--app-accent,var(--dc-blurple,#5865f2)) 30%,transparent);box-sizing:border-box;}
+#win-giveaway .rz-locator-label{position:absolute;right:6px;bottom:4px;font-size:11px;color:var(--rz-muted);}
+#win-giveaway .rz-warn{color:var(--rz-bad);font-weight:700;}
+#win-giveaway .rz-demo{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--dc-border-hover,rgba(255,255,255,.16));}
+#win-giveaway .rz-demo .rz-help{margin:0;}
+#win-giveaway .rz-result{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--rz-surface);border:2px solid var(--rz-accent);font-size:14px;color:var(--rz-text);line-height:1.5;overflow-wrap:anywhere;}
+#win-giveaway .rz-result b{display:block;font-size:18px;color:var(--rz-accent);}
+#win-giveaway .rz-foot-note{font-size:13px;color:var(--rz-muted);}
+#win-giveaway .floating-footer{min-height:60px;}
+@container rzbody (max-width:780px){
+  #win-giveaway .rz-layout{grid-template-columns:minmax(0,1fr);}
+  #win-giveaway .rz-preview{position:static;}
+  #win-giveaway .rz-slider{grid-template-columns:minmax(0,1fr) auto;}
+  #win-giveaway .rz-slider>label{grid-column:1/-1;}
+}
+@media (prefers-reduced-motion:reduce){#win-giveaway *{transition:none !important;animation:none !important;scroll-behavior:auto !important;}}
+#win-giveaway .gw-status{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;padding:12px 16px;margin-bottom:16px;border-radius:var(--radius-md,10px);background:#1e1f22;border:1px solid var(--rz-line);}
+#win-giveaway .gw-status[data-state="open"]{border-color:#86efac;background:#10261a;}
+#win-giveaway .gw-status[data-state="winner"]{border-color:var(--rz-accent);background:#2b2412;}
+#win-giveaway .gw-dot{flex:none;width:14px;height:14px;border-radius:50%;background:#9ca3af;border:2px solid #fff;}
+#win-giveaway .gw-status[data-state="open"] .gw-dot{background:#4ade80;}
+#win-giveaway .gw-status[data-state="winner"] .gw-dot{background:var(--rz-accent);}
+#win-giveaway .gw-status-text{font-size:16px;font-weight:700;color:var(--rz-text);}
+#win-giveaway .gw-status-meta{font-size:14px;color:var(--rz-muted);margin-left:auto;}
+#win-giveaway .gw-big{width:100%;min-height:52px;font-size:17px;border-radius:var(--radius-md,10px);}
+#win-giveaway .gw-big[aria-pressed="true"]{background:#7f1d1d;border-color:#fecaca;color:#fff;}
+#win-giveaway .gw-chips{display:flex;flex-wrap:wrap;gap:8px;}
+#win-giveaway .gw-chips .btn-topbar-action{min-height:36px;padding:4px 12px;}
+#win-giveaway .gw-chips .btn-topbar-action[aria-pressed="true"]{background:color-mix(in srgb,var(--app-accent,var(--dc-blurple,#5865f2)) 16%,transparent);border-color:var(--rz-accent);color:#fff;}
+#win-giveaway .gw-tablewrap{max-height:240px;overflow:auto;border:1px solid var(--rz-line);border-radius:10px;background:var(--rz-surface);}
+#win-giveaway .gw-table{width:100%;border-collapse:collapse;font-size:14px;color:var(--rz-text);}
+#win-giveaway .gw-table caption{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+#win-giveaway .gw-table th{position:sticky;top:0;background:rgba(255,255,255,.06);text-align:left;padding:8px 10px;font-size:13px;color:var(--rz-text);}
+#win-giveaway .gw-fonts{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;}
+#win-giveaway .gw-fontface{align-items:flex-start;}
+#win-giveaway .gw-fontsample{font-size:22px;font-weight:700;line-height:1.3;color:#fff;overflow-wrap:anywhere;}
+#win-giveaway .gw-plat{width:24px;height:24px;object-fit:contain;vertical-align:middle;display:inline-block;}
+#win-giveaway .gw-table td{padding:8px 10px;border-top:1px solid var(--dc-border-hover,rgba(255,255,255,.16));overflow-wrap:anywhere;}
+#win-giveaway .gw-table .gw-empty{text-align:center;color:var(--rz-muted);padding:18px 10px;}
+#win-giveaway .gw-badge{display:inline-block;padding:2px 8px;border-radius:999px;background:var(--rz-accent);color:var(--rz-ink);font-size:12px;font-weight:700;}
+#win-giveaway .gw-rm{min-width:36px;min-height:36px;padding:2px 8px;font-size:14px;}
+#win-giveaway .gw-winner{margin:12px 0 0;padding:14px 16px;border-radius:var(--radius-md,10px);background:var(--rz-surface);border:1px solid var(--rz-line);font-size:15px;color:var(--rz-text);line-height:1.5;overflow-wrap:anywhere;}
+#win-giveaway .gw-winner b{display:block;font-size:22px;color:var(--rz-accent);}
+#win-giveaway .gw-winner[data-has="1"]{border-color:var(--rz-accent);}
+#win-giveaway .gw-confirm{display:none;gap:8px;align-items:center;flex-wrap:wrap;}
+#win-giveaway .gw-confirm.show{display:flex;}
+#win-giveaway .rz-help.warn{color:var(--rz-bad);font-weight:700;}
+#win-giveaway input[type=number]{width:110px;}
+#win-giveaway .gw-hist summary{cursor:pointer;font-weight:700;font-size:14px;color:var(--rz-text);min-height:36px;display:flex;align-items:center;}
+</style>
+<div class="floating-window" id="win-giveaway" role="dialog" aria-labelledby="gwWinTitle" style="width: min(1020px, calc(100vw - 24px)); max-width: calc(100vw - 24px); top: 12px; left: max(12px, calc((100vw - 1020px) / 2));">
     <div class="floating-header" id="drag-giveaway">
-
-
-
-
-
-
-
       <div class="floating-title-box">
-
-
-
-
-
-
-
-        <span style="font-size: 18px;">🎁</span>
-
-
-
-
-
-
-
-        <div>
-
-
-
-
-
-
-
-          <div style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">Giveaway Tool</div>
-
-
-
-
-
-
-
-          
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
+        <span style="font-size: 18px;" aria-hidden="true">🎁</span>
+        <div><div id="gwWinTitle" style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">แจกของรางวัลให้ผู้ชม</div></div>
       </div>
-
-
-
-
-
-
-
       <div class="floating-actions-right">
-
-
-
-
-
-
-
-        <button class="btn-win-action" title="ย่อหน้าต่าง" onclick="minimizeWindow('giveaway')">—</button>
-
-
-
-
-
-
-
-        <button class="btn-win-action close-red" title="ปิดหน้าต่าง" onclick="closeToolWindow('giveaway')">✕</button>
-
-
-
-
-
-
-
+        <button class="btn-win-action" title="ย่อหน้าต่าง" aria-label="ย่อหน้าต่าง" onclick="minimizeWindow('giveaway')"><span aria-hidden="true">—</span></button>
+        <button class="btn-win-action close-red" title="ปิดหน้าต่าง" aria-label="ปิดหน้าต่าง" onclick="closeToolWindow('giveaway')"><span aria-hidden="true">✕</span></button>
       </div>
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <div class="floating-body" id="gwBody">
-
-
-
-      <div id="gwTabPane0">
-
-
-
-        <label class="modal-form-label" for="gwInputCodeCustom">โค้ดที่ให้ผู้ชมพิมพ์เพื่อเข้าร่วม</label>
-
-
-
-        <div style="display:flex;gap:8px;margin:8px 0 12px;">
-
-
-
-          <input class="modal-input" id="gwInputCodeCustom" value="#join" style="flex:1;" oninput="setGiveawayCode(this.value)">
-
-
-
-          <button class="btn-topbar-action primary" id="btnGwToggleLiveCode" onclick="toggleGwLiveCode(this)">เปิดรับโค้ด</button>
-
-
-
+      <div class="rz-wrap" id="gwTabPane0">
+        <div class="gw-status" id="gwStatusBar" data-state="idle">
+          <span class="gw-dot" aria-hidden="true"></span>
+          <span class="gw-status-text" id="gwStatusText" role="status" aria-live="polite">ยังไม่เปิดรับรายชื่อ</span>
+          <span class="gw-status-meta" id="gwStatusMeta"></span>
         </div>
+        <div class="rz-layout">
+          <div class="rz-steps">
+            <section class="rz-step" aria-labelledby="gwH1">
+              <h3 id="gwH1"><span class="rz-num" aria-hidden="true">ขั้นที่ 1</span>ตั้งโค้ดให้ผู้ชมพิมพ์</h3>
+              <p class="rz-help">ผู้ชมพิมพ์โค้ดนี้ในแชทเพื่อเข้าร่วม ระบบเก็บชื่อให้คนละหนึ่งครั้ง</p>
+              <div class="rz-field">
+                <label class="rz-label" for="gwInputCodeCustom">โค้ดเข้าร่วม</label>
+                <input type="text" class="modal-input" id="gwInputCodeCustom" value="#join" maxlength="60" autocomplete="off" oninput="setGiveawayCode(this.value)" aria-describedby="gwCodeHint">
+                <span class="rz-help" id="gwCodeHint" style="margin:0;">เช่น #join หรือ !ลุ้น ไม่สนตัวพิมพ์เล็กใหญ่</span>
+                <span id="gwActiveCodeLabel" hidden>#join</span>
+              </div>
+              <fieldset>
+                <legend class="rz-label">ปิดรับรายชื่ออัตโนมัติ</legend>
+                <div class="gw-chips" id="gwDurationChips" role="group" aria-label="เลือกเวลาปิดรับอัตโนมัติ"></div>
+                <div class="rz-slider" style="margin:10px 0 0;grid-template-columns:auto auto auto;justify-content:start;">
+                  <label for="gwReceiveDuration">กำหนดเอง</label>
+                  <input class="modal-input" type="number" id="gwReceiveDuration" min="0" max="86400" step="1" value="0" aria-describedby="gwDurHint">
+                  <span class="rz-unit">วินาที</span>
+                </div>
+                <span class="rz-help" id="gwDurHint" style="margin:6px 0 0;">ใส่ 0 หมายถึงไม่จำกัดเวลา คุณกดปิดรับเอง</span>
+              </fieldset>
+              <fieldset>
+                <legend class="rz-label">สิ่งที่แสดงบนจอ OBS ระหว่างเปิดรับ</legend>
+                <div class="rz-options">
+                  <label class="rz-opt"><input type="radio" name="gwOverlayMode" value="banner" checked><span class="rz-face"><span class="rz-face-name">แสดงโค้ด</span><span class="rz-face-hint">แบนเนอร์บอกโค้ดและจำนวนผู้เข้าร่วม</span><span class="rz-check" aria-hidden="true">✓</span></span></label>
+                  <label class="rz-opt"><input type="radio" name="gwOverlayMode" value="image"><span class="rz-face"><span class="rz-face-name">แสดงภาพของคุณ</span><span class="rz-face-hint">ใช้ภาพแบนเนอร์ที่เลือกเอง</span><span class="rz-check" aria-hidden="true">✓</span></span></label>
+                  <label class="rz-opt"><input type="radio" name="gwOverlayMode" value="none"><span class="rz-face"><span class="rz-face-name">ไม่แสดงอะไร</span><span class="rz-face-hint">รับรายชื่อเงียบๆ เบื้องหลัง</span><span class="rz-check" aria-hidden="true">✓</span></span></label>
+                </div>
+                <div class="rz-row" style="margin-top:10px;"><button type="button" class="btn-topbar-action" id="btnGiveawayImportImage">เลือกภาพแบนเนอร์จากเครื่อง</button><span class="rz-help" id="gwImageName" style="margin:0;"></span></div>
+              </fieldset>
+            </section>
 
+            <section class="rz-step" aria-labelledby="gwH2">
+              <h3 id="gwH2"><span class="rz-num" aria-hidden="true">ขั้นที่ 2</span>เปิดรับรายชื่อ</h3>
+              <p class="rz-help">กดเปิดรับ แล้วบอกผู้ชมให้พิมพ์โค้ดในแชท รายชื่อจะขึ้นด้านล่างทันที</p>
+              <button type="button" class="btn-topbar-action primary gw-big" id="btnGwToggleLiveCode" aria-pressed="false" onclick="toggleGwLiveCode(this)">เปิดรับโค้ด</button>
+              <div class="rz-row" style="margin:14px 0 8px;justify-content:space-between;">
+                <strong style="font-size:15px;color:var(--rz-text);">ผู้เข้าร่วม <span id="gwParticipantCount">0 คน</span></strong>
+                <button type="button" class="btn-topbar-action" id="btnGwAskReset">ล้างรายชื่อและเริ่มใหม่</button>
+              </div>
+              <div class="gw-confirm" id="gwResetConfirm" role="group" aria-label="ยืนยันการล้างรายชื่อ">
+                <span class="rz-help warn" style="margin:0;">ล้างรายชื่อและประวัติผู้ชนะทั้งหมดใช่ไหม</span>
+                <button type="button" class="btn-topbar-action" id="btnGwResetYes" onclick="resetGiveaway()">ใช่ ล้างทั้งหมด</button>
+                <button type="button" class="btn-topbar-action" id="btnGwResetNo">ยกเลิก</button>
+              </div>
+              <div class="gw-tablewrap" tabindex="0" role="region" aria-label="รายชื่อผู้เข้าร่วม เลื่อนดูได้">
+                <table class="gw-table" id="gwTable"><caption>รายชื่อผู้เข้าร่วมกิจกรรม</caption><thead><tr><th scope="col">ลำดับ</th><th scope="col">ชื่อ</th><th scope="col">แพลตฟอร์ม</th><th scope="col">เวลา</th><th scope="col">สถานะ</th><th scope="col"><span class="rz-sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">ลบ</span></th></tr></thead><tbody id="gwTableBody"></tbody></table>
+              </div>
+              <div class="rz-row" style="margin-top:10px;"><button type="button" class="btn-topbar-action" id="btnGiveawayExportCsv" onclick="exportGiveawayCsv()">ส่งออกรายชื่อเป็นไฟล์ CSV</button></div>
+            </section>
 
+            <section class="rz-step" aria-labelledby="gwH3">
+              <h3 id="gwH3"><span class="rz-num" aria-hidden="true">ขั้นที่ 3</span>สุ่มผู้โชคดี</h3>
+              <p class="rz-help">เลือกรูปแบบการสุ่ม แล้วกดสุ่ม ผู้ชนะจะขึ้นจอ OBS ทันที</p>
+              <fieldset>
+                <legend class="rz-label">รูปแบบการสุ่ม</legend>
+                <div class="rz-options" id="gwStyleList"></div>
+                <select id="gwDrawStyle" hidden aria-hidden="true" tabindex="-1"><option value="gachapon">gachapon</option><option value="slot">slot</option><option value="shuffle">shuffle</option><option value="wheel">wheel</option></select>
+              </fieldset>
+              <div class="rz-field">
+                <label class="rz-label" for="gwDrawTheme">ธีมสี</label>
+                <select class="voice-select-box" id="gwDrawTheme"></select>
+              </div>
+              <fieldset>
+                <legend class="rz-label">ฟอนต์ตัวอักษร</legend>
+                <div class="rz-options gw-fonts" id="gwFontList"></div>
+              </fieldset>
+              <label class="rz-tick"><input type="checkbox" id="chkGwExclude" checked><span><b>ไม่ให้คนเดิมชนะซ้ำ</b><span>คนที่ชนะไปแล้วจะไม่ถูกสุ่มอีกในกิจกรรมนี้</span></span></label>
+              <label class="rz-tick"><input type="checkbox" id="chkGwCalm"><span><b>ลดการเคลื่อนไหว</b><span>ไม่หมุน แสดงผู้ชนะทันที ระบบเปิดให้เองเมื่อเครื่องตั้งค่าลดการเคลื่อนไหวไว้</span></span></label>
+              <div class="rz-field">
+                <label class="rz-label" for="gwHold">แสดงผู้ชนะบนจอนานเท่าไร</label>
+                <select class="voice-select-box" id="gwHold"><option value="8">8 วินาที</option><option value="15">15 วินาที</option><option value="30">30 วินาที</option><option value="60">1 นาที</option><option value="0">จนกว่าจะกดล้าง</option></select>
+              </div>
+              <button type="button" class="btn-topbar-action primary gw-big" id="btnGwDraw" onclick="rerollGwWinner()">สุ่มผู้โชคดีขึ้นจอ OBS</button>
+              <p class="rz-help" id="gwDrawHint" style="margin:8px 0 0;">เมื่อกดสุ่ม ระบบจะปิดรับรายชื่อให้อัตโนมัติ และบันทึกผู้ชนะไว้ไม่ให้ถูกสุ่มซ้ำ</p>
+              <p class="rz-help" id="gwEligibleLine" style="margin:8px 0 0;">พร้อมสุ่มจาก <span id="gwEligibleCount">0</span> คน</p>
+              <div class="gw-winner" id="gwWinnerDisplay" role="status" aria-live="polite">ยังไม่ได้สุ่มผู้ชนะ</div>
+              <details class="gw-hist" id="gwHistoryDetails" style="margin-top:12px;"><summary>ประวัติผู้ชนะ</summary>
+                <div class="gw-tablewrap" tabindex="0" role="region" aria-label="ประวัติผู้ชนะ เลื่อนดูได้" style="margin-top:6px;">
+                  <table class="gw-table"><caption>ประวัติผู้ชนะ</caption><thead><tr><th scope="col">ครั้งที่</th><th scope="col">ชื่อ</th><th scope="col">แพลตฟอร์ม</th><th scope="col">เวลา</th></tr></thead><tbody id="gwWinnerHistory"></tbody></table>
+                </div>
+              </details>
+            </section>
+          </div>
 
-        <span id="gwActiveCodeLabel" hidden>#join</span>
-
-
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0;">
-
-
-
-          <strong>ผู้เข้าร่วม <span id="gwParticipantCount">0 คน</span></strong>
-
-
-
-          <button class="btn-topbar-action" onclick="resetGiveaway()">เริ่มใหม่ / ล้างรายชื่อ</button>
-
-
-
+          <aside class="rz-preview" aria-labelledby="gwPvH">
+            <h3 id="gwPvH">ตัวอย่างตอนประกาศผู้ชนะ</h3>
+            <p class="rz-help">ภาพนี้เปลี่ยนตามรูปแบบและสีที่เลือก ใช้ชื่อผู้เข้าร่วมจริงถ้ามี</p>
+            <div class="rz-stage" id="gwStage"></div>
+            <div class="rz-row"><button type="button" class="btn-topbar-action" id="btnGwPreview">ดูตัวอย่างการสุ่ม ไม่ขึ้นจอ OBS</button></div>
+            <p class="rz-help" style="margin:12px 0 0;">กดปุ่มนี้ไม่มีผลกับรายชื่อหรือประวัติผู้ชนะ</p>
+          </aside>
         </div>
-
-
-
-        <table class="tool-table" id="gwTable"><thead><tr><th>ลำดับ</th><th>ชื่อผู้เข้าร่วม</th><th>แพลตฟอร์ม</th><th>เวลา</th><th></th></tr></thead><tbody id="gwTableBody"></tbody></table>
-
-
-
-        <label style="display:flex;gap:8px;align-items:center;margin:12px 0;flex-wrap:wrap;">รูปแบบการสุ่ม <select class="voice-select-box" id="gwDrawStyle" style="margin:0;max-width:100%;"><option value="gachapon">Gachapon</option><option value="slot">Slot Machine</option><option value="shuffle">Shuffle</option></select></label>
-
-
-
-        <button class="btn-topbar-action primary" id="btnGwDraw" style="width:100%;justify-content:center;margin:12px 0;height:42px;" onclick="rerollGwWinner()">🎲 สุ่มผู้โชคดีขึ้น Overlay</button>
-
-
-
-        <div class="clean-row" id="gwWinnerDisplay" style="padding:14px;margin-bottom:12px;">ยังไม่ได้สุ่มชื่อ</div>
-
-
-
-        <details id="gwHistoryDetails"><summary>ประวัติการสุ่มชื่อ</summary><table class="tool-table"><thead><tr><th>ครั้ง</th><th>ชื่อ</th><th>แพลตฟอร์ม</th><th>เวลา</th></tr></thead><tbody id="gwWinnerHistory"></tbody></table></details>
-
-
-
-        <button class="btn-topbar-action" id="btnGiveawayExportCsv" style="margin-top:10px;" onclick="exportGiveawayCsv()">ส่งออกรายชื่อ CSV</button>
-
-
-
-        <details id="gwOverlaySettings" style="margin-top:16px;"><summary>การแสดงผลบน Overlay</summary>
-
-
-
-          <div style="display:flex;gap:12px;margin:10px 0;"><label><input type="radio" name="gwOverlayMode" value="banner" checked> แสดงโค้ด</label><label><input type="radio" name="gwOverlayMode" value="image"> ภาพแบนเนอร์</label><label><input type="radio" name="gwOverlayMode" value="none"> รับรายชื่อเบื้องหลัง</label></div>
-
-
-
-          <button class="btn-topbar-action" id="btnGiveawayImportImage">เลือกภาพแบนเนอร์จากเครื่อง</button>
-
-
-
-          <label style="display:flex;gap:8px;align-items:center;margin:10px 0;">ปิดรับอัตโนมัติ (วินาที, 0 = ปิดเอง)<input class="modal-input" type="number" id="gwReceiveDuration" min="0" value="0" style="width:90px;"></label>
-
-
-
-          
-
-
-
-        </details>
-
-
-
       </div>
-
-
-
     </div>
-
-
-
+    <div class="floating-footer">
+      <span class="rz-foot-note">ผู้ชนะจะแสดงบนจอ OBS และจอ Studio พร้อมกัน</span>
+      <div class="floating-footer-right"><button type="button" class="btn-topbar-action" onclick="closeToolWindow('giveaway')">ปิดหน้าต่าง</button></div>
+    </div>
   </div>
 
 
@@ -5113,7 +5156,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-        <button class="win-tab-btn" id="btnAskTab2" onclick="switchAskTab(2)">🎨 หน้าตา Overlay & 23 ธีมสี</button>
+        <button class="win-tab-btn" id="btnAskTab2" onclick="switchAskTab(2)">🎨 หน้าตา & ตำแหน่ง Overlay</button>
 
 
 
@@ -6074,685 +6117,105 @@ window.addEventListener('keydown', (e) => {
 
 
       <div id="paneAskTab2" style="display: none;">
-
-
-
-
-
-
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; background:rgba(139,92,246,0.12); border:1px solid rgba(139,92,246,0.3); border-radius:8px; padding:10px 14px;">
-
-
-
-          <div>
-
-
-
-            <div style="font-weight:700; font-size:13px; color:#c4b5fd;">🎨 ปรับแต่งหน้าตา Overlay โพลสด</div>
-
-
-
-            <div style="font-size:11.5px; color:#94a3b8;">เลือกธีมและรูปแบบ จะบันทึกและแสดงผลทันทีบนหน้าจอ OBS</div>
-
-
-
-          </div>
-
-
-
-          <button type="button" class="btn-topbar-action primary" style="background:#8b5cf6; border-color:#8b5cf6; font-weight:700;" onclick="startAskDemoPreview()">
-
-
-
-            ▶️ ดูตัวอย่าง Overlay (DEMO)
-
-
-
-          </button>
-
-
-
-        </div>
-
-
-
-
-
-
-
-        <!-- Card 1: Layout & การจัดวาง -->
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom:12px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">รูปแบบการจัดวาง</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="askLayoutSelect" style="margin:0;" onchange="onAskConfigChange()">
-
-
-
-
-
-
-
-              <option value="vright">🏛️ เสาแนวตั้ง — ฝั่งขวาของจอ</option>
-
-
-
-
-
-
-
-              <option value="vleft">🏛️ เสาแนวตั้ง — ฝั่งซ้ายของจอ</option>
-
-
-
-
-
-
-
-              <option value="hband">📏 แถบแนวนอน — เต็มความกว้าง</option>
-
-
-
-
-
-
-
-              <option value="minimal">📦 Minimal — กล่องอิสระลอยตัว</option>
-
-
-
-
-
-
-
-              <option value="lite">✨ Lite — แถบกะทัดรัดจิ๋วพิเศษ</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ธีมสี (Color Themes - 23 แบบ)</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="askColorThemeSelect" style="margin:0;" onchange="onAskConfigChange()">
-
-
-
-
-
-
-
+        <div class="ak-wrap">
+          <p class="ak-intro">ปรับหน้าตาและตำแหน่งของโพล <b>ASK</b> ที่ขึ้นบนจอ OBS ระบบบันทึกให้อัตโนมัติ และใช้ได้ทันทีเมื่อกดเปิดโหวต ไม่ต้องใส่ widget ใน Composer</p>
+          <div class="ak-layout">
+            <div class="ak-steps">
+              <section class="ak-step">
+                <h3><span class="ak-num">ขั้นที่ 1</span>เลือกรูปแบบและสี</h3>
+                <p class="ak-help">เลือกว่าโพลจะวางแบบไหนบนจอ</p>
+                <div class="ak-opts" id="akLayoutCards">
+                  <label class="ak-opt"><input type="radio" name="akLayoutRadio" value="vright" onchange="askT2PickLayout(this.value)"><span class="ak-face"><span class="ak-ic">▮▯</span><b>เสาขวา</b><small>เสาแนวตั้งชิดขอบขวา</small></span></label>
+                  <label class="ak-opt"><input type="radio" name="akLayoutRadio" value="vleft" onchange="askT2PickLayout(this.value)"><span class="ak-face"><span class="ak-ic">▯▮</span><b>เสาซ้าย</b><small>เสาแนวตั้งชิดขอบซ้าย</small></span></label>
+                  <label class="ak-opt"><input type="radio" name="akLayoutRadio" value="strip" onchange="askT2PickLayout(this.value)"><span class="ak-face"><span class="ak-ic">▁▁▁</span><b>แถบนอน Compact</b><small>แถวเดียว สูงเพียง ~35px บนจอ 1080 (แนะนำ)</small></span></label>
+                  <label class="ak-opt"><input type="radio" name="akLayoutRadio" value="hband" onchange="askT2PickLayout(this.value)"><span class="ak-face"><span class="ak-ic">▬</span><b>แถบนอนใหญ่</b><small>แถบเต็มจอแบบการ์ดตัวเลือก ความสูงตามที่ตั้ง</small></span></label>
+                  <label class="ak-opt"><input type="radio" name="akLayoutRadio" value="minimal" onchange="askT2PickLayout(this.value)"><span class="ak-face"><span class="ak-ic">▣</span><b>กล่องลอย</b><small>กล่องอิสระ วางตรงไหนก็ได้</small></span></label>
+                  <label class="ak-opt"><input type="radio" name="akLayoutRadio" value="lite" onchange="askT2PickLayout(this.value)"><span class="ak-face"><span class="ak-ic">▭</span><b>กล่องเล็ก</b><small>กะทัดรัด กินพื้นที่น้อย</small></span></label>
+                </div>
+                <select id="askLayoutSelect" hidden onchange="onAskConfigChange()"><option value="vright"></option><option value="vleft"></option><option value="hband"></option><option value="strip"></option><option value="minimal"></option><option value="lite"></option></select>
+                <div class="ak-field"><label class="ak-label" for="askColorThemeSelect">ธีมสี</label>
+<select class="voice-select-box" id="askColorThemeSelect" style="margin:0;width:100%;" onchange="onAskConfigChange()">
               <option value="violet">🟣 ม่วงมาตรฐาน (Violet)</option>
-
-
-
               <option value="neon">🔵 ฟ้านีออนสว่าง (Neon)</option>
-
-
-
               <option value="gold">🟡 ทองหรูหรา (Gold)</option>
-
-
-
               <option value="rose">🌹 ชมพูกุหลาบ (Rose)</option>
-
-
-
               <option value="emerald">💚 เขียวมรกต (Emerald)</option>
-
-
-
               <option value="sunset">🌆 ส้มทไวไลท์ (Sunset)</option>
-
-
-
               <option value="midnight">🌌 น้ำเงินดึกสงัด (Midnight)</option>
-
-
-
               <option value="ocean">🌊 มหาสมุทร (Ocean)</option>
-
-
-
               <option value="sakura">🌸 ซากุระชมพู (Sakura)</option>
-
-
-
               <option value="forest">🌲 ป่าไม้เขียว (Forest)</option>
-
-
-
               <option value="ice">🧊 ฟ้าน้ำแข็ง (Ice)</option>
-
-
-
               <option value="candy">🍬 แคนดี้สดใส (Candy)</option>
-
-
-
               <option value="steel">⚙️ ไทเทเนียมสตีล (Steel)</option>
-
-
-
               <option value="fire">🔥 เปลวเพลิง (Fire)</option>
-
-
-
               <option value="mint">🍃 มิ้นต์สดชื่น (Mint)</option>
-
-
-
               <option value="coffee">☕ กาแฟอบอุ่น (Coffee)</option>
-
-
-
               <option value="cyberpunk">⚡ ไซเบอร์พังก์ (Cyberpunk)</option>
-
-
-
               <option value="synthwave">🌃 ซินธ์เวฟ (Synthwave)</option>
-
-
-
               <option value="crystal">💎 คริสตัลประกายใส (Crystal)</option>
-
-
-
               <option value="magma">🌋 ลาวาปะทุ (Magma)</option>
-
-
-
               <option value="neonframe">🖼️ กรอบนีออนล้ำ (Neon Frame)</option>
-
-
-
               <option value="vintage">📜 วินเทจคลาสสิก (Vintage)</option>
-
-
-
               <option value="electric">⚡ อิเล็กทริกสปาร์ก (Electric)</option>
+            </select></div>
+              </section>
 
+              <section class="ak-step">
+                <h3><span class="ak-num">ขั้นที่ 2</span>ขนาดและตำแหน่ง</h3>
+                <p class="ak-help">ลากกรอบในภาพตัวอย่างด้านขวาเพื่อย้าย หรือลากมุมเพื่อย่อ/ขยาย หรือใช้แถบเลื่อนเพื่อปรับละเอียด</p>
+                <div class="ak-field" id="akRowAnchor" hidden><label class="ak-label" for="askAnchorSelect">ตำแหน่งแถบ</label>
+                  <select class="voice-select-box" id="askAnchorSelect" style="margin:0;width:100%;" onchange="onAskConfigChange()"><option value="top">ชิดขอบบน</option><option value="bottom">ชิดขอบล่าง</option></select></div>
+                <div class="ak-slider" id="akRowExtend"><label for="askExtendRange"><span id="akExtendLabel">ความกว้างของเสา</span></label><input type="range" id="askExtendRange" min="10" max="45" step="1" value="20" oninput="askT2FromRange('askExtendRange')"><span class="ak-unit"><input type="number" id="askExtendRangeNum" min="10" max="45" step="1" value="20" aria-label="ความกว้างหรือความสูงของโพล" oninput="askT2FromNum('askExtendRange')" onchange="askT2FromNum('askExtendRange',true)">%</span></div>
+                <div class="ak-slider" id="akRowMinW" hidden><label for="askMinWRange">ความกว้างของกล่อง</label><input type="range" id="askMinWRange" min="240" max="900" step="10" value="340" oninput="askT2FromRange('askMinWRange')"><span class="ak-unit"><input type="number" id="askMinWRangeNum" min="240" max="900" step="10" value="340" aria-label="ความกว้างของกล่อง" oninput="askT2FromNum('askMinWRange')" onchange="askT2FromNum('askMinWRange',true)">px</span></div>
+                <div class="ak-slider" id="akRowStripW" hidden><label for="askStripWRange">ความกว้างของแถบ</label><input type="range" id="askStripWRange" min="600" max="1920" step="10" value="1920" oninput="askT2FromRange('askStripWRange')"><span class="ak-unit"><input type="number" id="askStripWRangeNum" min="600" max="1920" step="10" value="1920" aria-label="ความกว้างของแถบ" oninput="askT2FromNum('askStripWRange')" onchange="askT2FromNum('askStripWRange',true)">px</span></div>
+                <div class="ak-slider"><label for="askOxRange">เลื่อนซ้าย ขวา</label><input type="range" id="askOxRange" min="-960" max="960" step="1" value="0" oninput="askT2FromRange('askOxRange')"><span class="ak-unit"><input type="number" id="askOxRangeNum" min="-960" max="960" step="5" value="0" aria-label="เลื่อนซ้าย ขวา" oninput="askT2FromNum('askOxRange')" onchange="askT2FromNum('askOxRange',true)">px</span></div>
+                <div class="ak-slider"><label for="askOyRange">เลื่อนขึ้น ลง</label><input type="range" id="askOyRange" min="-540" max="540" step="1" value="0" oninput="askT2FromRange('askOyRange')"><span class="ak-unit"><input type="number" id="askOyRangeNum" min="-540" max="540" step="5" value="0" aria-label="เลื่อนขึ้น ลง" oninput="askT2FromNum('askOyRange')" onchange="askT2FromNum('askOyRange',true)">px</span></div>
+                <div class="ak-slider"><label for="askScaleRange">ย่อขยายรวม (ช่องไฟและขนาดส่วนประกอบ)</label><input type="range" id="askScaleRange" min="60" max="160" step="5" value="100" oninput="askT2FromRange('askScaleRange')"><span class="ak-unit"><input type="number" id="askScaleRangeNum" min="60" max="160" step="5" value="100" aria-label="ย่อขยายรวม (ช่องไฟและขนาดส่วนประกอบ)" oninput="askT2FromNum('askScaleRange')" onchange="askT2FromNum('askScaleRange',true)">%</span></div>
+                <div class="ak-slider"><label for="askOpacityRange">ความโปร่งใส (เห็นทึบเท่าไร)</label><input type="range" id="askOpacityRange" min="30" max="100" step="5" value="100" oninput="askT2FromRange('askOpacityRange')"><span class="ak-unit"><input type="number" id="askOpacityRangeNum" min="30" max="100" step="5" value="100" aria-label="ความโปร่งใส (เห็นทึบเท่าไร)" oninput="askT2FromNum('askOpacityRange')" onchange="askT2FromNum('askOpacityRange',true)">%</span></div>
+                <div class="ak-row"><button type="button" class="btn-topbar-action" onclick="askT2ResetPos()">คืนค่าตำแหน่งและขนาดเริ่มต้น</button></div>
+              </section>
 
+              <section class="ak-step">
+                <h3><span class="ak-num">ขั้นที่ 3</span>ตัวอักษรและสไตล์</h3>
+                <div class="ak-slider"><label for="askQfsRange">ขนาดตัวอักษรคำถาม</label><input type="range" id="askQfsRange" min="14" max="48" step="1" value="24" oninput="askT2FromRange('askQfsRange')"><span class="ak-unit"><input type="number" id="askQfsRangeNum" min="14" max="48" step="1" value="24" aria-label="ขนาดตัวอักษรคำถาม" oninput="askT2FromNum('askQfsRange')" onchange="askT2FromNum('askQfsRange',true)">px</span></div>
+                <div class="ak-slider"><label for="askCfsRange">ขนาดตัวอักษรตัวเลือก</label><input type="range" id="askCfsRange" min="12" max="36" step="1" value="18" oninput="askT2FromRange('askCfsRange')"><span class="ak-unit"><input type="number" id="askCfsRangeNum" min="12" max="36" step="1" value="18" aria-label="ขนาดตัวอักษรตัวเลือก" oninput="askT2FromNum('askCfsRange')" onchange="askT2FromNum('askCfsRange',true)">px</span></div>
+                <div class="ak-two">
+                  <div class="ak-field"><label class="ak-label" for="askBarStyleSelect">สไตล์แท่งคะแนน</label>
+<select class="voice-select-box" id="askBarStyleSelect" style="margin:0;width:100%;" onchange="onAskConfigChange()"><option value="classic">▬ แถบมน (Classic)</option><option value="thick">🧱 แท่งหนานูน (Thick)</option><option value="slant">📐 เฉียง (Slant)</option><option value="shine">✨ แสงวิ่งผ่าน (Shine)</option><option value="glow">💡 เรืองแสง (Glow)</option><option value="neonline">⚡ เส้นนีออน (Neon Line)</option><option value="gradientflow">🌈 ไล่สีไหล (Gradient Flow)</option><option value="pulse">💓 เต้นเป็นจังหวะ (Pulse)</option><option value="striped">🚧 ลายเฉียงวิ่ง (Striped)</option><option value="segmented">▮▮▮ แบ่งช่อง (Segmented)</option><option value="blocks">🟦 บล็อก (Blocks)</option><option value="chunky">🔳 บล็อกหนา (Chunky)</option><option value="ticks">📏 ไม้บรรทัด (Ticks)</option><option value="outline">⭕ กรอบกลวง (Outline)</option><option value="wavy">🌊 คลื่น (Wavy)</option><option value="dots">●●● จุดกลม (Dots)</option><option value="thin">─ เส้นบาง (Thin)</option></select></div>
+                  <div class="ak-field"><label class="ak-label" for="askFrameStyleSelect">กรอบหน้าต่าง</label>
+<select class="voice-select-box" id="askFrameStyleSelect" style="margin:0;width:100%;" onchange="onAskConfigChange()"><option value="classic">📦 มนมีขอบ (Classic)</option><option value="sharp">◼ เหลี่ยมคม (Sharp)</option><option value="roundedlg">⬭ มนใหญ่ (Rounded)</option><option value="floating">☁ ลอยไร้ขอบ (Floating)</option><option value="glow">💡 ขอบเรืองแสง (Glow)</option><option value="rainbow">🌈 ขอบรุ้งหมุน (Rainbow)</option><option value="double">🔲 ขอบคู่ (Double)</option><option value="emboss">🔘 นูน (Emboss)</option><option value="ticket">🎫 ตั๋ว (Ticket)</option><option value="hologram">🔮 โฮโลแกรม (Hologram)</option><option value="carbon">🏎️ คาร์บอน (Carbon)</option></select></div>
+                </div>
+                <div class="ak-field"><label class="ak-label" for="askCountdownSelect">การแสดงเวลานับถอยหลัง</label>
+                  <select class="voice-select-box" id="askCountdownSelect" style="margin:0;width:100%;" onchange="onAskConfigChange()"><option value="text">ตัวเลขเวลา</option><option value="bar">หลอดเวลา</option><option value="both">ทั้งตัวเลขและหลอด</option></select></div>
+              </section>
+              <section class="ak-step">
+                <h3><span class="ak-num">ขั้นที่ 4</span>แอนิเมชั่นเข้าและออก</h3>
+                <p class="ak-help">เลือกว่าโพลจะปรากฏและหายไปอย่างไรตอนเริ่มและจบโหวต "อัตโนมัติ" จะเลื่อนเข้าจากขอบที่โพลวางอยู่</p>
+                <div class="ak-two">
+                  <div class="ak-field"><label class="ak-label" for="askAnimInSelect">ตอนเข้า</label>
+                    <select class="voice-select-box" id="askAnimInSelect" style="margin:0;width:100%;" onchange="onAskConfigChange()"><option value="auto">อัตโนมัติ (เลื่อนเข้าจากขอบ)</option><option value="fade">ค่อย ๆ ปรากฏ</option><option value="left">เลื่อนเข้าจากซ้าย</option><option value="right">เลื่อนเข้าจากขวา</option><option value="down">เลื่อนลงจากบน</option><option value="up">เลื่อนขึ้นจากล่าง</option><option value="zoom">ขยายเข้า</option><option value="bounce">เด้งดึ๋ง</option><option value="none">ไม่มีแอนิเมชั่น</option></select></div>
+                  <div class="ak-field"><label class="ak-label" for="askAnimOutSelect">ตอนออก</label>
+                    <select class="voice-select-box" id="askAnimOutSelect" style="margin:0;width:100%;" onchange="onAskConfigChange()"><option value="auto">อัตโนมัติ (เลื่อนออกทางขอบ)</option><option value="fade">ค่อย ๆ จางหาย</option><option value="left">เลื่อนออกทางซ้าย</option><option value="right">เลื่อนออกทางขวา</option><option value="down">เลื่อนออกทางบน</option><option value="up">เลื่อนออกทางล่าง</option><option value="zoom">ย่อหาย</option><option value="bounce">เด้งแล้วหาย</option><option value="none">ไม่มีแอนิเมชั่น</option></select></div>
+                </div>
+                <div class="ak-slider" id="akRowAnimMs"><label for="askAnimMsRange">ความเร็ว (ยิ่งมากยิ่งช้า)</label><input type="range" id="askAnimMsRange" min="100" max="2000" step="50" value="600" oninput="askT2FromRange('askAnimMsRange')"><span class="ak-unit"><input type="number" id="askAnimMsRangeNum" min="100" max="2000" step="50" value="600" aria-label="ความเร็ว (ยิ่งมากยิ่งช้า)" oninput="askT2FromNum('askAnimMsRange')" onchange="askT2FromNum('askAnimMsRange',true)">มิลลิวินาที</span></div>
 
+                <div class="ak-row"><button type="button" class="btn-topbar-action" onclick="askT2ReplayAnim()">▶ เล่นแอนิเมชั่นเข้า-ออกบนจอ OBS</button></div>
+              </section>
+            </div>
 
-
-
-
-            </select>
-
-
-
-
-
-
-
+            <aside class="ak-preview">
+              <h3>ตำแหน่งบนจอสตรีม</h3>
+              <p class="ak-help" id="akLocHint">ลากกรอบเพื่อย้ายตำแหน่ง ลากมุมเพื่อย่อ/ขยาย เส้นแดงช่วยเล็งกึ่งกลางจอ ค้าง Ctrl = ลากอิสระไม่ดูด คลิกกรอบแล้วกดลูกศร = ขยับทีละ 1 พิกเซล (Shift = 10) ขนาดกรอบเป็นค่าประมาณ</p>
+              <div class="ak-locator" id="akLocator"><div class="ak-loc-rect" id="akLocRect" tabindex="0" role="slider" aria-label="ตำแหน่งโพลบนจอ ลากหรือกดลูกศรเพื่อย้าย ค้าง Ctrl เพื่อลากอิสระ"><span class="ak-loc-t"></span><span class="ak-loc-b"></span><span class="ak-loc-b s"></span><span class="ak-loc-b s2"></span><span class="ak-loc-handle" id="akLocHandle"></span></div><span class="ak-guide v"></span><span class="ak-guide h"></span><span class="ak-loc-label">จอ 1920 x 1080</span></div>
+              <p class="ak-help" id="akLocText" style="margin:6px 0 10px;"></p>
+              <button type="button" class="btn-topbar-action" id="btnAskDemo" aria-pressed="false" onclick="askT2ToggleDemo()">แสดงตัวอย่างจริงบนจอ OBS</button>
+              <p class="ak-help" id="akDemoStatus" role="status" aria-live="polite" style="margin-top:8px;">ปิดอยู่ เปิดแล้วจะเห็นโพลตัวอย่างบนจอ OBS และปรับได้ทันที</p>
+            </aside>
           </div>
-
-
-
-
-
-
-
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom:12px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">สไตล์แท่งคะแนน</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="askBarStyleSelect" style="margin:0;" onchange="onAskConfigChange()">
-
-
-
-
-
-
-
-              <option value="classic">▬ แถบมน (Classic)</option>
-
-
-
-
-
-
-
-              <option value="slant">📐 ลายเฉียงวิ่ง (Slant)</option>
-
-
-
-
-
-
-
-              <option value="glow">✨ เรืองแสง (Glow)</option>
-
-
-
-
-
-
-
-              <option value="thick">🧱 บล็อกหนา (Thick Block)</option>
-
-
-
-
-
-
-
-              <option value="dots">●●● จุดกลม (Dots)</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">กรอบหน้าต่าง</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="askFrameStyleSelect" style="margin:0;" onchange="onAskConfigChange()">
-
-
-
-
-
-
-
-              <option value="classic">📦 มนมีขอบ (Classic)</option>
-
-
-
-
-
-
-
-              <option value="glow">💡 ขอบเรืองแสง (Glow)</option>
-
-
-
-
-
-
-
-              <option value="rainbow">🌈 เรืองรุ้ง (Rainbow)</option>
-
-
-
-
-
-
-
-              <option value="carbon">🏎️ ลายคาร์บอน (Carbon)</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom:12px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ขนาดความสูงของแท่งคะแนน</label>
-
-
-
-
-
-
-
-            <input type="range" class="topbar-slider" id="askBarHRange" style="width: 100%; height: 6px;" min="24" max="60" value="34" oninput="document.getElementById('lblAskBarH').textContent = this.value + 'px'; onAskConfigChange();">
-
-
-
-
-
-
-
-            <span style="font-size: 11.5px; color: #a855f7;" id="lblAskBarH">34px</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ขนาดย่อขยายรวม</label>
-
-
-
-
-
-
-
-            <input type="range" class="topbar-slider" id="askScaleRange" style="width: 100%; height: 6px;" min="60" max="160" value="100" oninput="document.getElementById('lblAskScale').textContent = this.value + '%'; onAskConfigChange();">
-
-
-
-
-
-
-
-            <span style="font-size: 11.5px; color: #38bdf8;" id="lblAskScale">100%</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-grid-2">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">แอนิเมชั่นเข้า</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="askAnimSelect" style="margin:0;" onchange="onAskConfigChange()">
-
-
-
-
-
-
-
-              <option value="slide">เลื่อนเข้าจากด้านข้าง</option>
-
-
-
-
-
-
-
-              <option value="bounce">เด้งขยายตัว</option>
-
-
-
-
-
-
-
-              <option value="fade">ค่อยๆ ปรากฏ</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <div class="floating-footer" id="askFooter">
 
 
@@ -7041,1121 +6504,213 @@ window.addEventListener('keydown', (e) => {
 
 
 
-  <div class="floating-window" id="win-replie" style="width: 820px; top: 90px; left: 380px;">
-
-
-
-
-
-
-
-    <div class="floating-header" id="drag-replie">
-
-
-
-
-
-
-
-      <div class="floating-title-box">
-
-
-
-
-
-
-
-        <span style="font-size: 18px;">🖼️</span>
-
-
-
-
-
-
-
-        <div>
-
-
-
-
-
-
-
-          <div style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">ระบบตอบกลับภาพบนจอ</div>
-
-
-
-
-
-
-
-          
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
+<style id="ask-ui-style">
+#win-ask{--ak-text:var(--dc-text-primary,#f2f3f5);--ak-muted:var(--dc-text-muted,#949ba4);--ak-line:var(--dc-border-hover,rgba(255,255,255,.16));--ak-accent:var(--app-accent,var(--dc-blurple,#5865f2));--ak-card:var(--dc-bg-card,#232428);--ak-surface:var(--dc-bg-input,#1e1f22);--ak-red:var(--dc-red,#f23f43);}
+#win-ask .ak-wrap{container:akbody/inline-size;width:100%;}
+#win-ask .ak-intro{margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--ak-muted);}
+#win-ask .ak-intro b{color:var(--ak-text);}
+#win-ask .ak-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,340px);gap:18px;align-items:start;}
+@container akbody (max-width:720px){#win-ask .ak-layout{grid-template-columns:minmax(0,1fr);}}
+#win-ask .ak-steps{display:flex;flex-direction:column;gap:14px;min-width:0;}
+#win-ask .ak-step,#win-ask .ak-preview{background:var(--ak-card);border:1px solid var(--ak-line);border-radius:var(--radius-md,10px);padding:16px 18px 18px;min-width:0;}
+#win-ask .ak-preview{position:sticky;top:0;}
+#win-ask .ak-step h3,#win-ask .ak-preview h3{margin:0 0 4px;font-size:15px;font-weight:700;color:var(--ak-text);display:flex;flex-direction:column;align-items:flex-start;gap:2px;line-height:1.4;}
+#win-ask .ak-num{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ak-accent);}
+#win-ask .ak-help{margin:0 0 12px;font-size:13px;line-height:1.55;color:var(--ak-muted);}
+#win-ask .ak-field{display:flex;flex-direction:column;gap:6px;margin:0 0 12px;min-width:0;}
+#win-ask .ak-label{font-size:13px;font-weight:700;color:var(--ak-text);}
+#win-ask .ak-two{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+#win-ask .ak-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:0 0 14px;}
+#win-ask .ak-opt{position:relative;display:block;cursor:pointer;margin:0;}
+#win-ask .ak-opt input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1;}
+#win-ask .ak-face{display:flex;flex-direction:column;gap:2px;height:100%;padding:10px 12px;border:1px solid var(--ak-line);border-radius:10px;background:var(--ak-surface);}
+#win-ask .ak-face b{font-size:14px;color:var(--ak-text);}
+#win-ask .ak-face small{font-size:12px;line-height:1.4;color:var(--ak-muted);}
+#win-ask .ak-ic{font-size:20px;line-height:1.1;color:var(--ak-accent);letter-spacing:-2px;}
+#win-ask .ak-opt:hover .ak-face{border-color:var(--ak-accent);}
+#win-ask .ak-opt input:checked+.ak-face{border-color:var(--ak-accent);background:color-mix(in srgb,var(--ak-accent) 16%,transparent);box-shadow:inset 0 0 0 1px var(--ak-accent);}
+#win-ask .ak-opt input:focus-visible+.ak-face{outline:2px solid var(--ak-accent);outline-offset:2px;}
+#win-ask .ak-slider{display:grid;grid-template-columns:minmax(120px,38%) minmax(0,1fr) auto;gap:10px;align-items:center;margin:0 0 10px;}
+#win-ask .ak-slider[hidden],#win-ask .ak-field[hidden]{display:none;}
+#win-ask .ak-slider label{font-size:13px;font-weight:600;color:var(--ak-text);line-height:1.35;}
+#win-ask .ak-slider input[type=range]{width:100%;min-height:28px;margin:0;accent-color:var(--ak-accent);cursor:pointer;}
+#win-ask .ak-unit{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;color:var(--ak-muted);}
+#win-ask .ak-unit input{width:68px;min-height:32px;padding:4px 6px;border:1px solid var(--ak-line);border-radius:8px;background:var(--ak-surface);color:var(--ak-text);text-align:right;font-family:inherit;font-size:13px;}
+@container akbody (max-width:520px){#win-ask .ak-slider{grid-template-columns:minmax(0,1fr) auto;}#win-ask .ak-slider label{grid-column:1/-1;}}
+#win-ask .ak-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
+#win-ask .ak-locator{position:relative;width:100%;aspect-ratio:16/9;background:var(--dc-bg-rail,#1e1f22);border:1px solid var(--ak-line);border-radius:6px;overflow:hidden;touch-action:none;user-select:none;}
+#win-ask .ak-loc-rect{position:absolute;border:2px solid var(--ak-accent);background:color-mix(in srgb,var(--ak-accent) 26%,transparent);box-sizing:border-box;cursor:grab;touch-action:none;border-radius:4px;padding:6%;display:flex;flex-direction:column;gap:7%;overflow:hidden;}
+#win-ask .ak-loc-rect.dragging{cursor:grabbing;}
+#win-ask .ak-loc-t{display:block;height:14%;min-height:2px;border-radius:2px;background:color-mix(in srgb,var(--ak-accent) 70%,#fff);width:70%;}
+#win-ask .ak-loc-b{display:block;height:9%;min-height:2px;border-radius:2px;background:color-mix(in srgb,var(--ak-accent) 45%,transparent);width:90%;}
+#win-ask .ak-loc-b.s{width:60%;}#win-ask .ak-loc-b.s2{width:35%;}
+#win-ask .ak-loc-handle{position:absolute;width:13px;height:13px;background:var(--ak-accent);border-radius:3px;touch-action:none;}
+#win-ask .ak-loc-handle.br{right:-1px;bottom:-1px;cursor:nwse-resize;}
+#win-ask .ak-loc-handle.bl{left:-1px;bottom:-1px;cursor:nesw-resize;}
+#win-ask .ak-loc-handle.tr{right:-1px;top:-1px;cursor:nesw-resize;}
+#win-ask .ak-guide{position:absolute;background:var(--ak-red);opacity:.85;pointer-events:none;display:none;}
+#win-ask .ak-guide.v{top:0;bottom:0;width:1px;left:50%;}
+#win-ask .ak-guide.h{left:0;right:0;height:1px;top:50%;}
+#win-ask .ak-loc-label{position:absolute;right:6px;bottom:4px;font-size:11px;color:var(--ak-muted);pointer-events:none;}
+</style>
+<style id="replie-ui-style">
+#win-replie,.rp-dlg{--rp-text:var(--dc-text-primary,#f2f3f5);--rp-muted:var(--dc-text-muted,#949ba4);--rp-line:var(--dc-border-hover,rgba(255,255,255,.16));--rp-accent:var(--app-accent,var(--dc-blurple,#5865f2));--rp-accent-ink:#fff;--rp-focus:var(--app-accent,var(--dc-blurple,#5865f2));--rp-surface:var(--dc-bg-input,#1e1f22);--rp-card:var(--dc-bg-card,#232428);--rp-ok:var(--dc-green,#23a55a);--rp-bad:var(--dc-red,#f23f43);--rp-warn:var(--dc-amber,#f0b232);}
+#win-replie .rp-wrap{container:rpbody/inline-size;width:100%;}
+#win-replie .rp-intro{margin:0 0 14px;font-size:14px;line-height:1.6;color:var(--rp-muted);}
+#win-replie .rp-intro b{color:var(--rp-text);}
+#win-replie .rp-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,360px);gap:20px;align-items:start;}
+@container rpbody (max-width:760px){#win-replie .rp-layout{grid-template-columns:minmax(0,1fr);}}
+#win-replie .rp-panel{background:var(--rp-card);border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:var(--radius-md,10px);padding:16px 18px 18px;min-width:0;margin:0 0 16px;}
+#win-replie .rp-panel:last-child{margin-bottom:0;}
+#win-replie h3{margin:0 0 4px;font-size:16px;font-weight:700;color:var(--rp-text);line-height:1.4;}
+#win-replie .rp-help{margin:0 0 12px;font-size:13px;line-height:1.55;color:var(--rp-muted);}
+#win-replie .rp-listhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+#win-replie .rp-listhead h3{margin:0;}
+#win-replie details.rp-panel>summary{cursor:pointer;min-height:36px;padding:2px 0;}
+#win-replie details.rp-panel[open]>summary{margin-bottom:8px;}
+#win-replie .rp-btn{min-height:36px;padding:6px 14px;font-size:13.5px;font-weight:600;line-height:1.4;border:1px solid var(--rp-line);color:var(--rp-text);background:rgba(255,255,255,.06);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;}
+#win-replie .rp-btn:hover{background:rgba(255,255,255,.12);}
+#win-replie .rp-btn.primary{background:var(--rp-accent);color:var(--rp-accent-ink);border-color:var(--rp-accent);font-weight:700;}
+#win-replie .rp-btn.primary:hover{background:#7dd3fc;}
+#win-replie .rp-btn.danger{border-color:#f87171;color:#fecaca;}
+#win-replie .rp-btn.danger.solid{background:#b91c1c;color:#fff;border-color:#fca5a5;}
+#win-replie .rp-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+#win-replie .rp-item{background:var(--rp-surface);border:2px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:var(--radius-md,10px);padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0;}
+#win-replie .rp-item.off{opacity:.88;border-style:dashed;}
+#win-replie .rp-item-top{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;}
+#win-replie .rp-thumb{flex:none;width:72px;height:72px;border-radius:10px;object-fit:contain;background:#111214;border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));}
+#win-replie .rp-thumb.none{display:flex;align-items:center;justify-content:center;font-size:30px;}
+#win-replie .rp-info{flex:1 1 220px;min-width:0;}
+#win-replie .rp-cmdrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+#win-replie .rp-cmd{margin:0;font-size:20px;font-weight:700;color:#7dd3fc;overflow-wrap:anywhere;}
+#win-replie .rp-badge{display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;border:1px solid var(--rp-line);color:var(--rp-text);background:var(--dc-bg-card-hover,#2b2d31);}
+#win-replie .rp-badge.state-off{border-color:#f87171;color:#fecaca;}
+#win-replie .rp-badge.mine{border-color:#86efac;color:#bbf7d0;}
+#win-replie .rp-text{margin:0 0 6px;font-size:14px;line-height:1.5;color:var(--rp-text);overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+#win-replie .rp-text.empty{color:var(--rp-muted);}
+#win-replie .rp-meta{display:flex;flex-wrap:wrap;gap:6px 16px;margin:0;font-size:13px;color:var(--rp-muted);}
+#win-replie .rp-meta div{display:flex;gap:5px;}
+#win-replie .rp-meta dt{margin:0;}
+#win-replie .rp-meta dd{margin:0;color:var(--rp-text);font-weight:600;}
+#win-replie .rp-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+#win-replie .rp-switch{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:4px 12px 4px 6px;border-radius:999px;border:1px solid var(--rp-line);background:var(--dc-bg-card-hover,#2b2d31);color:var(--rp-text);font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;}
+#win-replie .rp-switch .track{width:34px;height:20px;border-radius:999px;background:#6b7280;position:relative;flex:none;}
+#win-replie .rp-switch .track::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s;}
+#win-replie .rp-switch[aria-checked="true"]{border-color:#86efac;background:#14532d;color:#ecfdf5;}
+#win-replie .rp-switch[aria-checked="true"] .track{background:#22c55e;}
+#win-replie .rp-switch[aria-checked="true"] .track::after{transform:translateX(14px);}
+@media (prefers-reduced-motion:reduce){#win-replie .rp-switch .track::after{transition:none;}}
+#win-replie .rp-confirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 12px;border:2px solid #f87171;border-radius:10px;background:#3b1d1d;color:#fee2e2;font-size:13.5px;font-weight:600;}
+#win-replie .rp-empty{border:2px dashed var(--rp-line);border-radius:var(--radius-md,10px);padding:28px 18px;text-align:center;color:var(--rp-muted);font-size:14px;line-height:1.7;}
+#win-replie .rp-empty b{display:block;color:var(--rp-text);font-size:16px;margin-bottom:4px;}
+#win-replie fieldset{border:0;margin:0 0 14px;padding:0;min-width:0;}
+#win-replie legend,#win-replie .rp-label{font-size:14px;font-weight:700;color:var(--rp-text);padding:0;margin-bottom:6px;display:block;}
+#win-replie .rp-pos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:330px;}
+#win-replie .rp-opt{position:relative;display:block;margin:0;cursor:pointer;}
+#win-replie .rp-opt input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1;}
+#win-replie .rp-face{gap:4px;display:flex;align-items:center;justify-content:center;text-align:center;box-sizing:border-box;min-height:42px;padding:6px 4px;border:1px solid var(--rp-line);border-radius:10px;background:var(--rp-surface);color:var(--rp-text);font-size:13px;font-weight:700;}
+#win-replie .rp-opt:hover .rp-face{background:var(--dc-bg-card-hover,#2b2d31);}
+#win-replie .rp-opt input:checked+.rp-face{border-color:var(--rp-accent);background:color-mix(in srgb,var(--app-accent,var(--dc-blurple,#5865f2)) 16%,transparent);box-shadow:inset 0 0 0 1px var(--rp-accent);}
+#win-replie .rp-opt input:checked+.rp-face::before{content:"✓ ";font-weight:900;}
+#win-replie .rp-opt input:focus-visible+.rp-face,#win-replie :is(button,select,input[type=number],input[type=range],input[type=checkbox]):focus-visible,#win-replie .rp-item:focus-within{outline:3px solid var(--rp-focus);outline-offset:2px;}
+#win-replie .rp-opt input:focus-visible+.rp-face{outline:3px solid var(--rp-focus);outline-offset:2px;}
+#win-replie .rp-locator{position:relative;width:100%;aspect-ratio:16/9;background:var(--dc-bg-rail,#1e1f22);border:1px solid var(--rp-line);border-radius:6px;overflow:hidden;touch-action:none;user-select:none;background-image:linear-gradient(var(--rp-line) 1px,transparent 1px),linear-gradient(90deg,var(--rp-line) 1px,transparent 1px);background-size:25% 25%;}
+#win-replie .rp-loc-rect{position:absolute;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:2px solid #38bdf8;background:rgba(4,9,24,.96);color:#f8fafc;border-radius:4px;cursor:grab;touch-action:none;overflow:hidden;font-size:11px;font-weight:700;white-space:nowrap;}
+#win-replie .rp-loc-rect.dragging{cursor:grabbing;}
+#win-replie .rp-loc-t{pointer-events:none;overflow:hidden;text-overflow:ellipsis;padding:0 4px;}
+#win-replie .rp-loc-handle{position:absolute;right:-1px;bottom:-1px;width:13px;height:13px;background:var(--rp-accent);border-radius:3px;cursor:nwse-resize;touch-action:none;}
+#win-replie .rp-guide{position:absolute;background:#ef4444;opacity:0;pointer-events:none;}
+#win-replie .rp-guide.v{top:0;bottom:0;left:50%;width:1px;}#win-replie .rp-guide.h{left:0;right:0;top:50%;height:1px;}
+#win-replie .rp-guide.on{opacity:.9;}
+#win-replie .rp-loc-label{position:absolute;right:6px;bottom:4px;font-size:11px;color:var(--rp-muted);pointer-events:none;}
+#win-replie .rp-themes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}
+#win-replie .rp-theme{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:5px;border:1px solid var(--rp-line);border-radius:8px;background:var(--rp-surface,transparent);color:var(--rp-text);font:inherit;font-size:11.5px;cursor:pointer;}
+#win-replie .rp-theme .sw{height:20px;border-radius:5px;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;}
+#win-replie .rp-theme[aria-checked="true"]{border-color:var(--rp-accent);box-shadow:inset 0 0 0 1px var(--rp-accent);background:color-mix(in srgb,var(--app-accent,var(--dc-blurple,#5865f2)) 16%,transparent);}
+#win-replie .rp-theme:hover{border-color:var(--rp-accent);}
+#win-replie .rp-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;}
+#win-replie .rp-row label{font-size:14px;font-weight:700;color:var(--rp-text);}
+#win-replie input[type=number]{width:84px;min-height:36px;text-align:right;border:1px solid var(--rp-line) !important;font-size:14.5px;}
+#win-replie input[type=range]{flex:1 1 140px;min-width:120px;min-height:28px;}
+#win-replie .rp-out{font-weight:700;color:#7dd3fc;min-width:48px;}
+#win-replie .rp-tick{display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.5;cursor:pointer;color:var(--rp-text);margin:0 0 12px;}
+#win-replie .rp-tick input{width:22px;height:22px;margin:1px 0 0;flex:none;accent-color:#38bdf8;}
+#win-replie .rp-tick small{display:block;font-size:13px;color:var(--rp-muted);font-weight:400;}
+#win-replie .rp-note{margin:0;font-size:13px;line-height:1.6;color:var(--rp-muted);}
+#win-replie .rp-note b{color:var(--rp-text);}
+#win-replie .rp-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+#win-replie .rp-foot-status{font-size:13px;color:var(--rp-muted);}
+#win-replie .btn-win-action{width:32px;height:32px;color:#d1d5db;}
+@media (forced-colors:active){#win-replie .rp-item,#win-replie .rp-panel{border:2px solid CanvasText;}}
+</style>
+<div class="floating-window" id="win-replie" role="dialog" aria-labelledby="rpWinTitle" style="width: min(1020px, calc(100vw - 24px)); max-width: calc(100vw - 24px); top: 12px; left: max(12px, calc((100vw - 1020px) / 2));">
+  <div class="floating-header" id="drag-replie">
+    <div class="floating-title-box">
+      <span style="font-size: 18px;" aria-hidden="true">🖼️</span>
+      <div>
+        <div id="rpWinTitle" style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">ตอบกลับด้วยภาพและข้อความ (Replie)</div>
       </div>
-
-
-
-
-
-
-
-      <div class="floating-actions-right">
-
-
-
-
-
-
-
-        <button class="btn-win-action" title="ย่อหน้าต่าง" onclick="minimizeWindow('replie')">—</button>
-
-
-
-
-
-
-
-        <button class="btn-win-action close-red" title="ปิดหน้าต่าง" onclick="closeToolWindow('replie')">✕</button>
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div style="padding: 10px 18px 0 18px; background-color: #232428;">
-
-
-
-
-
-
-
-      <div class="win-tabs">
-
-
-
-
-
-
-
-        <button class="win-tab-btn active" id="btnReplieTab1" onclick="switchReplieTab(1)">📋 ตารางคำสั่ง</button>
-
-
-
-
-
-
-
-        <button class="win-tab-btn" id="btnReplieTab2" onclick="switchReplieTab(2)">🎨 ตำแหน่ง & การแสดงผล</button>
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
+    <div class="floating-actions-right">
+      <button type="button" class="btn-win-action" title="ย่อหน้าต่าง" aria-label="ย่อหน้าต่าง" onclick="minimizeWindow('replie')">—</button>
+      <button type="button" class="btn-win-action close-red" title="ปิดหน้าต่าง" aria-label="ปิดหน้าต่าง" onclick="closeToolWindow('replie')">✕</button>
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="floating-body">
-
-
-
-
-
-
-
-      <!-- TAB 1: ตารางคำสั่ง -->
-
-
-
-
-
-
-
-      <div id="paneReplieTab1">
-
-
-
-
-
-
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px; background-color: #1e1f22; padding: 10px 14px; border-radius: 6px;">
-
-
-
-
-
-
-
-          <div style="display:flex; align-items:center; gap:10px;">
-
-
-
-
-
-
-
-            <span style="font-size:12.5px; font-weight:600;">โหมดวนลูปพักจอ</span>
-
-
-
-
-
-
-
-            <input type="checkbox" style="accent-color: var(--dc-green); transform: scale(1.1);" onchange="showToast(this.checked ? '🔄 เปิดโหมดวนลูปภาพพักหน้าจอ' : '⏹ ปิดโหมดวนลูป')">
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <button class="btn-topbar-action primary" onclick="showToast('➕ เปิดหน้าต่างสร้างคำสั่ง Replie ใหม่')">
-
-
-
-
-
-
-
-            ➕ สร้างคำสั่งใหม่
-
-
-
-
-
-
-
-          </button>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <table class="tool-table">
-
-
-
-
-
-
-
-          <thead>
-
-
-
-
-
-
-
-            <tr>
-
-
-
-
-
-
-
-              <th>คำสั่งแชท</th>
-
-
-
-
-
-
-
-              <th>ภาพตัวอย่าง</th>
-
-
-
-
-
-
-
-              <th>รูปแบบ</th>
-
-
-
-
-
-
-
-              <th>คูลดาวน์</th>
-
-
-
-
-
-
-
-              <th>ตำแหน่ง</th>
-
-
-
-
-
-
-
-              <th>จัดการ</th>
-
-
-
-
-
-
-
-            </tr>
-
-
-
-
-
-
-
-          </thead>
-
-
-
-
-
-
-
-          <tbody>
-
-
-
-
-
-
-
-            <tr>
-
-
-
-
-
-
-
-              <td><strong style="color: #60a5fa;">!hi</strong></td>
-
-
-
-
-
-
-
-              <td><span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">wave.gif</span></td>
-
-
-
-
-
-
-
-              <td>เด้งป๊อปอัป</td>
-
-
-
-
-
-
-
-              <td>5s</td>
-
-
-
-
-
-
-
-              <td>ล่างขวา</td>
-
-
-
-
-
-
-
-              <td>
-
-
-
-
-
-
-
-                <button class="btn-topbar-action" style="height:22px; padding:0 6px; font-size:11px;" onclick="demoReplieAction('!hi', 'สวัสดีครับทุกคน! ยินดีต้อนรับสู่สตรีมครับ', 'happy')">▶ DEMO</button>
-
-
-
-
-
-
-
-                <button class="btn-topbar-action" style="height:22px; padding:0 6px; font-size:11px;" onclick="showToast('✏️ แก้ไขคำสั่ง !hi')">✏️ แก้ไข</button>
-
-
-
-
-
-
-
-                <button class="btn-win-action close-red" style="height:20px; display:inline-flex;" onclick="this.closest('tr').remove()">✕</button>
-
-
-
-
-
-
-
-              </td>
-
-
-
-
-
-
-
-            </tr>
-
-
-
-
-
-
-
-            <tr>
-
-
-
-
-
-
-
-              <td><strong style="color: #60a5fa;">!gg</strong></td>
-
-
-
-
-
-
-
-              <td><span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">trophy.gif</span></td>
-
-
-
-
-
-
-
-              <td>เด้งป๊อปอัป</td>
-
-
-
-
-
-
-
-              <td>10s</td>
-
-
-
-
-
-
-
-              <td>กลางจอ</td>
-
-
-
-
-
-
-
-              <td>
-
-
-
-
-
-
-
-                <button class="btn-topbar-action" style="height:22px; padding:0 6px; font-size:11px;" onclick="demoReplieAction('!gg', 'GG WP ครับทุกคน! เก่งมากๆ เลย', 'cheer')">▶ DEMO</button>
-
-
-
-
-
-
-
-                <button class="btn-topbar-action" style="height:22px; padding:0 6px; font-size:11px;" onclick="showToast('✏️ แก้ไขคำสั่ง !gg')">✏️ แก้ไข</button>
-
-
-
-
-
-
-
-                <button class="btn-win-action close-red" style="height:20px; display:inline-flex;" onclick="this.closest('tr').remove()">✕</button>
-
-
-
-
-
-
-
-              </td>
-
-
-
-
-
-
-
-            </tr>
-
-
-
-
-
-
-
-            <tr>
-
-
-
-
-
-
-
-              <td><strong style="color: #60a5fa;">!bye</strong></td>
-
-
-
-
-
-
-
-              <td><span style="background:rgba(255,255,255,0.06); padding:2px 6px; border-radius:4px;">sleep.png</span></td>
-
-
-
-
-
-
-
-              <td>เด้งป๊อปอัป</td>
-
-
-
-
-
-
-
-              <td>5s</td>
-
-
-
-
-
-
-
-              <td>ล่างซ้าย</td>
-
-
-
-
-
-
-
-              <td>
-
-
-
-
-
-
-
-                <button class="btn-topbar-action" style="height:22px; padding:0 6px; font-size:11px;" onclick="demoReplieAction('!bye', 'ขอบคุณที่รับชมนะครับ ไว้เจอกันใหม่ครับ บ๊ายบาย', 'sleepy')">▶ DEMO</button>
-
-
-
-
-
-
-
-                <button class="btn-topbar-action" style="height:22px; padding:0 6px; font-size:11px;" onclick="showToast('✏️ แก้ไขคำสั่ง !bye')">✏️ แก้ไข</button>
-
-
-
-
-
-
-
-                <button class="btn-win-action close-red" style="height:20px; display:inline-flex;" onclick="this.closest('tr').remove()">✕</button>
-
-
-
-
-
-
-
-              </td>
-
-
-
-
-
-
-
-            </tr>
-
-
-
-
-
-
-
-          </tbody>
-
-
-
-
-
-
-
-        </table>
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <!-- TAB 2: ตำแหน่ง & การแสดงผล -->
-
-
-
-
-
-
-
-      <div id="paneReplieTab2" style="display: none;">
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom:14px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">เลือกตำแหน่งหลักบนหน้าจอ 9 ทิศทาง</label>
-
-
-
-
-
-
-
-            <div class="pos-grid-9" style="margin-top:6px;">
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">บนซ้าย</button>
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">บนกลาง</button>
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">บนขวา</button>
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">ซ้าย</button>
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">กลาง</button>
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">ขวา</button>
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">ล่างซ้าย</button>
-
-
-
-
-
-
-
-              <button class="pos-btn" onclick="selectPosBtn(this)">ล่างกลาง</button>
-
-
-
-
-
-
-
-              <button class="pos-btn active" onclick="selectPosBtn(this)">ล่างขวา</button>
-
-
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">แอนิเมชันเปิดตัวภาพ</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" style="margin:0; margin-bottom:12px;">
-
-
-
-
-
-
-
-              <option>💥 เด้งขยายตัว</option>
-
-
-
-
-
-
-
-              <option>✨ ค่อยๆ จางชัด</option>
-
-
-
-
-
-
-
-              <option>⬆️ เลื่อนขึ้นจากขอบ</option>
-
-
-
-
-
-
-
-              <option>🏀 เด้งดึ๋งนุ่มนวล</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            <label class="modal-form-label">ขนาดภาพเริ่มต้น (Scale: 50% - 200%)</label>
-
-
-
-
-
-
-
-            <input type="range" class="topbar-slider" style="width: 100%; height: 6px;" min="50" max="200" value="100" oninput="document.getElementById('lblReplieScale').textContent = this.value + '%'">
-
-
-
-
-
-
-
-            <span style="font-size: 11.5px; color: #38bdf8;" id="lblReplieScale">100%</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-grid-2">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ระดับเสียง Sound FX ตอบกลับ</label>
-
-
-
-
-
-
-
-            <input type="range" class="topbar-slider" style="width: 100%; height: 6px;" min="0" max="100" value="85" oninput="document.getElementById('lblReplieVol').textContent = this.value + '%'">
-
-
-
-
-
-
-
-            <span style="font-size: 11.5px; color: #23a55a;" id="lblReplieVol">85%</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ระยะเวลาแสดงภาพบนจอ (วินาที)</label>
-
-
-
-
-
-
-
-            <input type="number" class="modal-input" value="4" min="1" max="30">
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div class="floating-footer">
-
-
-
-
-
-
-
-      <div style="font-size: 12px; color: var(--dc-text-dim);">
-
-
-
-
-
-
-
-        มีคำสั่งทั้งหมด 3 คำสั่งในระบบ
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
-      <div class="floating-footer-right">
-        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('replie')">ปิดหน้าต่าง</button>
-      </div>
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
   </div>
+  <div class="floating-body">
+    <div class="rp-wrap">
+      <p class="rp-intro">เมื่อผู้ชมพิมพ์ <b>คำสั่งในแชท</b> เช่น <b>!hi</b> ระบบจะแสดง <b>ข้อความหรือรูปภาพ</b> ที่คุณตั้งไว้บนจอ OBS ทันที สร้างคำสั่งทางซ้าย และดูหรือแก้ค่าเริ่มต้นทางขวา</p>
+      <div class="rp-layout">
+        <section class="rp-main" aria-labelledby="rpListTitle">
+          <div class="rp-listhead">
+            <h3 id="rpListTitle">คำสั่งของคุณ <span id="rpCount" style="font-weight:600;color:var(--rp-muted);font-size:14px;"></span></h3>
+            <button type="button" class="rp-btn primary" id="btnRpNew" onclick="editReplieCommand()">+ สร้างคำสั่งใหม่</button>
+          </div>
+          <div id="rpEmpty" class="rp-empty" hidden><b>ยังไม่มีคำสั่ง</b>กด "สร้างคำสั่งใหม่" เพื่อตั้งคำสั่งแรก เช่น !hi ให้ขึ้นข้อความทักทายบนจอ</div>
+          <ul class="rp-list" id="rpList" aria-label="รายการคำสั่ง Replie"></ul>
+        </section>
+        <aside class="rp-side" aria-label="การตั้งค่าเริ่มต้น">
+          <details class="rp-panel" id="rpDefaults" open>
+            <summary><h3 id="rpDefTitle" style="display:inline">ค่าเริ่มต้นสำหรับคำสั่งแบบง่าย</h3> <span id="rpDefCount" class="rp-note"></span></summary>
+            <p class="rp-help">ใช้กับคำสั่งที่ป้ายเขียนว่า "ใช้ค่าเริ่มต้น" เท่านั้น ส่วนคำสั่งที่ป้ายเขียนว่า "ตั้งค่าเอง" จะใช้ตำแหน่งและเวลาที่ตั้งไว้ในหน้าแก้ไขของคำสั่งนั้น</p>
+            <fieldset>
+              <legend>ตำแหน่งบนจอสตรีม <small class="rp-note">ลากกรอบเพื่อย้าย (ค้าง Ctrl = ไม่ดูด) ลากมุมเพื่อย่อ/ขยาย คลิกกรอบแล้วกดลูกศร = ทีละ 1 พิกเซล (Shift = 10)</small></legend>
+              <div class="rp-locator" id="rpLocator"><div class="rp-loc-rect" id="rpLocRect" tabindex="0" role="slider" aria-label="ตำแหน่งข้อความ Replie บนจอ ลากหรือใช้ปุ่มลูกศรเพื่อย้าย"><span class="rp-loc-t">ตัวอย่างข้อความ</span><span class="rp-loc-handle" id="rpLocHandle"></span></div><span class="rp-guide v"></span><span class="rp-guide h"></span><span class="rp-loc-label" id="rpLocLabel">จอ 1920 x 1080</span></div>
+              <div class="rp-row" style="margin:8px 0 0;"><button type="button" class="rp-btn" id="rpPosReset">จัดกลางล่าง</button><span class="rp-note" id="rpPosText"></span></div>
+            </fieldset>
+            <fieldset>
+              <legend>ธีมการ์ด</legend>
+              <div class="rp-themes" id="rpThemes" role="radiogroup" aria-label="ธีม Replie"></div>
+            </fieldset>
+            <div class="rp-row">
+              <label for="rpScale">ขนาด</label>
+              <input type="range" id="rpScale" min="50" max="200" step="5" value="100">
+              <output class="rp-out" id="rpScaleOut" for="rpScale">100%</output>
+            </div>
+            <div class="rp-row">
+              <label for="rpDuration">แสดงบนจอนาน</label>
+              <input type="number" id="rpDuration" min="1" max="60" value="4" inputmode="numeric">
+              <span>วินาที</span>
+            </div>
+            <label class="rp-tick"><input type="checkbox" id="rpLoop"><span><b>แสดงค้างไว้ไม่หายเอง</b><small>ภาพหรือข้อความจะอยู่บนจอจนกว่าจะปิดตัวเลือกนี้</small></span></label>
+            <div class="rp-row" style="margin:12px 0 0;"><button type="button" class="rp-btn primary" id="rpDemoBtn" aria-pressed="false">แสดงตัวอย่างจริงบนจอ OBS</button></div>
+            <p class="rp-note" id="rpDemoStatus" role="status" aria-live="polite" style="margin:6px 0 0;">ปิดอยู่ เปิดแล้วจะเห็นข้อความตัวอย่างบนจอ OBS ทันที และปรับตำแหน่ง ขนาด ธีมได้แบบสด</p>
+          </details>
+          <section class="rp-panel" aria-labelledby="rpHelpTitle">
+            <h3 id="rpHelpTitle">ป้ายบนการ์ดหมายถึงอะไร</h3>
+            <p class="rp-note"><b>ใช้ค่าเริ่มต้น</b> คือคำสั่งแบบง่าย ใช้ตำแหน่งและเวลาจากกล่องด้านบน<br><b>ตั้งค่าเอง</b> คือคำสั่งที่ตั้งตำแหน่ง เวลา และลูกเล่นละเอียดในหน้าแก้ไข<br><b>ปิดอยู่</b> คือผู้ชมพิมพ์แล้วจะไม่มีอะไรขึ้นจอ จนกว่าจะเปิดใช้อีกครั้ง</p>
+          </section>
+        </aside>
+      </div>
+      <div id="rpAnnounce" class="rp-sr" role="status" aria-live="polite"></div>
+    </div>
+  </div>
+  <div class="floating-footer">
+    <div class="rp-foot-status" id="rpSaveStatus">การตั้งค่าบันทึกให้อัตโนมัติ</div>
+    <div class="floating-footer-right">
+      <button type="button" class="btn-topbar-action" title="ปิดหน้าต่าง" onclick="closeToolWindow('replie')">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+</div>
 
 
 
@@ -8195,1142 +6750,242 @@ window.addEventListener('keydown', (e) => {
 
 
 
-  <div class="floating-window" id="win-randomizer" style="width: 760px; top: 105px; left: 420px;">
+<style id="randomizer-ui-style">
+#win-randomizer{--rz-text:var(--dc-text-primary,#f2f3f5);--rz-muted:var(--dc-text-muted,#949ba4);--rz-line:var(--dc-border-hover,rgba(255,255,255,.16));--rz-accent:var(--app-accent,var(--dc-blurple,#5865f2));--rz-focus:var(--app-accent,var(--dc-blurple,#5865f2));--rz-ink:#fff;--rz-surface:var(--dc-bg-input,#1e1f22);--rz-card:var(--dc-bg-card,#232428);--rz-ok:var(--dc-green,#23a55a);--rz-bad:var(--dc-red,#f23f43);}
+#win-randomizer .rz-wrap{container:rzbody/inline-size;width:100%;}
+#win-randomizer .rz-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,420px);gap:22px;align-items:start;}
+#win-randomizer .rz-steps{display:flex;flex-direction:column;gap:16px;min-width:0;}
+#win-randomizer .rz-step{background:var(--rz-card);border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:var(--radius-md,10px);padding:16px 18px 18px;margin:0;min-width:0;border-left:1px solid var(--dc-border,rgba(255,255,255,.08));}
+#win-randomizer .rz-step h3,#win-randomizer .rz-preview h3{margin:0 0 4px;font-size:16px;font-weight:700;color:var(--rz-text);display:flex;align-items:center;gap:10px;line-height:1.4;flex-direction:column;align-items:flex-start;gap:2px;}
+#win-randomizer .rz-num{display:block;font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--rz-accent);line-height:1.3;}
+#win-randomizer .rz-help{margin:0 0 12px;font-size:13px;line-height:1.55;color:var(--rz-muted);}
+#win-randomizer .rz-field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;min-width:0;}
+#win-randomizer .rz-field:last-child{margin-bottom:0;}
+#win-randomizer .rz-label,#win-randomizer legend.rz-label{font-size:14px;font-weight:700;color:var(--rz-text);padding:0;}
+#win-randomizer fieldset{border:0;margin:0 0 16px;padding:0;min-width:0;}
+#win-randomizer fieldset:last-child{margin-bottom:0;}
+#win-randomizer legend{margin-bottom:8px;}
+#win-randomizer .rz-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+#win-randomizer .rz-row>select{flex:1 1 200px;min-width:0;margin:0;}
+#win-randomizer .rz-btn,#win-randomizer .btn-topbar-action{min-height:36px;height:auto;padding:6px 14px;font-size:13.5px;font-weight:600;line-height:1.4;border:1px solid var(--rz-line);color:var(--rz-text);background:rgba(255,255,255,.06);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;}
+#win-randomizer .rz-btn:hover,#win-randomizer .btn-topbar-action:hover{background:rgba(255,255,255,.12);}
+#win-randomizer .btn-topbar-action.primary,#win-randomizer .rz-btn.primary{background:var(--rz-accent);color:var(--rz-ink);border-color:var(--rz-accent);font-weight:700;}
+#win-randomizer .btn-topbar-action.primary:hover,#win-randomizer .rz-btn.primary:hover{filter:brightness(1.12);}
+#win-randomizer .rz-btn[aria-pressed="true"]{background:#14532d;border-color:#86efac;color:#ecfdf5;}
+#win-randomizer [aria-disabled="true"]{opacity:.65;cursor:not-allowed;}
+#win-randomizer .btn-win-action{width:32px;height:32px;color:#d1d5db;}
+#win-randomizer textarea{width:100%;min-height:130px;padding:10px 12px;resize:vertical;font-size:15px;line-height:1.6;}
+#win-randomizer input[type=text],#win-randomizer input[type=number],#win-randomizer textarea,#win-randomizer select{border:1px solid var(--rz-line) !important;font-size:14.5px;}
+#win-randomizer input[type=text]{min-height:40px;width:100%;}
+#win-randomizer input[type=number]{width:84px;min-height:36px;text-align:right;}
+#win-randomizer .rz-count{font-size:13px;color:var(--rz-muted);}
+#win-randomizer .rz-error{font-size:13.5px;font-weight:700;color:var(--rz-bad);min-height:0;}
+#win-randomizer .rz-error:empty{display:none;}
+#win-randomizer .rz-options{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;}
+#win-randomizer #rzStyleList{grid-template-columns:repeat(2,minmax(0,1fr));}
+#win-randomizer #rzThemeList,#win-randomizer #rzSpeedList{grid-template-columns:repeat(auto-fit,minmax(112px,1fr));}
+#win-randomizer .rz-opt{position:relative;display:block;margin:0;cursor:pointer;}
+#win-randomizer .rz-opt input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1;}
+#win-randomizer .rz-face{display:flex;flex-direction:column;gap:4px;height:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid var(--rz-line);border-radius:10px;background:var(--rz-surface);color:var(--rz-text);position:relative;}
+#win-randomizer .rz-opt:hover .rz-face{background:var(--dc-bg-card-hover,#2b2d31);}
+#win-randomizer .rz-opt input:checked+.rz-face{border-color:var(--rz-accent);background:color-mix(in srgb,var(--app-accent,var(--dc-blurple,#5865f2)) 16%,transparent);box-shadow:inset 0 0 0 1px var(--rz-accent);}
+#win-randomizer .rz-opt input:focus-visible+.rz-face,#win-randomizer :is(button,select,textarea,input[type=text],input[type=number],input[type=range],input[type=checkbox]):focus-visible{outline:3px solid var(--rz-focus);outline-offset:2px;}
+#win-randomizer .rz-check{display:none;position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:var(--rz-accent);color:var(--rz-ink);font-size:14px;font-weight:900;align-items:center;justify-content:center;}
+#win-randomizer .rz-opt input:checked+.rz-face .rz-check{display:inline-flex;}
+#win-randomizer .rz-face-icon{font-size:26px;line-height:1.2;}
+#win-randomizer .rz-face-name{font-size:14.5px;font-weight:700;line-height:1.35;padding-right:24px;}
+#win-randomizer .rz-face-hint{font-size:12.5px;line-height:1.5;color:var(--rz-muted);}
+#win-randomizer .rz-face.compact{flex-direction:row;align-items:center;gap:8px;}
+#win-randomizer .rz-swatch{flex:none;width:44px;height:24px;border-radius:7px;border:2px solid #fff;}
+#win-randomizer .rz-tick{display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin:0 0 12px;min-height:36px;}
+#win-randomizer .rz-tick input{flex:none;width:22px;height:22px;margin:2px 0 0;accent-color:var(--app-accent,var(--dc-blurple,#5865f2));cursor:pointer;}
+#win-randomizer .rz-tick b{display:block;font-size:14px;color:var(--rz-text);}
+#win-randomizer .rz-tick span span{display:block;font-size:12.5px;line-height:1.5;color:var(--rz-muted);}
+#win-randomizer .rz-slider{display:grid;grid-template-columns:minmax(90px,130px) minmax(0,1fr) auto;gap:10px;align-items:center;margin-bottom:12px;}
+#win-randomizer .rz-slider>label{font-size:14px;font-weight:700;color:var(--rz-text);}
+#win-randomizer .rz-slider input[type=range]{width:100%;min-height:28px;margin:0;accent-color:var(--app-accent,var(--dc-blurple,#5865f2));cursor:pointer;}
+#win-randomizer .rz-unit{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--rz-muted);}
+#win-randomizer .rz-anchors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;max-width:360px;}
+#win-randomizer .rz-anchors .rz-face{align-items:center;justify-content:center;text-align:center;padding:6px 4px;font-size:13px;font-weight:700;min-height:40px;}
+#win-randomizer .rz-anchors .rz-check{top:3px;right:3px;width:16px;height:16px;font-size:11px;}
+#win-randomizer .rz-preview{position:sticky;top:0;background:var(--rz-card);border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:var(--radius-md,10px);padding:16px 18px 18px;min-width:0;}
+#win-randomizer .rz-stage{background:var(--dc-bg-rail,#1e1f22);border:1px solid var(--dc-border-hover,rgba(255,255,255,.16));border-radius:10px;padding:10px;display:flex;justify-content:center;align-items:flex-start;overflow:hidden;margin-bottom:10px;min-height:120px;}
+#win-randomizer .rz-fit{position:relative;flex:none;}
+#win-randomizer .rz-locator{position:relative;width:100%;aspect-ratio:16/9;background:var(--dc-bg-rail,#1e1f22);border:1px solid var(--rz-line);border-radius:6px;overflow:hidden;margin:6px 0 8px;}
+#win-randomizer .rz-locator-rect{position:absolute;border:2px solid var(--rz-accent);background:color-mix(in srgb,var(--app-accent,var(--dc-blurple,#5865f2)) 30%,transparent);box-sizing:border-box;}
+#win-randomizer .rz-locator-label{position:absolute;right:6px;bottom:4px;font-size:11px;color:var(--rz-muted);}
+#win-randomizer .rz-locator{cursor:default;touch-action:none;user-select:none;}
+#win-randomizer .rz-locator-rect{cursor:grab;touch-action:none;}
+#win-randomizer .rz-locator-rect.dragging{cursor:grabbing;}
+#win-randomizer .rz-loc-handle{position:absolute;right:-1px;bottom:-1px;width:14px;height:14px;background:var(--rz-accent);border-radius:3px 0 3px 0;cursor:nwse-resize;touch-action:none;}
+#win-randomizer .rz-loc-guide{position:absolute;background:var(--dc-red,#f23f43);opacity:.85;pointer-events:none;display:none;}
+#win-randomizer .rz-loc-guide.v{top:0;bottom:0;width:1px;left:50%;}
+#win-randomizer .rz-loc-guide.h{left:0;right:0;height:1px;top:50%;}
+#win-randomizer .rz-locator-label{pointer-events:none;}
+#win-randomizer .rz-warn{color:var(--rz-bad);font-weight:700;}
+#win-randomizer .rz-demo{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--dc-border-hover,rgba(255,255,255,.16));}
+#win-randomizer .rz-demo .rz-help{margin:0;}
+#win-randomizer .rz-result{margin-top:12px;padding:10px 14px;border-radius:10px;background:var(--rz-surface);border:2px solid var(--rz-accent);font-size:14px;color:var(--rz-text);line-height:1.5;overflow-wrap:anywhere;}
+#win-randomizer .rz-result b{display:block;font-size:18px;color:var(--rz-accent);}
+#win-randomizer .rz-foot-note{font-size:13px;color:var(--rz-muted);}
+#win-randomizer .floating-footer{min-height:60px;}
+@container rzbody (max-width:780px){
+  #win-randomizer .rz-layout{grid-template-columns:minmax(0,1fr);}
+  #win-randomizer .rz-preview{position:static;}
+  #win-randomizer .rz-slider{grid-template-columns:minmax(0,1fr) auto;}
+  #win-randomizer .rz-slider>label{grid-column:1/-1;}
+}
+@media (prefers-reduced-motion:reduce){#win-randomizer *{transition:none !important;animation:none !important;scroll-behavior:auto !important;}}
 
-
-
-
-
-
-
+/* theme-aligned look: same palette, cards and headings as the Settings window */
+:is(#win-giveaway,#win-randomizer) .rz-step,:is(#win-giveaway,#win-randomizer) .rz-preview,#win-replie .rp-panel,#win-replie .rp-card{background:var(--dc-bg-card,#232428);border:1px solid var(--dc-border,rgba(255,255,255,.08));border-radius:var(--radius-md,10px);}
+:is(#win-giveaway,#win-randomizer) .rz-btn,:is(#win-giveaway,#win-randomizer) .btn-topbar-action,#win-replie .rp-btn{border-radius:var(--radius-sm,6px);}
+:is(#win-giveaway,#win-randomizer) .rz-btn.primary,:is(#win-giveaway,#win-randomizer) .btn-topbar-action.primary,#win-replie .rp-btn.primary{background:var(--app-accent,var(--dc-blurple,#5865f2));border-color:transparent;color:#fff;}
+:is(#win-giveaway,#win-randomizer) .rz-btn.primary:hover,:is(#win-giveaway,#win-randomizer) .btn-topbar-action.primary:hover,#win-replie .rp-btn.primary:hover{filter:brightness(1.12);}
+:is(#win-giveaway,#win-randomizer,#win-replie) .floating-body{background:var(--dc-bg-main,#313338);}
+:is(#win-giveaway,#win-randomizer,#win-replie) .floating-footer{background:var(--dc-bg-rail,#1e1f22);border-top:1px solid var(--dc-border,rgba(255,255,255,.08));}
+:is(#win-giveaway,#win-randomizer) .rz-num{text-transform:uppercase;font-size:11px;letter-spacing:.5px;color:var(--dc-text-dim,#80848e);}
+:is(#win-giveaway,#win-randomizer) .rz-step h3{font-size:15px;font-weight:700;}
+/* responsive button groups: wrap by available width instead of squeezing into one line */
+:is(#win-giveaway,#win-randomizer) .rz-row{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;}
+:is(#win-giveaway,#win-randomizer) .rz-row>select{flex:1 1 100%;min-width:0;}
+:is(#win-giveaway,#win-randomizer) .rz-row>:is(button,.btn-topbar-action,.rz-btn){flex:1 1 140px;justify-content:center;text-align:center;}
+:is(#win-giveaway,#win-randomizer) .gw-chips>.btn-topbar-action{flex:1 1 90px;justify-content:center;}
+:is(#win-giveaway,#win-randomizer) #rzThemeList,:is(#win-giveaway,#win-randomizer) #gwThemeList{grid-template-columns:repeat(auto-fill,minmax(148px,1fr));}
+:is(#win-giveaway,#win-randomizer) .rz-face.compact{padding-right:34px;}
+:is(#win-giveaway,#win-randomizer) .rz-face.compact .rz-face-name{padding-right:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+:is(#win-giveaway,#win-randomizer,#win-replie) .floating-footer{flex-wrap:wrap;row-gap:8px;}
+:is(#win-giveaway,#win-randomizer,#win-replie) .floating-footer-right{flex-wrap:wrap;gap:8px;margin-left:auto;}
+@media (max-width:600px){
+  :is(#win-giveaway,#win-randomizer,#win-replie) .floating-footer>*{flex:1 1 100%;}
+  :is(#win-giveaway,#win-randomizer,#win-replie) .floating-footer-right>*{flex:1 1 140px;justify-content:center;}
+}
+</style>
+<div class="floating-window" id="win-randomizer" role="dialog" aria-labelledby="rzWinTitle" style="width: min(1020px, calc(100vw - 24px)); max-width: calc(100vw - 24px); top: 12px; left: max(12px, calc((100vw - 1020px) / 2));">
     <div class="floating-header" id="drag-randomizer">
-
-
-
-
-
-
-
       <div class="floating-title-box">
-
-
-
-
-
-
-
-        <span style="font-size: 18px;">🎰</span>
-
-
-
-
-
-
-
+        <span style="font-size: 18px;" aria-hidden="true">🎰</span>
         <div>
-
-
-
-
-
-
-
-          <div style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">สุ่มกิจกรรมด่วน & บทลงโทษ</div>
-
-
-
-
-
-
-
-          
-
-
-
-
-
-
-
+          <div id="rzWinTitle" style="font-size: 14.5px; font-weight: 700; color: #f2f3f5;">สุ่มกิจกรรมด่วน</div>
         </div>
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
       <div class="floating-actions-right">
-
-
-
-
-
-
-
-        <button class="btn-win-action" title="ย่อหน้าต่าง" onclick="minimizeWindow('randomizer')">—</button>
-
-
-
-
-
-
-
-        <button class="btn-win-action close-red" title="ปิดหน้าต่าง" onclick="closeToolWindow('randomizer')">✕</button>
-
-
-
-
-
-
-
+        <button class="btn-win-action" title="ย่อหน้าต่าง" aria-label="ย่อหน้าต่าง" onclick="minimizeWindow('randomizer')"><span aria-hidden="true">—</span></button>
+        <button class="btn-win-action close-red" title="ปิดหน้าต่าง" aria-label="ปิดหน้าต่าง" onclick="closeToolWindow('randomizer')"><span aria-hidden="true">✕</span></button>
       </div>
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    <div style="padding: 10px 18px 0 18px; background-color: #232428;">
-
-
-
-
-
-
-
-      <div class="win-tabs">
-
-
-
-
-
-
-
-        <button class="win-tab-btn active" id="btnRandTab1" onclick="switchRandTab(1)">🎡 หมุนสุ่ม</button>
-
-
-
-
-
-
-
-        <button class="win-tab-btn" id="btnRandTab2" onclick="switchRandTab(2)">⚙️ ตั้งค่า Overlay & เอฟเฟกต์</button>
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
-    </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <div class="floating-body">
-
-
-
-
-
-
-
-      <!-- TAB 1: หมุนสุ่ม -->
-
-
-
-
-
-
-
-      <div id="paneRandTab1">
-
-
-
-
-
-
-
-        <!-- Preset Row -->
-
-
-
-
-
-
-
-        <div class="modal-form-group" style="margin-bottom: 10px;">
-
-
-
-
-
-
-
-          <label class="modal-form-label">🎯 Preset รายการสุ่ม</label>
-
-
-
-
-
-
-
-          <div style="display: flex; gap: 8px;">
-
-
-
-
-
-
-
-            <select class="voice-select-box" style="margin: 0; flex: 1;">
-
-
-
-
-
-
-
-              <option>-- รายการบทลงโทษสตรีมเมอร์แพ้เกม --</option>
-
-
-
-
-
-
-
-              <option>รายการสุ่มแจกของรางวัลคนดู</option>
-
-
-
-
-
-
-
-              <option>รายการสุ่มหัวข้อสนทนา</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-            <button class="btn-topbar-action" style="height: 36px;" onclick="showToast('💾 บันทึก Preset สุ่มแล้ว')">💾 บันทึก</button>
-
-
-
-
-
-
-
-            <button class="btn-topbar-action" style="height: 36px;" onclick="showToast('➕ สร้าง Preset สุ่มใหม่')">+ ใหม่</button>
-
-
-
-
-
-
-
+      <div class="rz-wrap">
+        <div class="rz-layout">
+          <div class="rz-steps" id="paneRandTab1">
+            <section class="rz-step" aria-labelledby="rzH1">
+              <h3 id="rzH1"><span class="rz-num" aria-hidden="true">ขั้นที่ 1</span>ใส่ตัวเลือกที่จะสุ่ม</h3>
+              <p class="rz-help">พิมพ์บทลงโทษ รางวัล หรือชื่อผู้ชม บรรทัดละหนึ่งอย่าง</p>
+              <div class="modal-form-group rz-field">
+                <label class="rz-label" for="randomizerPresetSelect">รายการที่บันทึกไว้</label>
+                <div class="rz-row">
+                  <select class="voice-select-box" id="randomizerPresetSelect" aria-label="เลือกรายการที่บันทึกไว้"><option value="">เลือกรายการที่บันทึกไว้</option></select>
+                  <button type="button" class="btn-topbar-action">บันทึกรายการนี้</button>
+                  <button type="button" class="btn-topbar-action">เริ่มรายการใหม่</button>
+                </div>
+              </div>
+              <div class="rz-field">
+                <label class="rz-label" for="randTitleInput">ชื่อกิจกรรม</label>
+                <input type="text" class="modal-input" id="randTitleInput" value="วงล้อบทลงโทษสตรีมเมอร์" maxlength="60" autocomplete="off">
+              </div>
+              <div class="rz-field">
+                <label class="rz-label" for="randItemsText">ตัวเลือก บรรทัดละหนึ่งอย่าง</label>
+                <textarea class="modal-input" id="randItemsText" aria-describedby="randItemsCount randItemsError" spellcheck="false">ดื่มน้ำ 1 แก้วใหญ่&#10;วิดพื้น 10 ครั้ง&#10;ร้องเพลง 1 ท่อนสดๆ&#10;แจก 100 บาทให้คนดู&#10;ใบ้คำ 1 นาทีห้ามพูด</textarea>
+                <div class="rz-row">
+                  <button type="button" class="btn-topbar-action" id="btnRandShuffle" onclick="shuffleRandItems()">สลับลำดับ</button>
+                  <button type="button" class="btn-topbar-action" id="btnRandClear" onclick="clearRandItems()">ล้างทั้งหมด</button>
+                  <button type="button" class="btn-topbar-action" id="btnRandChatters" onclick="pickChatViewerRandom()">ดึงชื่อคนที่พิมพ์ในแชท</button>
+                </div>
+                <div class="rz-count" id="randItemsCount" role="status" aria-live="polite"></div>
+                <div class="rz-error" id="randItemsError" role="alert"></div>
+              </div>
+            </section>
+
+            <section class="rz-step" aria-labelledby="rzH2">
+              <h3 id="rzH2"><span class="rz-num" aria-hidden="true">ขั้นที่ 2</span>เลือกรูปแบบและสไตล์</h3>
+              <p class="rz-help">เลือกแล้วดูผลที่ช่องตัวอย่างด้านข้างได้ทันที</p>
+              <fieldset>
+                <legend class="rz-label">รูปแบบการสุ่ม</legend>
+                <div class="rz-options" id="rzStyleList"></div>
+              </fieldset>
+              <fieldset>
+                <legend class="rz-label">ธีมสี</legend>
+                <div class="rz-options" id="rzThemeList"></div>
+              </fieldset>
+              <fieldset>
+                <legend class="rz-label">ระยะเวลาสุ่ม</legend>
+                <div class="rz-options" id="rzSpeedList"></div>
+              </fieldset>
+              <label class="rz-tick"><input type="checkbox" id="chkRandRemove" checked><span><b>ตัดตัวเลือกที่สุ่มได้ออกจากรายการ</b><span>รอบต่อไปจะไม่สุ่มได้ซ้ำอีก</span></span></label>
+            </section>
+
+            <section class="rz-step" aria-labelledby="rzH3">
+              <h3 id="rzH3"><span class="rz-num" aria-hidden="true">ขั้นที่ 3</span>ปรับขนาดและตำแหน่งบนจอ</h3>
+              <p class="rz-help">ปรับขนาดได้ที่นี่ หรือลากกรอบในภาพ "ตำแหน่งบนจอสตรีม" ด้านขวาเพื่อย้ายและย่อ/ขยายได้โดยตรง</p>
+              <div class="rz-slider">
+                <label for="randScale">ขนาดบนจอ</label>
+                <input type="range" id="randScale" min="20" max="300" step="5" value="100">
+                <span class="rz-unit"><input type="number" id="randScaleNum" min="20" max="300" step="5" value="100" aria-label="ขนาดบนจอ พิมพ์ตัวเลขเป็นเปอร์เซ็นต์">%</span>
+              </div>
+              <div hidden aria-hidden="true" id="rzHiddenPos">
+              <fieldset>
+                <legend class="rz-label">จุดยึดบนจอ</legend>
+                <div class="rz-anchors" id="rzAnchorList"></div>
+              </fieldset>
+              <div class="rz-slider">
+                <label for="randOx">เลื่อนซ้าย ขวา</label>
+                <input type="range" id="randOx" min="-960" max="960" step="10" value="0">
+                <span class="rz-unit"><input type="number" id="randOxNum" min="-1920" max="1920" step="10" value="0" aria-label="เลื่อนซ้าย ขวา พิมพ์ตัวเลขเป็นพิกเซล">px</span>
+              </div>
+              <div class="rz-slider">
+                <label for="randOy">เลื่อนขึ้น ลง</label>
+                <input type="range" id="randOy" min="-540" max="540" step="10" value="0">
+                <span class="rz-unit"><input type="number" id="randOyNum" min="-1080" max="1080" step="10" value="0" aria-label="เลื่อนขึ้น ลง พิมพ์ตัวเลขเป็นพิกเซล">px</span>
+              </div>
+              </div>
+              <div class="rz-field">
+                <label class="rz-label" for="randHold">แสดงผลลัพธ์ค้างไว้ก่อนหายไป</label>
+                <select class="voice-select-box" id="randHold">
+                  <option value="3">3 วินาที</option><option value="5">5 วินาที</option><option value="8">8 วินาที</option><option value="12">12 วินาที</option><option value="20">20 วินาที</option><option value="30">30 วินาที</option>
+                </select>
+              </div>
+              <label class="rz-tick"><input type="checkbox" id="chkRandCalm"><span><b>ลดการเคลื่อนไหว</b><span>ไม่หมุน แสดงผลลัพธ์ทันที ปิดไว้เป็นค่าเริ่มต้น เปิดเฉพาะเมื่อไม่ต้องการให้หมุน</span></span></label>
+              <div class="rz-row"><button type="button" class="btn-topbar-action" id="btnRandLayoutReset">คืนค่าตำแหน่งและขนาดเริ่มต้น</button></div>
+            </section>
           </div>
 
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-form-group" style="margin-bottom: 10px;">
-
-
-
-
-
-
-
-          <label class="modal-form-label">หัวข้อกิจกรรม</label>
-
-
-
-
-
-
-
-          <input type="text" class="modal-input" id="randTitleInput" value="วงล้อบทลงโทษสตรีมเมอร์" style="font-weight: bold; color: #f59e0b;">
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-form-group" style="margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-
-
-
-
-
-
-
-            <label class="modal-form-label">🎯 รายการตัวเลือกสุ่ม (1 บรรทัด = 1 ตัวเลือก)</label>
-
-
-
-
-
-
-
-            <div style="display:flex; gap:6px;">
-
-
-
-
-
-
-
-              <button class="btn-topbar-action" style="height:24px; font-size:11px;" onclick="shuffleRandItems()">🔀 สลับตำแหน่ง</button>
-
-
-
-
-
-
-
-              <button class="btn-topbar-action" style="height:24px; font-size:11px;" onclick="clearRandItems()">🗑 ล้างทั้งหมด</button>
-
-
-
-
-
-
-
+          <aside class="rz-preview" aria-labelledby="rzPvH">
+            <h3 id="rzPvH">ตัวอย่างสด</h3>
+            <p class="rz-help">ภาพนี้อัปเดตทันทีเมื่อคุณแก้ตัวเลือก รูปแบบ หรือสี</p>
+            <div class="rz-stage" id="rzStage"></div>
+            <div class="rz-row"><button type="button" class="btn-topbar-action" id="btnRandPreviewSpin">ทดลองหมุนในช่องตัวอย่าง</button></div>
+            <div style="margin-top:14px;">
+              <div class="rz-label" id="rzLocH">ตำแหน่งบนจอสตรีม</div>
+              <div class="rz-locator" id="rzLocator" role="img" aria-labelledby="rzLocH rzLocText"><div class="rz-locator-rect" id="rzLocRect"></div><span class="rz-locator-label" aria-hidden="true">จอ 1920 x 1080</span></div>
+              <p class="rz-help" id="rzLocHint" style="margin:0 0 4px;">ลากกรอบเพื่อย้ายตำแหน่ง ลากมุมขวาล่างเพื่อย่อ/ขยาย (เส้นแดงช่วยเล็งกึ่งกลางจอ) ค้าง Ctrl = ลากอิสระไม่ดูด คลิกกรอบแล้วกดลูกศร = ขยับทีละ 1 พิกเซล (Shift = 10)</p><p class="rz-help" id="rzLocText" style="margin:0;"></p>
             </div>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <textarea class="modal-input" id="randItemsText" style="height: 100px; padding: 10px; resize: none; font-family: var(--font-family);">ดื่มน้ำ 1 แก้วใหญ่&#10;วิดพื้น 10 ครั้ง&#10;ร้องเพลง 1 ท่อนสดๆ&#10;แจก 100 บาทให้คนดู&#10;ใบ้คำ 1 นาทีห้ามพูด&#10;กินขนมเผ็ด 1 ชิ้น</textarea>
-
-
-
-
-
-
-
+            <div class="rz-demo">
+              <button type="button" class="btn-topbar-action" id="btnRandDemo" aria-pressed="false" aria-describedby="rzDemoStatus">แสดงตัวอย่างจริงบนจอ OBS</button>
+              <p class="rz-help" id="rzDemoStatus" role="status" aria-live="polite">ปิดอยู่ เปิดแล้วจะเห็นขนาดและตำแหน่งจริงบนจอสตรีม และปรับได้ทันทีโดยไม่ต้องเริ่มใหม่</p>
+            </div>
+            <div class="rz-result" id="randWinnerResult" role="status" aria-live="polite">ผลการสุ่มล่าสุดจะแสดงตรงนี้</div>
+          </aside>
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">โหมดการแสดงผลบน OBS</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="randDisplayMode" style="margin: 0;">
-
-
-
-
-
-
-
-              <option value="wheel">🎡 วงล้อหมุนรูเล็ตต์</option>
-
-
-
-
-
-
-
-              <option value="box">📦 กล่องสุ่มปริศนา</option>
-
-
-
-
-
-
-
-              <option value="viewers">👥 สุ่มดึงชื่อจากคนดูที่กำลังพิมพ์แชท</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ความเร็วในการหมุน</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="randSpinDuration" style="margin: 0;">
-
-
-
-
-
-
-
-              <option value="4">ปกติ (ประมาณ 4 วินาที)</option>
-
-
-
-
-
-
-
-              <option value="2">สปีดเร็วทันใจ (2 วินาที)</option>
-
-
-
-
-
-
-
-              <option value="7">ลุ้นระทึกดึงเวลา (7 วินาที)</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="clean-row" style="background:#1e1f22; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <div>
-
-
-
-
-
-
-
-            <div style="font-weight: 600; font-size: 13px;">ลบตัวเลือกที่ถูกสุ่มแล้วออก</div>
-
-
-
-
-
-
-
-            <div style="font-size: 11.5px; color: var(--dc-text-dim);">เมื่อสุ่มได้ข้อไหนแล้ว จะตัดข้อนั้นทิ้งเพื่อไม่ให้สุ่มซ้ำ</div>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <input type="checkbox" id="chkRandRemove" checked style="accent-color: var(--dc-green); transform: scale(1.1);">
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- Result Box -->
-
-
-
-
-
-
-
-        <div class="clean-row" style="background:#1e1f22; padding: 12px 16px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.4);">
-
-
-
-
-
-
-
-          <div>
-
-
-
-
-
-
-
-            <div style="font-size: 11.5px; color: #f59e0b; font-weight:700;">🎯 ผลการสุ่มล่าสุด</div>
-
-
-
-
-
-
-
-            <div style="font-size: 16px; font-weight: 800; color: #ffffff;" id="randWinnerResult">ยังไม่ได้เริ่มหมุน (กดปุ่มหมุนสุ่มได้เลย)</div>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
       </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      <!-- TAB 2: ตั้งค่า Overlay & เอฟเฟกต์ -->
-
-
-
-
-
-
-
-      <div id="paneRandTab2" style="display: none;">
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom:12px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ขนาดวงล้อ (Scale: 50% - 200%)</label>
-
-
-
-
-
-
-
-            <input type="range" class="topbar-slider" style="width: 100%; height: 6px;" min="50" max="200" value="100" oninput="document.getElementById('lblRandScale').textContent = this.value + '%'">
-
-
-
-
-
-
-
-            <span style="font-size: 11.5px; color: #38bdf8;" id="lblRandScale">100%</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ธีมสีวงล้อ</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="randColorTheme" style="margin: 0;">
-
-
-
-
-
-
-
-              <option value="pastel">🌈 สายรุ้งพาสเทล</option>
-
-
-
-
-
-
-
-              <option value="neon">🌆 ไซเบอร์พังก์นีออน</option>
-
-
-
-
-
-
-
-              <option value="gold">🟡 ทองคำพรีเมียม</option>
-
-
-
-
-
-
-
-              <option value="mint">💚 มรกตมิ้นต์</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom:12px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ตำแหน่งแกน X</label>
-
-
-
-
-
-
-
-            <input type="range" class="topbar-slider" style="width: 100%; height: 6px;" min="-500" max="500" value="0" oninput="document.getElementById('lblRandOx').textContent = this.value + 'px'">
-
-
-
-
-
-
-
-            <span style="font-size: 11.5px; color: #f59e0b;" id="lblRandOx">0px</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ตำแหน่งแกน Y</label>
-
-
-
-
-
-
-
-            <input type="range" class="topbar-slider" style="width: 100%; height: 6px;" min="-500" max="500" value="0" oninput="document.getElementById('lblRandOy').textContent = this.value + 'px'">
-
-
-
-
-
-
-
-            <span style="font-size: 11.5px; color: #f59e0b;" id="lblRandOy">0px</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom:12px;">
-
-
-
-          <div class="modal-form-group"><label class="modal-form-label" for="randAnchor">จุดยึดตำแหน่งหน้าจอ</label>
-
-
-
-            <select class="voice-select-box" id="randAnchor">
-
-
-
-              <option value="center">กลางจอ</option><option value="top-left">บนซ้าย</option><option value="top-center">บนกลาง</option><option value="top-right">บนขวา</option>
-
-
-
-              <option value="middle-left">กลางซ้าย</option><option value="middle-right">กลางขวา</option><option value="bottom-left">ล่างซ้าย</option><option value="bottom-center">ล่างกลาง</option><option value="bottom-right">ล่างขวา</option>
-
-
-
-            </select></div>
-
-
-
-          <div class="modal-form-group"><label class="modal-form-label" for="randHoldDuration">แสดงผลค้างไว้ก่อนหาย</label>
-
-
-
-            <select class="voice-select-box" id="randHoldDuration"><option value="3">3 วินาที</option><option value="5" selected>5 วินาที</option><option value="8">8 วินาที</option><option value="10">10 วินาที</option></select></div>
-
-
-
-        </div>
-
-
-
-
-
-
-
-      </div>
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     <div class="floating-footer">
-
-
-
-
-
-
-
-      <button class="btn-topbar-action" onclick="pickChatViewerRandom()">
-
-
-
-
-
-
-
-        👥 สุ่มชื่อคนดูในแชท
-
-
-
-
-
-
-
-      </button>
-
-
-
-
-
-
-
+      <span class="rz-foot-note">ผลจะแสดงบนจอ OBS และจอ Studio พร้อมกัน</span>
       <div class="floating-footer-right">
-
-
-
-
-
-
-
-        <button class="btn-topbar-action primary" title="ปิดหน้าต่าง" onclick="closeToolWindow('randomizer')">ปิดหน้าต่าง</button>
-
-
-
-
-
-
-
-        <button class="btn-topbar-action primary" onclick="runSpinRandomizer()">
-
-
-
-
-
-
-
-          🎡 เริ่มหมุนสุ่มบนจอ OBS ทันที!
-
-
-
-
-
-
-
-        </button>
-
-
-
-
-
-
-
+        <button type="button" class="btn-topbar-action" onclick="closeToolWindow('randomizer')">ปิดหน้าต่าง</button>
+        <button type="button" class="btn-topbar-action primary" id="btnRandRun" onclick="runSpinRandomizer()">เริ่มสุ่มบนจอ OBS ทันที</button>
       </div>
-
-
-
-
-
-
-
     </div>
-
-
-
-
-
-
-
   </div>
 
 
@@ -28750,7 +26405,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-        <button type="button" class="composer-btn-sub active" id="btnCompSnap" title="เปิด/ปิดการจัดแนวแบบแม่เหล็ก">
+        <button type="button" class="composer-btn-sub active" id="btnCompSnap" title="เปิด/ปิด Smart Grid (จัดแนวอัตโนมัติ)">
 
 
 
@@ -28758,7 +26413,7 @@ window.addEventListener('keydown', (e) => {
 
 
 
-          🧲 แม่เหล็ก
+          🧲 Smart Grid
 
 
 
@@ -30270,6 +27925,10 @@ window.addEventListener('keydown', (e) => {
 
 
 
+          <div class="composer-prop-col" style="margin-top:6px;">
+            <span class="composer-prop-label">ขนาดเนื้อหา % (กด Alt ค้าง + ลากจุดจับ)</span>
+            <input type="number" class="composer-prop-input" id="compPropScale" step="5" min="10" max="1000" title="ขยาย/หดทั้งชิ้นพร้อมเนื้อหา พิมพ์ 100 เพื่อรีเซ็ต">
+          </div>
           <div class="composer-prop-col" style="margin-top:6px;">
 
 
@@ -31871,6 +29530,7 @@ const _origGetElementById = document.getElementById.bind(document);
         } catch (_) {}
       }
 
+      try { window.__bp3SaveMainWin && window.__bp3SaveMainWin(); } catch (_) {}
       const existing = window._popoutWindows?.[name];
       if (existing && !existing.closed) {
         try {
@@ -31907,7 +29567,7 @@ const _origGetElementById = document.getElementById.bind(document);
         'giveaway': { w: 760, h: 600 },
         'ask': { w: 700, h: 580 },
         'replie': { w: 700, h: 560 },
-        'randomizer': { w: 660, h: 540 },
+        'randomizer': { w: 1060, h: 780 },
         'playroom': { w: 840, h: 640 },
         'chat-widget': { w: 900, h: 680 },
         'author-profile': { w: 780, h: 800 },
@@ -33319,6 +30979,7 @@ try {
       if (name === 'voice') name = 'voice-settings';
       if (name === 'reply') name = 'replie';
       if (name === 'users') name = 'user-manager';
+      try { window.bp3StopToolDemo && window.bp3StopToolDemo(name); } catch (_) {}
       if (name === 'overlay-plus-settings' && typeof window.persistOverlayPlusSettings === 'function') {
         try { window.persistOverlayPlusSettings().catch(() => {}); } catch (_) {}
       }
@@ -35217,6 +32878,7 @@ try {
 
 
       document.getElementById('paneAskTab2').style.display = tabNum === 2 ? 'block' : 'none';
+      if (tabNum === 2) { try { initAskTab2Controls(); } catch (_) {} }
 
 
 
@@ -35576,11 +33238,15 @@ try {
 
 
 
-    function switchRandTab(tabNum) {
+    // Randomizer is now one page; the logic lives in tool_controls.js as BP3RandomizerUI
+    function switchRandTab() {}
+    function runSpinRandomizer() { return window.BP3RandomizerUI ? window.BP3RandomizerUI.spin() : undefined; }
+    function shuffleRandItems() { if (window.BP3RandomizerUI) window.BP3RandomizerUI.shuffle(); }
+    function clearRandItems() { if (window.BP3RandomizerUI) window.BP3RandomizerUI.clear(); }
+    function pickChatViewerRandom() { if (window.BP3RandomizerUI) window.BP3RandomizerUI.pullChatters(); }
 
 
 
-      const document = getToolDocument('randomizer');
 
 
 
@@ -35588,7 +33254,6 @@ try {
 
 
 
-      document.getElementById('btnRandTab1').classList.toggle('active', tabNum === 1);
 
 
 
@@ -35596,7 +33261,6 @@ try {
 
 
 
-      document.getElementById('btnRandTab2').classList.toggle('active', tabNum === 2);
 
 
 
@@ -35604,7 +33268,6 @@ try {
 
 
 
-      document.getElementById('paneRandTab1').style.display = tabNum === 1 ? 'block' : 'none';
 
 
 
@@ -35612,7 +33275,6 @@ try {
 
 
 
-      document.getElementById('paneRandTab2').style.display = tabNum === 2 ? 'block' : 'none';
 
 
 
@@ -35620,7 +33282,6 @@ try {
 
 
 
-    }
 
 
 
@@ -35636,599 +33297,13 @@ try {
 
 
 
-    function runSpinRandomizer() {
 
 
 
-      const doc = getToolDocument('randomizer') || document;
 
 
 
 
-
-
-
-      const textEl = doc.getElementById('randItemsText');
-
-
-
-
-
-
-
-      if (!textEl) return;
-
-
-
-
-
-
-
-      const selectedMode = doc.getElementById('randDisplayMode')?.value || 'wheel';
-
-
-
-      const lines = selectedMode === 'viewers' ? Array.from(window._activeChattersSet || []) : textEl.value.split('\n').map(l => l.trim()).filter(Boolean);
-
-
-
-
-
-
-
-      if (lines.length === 0) {
-
-
-
-
-
-
-
-        (doc.defaultView || window).alert(selectedMode === 'viewers' ? 'ยังไม่มีรายชื่อคนดูที่ส่งข้อความในแชทสด' : 'กรุณาพิมพ์ตัวเลือกอย่างน้อย 1 รายการ');
-
-
-
-
-
-
-
-        return;
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
-      const randIdx = Math.floor(Math.random() * lines.length);
-
-
-
-
-
-
-
-      const chosen = lines[randIdx];
-
-
-
-
-
-
-
-      const titleEl = doc.getElementById('randTitleInput');
-
-
-
-      const title = titleEl ? titleEl.value.trim() : 'สุ่มกิจกรรม';
-
-
-
-      const scaleVal = parseInt(doc.getElementById('lblRandScale')?.textContent) || 100;
-
-
-
-      const oxVal = parseInt(doc.getElementById('lblRandOx')?.textContent) || 0;
-
-
-
-      const oyVal = parseInt(doc.getElementById('lblRandOy')?.textContent) || 0;
-
-
-
-      const anchorVal = doc.getElementById('randAnchor')?.value || 'center';
-
-
-
-      const holdVal = Number(doc.getElementById('randHoldDuration')?.value) || 5;
-
-
-
-      const spinVal = Number(doc.getElementById('randSpinDuration')?.value) || 4;
-
-
-
-      const colorTheme = doc.getElementById('randColorTheme')?.value || 'pastel';
-
-
-
-
-
-
-
-      // Broadcast Immediately to Canvas & OBS Overlay (Matches dev on-demand overlay)
-
-
-
-      const spinPayload = {
-
-
-
-        type: 'randomizer_spin',
-
-
-
-        title: title,
-
-
-
-        items: lines,
-
-
-
-        winner: chosen,
-
-
-
-        duration: holdVal,
-
-
-
-        settings: {
-
-
-
-          scale: scaleVal,
-
-
-
-          offset_x: oxVal,
-
-
-
-          offset_y: oyVal,
-
-
-
-          anchor: anchorVal,
-
-
-
-          duration: holdVal,
-
-
-
-          spin_duration: spinVal,
-
-
-
-          color_theme: colorTheme,
-
-
-
-          mode: selectedMode
-
-
-
-        }
-
-
-
-      };
-
-
-
-      if (window.BP3_BUS) {
-
-
-
-        window.BP3_BUS.emit('RANDOMIZER_SPIN', spinPayload);
-
-
-
-      }
-
-
-
-      if (!window.BP3Transport && 'BroadcastChannel' in window) {
-
-
-
-        try {
-
-
-
-          const bus = new BroadcastChannel('bp3_system_channel');
-
-
-
-          bus.postMessage({
-
-
-
-            event: 'RANDOMIZER_SPIN',
-
-
-
-            payload: spinPayload
-
-
-
-          });
-
-
-
-        } catch (e) {}
-
-
-
-      }
-
-
-
-
-
-
-
-      // Local animation in tool window
-
-
-
-      const resEl = doc.getElementById('randWinnerResult');
-
-
-
-      if (resEl) {
-
-
-
-        resEl.innerHTML = `<span style="color:#fbbf24;">🌀 กำลังหมุนสุ่ม...</span>`;
-
-
-
-      }
-
-
-
-
-
-
-
-      let ticks = 0;
-
-
-
-      const spinInt = setInterval(() => {
-
-
-
-        ticks++;
-
-
-
-        const temp = lines[Math.floor(Math.random() * lines.length)];
-
-
-
-        if (resEl) resEl.innerHTML = `<span style="color:#38bdf8;">🎡 ${temp}</span>`;
-
-
-
-        if (ticks > 14) {
-
-
-
-          clearInterval(spinInt);
-
-
-
-          if (resEl) {
-
-
-
-            resEl.innerHTML = `<span style="color:#34d399; font-weight:800; font-size:17px;">🎯 ${chosen}</span>`;
-
-
-
-          }
-
-
-
-          const chkRemove = doc.getElementById('chkRandRemove');
-
-
-
-          if (selectedMode !== 'viewers' && chkRemove && chkRemove.checked) {
-
-
-
-            lines.splice(randIdx, 1);
-
-
-
-            textEl.value = lines.join('\n');
-
-
-
-          }
-
-
-
-          showToast(`🎡 ผลสุ่มวงล้อ: ${chosen}`);
-
-
-
-          appendAskChatSystemMessage(`🎰 [วงล้อสุ่มด่วน] <b>${title || 'สุ่มกิจกรรม'}</b> ➔ ผลลัพธ์: <b style="color:#34d399;">${chosen}</b>`);
-
-
-
-        }
-
-
-
-      }, spinVal * 1000 / 15);
-
-
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function shuffleRandItems() {
-
-
-
-      const document = getToolDocument('randomizer');
-
-
-
-
-
-
-
-      const textEl = doc.getElementById('randItemsText');
-
-
-
-
-
-
-
-      if (!textEl) return;
-
-
-
-
-
-
-
-      const lines = textEl.value.split('\n').map(l => l.trim()).filter(Boolean);
-
-
-
-
-
-
-
-      for (let i = lines.length - 1; i > 0; i--) {
-
-
-
-
-
-
-
-        const j = Math.floor(Math.random() * (i + 1));
-
-
-
-
-
-
-
-        [lines[i], lines[j]] = [lines[j], lines[i]];
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
-      textEl.value = lines.join('\n');
-
-
-
-
-
-
-
-      showToast('🔀 สลับตำแหน่งตัวเลือกเรียบร้อยแล้ว');
-
-
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function clearRandItems() {
-
-
-
-      const document = getToolDocument('randomizer');
-
-
-
-
-
-
-
-      const textEl = doc.getElementById('randItemsText');
-
-
-
-
-
-
-
-      if (textEl) textEl.value = '';
-
-
-
-
-
-
-
-      showToast('🗑 ล้างรายการตัวเลือกสุ่มทั้งหมดแล้ว');
-
-
-
-
-
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function pickChatViewerRandom() {
-
-
-
-      const doc = getToolDocument('randomizer') || document;
-
-
-
-
-
-
-
-      const viewers = ['Somchai_VIP', 'Praew_Cat', 'Krit_Kun', 'น้องบอย_Gamer', 'Zack_Attack'];
-
-
-
-
-
-
-
-      const chosen = viewers[Math.floor(Math.random() * viewers.length)];
-
-
-
-
-
-
-
-      const resEl = doc.getElementById('randWinnerResult');
-
-
-
-
-
-
-
-      if (resEl) {
-
-
-
-
-
-
-
-        resEl.innerHTML = `<span style="color: #60a5fa;">👤 คนดูผู้โชคดี: ${chosen}</span>`;
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
-      showToast(`👥 สุ่มคนดูจากแชทสดได้: ${chosen}`);
-
-
-
-
-
-
-
-    }
 
 
 
@@ -58954,7 +56029,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        window.BP3_BUS.emit('CHAT_MESSAGE', block.hideOverlay ? {...visibleMessage, hide_from_overlay:true} : visibleMessage);
+        window.BP3_BUS.emit('CHAT_MESSAGE', block.hideOverlay ? {...visibleMessage, bp_at: Date.now(), hide_from_overlay:true} : {...visibleMessage, bp_at: Date.now()});
 
 
 
@@ -63544,99 +60619,6 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-    function pickChatViewerRandom() {
-
-
-
-      const document = getToolDocument('randomizer');
-
-
-
-
-
-
-
-      const chatters = Array.from(window._activeChattersSet || []);
-
-
-
-
-
-
-
-      const textEl = document.getElementById('randItemsText');
-
-
-
-
-
-
-
-      if (chatters.length === 0) {
-
-
-
-
-
-
-
-        document.defaultView.alert('ยังไม่มีคนดูส่งข้อความในแชทสดครับ');
-
-
-
-
-
-
-
-        return;
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
-      if (textEl) {
-
-
-
-
-
-
-
-        textEl.value = chatters.join('\n');
-
-
-
-
-
-
-
-        showToast(`👥 ดึงรายชื่อคนดูสด ${chatters.length} คนเข้าสู่วงล้อสุ่มเรียบร้อย!`);
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
-    }
 
 
 
@@ -68271,86 +65253,15 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      // 2. Immediate Window Size Hard-Lock (Synchronous, no delayed bounce)
-
-
-
-
-
-
-
-      if (window.outerWidth > 0 && window.outerHeight > 0) {
-
-
-
-
-
-
-
-        if (window.outerWidth < MIN_APP_WIDTH || window.outerHeight < MIN_APP_HEIGHT) {
-
-
-
-
-
-
-
-          const targetW = Math.max(window.outerWidth, MIN_APP_WIDTH);
-
-
-
-
-
-
-
-          const targetH = Math.max(window.outerHeight, MIN_APP_HEIGHT);
-
-
-
-
-
-
-
-          try {
-
-
-
-
-
-
-
-            window.resizeTo(targetW, targetH);
-
-
-
-
-
-
-
-          } catch (e) {}
-
-
-
-
-
-
-
+      // 2. Minimum window size: do NOT fight the mouse while the user is dragging.
+      //    Wait until resize events stop, then snap back once (prevents the flicker at the minimum size).
+      clearTimeout(window._bp3MinLockT);
+      window._bp3MinLockT = setTimeout(() => {
+        if (window.outerWidth > 0 && window.outerHeight > 0 &&
+            (window.outerWidth < MIN_APP_WIDTH || window.outerHeight < MIN_APP_HEIGHT)) {
+          try { window.resizeTo(Math.max(window.outerWidth, MIN_APP_WIDTH), Math.max(window.outerHeight, MIN_APP_HEIGHT)); } catch (e) {}
         }
-
-
-
-
-
-
-
-      }
-
-
-
-
-
-
-
+      }, 400);
     }
 
 
@@ -68719,186 +65630,204 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+    // ---- ASK overlay settings (Tab 2) ----
+    const ASK_T2_DEFAULTS = {ask_layout:'vright',ask_theme:'violet',ask_bar_style:'classic',ask_frame_style:'classic',ask_countdown_style:'text',ask_anchor:'top',
+      ask_extend_pct:20,ask_min_width:340,ask_strip_w:1920,ask_anim_in:'auto',ask_anim_out:'auto',ask_anim_ms:600,ask_offset_x:0,ask_offset_y:0,ask_scale:1,ask_opacity_pct:100,ask_question_fs:24,ask_choice_fs:18};
+    const ASK_T2_RANGES = {askExtendRange:'ask_extend_pct',askMinWRange:'ask_min_width',askStripWRange:'ask_strip_w',askAnimMsRange:'ask_anim_ms',askOxRange:'ask_offset_x',askOyRange:'ask_offset_y',askScaleRange:'ask_scale',askOpacityRange:'ask_opacity_pct',askQfsRange:'ask_question_fs',askCfsRange:'ask_choice_fs'};
+    const ASK_T2_SELECTS = {askLayoutSelect:'ask_layout',askColorThemeSelect:'ask_theme',askBarStyleSelect:'ask_bar_style',askFrameStyleSelect:'ask_frame_style',askCountdownSelect:'ask_countdown_style',askAnchorSelect:'ask_anchor',askAnimInSelect:'ask_anim_in',askAnimOutSelect:'ask_anim_out'};
     function getAskTab2Config() {
-
-
-
       const doc = getToolDocument('ask');
-
-
-
-      return {
-
-
-
-        ask_layout: doc.getElementById('askLayoutSelect')?.value || 'vright',
-
-
-
-        ask_theme: doc.getElementById('askColorThemeSelect')?.value || 'violet',
-
-
-
-        ask_bar_style: doc.getElementById('askBarStyleSelect')?.value || 'classic',
-
-
-
-        ask_frame_style: doc.getElementById('askFrameStyleSelect')?.value || 'classic',
-
-
-
-        ask_bar_h: Number(doc.getElementById('askBarHRange')?.value) || 34,
-
-
-
-        ask_scale: (Number(doc.getElementById('askScaleRange')?.value) || 100) / 100
-
-
-
-      };
-
-
-
-    }
-
-
-
-
-
-
-
-    function onAskConfigChange() {
-
-
-
-      const cfg = getAskTab2Config();
-
-
-
-      try {
-
-
-
-        localStorage.setItem('bp3_ask_tab2_cfg', JSON.stringify(cfg));
-
-
-
-      } catch (_) {}
-
-
-
-      if (window._liveAskState) {
-
-
-
-        window._liveAskState.widget = { ...(window._liveAskState.widget || {}), ...cfg };
-
-
-
-        emitAskState();
-
-
-
+      const cfg = {};
+      for (const [id, key] of Object.entries(ASK_T2_SELECTS)) cfg[key] = doc.getElementById(id)?.value || ASK_T2_DEFAULTS[key];
+      for (const [id, key] of Object.entries(ASK_T2_RANGES)) {
+        const el = doc.getElementById(id);
+        let v = el && el.value !== '' ? Number(el.value) : NaN;
+        if (!Number.isFinite(v)) v = key === 'ask_scale' ? ASK_T2_DEFAULTS[key] * 100 : ASK_T2_DEFAULTS[key];
+        cfg[key] = key === 'ask_scale' ? v / 100 : v;
       }
-
-
-
+      return cfg;
     }
-
-
-
-
-
-
-
-    function initAskTab2Controls() {
-
-
-
-      try {
-
-
-
-        const doc = getToolDocument('ask');
-
-
-
-        const saved = JSON.parse(localStorage.getItem('bp3_ask_tab2_cfg') || 'null');
-
-
-
-        if (saved) {
-
-
-
-          if (doc.getElementById('askLayoutSelect') && saved.ask_layout) doc.getElementById('askLayoutSelect').value = saved.ask_layout;
-
-
-
-          if (doc.getElementById('askColorThemeSelect') && saved.ask_theme) doc.getElementById('askColorThemeSelect').value = saved.ask_theme;
-
-
-
-          if (doc.getElementById('askBarStyleSelect') && saved.ask_bar_style) doc.getElementById('askBarStyleSelect').value = saved.ask_bar_style;
-
-
-
-          if (doc.getElementById('askFrameStyleSelect') && saved.ask_frame_style) doc.getElementById('askFrameStyleSelect').value = saved.ask_frame_style;
-
-
-
-          if (doc.getElementById('askBarHRange') && saved.ask_bar_h) {
-
-
-
-            doc.getElementById('askBarHRange').value = saved.ask_bar_h;
-
-
-
-            doc.getElementById('lblAskBarH').textContent = saved.ask_bar_h + 'px';
-
-
-
+    function onAskConfigChange() {
+      const cfg = getAskTab2Config();
+      try { localStorage.setItem('bp3_ask_tab2_cfg', JSON.stringify(cfg)); } catch (_) {}
+      try { askT2Refresh(); } catch (e) { console.warn('ask ui', e); }
+      // only push a live update while a real poll is running (otherwise emitAskState() sends a fake "active" poll and the overlay flickers)
+      const _ph = window._askPollState && window._askPollState.phase;
+      if (window._liveAskState && _ph && _ph !== 'idle') {
+        window._liveAskState.widget = { ...(window._liveAskState.widget || {}), ...cfg };
+        emitAskState();
+      }
+      try { askT2DemoSync(); } catch (_) {}
+    }
+    function askT2SetRange(id, v) {
+      const doc = getToolDocument('ask'); const r = doc.getElementById(id), n = doc.getElementById(id + 'Num');
+      if (!r) return; const mn = Number(r.min), mx = Number(r.max);
+      const val = Math.min(mx, Math.max(mn, Math.round(Number(v))));
+      r.value = val; if (n && doc.activeElement !== n) n.value = val;
+    }
+    function askT2FromRange(id) {
+      const doc = getToolDocument('ask'); const r = doc.getElementById(id), n = doc.getElementById(id + 'Num');
+      if (n) n.value = r.value; onAskConfigChange();
+    }
+    function askT2FromNum(id, commit) {
+      const doc = getToolDocument('ask'); const n = doc.getElementById(id + 'Num'), r = doc.getElementById(id);
+      if (!n || n.value === '') return;
+      const v = Math.min(Number(r.max), Math.max(Number(r.min), Number(n.value)));
+      r.value = v; if (commit) n.value = v; onAskConfigChange();
+    }
+    function askT2PickLayout(v) {
+      const doc = getToolDocument('ask'); const sel = doc.getElementById('askLayoutSelect');
+      if (sel) sel.value = v; askT2SetRange('askOxRange', 0); askT2SetRange('askOyRange', 0); onAskConfigChange();
+    }
+    function askT2ResetPos() {
+      const D = ASK_T2_DEFAULTS;
+      askT2SetRange('askOxRange', 0); askT2SetRange('askOyRange', 0);
+      askT2SetRange('askExtendRange', D.ask_extend_pct); askT2SetRange('askMinWRange', D.ask_min_width); askT2SetRange('askStripWRange', D.ask_strip_w);
+      askT2SetRange('askScaleRange', D.ask_scale * 100); askT2SetRange('askOpacityRange', D.ask_opacity_pct);
+      onAskConfigChange();
+    }
+    // approximate on-screen rectangle (logical 1920x1080) for the preview; ox/oy = 0 gives the base position
+    function askT2Rect(c, withOffset) {
+      const W = 1920, H = 1080, mode = ({card:'minimal',bar:'hband',tower:'vright'})[c.ask_layout] || c.ask_layout;
+      const ox = withOffset === false ? 0 : c.ask_offset_x, oy = withOffset === false ? 0 : c.ask_offset_y;
+      let w, h, x, y;
+      if (mode === 'vleft' || mode === 'vright') {
+        w = c.ask_extend_pct / 100 * W; h = 470; x = mode === 'vleft' ? 0 : W - w; y = 0;
+      } else if (mode === 'strip') {
+        w = c.ask_strip_w; h = 46 * c.ask_scale; x = (W - w) / 2; y = c.ask_anchor === 'bottom' ? H - h : 0;
+      } else if (mode === 'hband') {
+        w = W; h = c.ask_extend_pct / 100 * H; x = 0; y = c.ask_anchor === 'bottom' ? H - h : 0;
+      } else {
+        w = c.ask_min_width; h = mode === 'lite' ? 170 : 310;
+        x = Math.min(Math.max(0.85 * W, w / 2), W - w / 2) - w / 2; y = Math.min(Math.max(0.12 * H, h / 2), H - h / 2) - h / 2;
+      }
+      return {mode, x: x + ox, y: y + oy, w, h};
+    }
+    function askT2Refresh() {
+      const doc = getToolDocument('ask'); const loc = doc.getElementById('akLocator'); if (!loc) return;
+      const c = getAskTab2Config(), r = askT2Rect(c), rect = doc.getElementById('akLocRect'), handle = doc.getElementById('akLocHandle');
+      doc.querySelectorAll('input[name="akLayoutRadio"]').forEach(i => { i.checked = (i.value === c.ask_layout); });
+      const vert = r.mode === 'vleft' || r.mode === 'vright', band = r.mode === 'hband', strip = r.mode === 'strip';
+      const show = (id, on) => { const e = doc.getElementById(id); if (e) e.hidden = !on; };
+      show('akRowAnchor', band || strip); show('akRowExtend', vert || band); show('akRowMinW', !vert && !band && !strip); show('akRowStripW', strip);
+      const lab = doc.getElementById('akExtendLabel'); if (lab) lab.textContent = band ? 'ความสูงของแถบ' : 'ความกว้างของเสา';
+      const ex = doc.getElementById('askExtendRange'); if (ex) { ex.min = band ? 8 : 10; ex.max = band ? 40 : 45; const n = doc.getElementById('askExtendRangeNum'); if (n) { n.min = ex.min; n.max = ex.max; } }
+      rect.style.left = (r.x / 19.2) + '%'; rect.style.top = (r.y / 10.8) + '%'; rect.style.width = (r.w / 19.2) + '%'; rect.style.height = (r.h / 10.8) + '%';
+      handle.className = 'ak-loc-handle ' + (r.mode === 'vright' ? 'bl' : ((band || strip) && c.ask_anchor === 'bottom' ? 'tr' : 'br'));
+      const out = r.x < -1 || r.y < -1 || r.x + r.w > 1921 || r.y + r.h > 1081;
+      const t = doc.getElementById('akLocText');
+      if (t) t.textContent = 'เลื่อนซ้ายขวา ' + c.ask_offset_x + ' เลื่อนขึ้นลง ' + c.ask_offset_y + ' พิกเซล' + (out ? ' (บางส่วนอยู่นอกจอ)' : '');
+    }
+    let _akDrag = null;
+    function askT2Bind() {
+      const doc = getToolDocument('ask'); const loc = doc.getElementById('akLocator');
+      if (!loc || loc._akBound) return; loc._akBound = true;
+      const rect = doc.getElementById('akLocRect'), handle = doc.getElementById('akLocHandle');
+      const gv = loc.querySelector('.ak-guide.v'), gh = loc.querySelector('.ak-guide.h');
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v)), SNAP = 14;
+      const begin = (mode) => (e) => {
+        if (e.button !== undefined && e.button !== 0) return; e.preventDefault(); e.stopPropagation();
+        try { rect.focus({preventScroll: true}); } catch (_) {}
+        const c = getAskTab2Config(), r = askT2Rect(c), l = loc.getBoundingClientRect();
+        _akDrag = {mode, sx: e.clientX, sy: e.clientY, r, c, k: 1920 / Math.max(1, l.width)};
+        rect.classList.add('dragging'); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+      };
+      rect.addEventListener('pointerdown', begin('move')); handle.addEventListener('pointerdown', begin('size'));
+      rect.addEventListener('keydown', (e) => {
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return; e.preventDefault();
+        const st = e.shiftKey ? 10 : 1, c = getAskTab2Config();
+        askT2SetRange('askOxRange', c.ask_offset_x + (e.key === 'ArrowLeft' ? -st : e.key === 'ArrowRight' ? st : 0));
+        askT2SetRange('askOyRange', c.ask_offset_y + (e.key === 'ArrowUp' ? -st : e.key === 'ArrowDown' ? st : 0));
+        onAskConfigChange();
+      });
+      const apply = (nx, ny, c) => {
+        const base = askT2Rect(c, false);
+        askT2SetRange('askOxRange', nx - base.x); askT2SetRange('askOyRange', ny - base.y);
+      };
+      const move = (e) => {
+        if (!_akDrag) return; const d = _akDrag, dx = (e.clientX - d.sx) * d.k, dy = (e.clientY - d.sy) * d.k, r = d.r, c = Object.assign({}, d.c);
+        if (d.mode === 'move') {
+          let x = clamp(r.x + dx, 0, 1920 - r.w), y = clamp(r.y + dy, 0, 1080 - r.h), sv = false, sh = false;
+          if (!(e.ctrlKey || e.metaKey)) {
+          if (Math.abs(x + r.w / 2 - 960) < SNAP) { x = 960 - r.w / 2; sv = true; }
+          if (Math.abs(y + r.h / 2 - 540) < SNAP) { y = 540 - r.h / 2; sh = true; }
+          if (Math.abs(x) < SNAP / 2) x = 0; if (Math.abs(x + r.w - 1920) < SNAP / 2) x = 1920 - r.w;
+          if (Math.abs(y) < SNAP / 2) y = 0; if (Math.abs(y + r.h - 1080) < SNAP / 2) y = 1080 - r.h;
           }
-
-
-
-          if (doc.getElementById('askScaleRange') && saved.ask_scale) {
-
-
-
-            const pct = Math.round(saved.ask_scale * 100);
-
-
-
-            doc.getElementById('askScaleRange').value = pct;
-
-
-
-            doc.getElementById('lblAskScale').textContent = pct + '%';
-
-
-
-          }
-
-
-
+          gv.style.display = sv ? 'block' : 'none'; gh.style.display = sh ? 'block' : 'none';
+          apply(x, y, c);
+        } else {
+          let nx = r.x, ny = r.y;
+          if (r.mode === 'vleft') { const w = clamp(r.w + dx, 192, 864); c.ask_extend_pct = Math.round(w / 19.2); askT2SetRange('askExtendRange', c.ask_extend_pct); }
+          else if (r.mode === 'vright') { const w = clamp(r.w - dx, 192, 864); c.ask_extend_pct = Math.round(w / 19.2); askT2SetRange('askExtendRange', c.ask_extend_pct); nx = r.x + r.w - c.ask_extend_pct * 19.2; }
+          else if (r.mode === 'strip') { const w = clamp(r.w + dx, 600, 1920); c.ask_strip_w = Math.round(w / 10) * 10; askT2SetRange('askStripWRange', c.ask_strip_w); }
+          else if (r.mode === 'hband') { const bottom = c.ask_anchor === 'bottom'; const h = clamp(bottom ? r.h - dy : r.h + dy, 86, 432); c.ask_extend_pct = Math.round(h / 10.8); askT2SetRange('askExtendRange', c.ask_extend_pct); if (bottom) ny = r.y + r.h - c.ask_extend_pct * 10.8; }
+          else { const w = clamp(r.w + dx, 240, 900); c.ask_min_width = Math.round(w / 10) * 10; askT2SetRange('askMinWRange', c.ask_min_width); }
+          apply(nx, ny, c);
         }
-
-
-
-      } catch (_) {}
-
-
-
+        onAskConfigChange();
+      };
+      const end = () => { if (!_akDrag) return; _akDrag = null; rect.classList.remove('dragging'); gv.style.display = 'none'; gh.style.display = 'none'; };
+      [rect, handle].forEach(el => { el.addEventListener('pointermove', move); el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end); });
     }
-
-
-
-
-
-
-
+    // ---- live demo on the OBS overlay (stays until stopped) ----
+    let _akDemoOn = false, _akDemoKeep = 0, _akDemoPend = false;
+    function askT2DemoState() {
+      return {
+        active: true, phase: 'voting', is_demo: true, realtime: true,
+        question: 'โหวตเลือกเกมถัดไปสำหรับสตรีมวันนี้?',
+        choices: [{label: 'A', text: 'Elden Ring', votes: 14}, {label: 'B', text: 'Valorant', votes: 11}, {label: 'C', text: 'Minecraft', votes: 7}],
+        totalVotes: 32, remainingSec: 30, durationSec: 30,
+        widget: { ...getAskTab2Config(), ask_is_live: true }
+      };
+    }
+    function askT2Emit(state) {
+      if (window.BP3_BUS) window.BP3_BUS.emit('ASK_UPDATE', state);
+      if (!window.BP3Transport && 'BroadcastChannel' in window) { try { const bc = new BroadcastChannel('bp3_system_channel'); bc.postMessage({event: 'ASK_UPDATE', payload: state}); bc.close(); } catch (_) {} }
+    }
+    // closing a tool window hides any demo/test it left on the OBS overlay
+    window.bp3StopToolDemo = function (name) {
+      name = String(name || '').toLowerCase();
+      if (name === 'reply') name = 'replie';
+      if (name === 'ask') { if (_akDemoOn) askT2SetDemo(false, 'ปิดอัตโนมัติเพราะปิดหน้าต่าง ASK แล้ว'); }
+      else if (name === 'randomizer') { if (window.BP3RandomizerStopDemo) window.BP3RandomizerStopDemo(); }
+      else if (name === 'replie') { if (window.BP3ReplieStopDemo) window.BP3ReplieStopDemo(); if (window._rpPanelTest) { window._rpPanelTest = false; if (window.BP3_BUS) window.BP3_BUS.emit('REPLIE_DISMISS', {}); } }
+    };
+    window.addEventListener('pagehide', () => { try { const n = new URLSearchParams(location.search).get('popout'); if (n) window.bp3StopToolDemo(n); } catch (_) {} });
+    function askT2RealPoll() { const ph = window._askPollState && window._askPollState.phase; return !!(window._askPollActive || (ph && ph !== 'idle')); }
+    function askT2DemoSync() {
+      if (!_akDemoOn) return; if (askT2RealPoll()) { askT2SetDemo(false, 'หยุดตัวอย่างอัตโนมัติเพราะกำลังเปิดโหวตจริง'); return; }
+      if (_akDemoPend) return; _akDemoPend = true;
+      setTimeout(() => { _akDemoPend = false; if (_akDemoOn) askT2Emit(askT2DemoState()); }, 90);
+    }
+    function askT2SetDemo(on, msg) {
+      const doc = getToolDocument('ask'); if (on === _akDemoOn) return; _akDemoOn = on;
+      const b = doc.getElementById('btnAskDemo'), st = doc.getElementById('akDemoStatus');
+      if (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.textContent = on ? 'หยุดตัวอย่างบนจอ OBS' : 'แสดงตัวอย่างจริงบนจอ OBS'; }
+      clearInterval(_akDemoKeep);
+      if (on) { askT2Emit(askT2DemoState()); _akDemoKeep = setInterval(() => { if (_akDemoOn) askT2Emit(askT2DemoState()); }, 4000); if (st) st.textContent = 'กำลังแสดงบนจอ OBS ลองลากกรอบหรือปรับค่าได้เลย เห็นผลทันที กดปุ่มอีกครั้งเมื่อพอใจ'; }
+      else { askT2Emit({active: false, phase: 'idle', is_demo: true}); if (st) st.textContent = msg || 'ปิดอยู่ เปิดแล้วจะเห็นโพลตัวอย่างบนจอ OBS และปรับได้ทันที'; }
+    }
+    function askT2ReplayAnim() {
+      if (askT2RealPoll()) { const st = getToolDocument('ask').getElementById('akDemoStatus'); if (st) st.textContent = 'กำลังเปิดโหวตจริงอยู่ ปิดโหวตก่อนจึงจะทดลองแอนิเมชั่นได้'; return; }
+      const ms = Math.max(100, Math.min(2000, getAskTab2Config().ask_anim_ms));
+      if (_akDemoOn) { askT2SetDemo(false); setTimeout(() => askT2SetDemo(true), ms + 400); } else askT2SetDemo(true);
+    }
+    function askT2ToggleDemo() { if (askT2RealPoll()) { const st = getToolDocument('ask').getElementById('akDemoStatus'); if (st) st.textContent = 'กำลังเปิดโหวตจริงอยู่ ปิดโหวตก่อนจึงจะดูตัวอย่างได้'; return; } askT2SetDemo(!_akDemoOn); }
+    window.addEventListener('pagehide', () => { if (_akDemoOn) askT2Emit({active: false, phase: 'idle', is_demo: true}); });
+    function initAskTab2Controls() {
+      try {
+        const doc = getToolDocument('ask');
+        const saved = JSON.parse(localStorage.getItem('bp3_ask_tab2_cfg') || 'null') || {};
+        if (!localStorage.getItem('bp3_ask_strip_mig') && saved.ask_layout === 'hband') { saved.ask_layout = 'strip'; try { localStorage.setItem('bp3_ask_tab2_cfg', JSON.stringify(saved)); } catch (_) {} }
+        try { localStorage.setItem('bp3_ask_strip_mig', '1'); } catch (_) {}
+        for (const [id, key] of Object.entries(ASK_T2_SELECTS)) { const el = doc.getElementById(id); if (el && saved[key] !== undefined && [...el.options].some(o => o.value === saved[key])) el.value = saved[key]; }
+        for (const [id, key] of Object.entries(ASK_T2_RANGES)) { if (saved[key] !== undefined) askT2SetRange(id, key === 'ask_scale' ? saved[key] * 100 : saved[key]); }
+        askT2Bind(); askT2Refresh();
+        const win = doc.getElementById('win-ask');
+        if (win && window.MutationObserver && !win._akObs) { win._akObs = true; new MutationObserver(() => { if (_akDemoOn && getComputedStyle(win).display === 'none') askT2SetDemo(false, 'ปิดอัตโนมัติเพราะปิดหน้าต่าง ASK แล้ว'); }).observe(win, {attributes: true, attributeFilter: ['class', 'style']}); }
+      } catch (e) { console.warn('initAskTab2Controls', e); }
+    }
     let _askDemoTimer = null;
 
 
@@ -71650,6 +68579,51 @@ try {
     body: JSON.stringify({ ready: true, time: Date.now() })
   }).catch(() => {});
 } catch (_) {}
+</script>
+<script id="bp3-popout-size">
+(function () {
+  try {
+    var isPop = new URLSearchParams(location.search).has('popout');
+    var KEY = 'bp3_main_win';
+    if (!isPop) {
+      var save = function () { try { localStorage.setItem(KEY, JSON.stringify({ w: window.outerWidth, h: window.outerHeight, x: window.screenX, y: window.screenY })); } catch (_) {} };
+      var tm = 0; window.__bp3SaveMainWin = save; save();
+      window.addEventListener('resize', function () { clearTimeout(tm); tm = setTimeout(save, 250); });
+      window.addEventListener('focus', save);
+      return;
+    }
+    // tool popout: first time = ~15% smaller than the main window (centred); afterwards = last size/position/screen the user left it at
+    var tool = new URLSearchParams(location.search).get('popout') || '';
+    var SKEY = 'bp3_popwin_' + tool;
+    var saved = null; try { saved = JSON.parse(localStorage.getItem(SKEY) || 'null'); } catch (_) {}
+    var tw, th, x, y;
+    if (saved && saved.w >= 480 && saved.h >= 360) {
+      tw = saved.w; th = saved.h; x = saved.x; y = saved.y;
+    } else {
+      var op = null; try { op = window.opener && !window.opener.closed ? window.opener : null; } catch (_) {}
+      var m = null; try { m = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (_) {}
+      var mw = op ? op.outerWidth : (m && m.w), mh = op ? op.outerHeight : (m && m.h);
+      var mx = op ? op.screenX : (m && m.x), my = op ? op.screenY : (m && m.y);
+      if (!mw || !mh) return;
+      tw = Math.max(560, Math.round(mw * 0.85)); th = Math.max(480, Math.round(mh * 0.85));
+      x = Math.max(0, Math.round((mx || 0) + (mw - tw) / 2)); y = Math.max(0, Math.round((my || 0) + (mh - th) / 2));
+    }
+    var apply = function () { try { window.resizeTo(tw, th); window.moveTo(x, y); } catch (_) {} };
+    apply(); setTimeout(apply, 250); setTimeout(apply, 900);
+    // remember where the user leaves it (size, position, which screen) - starts after the initial placement settled
+    var last = '';
+    var persist = function () {
+      try {
+        if (!(window.outerWidth >= 480 && window.outerHeight >= 360) || window.screenX < -20000) return;
+        var v = JSON.stringify({ w: window.outerWidth, h: window.outerHeight, x: window.screenX, y: window.screenY });
+        if (v !== last) { last = v; localStorage.setItem(SKEY, v); }
+      } catch (_) {}
+    };
+    setTimeout(function () { setInterval(persist, 500); }, 2500);
+    window.addEventListener('pagehide', persist);
+    window.addEventListener('beforeunload', persist);
+  } catch (_) {}
+})();
 </script>
 </body>
 

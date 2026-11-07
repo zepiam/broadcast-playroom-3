@@ -10,6 +10,9 @@ if errorlevel 1 (
     )
 )
 
+rem Dev mode serves the files in src\ directly, so edits show up without running a build.
+set "BP3_DEV_SERVE_SRC=1"
+
 echo [INFO] Starting Broadcast Playroom 3 Dev Mode...
 
 "%PY%" -u launch_dev.py

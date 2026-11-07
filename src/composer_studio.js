@@ -797,6 +797,24 @@
     return w;
   }
 
+  // Built-in overlay tools (ask/replie/randomizer) no longer live as widgets: strip any legacy ones
+  const BUILTIN_TOOL_TYPES = ['ask', 'replie', 'randomizer'];
+  function stripBuiltinToolWidgets(pages, store) {
+    let removed = 0;
+    (pages || []).forEach(p => {
+      if (!p || !Array.isArray(p.widgets)) return;
+      const keep = [];
+      p.widgets.forEach(w => {
+        if (w && BUILTIN_TOOL_TYPES.includes(w.type)) {
+          removed++;
+          if (w.type === 'ask' && store && !store.ask) store.ask = JSON.parse(JSON.stringify(w));
+        } else keep.push(w);
+      });
+      p.widgets = keep;
+    });
+    return removed;
+  }
+
   // Load saved state from localStorage (with full V2 fallback & migration)
   function loadSavedState() {
     try {
@@ -845,6 +863,7 @@
         canvasHeight: CANVAS_HEIGHT,
         legacyPlayroomTriggers: state.legacyPlayroomTriggers || [],
         legacyTools: state.legacyTools || {}, legacyChat: state.legacyChat || {},
+        builtinTools: state.builtinTools || {},
         updatedAt: Date.now()
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.pages));
@@ -906,10 +925,20 @@
         state.pages=layout.pages.map(page=>({...page,widgets:page.widgets.map(normalizeWidget)}));
         state.activePageId=layout.activePageId || state.pages[0].id;
         state.legacyPlayroomTriggers=layout.legacyPlayroomTriggers || [];
-        state.legacyTools=layout.legacyTools || {}; state.legacyChat=layout.legacyChat || {};
+        state.legacyTools=layout.legacyTools || {}; state.legacyChat=layout.legacyChat || {}; state.builtinTools=layout.builtinTools || {};
         if(window.applyLegacyToolData)window.applyLegacyToolData(layout);
       }
     }catch(_){}
+
+    // Auto-remove legacy ask/replie/randomizer widgets (keep ASK look in builtinTools.ask)
+    try{
+      state.builtinTools = state.builtinTools || {};
+      const removedLegacy = stripBuiltinToolWidgets(state.pages, state.builtinTools);
+      if(removedLegacy>0){
+        state.selectedWidgetId = null;
+        saveState(true);
+      }
+    }catch(e){console.warn('builtin cleanup failed',e);}
 
     renderPageTabs();
     setupCanvasEvents();
@@ -1274,7 +1303,8 @@
       // Inner Content
       const inner = document.createElement('div');
       inner.className = 'composer-widget-inner widget-inner';
-      if(w.type==='chat' && old?.querySelector('iframe[data-legacy-chat]'))inner.append(old.querySelector('iframe[data-legacy-chat]'));else inner.innerHTML = renderWidgetInnerHtml(w);
+      if(w.type==='chat' && old?.querySelector('iframe[data-legacy-chat]'))inner.append(old.querySelector('iframe[data-legacy-chat]'));else {const cs = contentScaleOf(w); inner.innerHTML = renderWidgetInnerHtml(cs === 1 ? w : {...w, width: w.width / cs, height: w.height / cs});
+        if (cs !== 1) {inner.style.width = (w.width / cs) + 'px'; inner.style.height = (w.height / cs) + 'px'; inner.style.transformOrigin = '0 0'; inner.style.transform = 'scale(' + cs + ')';}}
       const frame=inner.querySelector('iframe[data-legacy-chat]');
       if(frame){const sync=()=>frame.contentWindow?.postMessage({type:'bp3-chat-widget',widget:w},location.origin);frame.addEventListener('load',sync,{once:true});sync();}
       el.appendChild(inner);
@@ -2062,6 +2092,8 @@
 
     state.isResizing = true;
     state.activeResizeHandle = handle;
+    state.resizeScaleMode = !!e.altKey && !NO_CONTENT_SCALE.has(widget.type);
+    state.dragStartScale = contentScaleOf(widget);
     state.dragStartMouseX = e.clientX;
     state.dragStartMouseY = e.clientY;
     state.dragStartWidgetX = widget.x;
@@ -2082,6 +2114,82 @@
     });
   }
 
+  // ---- Whole-widget scaling (Alt + drag a handle): frame AND content grow/shrink together, aspect ratio kept ----
+  const NO_CONTENT_SCALE = new Set(['chat']);
+  function contentScaleOf(w) {
+    const s = Number(w && w.contentScale);
+    return (s > 0 && isFinite(s) && !NO_CONTENT_SCALE.has(w.type) && !isFullscreenWidget(w)) ? s : 1;
+  }
+  // the content is laid out at (frame / scale) and magnified by CSS, so it looks identical, just bigger or smaller
+  function applyContentScale(el, w) {
+    const inner = el && el.querySelector(':scope > .widget-inner');
+    if (!inner) return;
+    const s = contentScaleOf(w);
+    if (s === 1) {inner.style.width = ''; inner.style.height = ''; inner.style.transform = ''; inner.style.transformOrigin = ''; return;}
+    inner.style.width = (w.width / s) + 'px';
+    inner.style.height = (w.height / s) + 'px';
+    inner.style.transformOrigin = '0 0';
+    inner.style.transform = 'scale(' + s + ')';
+  }
+
+  // ---- Smart snap: pull the dragged widget onto canvas edges / canvas centre / other widgets, with red guide lines ----
+  const SNAP_PX = 8; // pull distance in screen pixels
+  function snapTargets(widget) {
+    const xs = [{v: 0, k: 'edge'}, {v: CANVAS_WIDTH / 2, k: 'center'}, {v: CANVAS_WIDTH, k: 'edge'}];
+    const ys = [{v: 0, k: 'edge'}, {v: CANVAS_HEIGHT / 2, k: 'center'}, {v: CANVAS_HEIGHT, k: 'edge'}];
+    const page = getActivePage();
+    ((page && page.widgets) || []).forEach(o => {
+      if (!o || o.id === widget.id || o.hidden || isFullscreenWidget(o)) return;
+      xs.push({v: o.x, k: 'widget'}, {v: o.x + o.width / 2, k: 'widget'}, {v: o.x + o.width, k: 'widget'});
+      ys.push({v: o.y, k: 'widget'}, {v: o.y + o.height / 2, k: 'widget'}, {v: o.y + o.height, k: 'widget'});
+    });
+    return {xs, ys};
+  }
+  function bestSnap(values, targets, thr) {
+    let best = null;
+    values.forEach(v => targets.forEach(tg => {
+      const d = tg.v - v;
+      if (Math.abs(d) <= thr && (!best || Math.abs(d) < Math.abs(best.d))) best = {d, tg};
+    }));
+    return best;
+  }
+  function guideLabel(axis, tg) {
+    if (tg.k === 'center') return axis === 'x' ? 'กึ่งกลางจอ ซ้าย-ขวา' : 'กึ่งกลางจอ บน-ล่าง';
+    if (tg.k === 'edge') return 'ขอบจอ';
+    return 'ตรงกับวิดเจ็ตอื่น';
+  }
+  function clearSnapGuides() {
+    const stage = document.getElementById('composerCanvasStage');
+    if (stage) stage.querySelectorAll(':scope > .comp-snap-guide').forEach(n => n.remove());
+  }
+  function drawSnapGuides(xHits, yHits, zoom) {
+    const stage = document.getElementById('composerCanvasStage');
+    if (!stage) return;
+    clearSnapGuides();
+    const th = Math.max(1, 2 / zoom), fs = Math.round(12 / zoom), pad = Math.round(4 / zoom);
+    const mk = (axis, hit) => {
+      const line = document.createElement('div');
+      line.className = 'comp-snap-guide';
+      const base = 'position:absolute;z-index:100000;pointer-events:none;background:#ff2b3d;box-shadow:0 0 ' + Math.round(6 / zoom) + 'px rgba(255,43,61,.9);';
+      if (axis === 'x') line.style.cssText = base + 'left:' + (hit.v - th / 2) + 'px;top:0;width:' + th + 'px;height:100%;';
+      else line.style.cssText = base + 'top:' + (hit.v - th / 2) + 'px;left:0;height:' + th + 'px;width:100%;';
+      const tag = document.createElement('span');
+      tag.textContent = guideLabel(axis, hit);
+      tag.style.cssText = 'position:absolute;white-space:nowrap;background:#ff2b3d;color:#fff;font:700 ' + fs + 'px/1.2 sans-serif;padding:' + pad + 'px ' + (pad * 2) + 'px;border-radius:' + pad + 'px;' + (axis === 'x' ? 'top:' + pad * 2 + 'px;left:' + pad * 2 + 'px;' : 'left:' + pad * 2 + 'px;top:' + pad * 2 + 'px;');
+      line.appendChild(tag);
+      stage.appendChild(line);
+    };
+    const seen = new Set();
+    xHits.forEach(h => {const key = 'x' + Math.round(h.v); if (!seen.has(key)) {seen.add(key); mk('x', h);}});
+    yHits.forEach(h => {const key = 'y' + Math.round(h.v); if (!seen.has(key)) {seen.add(key); mk('y', h);}});
+  }
+  // every target that the given coordinates currently sit on (so e.g. "centre" and "edge of another widget" can both light up)
+  function hitsFor(values, targets) {
+    const out = [];
+    targets.forEach(tg => {if (values.some(v => Math.abs(v - tg.v) < 0.75)) out.push(tg);});
+    return out;
+  }
+
   // Mouse Move for Drag & Resize
   function onMouseMove(e) {
     const widget = getSelectedWidget();
@@ -2095,17 +2203,45 @@
       let newX = Math.round(state.dragStartWidgetX + deltaX);
       let newY = Math.round(state.dragStartWidgetY + deltaY);
 
+      let guideX = [], guideY = [];
       if (state.snapGuides) {
-        newX = Math.round(newX / 10) * 10;
-        newY = Math.round(newY / 10) * 10;
+        const tg = snapTargets(widget), thr = SNAP_PX / zoom;
+        const sx = bestSnap([newX, newX + widget.width / 2, newX + widget.width], tg.xs, thr);
+        const sy = bestSnap([newY, newY + widget.height / 2, newY + widget.height], tg.ys, thr);
+        if (sx) newX = Math.round(newX + sx.d);
+        if (sy) newY = Math.round(newY + sy.d);
+        newX = Math.max(0, Math.min(CANVAS_WIDTH - widget.width, newX));
+        newY = Math.max(0, Math.min(CANVAS_HEIGHT - widget.height, newY));
+        guideX = hitsFor([newX, newX + widget.width / 2, newX + widget.width], tg.xs);
+        guideY = hitsFor([newY, newY + widget.height / 2, newY + widget.height], tg.ys);
       }
 
       // Clamp strictly within canvas boundary
       newX = Math.max(0, Math.min(CANVAS_WIDTH - widget.width, newX));
       newY = Math.max(0, Math.min(CANVAS_HEIGHT - widget.height, newY));
+      if (state.snapGuides) drawSnapGuides(guideX, guideY, zoom); else clearSnapGuides();
 
       widget.x = newX;
       widget.y = newY;
+    } else if (state.isResizing && state.resizeScaleMode) {
+      const h = state.activeResizeHandle;
+      const sw = state.dragStartWidgetW, sh = state.dragStartWidgetH, sx0 = state.dragStartWidgetX, sy0 = state.dragStartWidgetY, s0 = state.dragStartScale || 1;
+      const dxEff = h.includes('e') ? deltaX : (h.includes('w') ? -deltaX : 0);
+      const dyEff = h.includes('s') ? deltaY : (h.includes('n') ? -deltaY : 0);
+      const kx = (sw + dxEff) / sw, ky = (sh + dyEff) / sh;
+      let k = h.length === 2 ? (Math.abs(kx - 1) >= Math.abs(ky - 1) ? kx : ky) : (dxEff ? kx : ky);
+      const availW = h.includes('w') ? sx0 + sw : CANVAS_WIDTH - sx0;
+      const availH = h.includes('n') ? sy0 + sh : CANVAS_HEIGHT - sy0;
+      const kMin = Math.max(50 / sw, 30 / sh, 0.1 / s0);
+      const kMax = Math.max(kMin, Math.min(availW / sw, availH / sh, 10 / s0));
+      k = Math.max(kMin, Math.min(kMax, k));
+      const newW = Math.round(sw * k), newH = Math.round(sh * k);
+      widget.width = newW;
+      widget.height = newH;
+      widget.x = h.includes('w') ? sx0 + sw - newW : sx0;
+      widget.y = h.includes('n') ? sy0 + sh - newH : sy0;
+      widget.contentScale = Math.round(s0 * (newW / sw) * 1000) / 1000;
+      clearSnapGuides();
     } else if (state.isResizing) {
       const handle = state.activeResizeHandle;
       let newX = state.dragStartWidgetX;
@@ -2146,11 +2282,20 @@
         newY = potentialY;
       }
 
+      let rGuideX = [], rGuideY = [];
       if (state.snapGuides) {
-        newW = Math.round(newW / 10) * 10;
-        newH = Math.round(newH / 10) * 10;
-        newX = Math.round(newX / 10) * 10;
-        newY = Math.round(newY / 10) * 10;
+        const tg = snapTargets(widget), thr = SNAP_PX / zoom;
+        if (handle.includes('e')) {const s = bestSnap([newX + newW], tg.xs, thr); if (s) newW = Math.max(50, newW + s.d);}
+        if (handle.includes('w')) {const s = bestSnap([newX], tg.xs, thr); if (s && newW - s.d >= 50) {newX += s.d; newW -= s.d;}}
+        if (handle.includes('s')) {const s = bestSnap([newY + newH], tg.ys, thr); if (s) newH = Math.max(30, newH + s.d);}
+        if (handle.includes('n')) {const s = bestSnap([newY], tg.ys, thr); if (s && newH - s.d >= 30) {newY += s.d; newH -= s.d;}}
+        newX = Math.round(newX); newY = Math.round(newY); newW = Math.round(newW); newH = Math.round(newH);
+        const edgesX = [], edgesY = [];
+        if (handle.includes('e')) edgesX.push(newX + newW);
+        if (handle.includes('w')) edgesX.push(newX);
+        if (handle.includes('s')) edgesY.push(newY + newH);
+        if (handle.includes('n')) edgesY.push(newY);
+        rGuideX = hitsFor(edgesX, tg.xs); rGuideY = hitsFor(edgesY, tg.ys);
       }
 
       // Final boundary clamp: widget must NEVER overflow canvas boundaries in any direction
@@ -2163,6 +2308,7 @@
       widget.y = newY;
       widget.width = newW;
       widget.height = newH;
+      if (state.snapGuides) drawSnapGuides(rGuideX, rGuideY, zoom); else clearSnapGuides();
     }
 
     const el = document.getElementById(`widget-${widget.id}`);
@@ -2171,6 +2317,7 @@
       el.style.top = `${widget.y}px`;
       el.style.width = `${widget.width}px`;
       el.style.height = `${widget.height}px`;
+      applyContentScale(el, widget);
 
       // Update badge position dynamically (flip beneath widget frame if at the very top of canvas)
       const isDanmakuFull = widget.isDanmaku || widget.chatMode === 'danmaku';
@@ -2200,6 +2347,8 @@
       state.isDragging = false;
       state.isResizing = false;
       state.activeResizeHandle = null;
+      state.resizeScaleMode = false;
+      clearSnapGuides();
       state.suppressCanvasDeselectUntil = Date.now() + 200;
 
       const wins = state.activeDragWindows || getActiveComposerWindows();
@@ -2602,7 +2751,7 @@
 
     const previousScroll=list.scrollTop;
     list.innerHTML = '';
-    const sorted = [...page.widgets].sort((a, b) => (b.z || 0) - (a.z || 0));
+    const sorted = [...page.widgets].filter(w => !['ask', 'replie', 'randomizer'].includes(w.type)).sort((a, b) => (b.z || 0) - (a.z || 0));
     const countEl = document.getElementById('composerLayerCount');
     if (countEl) countEl.textContent = `${sorted.length} เลเยอร์`;
 
@@ -2758,8 +2907,10 @@
     const inpW = document.getElementById('compPropW');
     const inpH = document.getElementById('compPropH');
     const inpOp = document.getElementById('compPropOp');
+    const inpSc = document.getElementById('compPropScale');
 
     if (!widget) {
+      if (inpSc) {inpSc.value = '-'; inpSc.disabled = true;}
       if (inpX) { inpX.value = '-'; inpX.disabled = false; }
       if (inpY) { inpY.value = '-'; inpY.disabled = false; }
       if (inpW) { inpW.value = '-'; inpW.disabled = false; }
@@ -2769,6 +2920,7 @@
     }
 
     const isFull = isFullscreenWidget(widget);
+    if (inpSc) {inpSc.value = Math.round(contentScaleOf(widget) * 100); inpSc.disabled = isFull || NO_CONTENT_SCALE.has(widget.type);}
     if (inpX) { inpX.value = isFull ? 0 : widget.x; inpX.disabled = isFull; }
     if (inpY) { inpY.value = isFull ? 0 : widget.y; inpY.disabled = isFull; }
     if (inpW) { inpW.value = isFull ? CANVAS_WIDTH : widget.width; inpW.disabled = isFull; }
@@ -5234,11 +5386,19 @@
     // Snap toggle
     const btnSnap = document.getElementById('btnCompSnap');
     if (btnSnap) {
+      const paintSnap = () => {
+        btnSnap.classList.toggle('active', state.snapGuides);
+        btnSnap.setAttribute('aria-pressed', state.snapGuides ? 'true' : 'false');
+        btnSnap.textContent = '🧲 Smart Grid';
+        btnSnap.title = 'Smart Grid: ลาก/ย่อขยายแล้ววิดเจ็ตจะดูดเข้าหากึ่งกลางจอ ขอบจอ และวิดเจ็ตอื่น พร้อมเส้นสีแดงนำทาง';
+      };
+      paintSnap();
       btnSnap.addEventListener('click', () => {
         state.snapGuides = !state.snapGuides;
-        btnSnap.classList.toggle('active', state.snapGuides);
+        paintSnap();
+        if (!state.snapGuides) clearSnapGuides();
         if (window.showToast) {
-          window.showToast(state.snapGuides ? 'เปิดระบบแม่เหล็กจัดแนวแล้ว' : 'ปิดระบบแม่เหล็กจัดแนวแล้ว');
+          window.showToast(state.snapGuides ? 'เปิด Smart Grid แล้ว' : 'ปิด Smart Grid แล้ว');
         }
       });
     }
@@ -5320,6 +5480,15 @@
     bindProp('compPropY', 'y', 0);
     bindProp('compPropW', 'width', 50);
     bindProp('compPropH', 'height', 30);
+    document.getElementById('compPropScale')?.addEventListener('change', (e) => {
+      const widget = getSelectedWidget();
+      if (!widget || isFullscreenWidget(widget) || NO_CONTENT_SCALE.has(widget.type)) return;
+      const v = Math.max(10, Math.min(1000, parseInt(e.target.value, 10) || 100));
+      if (v === 100) delete widget.contentScale; else widget.contentScale = v / 100;
+      renderCanvasWidgets();
+      updateTransformInspector();
+      saveState();
+    });
 
     // Preview Mode Button
     document.getElementById('btnCompPreview')?.addEventListener('click', togglePreviewMode);
@@ -5467,9 +5636,11 @@ function initStudioBusListener() {
   window._studioBusReady = true;
   bus.on('REPLIE_DISMISS',()=>window.BP3LegacyReplie?.dismiss());
   let _csRandomizerTimer = null;
+  let _csRandomizerManager = null;
   bus.on('RANDOMIZER_SPIN', (data) => {
     if (!data) return;
-    const curPage = window.ComposerStudio?.getActivePage?.() || window.ComposerStudio?.state?.pages?.[0];
+    const isSpin = !data.action || data.action === 'spin';
+    const curPage = !isSpin ? null : window.ComposerStudio?.getActivePage?.() || window.ComposerStudio?.state?.pages?.[0];
     if (curPage) {
       curPage.widgets.forEach(w => {
         if (w.type === 'randomizer') {
@@ -5503,153 +5674,16 @@ function initStudioBusListener() {
       });
     }
 
-    // On-Demand Dynamic Modal Overlay inside Composer Canvas only.
+    // On-demand overlay inside the Composer canvas only (shared renderer, same as OBS).
     // NEVER attach to document.body in main app window (which would cover Live Chat)!
     const canvas = document.getElementById('composer-canvas');
-    if (!canvas) return;
+    if (!canvas || !window.BP3RandomizerVisual) return;
+    if (!_csRandomizerManager) {
+      _csRandomizerManager = window.BP3RandomizerVisual.createManager({getHost: () => document.getElementById('composer-canvas'), position: 'absolute', id: 'on-demand-randomizer-overlay-cs'});
+    }
     const compWin = document.getElementById('win-composer');
-    if (compWin && !compWin.classList.contains('active')) return;
-    const existing = document.getElementById('on-demand-randomizer-overlay-cs');
-    if (existing) existing.remove();
-    if (_csRandomizerTimer) {
-      clearTimeout(_csRandomizerTimer);
-      _csRandomizerTimer = null;
-    }
-
-    const items = (data.items && data.items.length) ? data.items : ['ตัวเลือก 1', 'ตัวเลือก 2'];
-    const winner = data.winner || items[0];
-    const title = data.title || '🎰 สุ่มกิจกรรม';
-    const st = data.settings || {};
-    const scale = (st.scale || 100) / 100;
-    const ox = parseInt(st.offset_x, 10) || 0;
-    const oy = parseInt(st.offset_y, 10) || 0;
-    const holdDuration = (st.duration !== undefined ? parseFloat(st.duration) : (data.duration || 5)) * 1000;
-    const anchors = {
-      'top-left':['top:40px;left:40px;','translate(0,0)','top left'],
-      'top-center':['top:40px;left:50%;','translate(-50%,0)','top center'],
-      'top-right':['top:40px;right:40px;','translate(0,0)','top right'],
-      'middle-left':['top:50%;left:40px;','translate(0,-50%)','left center'],
-      'middle-right':['top:50%;right:40px;','translate(0,-50%)','right center'],
-      'bottom-left':['bottom:40px;left:40px;','translate(0,0)','bottom left'],
-      'bottom-center':['bottom:40px;left:50%;','translate(-50%,0)','bottom center'],
-      'bottom-right':['bottom:40px;right:40px;','translate(0,0)','bottom right'],
-      'center':['top:50%;left:50%;','translate(-50%,-50%)','center center']
-    };
-    const [anchorStyle, baseTransform, transformOrigin] = anchors[st.anchor] || anchors.center;
-
-    const overlay = document.createElement('div');
-    overlay.id = 'on-demand-randomizer-overlay-cs';
-    overlay.style.cssText = `
-      position: absolute;
-      ${anchorStyle}
-      z-index: 9999999;
-      pointer-events: none;
-      transform: ${baseTransform} translate(${ox}px, ${oy}px) scale(${scale});
-      transform-origin: ${transformOrigin};
-      transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-      opacity: 0;
-      contain: layout style paint;
-      isolation: isolate;
-    `;
-    overlay.innerHTML = `
-      <div style="
-        width: 460px;
-        background: rgba(11, 17, 32, 0.96);
-        border: 2px solid #3b82f6;
-        border-radius: 18px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(59, 130, 246, 0.25);
-        padding: 24px 26px 20px 26px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Prompt', 'Kanit', sans-serif;
-        box-sizing: border-box;
-        color: #ffffff;
-        text-align: center;
-        contain: layout style paint;
-      ">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
-          <span style="font-size: 20px;">🎰</span>
-          <span style="font-size: 15px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px; text-transform: uppercase;">
-            <span id="cs-randomizer-title"></span>
-          </span>
-        </div>
-        <div id="cs-roller-box" style="
-          background: rgba(2, 6, 23, 0.95);
-          border: 2px solid #1e293b;
-          border-radius: 12px;
-          height: 76px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 16px;
-          box-sizing: border-box;
-          overflow: hidden;
-          transition: border-color 0.3s, background-color 0.3s;
-        ">
-          <span id="cs-roller-text" style="
-            font-size: 24px;
-            font-weight: 800;
-            color: #f1f5f9;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
-          ">...</span>
-        </div>
-        <div id="cs-footer-pill" style="
-          margin-top: 14px;
-          font-size: 12.5px;
-          font-weight: 600;
-          color: #94a3b8;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-        ">
-          <span>⚡ กำลังสุ่ม...</span>
-        </div>
-      </div>
-    `;
-    const palette = {pastel:['#c4b5fd','#f9a8d4'], neon:['#d946ef','#22d3ee'], gold:['#f59e0b','#fbbf24'], mint:['#10b981','#6ee7b7']}[st.color_theme] || ['#c4b5fd','#f9a8d4'];
-    overlay.firstElementChild.style.borderColor = palette[0];
-    overlay.querySelector('#cs-randomizer-title').textContent = title;
-    overlay.querySelector('#cs-randomizer-title').parentElement.style.color = palette[1];
-    canvas.appendChild(overlay);
-    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
-
-    const rollerText = overlay.querySelector('#cs-roller-text');
-    const rollerBox = overlay.querySelector('#cs-roller-box');
-    const footerPill = overlay.querySelector('#cs-footer-pill');
-    const randomVisual = window.BP3RandomizerVisual?.mount(overlay.firstElementChild, data, Math.max(2, Math.min(7, Number(st.spin_duration) || 4)));
-
-    let ticks = 0;
-    const maxTicks = 26;
-    const delay = Math.max(2, Math.min(7, Number(st.spin_duration) || 4)) * 1000 / maxTicks;
-
-    function runCsTick() {
-      if (!overlay.isConnected) return;
-      ticks++;
-      const cand = items[Math.floor(Math.random() * items.length)];
-      if (rollerText) rollerText.textContent = cand;
-      if (ticks < maxTicks) {
-        setTimeout(runCsTick, delay);
-      } else {
-        if (rollerText) rollerText.textContent = winner;
-        randomVisual?.finish();
-        if (rollerBox) {
-          rollerBox.style.borderColor = '#f59e0b';
-          rollerBox.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
-          rollerText.style.color = '#fbbf24';
-        }
-        if (footerPill) {
-          footerPill.innerHTML = '<span style="color: #fbbf24; font-weight: 700;">🎉 ผลการสุ่มเรียบร้อยแล้ว</span>';
-        }
-        _csRandomizerTimer = setTimeout(() => {
-          overlay.style.opacity = '0';
-          overlay.style.transform = `${baseTransform} translate(${ox}px, ${oy - 20}px) scale(${scale * 0.95})`;
-          setTimeout(() => { overlay.remove(); }, 400);
-        }, holdDuration);
-      }
-    }
-    runCsTick();
+    if (compWin && !compWin.classList.contains('active')) { _csRandomizerManager.clear(); return; }
+    _csRandomizerManager.handle(data);
   });
 
   bus.on('ASK_UPDATE', (data) => {
@@ -5780,3 +5814,31 @@ if (typeof window !== 'undefined') {
   window.addEventListener('DOMContentLoaded', initStudioBusListener);
   setTimeout(initStudioBusListener, 500);
 }
+
+// Text marquee: position is a pure function of the wall clock, so the Composer and every OBS window show the letters at the same spot at the same time.
+(function(){
+  const NAMES = new Set(['compMarqueeRun', 'bp3MarqueeFullRun']);
+  function syncMarquee() {
+    if (document.hidden) return;
+    const now = Date.now();
+    document.querySelectorAll('.widget-text-ticker span').forEach(sp => {
+      if (!sp.getAnimations) return;
+      sp.getAnimations().forEach(a => {
+        if (!NAMES.has(a.animationName) || a.playState !== 'running') return;
+        const t = a.effect && a.effect.getComputedTiming ? a.effect.getComputedTiming() : null;
+        const dur = t ? Number(t.duration) : 0;
+        if (!(dur > 0) || !isFinite(dur) || (Number(t.delay) || 0) !== 0) return;
+        const target = now % dur, cur = (Number(a.currentTime) || 0) % dur, diff = Math.abs(cur - target);
+        if (diff > 20 && diff < dur - 20) a.currentTime = target;
+      });
+    });
+  }
+  let raf = 0;
+  const kick = () => {if (!raf) raf = requestAnimationFrame(() => {raf = 0; syncMarquee();});};
+  const start = () => {
+    syncMarquee();
+    setInterval(syncMarquee, 1000);
+    try {new MutationObserver(kick).observe(document.body, {childList: true, subtree: true});} catch (_) {}
+  };
+  if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+})();

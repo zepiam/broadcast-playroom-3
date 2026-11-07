@@ -1329,12 +1329,63 @@ function handleGiveawayEvent(data) {
 // ════════════════════════════════════════════════════════════
 
 let lastSignature='';
+let _gwVisuals=[];
+function destroyWinnerVisual(){
+  _gwVisuals.forEach(v=>{v.dead=true;try{v.ro&&v.ro.disconnect();}catch(_){}try{v.ctl&&v.ctl.destroy();}catch(_){}try{v.host&&v.host.remove();}catch(_){}});
+  _gwVisuals=[];
+  document.querySelectorAll('.widget.type-giveaway .giveaway-cp-box').forEach(el=>{el.style.removeProperty('display');});
+}
+function mountWinnerVisual(inner,data){
+  const RV=window.BP3RandomizerVisual;
+  if(!RV||!inner)return false;
+  try{
+    inner.querySelectorAll('.giveaway-cp-box').forEach(el=>{el.style.display='none';});
+    const host=document.createElement('div');
+    host.className='gw-rz-host';
+    host.style.cssText='position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;pointer-events:none;';
+    const fit=document.createElement('div');
+    fit.style.cssText='position:relative;flex:none;';
+    host.appendChild(fit);inner.appendChild(host);
+    const cfg=data.config||{};
+    const names=(Array.isArray(data.candidates)&&data.candidates.length?data.candidates:[data.winner]).map(String);
+    let wi=Number.isInteger(data.winnerIndex)&&data.winnerIndex>=0&&data.winnerIndex<names.length?data.winnerIndex:names.indexOf(String(data.winner));
+    if(wi<0){names.push(String(data.winner));wi=names.length-1;}
+    const hold=Number(data.holdDuration);
+    const ctl=RV.create(fit,{
+      title:'ประกาศผู้โชคดี',
+      items:names,
+      total:Number(data.total)||names.length,
+      icons:Array.isArray(data.icons)?data.icons:undefined,
+      winnerIndex:wi,
+      settings:{style:data.style||'gachapon',color_theme:cfg.draw_theme||'gold',font:cfg.draw_font||'prompt',spin_duration:5,duration:hold>0?hold:120,reduce_motion:!!cfg.draw_calm}
+    },{position:'static',keepVisible:hold===0,fitScale:1,labels:{winner:'ผู้โชคดี',live:'ผู้โชคดีคือ',done:'ประกาศแล้ว',idle:'พร้อมประกาศ',running:'กำลังสุ่ม...'}});
+    ctl.show();
+    const rec={host,ctl,ro:null};
+    const refit=()=>{
+      const nat=ctl.naturalSize();
+      if(!nat.w||!nat.h)return;
+      const hw=host.clientWidth||nat.w,hh=host.clientHeight||nat.h;
+      const sc=Math.min(hw/nat.w,hh/nat.h,2);
+      ctl.setFit(sc);
+      fit.style.width=Math.round(nat.w*sc)+'px';
+      fit.style.height=Math.round(nat.h*sc)+'px';
+    };
+    refit();
+    if(window.ResizeObserver){rec.ro=new ResizeObserver(refit);rec.ro.observe(host);if(ctl.root)rec.ro.observe(ctl.root);}
+    setTimeout(refit,400);setTimeout(refit,1500);
+    _gwVisuals.push(rec);
+    // wait (briefly) for the chosen font so the names are measured and shown in it from the first frame
+    Promise.resolve(ctl.fontReady).then(()=>{if(rec.dead)return;refit();ctl.start();});
+    return true;
+  }catch(e){console.warn('[giveaway] winner visual failed',e);destroyWinnerVisual();return false;}
+}
 function stopDraw(){
   clearTimeout(_gwDrawAutoHideTimer);clearTimeout(_gwCpDismissTimer);clearTimeout(_gwCpHideTimer);clearTimeout(_gwToastTimer);
   clearInterval(_gwSlotRollInterval);clearInterval(_gwSlotReelSpinInterval);
   _gwSlotReelDecelTimers.forEach(clearTimeout);_gwSlotReelDecelTimers=[];
   if(_gwConfettiAnimId)cancelAnimationFrame(_gwConfettiAnimId);
   _gwIsDrawRunning=false;_gwDrawWinner='';
+  destroyWinnerVisual();
 }
 window.BP3LegacyGiveaway={render(data){
   const targets=Array.from(document.querySelectorAll('.widget.type-giveaway'));
@@ -1351,6 +1402,7 @@ window.BP3LegacyGiveaway={render(data){
   if(signature!==lastSignature || rebuilt){
     stopDraw();
     if(data.phase==='winner'){
+      if(!targets.length||!window.BP3RandomizerVisual||!targets.every(el=>mountWinnerVisual(el.querySelector('.widget-inner'),data)))
       handleGiveawayEvent({type:'giveaway_draw_start',winner:data.winner,prize:data.prize,candidates:data.candidates || [data.winner],style:data.style || 'gachapon'});
     }else{
       handleGiveawayEvent({type:'giveaway_draw_reset'});

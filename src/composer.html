@@ -121,6 +121,10 @@
       box-shadow: none !important;
     }
     /* Status banner for browser test mode */
+    /* Built-in tool layer: Replie, ASK and Randomizer always sit above every widget, no widget needed in the Composer */
+    #on-demand-ask-overlay { position: absolute !important; inset: 0 !important; width: 100% !important; height: 100% !important; pointer-events: none !important; z-index: 2147483000 !important; }
+    #replie-layer { z-index: 2147483100 !important; }
+    .bp3rz-root, #on-demand-randomizer-overlay { z-index: 2147483200 !important; }
     #obsStatusNotice {
       position: absolute;
       bottom: 20px;
@@ -220,6 +224,15 @@
         if (!chosen.length && !requestedId) chosen = [{id:'legacy-'+legacyView,type:legacyView}];
         page = {...page,widgets:chosen.map(w=>({...w,x:0,y:0,width:canvasWidth,height:canvasHeight,hidden:false}))};
       }
+      // Replie / ASK / Randomizer are built-in overlays now: any widget of these types saved in an older layout is not drawn
+      // (it would sit under other layers). Its ASK look settings are kept and applied to the built-in ASK overlay.
+      const BUILTIN_TOOLS = ['ask', 'replie', 'randomizer'];
+      if (legacyView === 'composer') {
+        const savedAsk = page.widgets.find(w => w.type === 'ask');
+        const askSrc = savedAsk || window._bp3LayoutBuiltin;
+        window._bp3BuiltinAsk = askSrc ? {...askSrc, id: 'dynamic_ask'} : null;
+        page = {...page, widgets: page.widgets.filter(w => !BUILTIN_TOOLS.includes(w.type))};
+      }
       stage.style.width = canvasWidth+'px';stage.style.height=canvasHeight+'px';
       document.documentElement.style.width=canvasWidth+'px';document.documentElement.style.height=canvasHeight+'px';
       document.body.style.width=canvasWidth+'px';document.body.style.height=canvasHeight+'px';
@@ -227,7 +240,7 @@
       const isFullFn = window.isFullscreenWidget || (window.ComposerStudio && window.ComposerStudio.isFullscreenWidget);
 
       const previous=new Map([...stage.children].filter(el=>el.dataset.id).map(el=>[el.dataset.id,el]));
-      window._overlayWidgets = page.widgets;
+      window._overlayWidgets = window._bp3BuiltinAsk ? [...page.widgets, window._bp3BuiltinAsk] : page.widgets;
 
       page.widgets.forEach(w => {
         if (w.hidden) return;
@@ -275,7 +288,14 @@
           const frame=document.createElement('iframe');frame.dataset.legacyChat='true';frame.id='legacyChat_'+w.id;frame.src='/legacy-chat.html?id='+encodeURIComponent(w.id)+'&p='+encodeURIComponent(page.id);frame.style.cssText='border:0;width:100%;height:100%;background:transparent';el.append(frame);stage.append(el);return;
         }
         if (typeof renderer === 'function') {
-          el.innerHTML = renderer(w);
+          // whole-widget scale set in the Composer (Alt + drag): lay the content out at frame/scale, then magnify it
+          const cs = (legacyView === 'composer' && !isFull && w.type !== 'chat' && Number(w.contentScale) > 0 && Number(w.contentScale) !== 1) ? Number(w.contentScale) : 1;
+          if (cs !== 1) {
+            const lw = {...w, width: (w.width || w.w || 300) / cs, height: (w.height || w.h || 200) / cs};
+            el.innerHTML = '<div class="bp-content-scale" style="position:absolute;left:0;top:0;width:' + lw.width + 'px;height:' + lw.height + 'px;transform:scale(' + cs + ');transform-origin:0 0;">' + renderer(lw) + '</div>';
+          } else {
+            el.innerHTML = renderer(w);
+          }
         } else {
           el.innerHTML = `<div class="composer-widget-inner">${w.title || w.type}</div>`;
         }
@@ -335,6 +355,7 @@
         const hash = JSON.stringify([page,canvasWidth,canvasHeight]);
         if (hash !== lastConfigHash) {
           lastConfigHash = hash;
+          window._bp3LayoutBuiltin = (data.builtinTools && data.builtinTools.ask) || null;
           renderWidgets(page);
         }
       }
@@ -351,195 +372,13 @@
       return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    // On-demand randomizer: one shared renderer (randomizer_visual.js). Overlay exists only while active.
+    const _randomizerManager = window.BP3RandomizerVisual
+      ? window.BP3RandomizerVisual.createManager({getHost: () => document.body, position: 'fixed', id: 'on-demand-randomizer-overlay'})
+      : null;
     function handleRandomizerSpin(data) {
-      if (!data) return;
-
-      // 2. On-Demand Dynamic Modal Overlay (Matches Old Version Dev exactly)
-      const existing = document.getElementById('on-demand-randomizer-overlay');
-      if (existing) {
-        existing.remove();
-      }
-      if (_randomizerTimer) {
-        clearTimeout(_randomizerTimer);
-        _randomizerTimer = null;
-      }
-
-      const items = (data.items && data.items.length) ? data.items : ['ตัวเลือก 1', 'ตัวเลือก 2'];
-      const winner = data.winner || items[0];
-      const title = data.title || '🎰 สุ่มกิจกรรม';
-      const st = data.settings || {};
-      const scale = (st.scale || 100) / 100;
-      const ox = parseInt(st.offset_x, 10) || 0;
-      const oy = parseInt(st.offset_y, 10) || 0;
-      const anchor = st.anchor || 'center';
-      const holdDuration = (st.duration !== undefined ? parseFloat(st.duration) : (data.duration || 5)) * 1000;
-
-      let anchorStyle = '';
-      let transOrigin = 'center center';
-      let baseTrans = '';
-
-      if (anchor === 'top-left') {
-        anchorStyle = 'top: 40px; left: 40px;';
-        transOrigin = 'top left';
-        baseTrans = 'translate(0px, 0px)';
-      } else if (anchor === 'top-center') {
-        anchorStyle = 'top: 40px; left: 50%;';
-        transOrigin = 'top center';
-        baseTrans = 'translate(-50%, 0px)';
-      } else if (anchor === 'top-right') {
-        anchorStyle = 'top: 40px; right: 40px;';
-        transOrigin = 'top right';
-        baseTrans = 'translate(0px, 0px)';
-      } else if (anchor === 'middle-left') {
-        anchorStyle = 'top: 50%; left: 40px;';
-        transOrigin = 'left center';
-        baseTrans = 'translate(0px, -50%)';
-      } else if (anchor === 'center') {
-        anchorStyle = 'top: 50%; left: 50%;';
-        transOrigin = 'center center';
-        baseTrans = 'translate(-50%, -50%)';
-      } else if (anchor === 'middle-right') {
-        anchorStyle = 'top: 50%; right: 40px;';
-        transOrigin = 'right center';
-        baseTrans = 'translate(0px, -50%)';
-      } else if (anchor === 'bottom-left') {
-        anchorStyle = 'bottom: 40px; left: 40px;';
-        transOrigin = 'bottom left';
-        baseTrans = 'translate(0px, 0px)';
-      } else if (anchor === 'bottom-center') {
-        anchorStyle = 'bottom: 40px; left: 50%;';
-        transOrigin = 'bottom center';
-        baseTrans = 'translate(-50%, 0px)';
-      } else if (anchor === 'bottom-right') {
-        anchorStyle = 'bottom: 40px; right: 40px;';
-        transOrigin = 'bottom right';
-        baseTrans = 'translate(0px, 0px)';
-      }
-
-      const overlay = document.createElement('div');
-      overlay.id = 'on-demand-randomizer-overlay';
-      overlay.style.cssText = `
-        position: fixed;
-        ${anchorStyle}
-        z-index: 9999999;
-        pointer-events: none;
-        transform: ${baseTrans} translate(${ox}px, ${oy}px) scale(${scale});
-        transform-origin: ${transOrigin};
-        transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        opacity: 0;
-        contain: layout style paint;
-        isolation: isolate;
-      `;
-
-      overlay.innerHTML = `
-        <div style="
-          width: 460px;
-          background: rgba(11, 17, 32, 0.96);
-          border: 2px solid #3b82f6;
-          border-radius: 18px;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 25px rgba(59, 130, 246, 0.25);
-          padding: 24px 26px 20px 26px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Prompt', 'Kanit', 'Noto Sans Thai', sans-serif;
-          box-sizing: border-box;
-          color: #ffffff;
-          text-align: center;
-          contain: layout style paint;
-        ">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
-            <span style="font-size: 20px;">🎰</span>
-            <span style="font-size: 15px; font-weight: 800; color: #38bdf8; letter-spacing: 0.5px; text-transform: uppercase;">
-              ${escapeHtml(title)}
-            </span>
-          </div>
-
-          <div id="randomizer-roller-box" style="
-            background: rgba(2, 6, 23, 0.95);
-            border: 2px solid #1e293b;
-            border-radius: 12px;
-            height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 16px;
-            box-sizing: border-box;
-            overflow: hidden;
-            transition: border-color 0.3s, background-color 0.3s;
-          ">
-            <span id="randomizer-roller-text" style="
-              font-size: 24px;
-              font-weight: 800;
-              color: #f1f5f9;
-              white-space: nowrap;
-              overflow: hidden;
-              text-overflow: ellipsis;
-              max-width: 100%;
-            ">...</span>
-          </div>
-
-          <div id="randomizer-footer-pill" style="
-            margin-top: 14px;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #94a3b8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-          ">
-            <span>⚡ กำลังสุ่ม...</span>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(overlay);
-
-      requestAnimationFrame(() => {
-        overlay.style.opacity = '1';
-      });
-
-      const palette = {pastel:['#c4b5fd','#f9a8d4'], neon:['#d946ef','#22d3ee'], gold:['#f59e0b','#fbbf24'], mint:['#10b981','#6ee7b7']}[st.color_theme] || ['#c4b5fd','#f9a8d4'];
-      overlay.firstElementChild.style.borderColor = palette[0];
-      overlay.firstElementChild.querySelector('div span:nth-child(2)').style.color = palette[1];
-      const rollerText = overlay.querySelector('#randomizer-roller-text');
-      const rollerBox = overlay.querySelector('#randomizer-roller-box');
-      const footerPill = overlay.querySelector('#randomizer-footer-pill');
-      const randomVisual = window.BP3RandomizerVisual?.mount(overlay.firstElementChild, data, Math.max(2, Math.min(7, Number(st.spin_duration) || 4)));
-
-      let ticks = 0;
-      const maxTicks = 26;
-      const delay = Math.max(2, Math.min(7, Number(st.spin_duration) || 4)) * 1000 / maxTicks;
-
-      function runTick() {
-        if (!overlay.isConnected) return;
-        ticks++;
-        const cand = items[Math.floor(Math.random() * items.length)];
-        if (rollerText) rollerText.textContent = cand;
-
-        if (ticks < maxTicks) {
-          setTimeout(runTick, delay);
-        } else {
-          if (rollerText) rollerText.textContent = winner;
-          randomVisual?.finish();
-          if (rollerBox) {
-            rollerBox.style.borderColor = '#f59e0b';
-            rollerBox.style.backgroundColor = 'rgba(245, 158, 11, 0.12)';
-            rollerText.style.color = '#fbbf24';
-          }
-          if (footerPill) {
-            footerPill.innerHTML = '<span style="color: #fbbf24; font-weight: 700;">🎉 ผลการสุ่มเรียบร้อยแล้ว</span>';
-          }
-
-          _randomizerTimer = setTimeout(() => {
-            overlay.style.opacity = '0';
-            overlay.style.transform = `${baseTrans} translate(${ox}px, ${oy - 20}px) scale(${scale * 0.95})`;
-            setTimeout(() => {
-              overlay.remove();
-            }, 400);
-          }, holdDuration);
-        }
-      }
-
-      runTick();
+      if (!data || !_randomizerManager) return;
+      _randomizerManager.handle(data);
     }
 
     function handleAskUpdate(data) {

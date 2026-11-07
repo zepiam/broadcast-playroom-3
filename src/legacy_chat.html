@@ -989,8 +989,13 @@ function spawnSliderMessage(msg) {
   const cw = chatEl.clientWidth || window.innerWidth;
   const tw = div.offsetWidth || 100;
   const dur = Math.min(20, Math.max(1.5, Number(config.slider_duration) || 5));
+  // ★ Sync: every window (Composer, OBS...) positions the bullet from the message's own time stamp, not from when it reached that window
+  const at = Number(msg.bp_at) > 0 ? Number(msg.bp_at) : Date.now();
+  const elapsedMs = Math.max(0, Date.now() - at);
+  if (elapsedMs >= dur * 1000) {div.remove(); return;}   // already crossed the screen (late delivery)
   div.style.setProperty('--slide-dist', (-(cw + tw)) + 'px');
   div.style.animationDuration = dur + 's';
+  div.style.animationDelay = (-(elapsedMs / 1000)) + 's';
   // ★ จัด lane แบบนิโคนิโค — โซนกลางจอ (32%-88% ของความสูง กันชิดบนสุด/ติดล่าง)
   //   + สุ่มเลือกแถวว่าง (ไม่ซ้อนข้อความเก่า และไม่เรียงติดบนเป็นแถวเดียว)
   const laneH = Math.max(18, Number(config.slider_lane_height) ||
@@ -1016,7 +1021,7 @@ function spawnSliderMessage(msg) {
   }
   if (bandBottom <= bandTop) bandBottom = bandTop + laneH; // กัน band ติดลบ
   const lanes = Math.max(1, Math.floor((bandBottom - bandTop) / laneH));
-  const now = performance.now();
+  const now = at;   // lanes are decided from the message time so every window picks the same row
   const free = [];
   for (let i = 0; i < lanes; i++) {
     const L = sliderLanes[i];
@@ -1024,7 +1029,10 @@ function spawnSliderMessage(msg) {
   }
   let lane;
   if (free.length) {
-    lane = free[Math.floor(Math.random() * free.length)];
+    // deterministic pick (hash of the message) instead of Math.random(), so Composer and OBS choose the same row
+    let hsh = 0; const key = String(msg.id || '') + '|' + at + '|' + plain;
+    for (let i = 0; i < key.length; i++) hsh = (hsh * 31 + key.charCodeAt(i)) >>> 0;
+    lane = free[hsh % free.length];
   } else {
     // ทุกแถวไม่ว่าง → ยืมแถวที่ข้อความเก่าเดินไปไกลสุด (ลดการทับหัวกัน)
     let best = 0, bestUntil = Infinity;

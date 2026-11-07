@@ -3166,4 +3166,6 @@ body.preview-clean-mode .composer-widget.type-playroom {
   /* dot3: DD.MM.YYYY HH:MM (wide) + ● cursor */
   .widget-type-clock.clock-style-dot3 .dot-time { font-size: 28px; }
   .widget-type-clock.clock-style-dot3 .dot-wait { font-size: 16px; }
-
+/* Smart Grid toggle: bright frame when on, soft grey frame when off (no ON/OFF text) */
+#btnCompSnap{border-color:rgba(255,255,255,.28);}
+#btnCompSnap.active{border-color:#38bdf8;}

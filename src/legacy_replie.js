@@ -112,6 +112,7 @@ function mountReplieElement(type, elData, durSec, progStyle, isLoop, skipAnimIn)
     box.classList.add('replie-frameless');
   }
 
+  if (elData.theme && elData.theme !== 'default') box.dataset.theme = String(elData.theme);
   const cdType = elData.countdown_type || 'number';
   const animStyle = elData.anim_style || 'together';
 
@@ -262,6 +263,7 @@ function mountReplieElement(type, elData, durSec, progStyle, isLoop, skipAnimIn)
   }
 
   wrap.style.opacity = opacity;
+  if (elData.theme && elData.theme !== 'default') box.dataset.theme = String(elData.theme);
   wrap.appendChild(box);
 
   containers.forEach(c => {
@@ -501,9 +503,12 @@ window.BP3LegacyReplie={
    if(!document.querySelector('.widget.type-replie')){let layer=document.getElementById('replie-layer');if(!layer){layer=document.createElement('div');layer.id='replie-layer';(document.getElementById('obsCanvasStage') || document.getElementById('composerCanvasStage'))?.append(layer);}}
    if(data.legacyPayload){renderReplieOverlay({...data.legacyPayload,duration_sec:data.legacyPayload.duration_sec || data.duration || 8});return;}
    const positions={'top-left':[5,10],'top':[50,10],'top-right':[95,10],'left':[5,50],'center':[50,50],'right':[95,50],'bottom-left':[5,90],'bottom':[50,90],'bottom-right':[95,90]};
-   const [x,y]=positions[data.anchor] || positions['bottom-right'];
-   const shared={pos_x:x,pos_y:y,scale:(Number(data.scale)||100)/100,opacity:.95};
-   renderReplieOverlay({duration_sec:data.duration || 4,is_loop:data.isLoop || false,
+   let [x,y]=positions[data.anchor] || positions['bottom-right'];
+   if(data.pos_x!==undefined&&data.pos_x!==null&&data.pos_x!==''&&Number.isFinite(Number(data.pos_x))){x=Math.min(100,Math.max(0,Number(data.pos_x)));}
+   if(data.pos_y!==undefined&&data.pos_y!==null&&data.pos_y!==''&&Number.isFinite(Number(data.pos_y))){y=Math.min(100,Math.max(0,Number(data.pos_y)));}
+   const shared={pos_x:x,pos_y:y,scale:(Number(data.scale)||100)/100,opacity:.95,theme:data.theme||'default'};
+   if(data.demo)shared.countdown_type='none';
+   renderReplieOverlay({test_mode:data.noAnim?'out':undefined,duration_sec:data.duration || 4,is_loop:data.isLoop || false,
      ticker:{...shared,enabled:Boolean(data.text),text:data.text,title:data.title || '',layout:'bottom_ticker',anim_style:'together',anim_in:'slide-up',anim_out:'slide-down'},
      image:{...shared,enabled:Boolean(data.imageUrl),image_url:data.imageUrl,frameless:true,anim_in:'slide-left',anim_out:'slide-right'}
    });

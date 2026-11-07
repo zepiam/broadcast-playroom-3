@@ -48,3 +48,8 @@ dist_releases/
 
 data/
 userdata/
+# Local backups / clutter (never release)
+*.bak*
+dist_backup_before_ui_update/
+_to_delete/
+__pycache__/

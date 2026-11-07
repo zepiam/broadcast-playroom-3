@@ -1,3 +1,53 @@
+## 📦 PENDING RELEASE — v3.59 (รอ AI ผู้ปล่อยเวอร์ชันอ่านแล้วดำเนินการ) [บันทึก 2026-11-08 โดย Claude (Cowork)]
+
+**สิ่งที่ต้อง release:** Broadcast Playroom **v3.59** (โค้ดทั้งหมดอยู่ใน working tree แล้ว ยังไม่ได้ commit/tag/push/upload; เวอร์ชันที่ปล่อยแล้วล่าสุดคือ v3.58)
+
+**ไฟล์ที่เตรียมไว้ให้แล้ว:**
+- `publish_release_v359.py` — สคริปต์ release (copy จาก v3.58 แก้ VERSION=3.59, release_date 2026-11-08, changelog ภาษาไทย, commit message) ขั้นตอน: `npm run build` → แพ็ก `patch-v3.59-lite/full.zip` → finalize zip ก่อนคำนวณ SHA-256 + assert gate → อัปโหลด Hugging Face (`men9ch/broadcast-playroom-3`) → `git add -A` (+ `git reset composer_layout.json` เพื่อไม่ commit ค่าตั้งของผู้ใช้) → commit/tag `v3.59`/push `master --tags` → `gh release create` → purge jsDelivr
+- `release.bat` — ตัวรันคลิกเดียว (เช็ก python/npm/`gh auth`/huggingface_hub แล้วเรียกสคริปต์ข้างบน)
+- เวอร์ชันถูกบันทึกแล้วใน `package.json`, `updater.py` (`CURRENT_VERSION`), `src/index.html` (title + titlebar tag) ส่วน `version.json` ให้สคริปต์เขียนเอง
+- `.gitignore` ข้าม `*.bak*`, `dist_backup_before_ui_update/`, `_to_delete/`, `__pycache__/`; ไฟล์ขยะย้ายไป `_to_delete/` แล้ว (ลบทิ้งได้)
+
+**ลำดับที่ AI ผู้ปล่อยควรทำ (ต้องรันบน Windows ที่มี `gh` ล็อกอิน + Hugging Face token ของบัญชี men9ch):**
+1. ตรวจ `git status`/`git diff --stat` ว่าตรงกับรายการด้านล่าง และไม่มีไฟล์แปลกปลอม/ความลับ
+2. รัน `python publish_release_v359.py` (หรือ `release.bat`) — ถ้า error ให้หยุดและรายงาน ห้ามรันซ้ำโดยไม่ตรวจว่า push/tag/upload ขั้นไหนเสร็จไปแล้ว
+3. หลัง build ตรวจว่า `dist/` มีไฟล์ใหม่ครบ (ตรวจแล้วว่าทุก `./*.js|css` ที่ index/composer/overlay/dock.html อ้างถึงอยู่ใน `files_to_copy` ของ `copy_dist_assets.py`; รอบนี้ไม่มีไฟล์ใหม่) แล้วเปิดแอปจากไฟล์ที่ build จริง ทดสอบ: เปิดหน้าต่าง Replie/ASK/Randomizer, ลากกรอบ, Ctrl-ลากอิสระ, ลูกศร 1px/Shift 10px, ปุ่ม DEMO ขึ้น OBS, ปิดหน้าต่างแล้ว DEMO หาย, ปุ่มทุกปุ่มคลิกได้ (**รอบก่อนเคยปล่อยแล้วปุ่ม/สคริปต์ตายในเครื่องผู้ใช้อื่น ห้ามพลาดซ้ำ**)
+4. หลังปล่อย: ตรวจ GitHub Release v3.59 + HF mirror + `version.json` (มีคีย์ `version` และ `latest_version`, SHA ตรง) แล้วลองอัปเดตจากเครื่องที่เป็น v3.58 ผ่านปุ่ม "ตรวจสอบการอัปเดต"
+5. อัปเดต WORKLOG/HANDOFF: เปลี่ยนสถานะ v3.59 จาก "รอปล่อย" เป็น "ปล่อยแล้ว" พร้อมผลตรวจ แล้วลบบล็อก PENDING RELEASE นี้ออกจากไฟล์ที่เกี่ยวข้อง
+
+**สิ่งที่อยู่ใน v3.59 (ใช้เป็น release notes / ตรวจสอบ):**
+- Replie: หน้าตั้งค่าการแสดงผลใหม่ (locator ลากวาง, ย่อ/ขยาย, ธีม 8 แบบ, ปุ่ม DEMO สด) + หน้าแก้ไขคำสั่ง (จอตัวอย่างลากได้, แอนิเมชันเข้า/ออก + ทดลองบน OBS, ดูสดบน OBS)
+- ASK: ออกแบบหน้าปรับแต่ง Overlay ใหม่ (strip compact, bar 17 แบบ, frame 11 แบบ, animation เข้า/ออก, locator, DEMO, แก้ flicker)
+- Randomizer: เหลือวงล้อรูเล็ต + สล็อต พร้อมแอนิเมชันหมุนช้าลงจนหยุด, locator ลาก/ย่อขยาย
+- ลากวางตำแหน่งทั้ง 3 เครื่องมือ: ค้าง Ctrl = ไม่ snap, ลูกศร = 1px, Shift+ลูกศร = 10px
+- DEMO ซ่อนอัตโนมัติเมื่อปิดหน้าต่างเครื่องมือ; ลบวิดเจ็ต ASK/Replie/Randomizer เก่าใน Composer อัตโนมัติ
+- หน้าต่างเครื่องมือเปิดที่ 85% ของหน้าต่างหลักแล้วจำขนาด/ตำแหน่ง/จอ; หน้าต่างหลักล็อก min-size ด้วย ClipCursor
+
+**ความเสี่ยงที่ยังไม่ได้ยืนยัน (ทดสอบแค่ Playwright บน cloud ไม่เคยทดสอบในแอปจริง/OBS จริง/dist):**
+- `app_window_frame.py` (ClipCursor ล็อก min-size หน้าต่างหลัก) ไม่เคยรันบน Windows จริง — ถ้าเคอร์เซอร์ค้าง/หน้าต่างผิดปกติให้ย้อนด้วย `_to_delete/app_window_frame.py.bak_before_minclip` แล้วค่อยปล่อยโดยไม่มีส่วนนี้
+- Chrome/Edge `--app` อาจไม่ยอมให้ `resizeTo/moveTo` จัดขนาด/ตำแหน่ง popout ตามที่จำไว้
+- การตั้งค่ารูปลักษณ์ของ ASK มีผลบน OBS ก็ต่อเมื่อบันทึก config ของหน้าต่าง ASK แล้ว (ส่งไปกับ live state ใน field `widget`)
+
+---
+
+## [2026-11-08] – Claude (Cowork) (เตรียม Release v3.59: Overlay Locator Redesign, Ctrl Free-Drag, Pixel Nudge)
+
+- **ผู้ดำเนินการ:** Claude (Cowork) ตามคำสั่งของ Meng
+- **สถานะ:** แก้โค้ดและทดสอบบน Playwright (cloud harness) แล้ว บันทึกเวอร์ชัน 3.59 ลง `package.json`, `updater.py`, `src/index.html` และสร้าง `publish_release_v359.py` แล้ว **ยังไม่ได้รัน release** (สภาพแวดล้อมของ Claude ไม่มี Windows/gh/HF token) และ **ยังไม่ได้ทดสอบในแอปจริง/OBS จริง/dist หลัง build**
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **ลบวิดเจ็ต ASK/Replie/Randomizer เก่าใน Composer อัตโนมัติ** (กันแสดงซ้ำ)
+  2. **Replie:** ธีม UI ของหน้าต่างให้ตรงโปรแกรม; ช่อง "ค่าเริ่มต้น" ใหม่ มี locator 16:9 ลากวางอิสระ (`pos_x/pos_y` เป็น %), ย่อ/ขยายด้วยมุม (scale 50-200), ธีมการ์ด 8 แบบ (`data-theme` + ตัวแปร `--rt-*` ใน `src/legacy_replie.css`), ปุ่ม DEMO ที่ส่ง `REPLIE_ACTION` แบบ `demo/noAnim/isLoop` และ `REPLIE_DISMISS` ตอนหยุด; ค่าเก็บใน `localStorage.bp3_replie_settings` (เพิ่ม `pos_x,pos_y,theme` เข้ากันได้กับ `anchor` เดิม); `BP3LegacyReplie.render` อ่าน `pos_x/pos_y/theme/demo/noAnim`
+  3. **Replie หน้าแก้ไขคำสั่ง (`src/replie_command_editor.js`):** จอตัวอย่างลากกล่องข้อความ/รูปได้ (แสดงเฉพาะตามโหมดที่เลือก), ลากมุมย่อขยาย, แอนิเมชันเข้า/ออกย้ายออกมานอกกล่องขั้นสูง + เล่นทดลองบน OBS, ปุ่ม "ดูสดบนจอ OBS" (ส่ง `legacyPayload` แบบ loop/`test_mode:'out'`) ปิดอัตโนมัติเมื่อปิดหน้าต่าง
+  4. **Randomizer:** เหลือวงล้อรูเล็ต + สล็อต (alias แบบอื่นเป็นวงล้อ) พร้อมแอนิเมชันหมุนช้าลงจนหยุด; locator ลาก/ย่อขยายบนจอตัวอย่าง; ปุ่ม DEMO
+  5. **ASK:** ออกแบบหน้าปรับแต่ง Overlay ใหม่ (strip compact, แท่งคะแนน 17 แบบ, กรอบ 11 แบบ, แอนิเมชันเข้า/ออก, locator ลากย่อขยาย, DEMO, แก้ flicker โดยไม่ส่ง fake active poll); config ASK เดินทางไป OBS ใน field `widget` ของ live state
+  6. **DEMO ซ่อนอัตโนมัติเมื่อปิดหน้าต่างเครื่องมือ:** `window.bp3StopToolDemo(name)` เรียกจาก `closeToolWindow` และ `pagehide` (ASK/Randomizer/Replie)
+  7. **ขนาดหน้าต่าง:** popout เครื่องมือเปิดครั้งแรกที่ 85% ของหน้าต่างหลักแล้วจำขนาด/ตำแหน่ง/จอไว้ต่อเครื่องมือ (`bp3_popwin_<tool>`); หน้าต่างหลักล็อกขนาดเล็กสุดด้วย `ClipCursor` ใน `app_window_frame.py` (**ยังไม่เคยทดสอบบน Windows จริง** ถ้ามีปัญหาเคอร์เซอร์ค้างให้ย้อนด้วย `app_window_frame.py.bak_before_minclip`)
+  8. **ลากวางตำแหน่งทุกหน้าต่าง (Replie / ASK / Randomizer):** ค้าง Ctrl = ลากอิสระไม่ snap; คลิก/ลากกรอบแล้วโฟกัสเข้ากรอบ (กัน scrollbar ขยับ); ลูกศร = ทีละ 1 พิกเซลของจอ 1920x1080, Shift+ลูกศร = 10 พิกเซล (ASK: เปลี่ยน step ของ slider เลื่อนซ้ายขวา/ขึ้นลงจาก 5 เป็น 1)
+- **ข้อควรระวังก่อน release (ห้ามพลาดซ้ำเรื่องปุ่มตาย):** ตรวจแล้วว่าทุก `./*.js|css` ที่ `index/composer/overlay/dock.html` อ้างถึงอยู่ใน `files_to_copy` ของ `copy_dist_assets.py` (ไม่มีไฟล์ใหม่ในรอบนี้); ต้องรัน `npm run build` บน Windows แล้วทดสอบ dist จริง (เปิดหน้าต่าง Replie/ASK/Randomizer, ลาก, DEMO, ปิดหน้าต่าง) ก่อนอัปโหลด
+- **วิธีปล่อย:** รัน `python publish_release_v359.py` บนเครื่อง Windows (ต้องมี `gh` login และ HF token) — สคริปต์ build → pack → SHA gate → HF → git tag → GitHub Release
+
+---
+
 ## [2026-11-07 13:35] – Antigravity (Comprehensive Documentation: Root Causes & Solutions for Unclickable Buttons)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
