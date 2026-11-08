@@ -1,9 +1,41 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.60)
-- **Current Version**: v3.60 (Released & Verified In-App Auto-Update)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.62)
+- **Current Version**: v3.62 (Released & Verified In-App Auto-Update)
 - **Status**: Stable & Fully Verified across GitHub Releases & Hugging Face Mirrors.
 ---
 
-- **Key Enhancements & Architectural Milestones (v3.31 - v3.60)**:
+## ✅ เช็กลิสต์หลัง build v3.62 (สำหรับ AI ผู้ปล่อย)
+
+1. `dist/assets/bp-icon-64.png` มีอยู่; `dist/` มี index.html ที่ใหม่ (ค้นคำว่า `sec-plugins`, `bp3_plugin_ui`, `BP3PluginsPane`)
+2. เปิดโปรแกรมที่ build แล้ว: ทุกปุ่มเดิมกดได้, แชทเข้า, หน้า ASK ใหม่ (compact + นับถอยหลังไม่กระพริบ), เปิดโปรไฟล์ผู้ใช้จาก User Manager แล้วไม่หาย
+3. ตั้งค่า > เกี่ยวกับระบบ > ปลั๊กอิน (เหนือ Windows Defender): เปิดหน้าได้, เห็น "เมาส์พิเศษ (ตัวอย่าง)" สถานะปิด, เปิดแล้วเมาส์เปลี่ยนทันที ปิดแล้วกลับปกติ, ปุ่มคู่มือ (อ่าน/คัดลอก/ดาวน์โหลด) ทำงาน
+4. ตรวจว่า plugin_manager.py/launch_dev.py ใน patch zip เป็นเวอร์ชันใหม่ (มี `plugin system hook` และ `PLUGIN_GUIDE_MD`) และ `docs/PLUGIN_GUIDE_FOR_AI.md` อยู่ใน zip
+5. ทดสอบอัปเดตจาก v3.60 → v3.62; ตรวจว่าโฟลเดอร์ `<DATA_ROOT>/plugins/` ไม่ถูกแตะ/ลบหลังอัปเดต
+6. ถ้าปุ่มหรือหน้าไหนพัง: ไฟล์เดิมสำรองไว้ใน `_to_delete/` (`index.html.pre_*`, `launch_dev.py.pre_plugin_api`, `plugin_manager.py.pre_*`, `bump362/`)
+
+## 🧩 PLUGIN API v1 (เฟส 1) — รวมใน v3.62
+
+เพิ่มระบบ plugin แบบ JavaScript ล้วน (widget + รับ event อ่านอย่างเดียว) แบบ additive ไม่แตะ logic เดิม:
+1. `plugin_manager.py`: ต่อท้ายไฟล์ ส่วน "Plugin API v1 (HTTP part)" (`handle_http`) — ไฟล์นี้อยู่ใน release file list เดิมอยู่แล้ว **ไม่มีไฟล์ใหม่ที่ต้องเพิ่มใน copy_dist_assets.py**
+2. `launch_dev.py`: เพิ่ม hook 17 บรรทัดต้น `do_GET` และ `do_POST` (บล็อก `plugin system hook` ครอบ try/except — ถ้า error จะตกไป handler เดิม) ทำงานเฉพาะ path `/plugins*` และ `/api/plugins*`
+3. หน้า UI: `http://127.0.0.1:<port>/plugins` (หน้าเปิด/ปิด) และ `/plugins/host/<id>` (ลิงก์ OBS Browser Source) — เป็น HTML ฝังใน plugin_manager.py ไม่มีไฟล์ใหม่ (ตอนนี้เข้าได้จาก ตั้งค่า > เกี่ยวกับระบบ > ปลั๊กอิน ดูข้อ 9)
+4. Plugin อยู่ใน `<DATA_ROOT>/plugins/<id>/` (plugin.json ต้องมี `api_version: 1`, `widget`, `permissions` จาก events_read/chat_read) รันใน iframe sandbox (ไม่มี allow-same-origin) + CSP `connect-src 'none'` สถานะเปิด/ปิดเก็บใน `plugins/_state.json` ไม่ใช่ใน manifest
+5. ทดสอบ: Playwright บน harness cloud เท่านั้น (20 เคส: สิทธิ์, sandbox, CSP, path traversal, CSRF, auto-disable, safe mode) **ยังไม่ได้ทดสอบบนโปรแกรมจริง/Windows/OBS และไม่ได้ build**
+6. ก่อน release ให้ตรวจ: เปิดโปรแกรมตามปกติแล้วทุกปุ่มเดิมต้องทำงาน (hook ต้องไม่กระทบ), เปิด `/plugins` ได้, ตัวอย่างใน `docs/plugin_examples/hello-widget`
+7. ยังไม่ทำ (เฟสถัดไป): การเรียก API ภายนอกผ่าน proxy, ตัวตรวจความสมบูรณ์ของ credit/ปุ่มสนับสนุน, golden fixtures ของ event
+8. เพิ่ม plugin ตัวอย่าง `demo-cursor` (เมาส์พิเศษ) ฝังอยู่ใน plugin_manager.py — สร้างให้ครั้งแรกใน `<DATA_ROOT>/plugins/demo-cursor/` และ**ปิดไว้เป็นค่าเริ่มต้น** (ถ้าผู้ใช้ลบจะไม่สร้างซ้ำ จำไว้ใน `_state.json`). ขยาย API: manifest ใส่ `cursor` (PNG ≤64x64, ≤32KB) + สิทธิ์ `ui_cursor` ได้, เซิร์ฟเวอร์ตรวจไฟล์แล้วส่ง CSS ผ่าน `GET /api/plugins/ui`. **แก้ `src/index.html` 1 จุด:** `<script>` สั้นๆ ก่อน `</body>` (ครอบ try/catch) ดึง `/api/plugins/ui` แล้วใส่ `<style id="bp3-plugin-cursor">` ถ้ามี plugin เปิดอยู่ — ถ้าไม่มีหรือ error จะไม่ทำอะไร. Backup: `_to_delete/index.html.pre_plugin_cursor`, `_to_delete/plugin_manager.py.pre_demo`. ยังไม่ได้ลองรูปเมาส์ในหน้าต่างโปรแกรมจริง (Chrome app-mode) ทดสอบแค่ computed style ใน harness
+9. **หน้า plugin ย้ายเข้า Settings แล้ว:** ตั้งค่า > เกี่ยวกับระบบ > "ปลั๊กอิน (Plugins)" เหนือ Windows Defender (nav `nav-sec-plugins`, pane `sec-plugins`, สคริปต์ `BP3PluginsPane` ก่อน `</body>` ใน `src/index.html`; ใช้คลาสเดิม section-card/cwc-switch/btn-topbar-action). เรียก `/api/plugins*` เดิม. Backup `_to_delete/index.html.pre_plugin_pane`. ทดสอบเฉพาะ harness cloud (Playwright บนสำเนา index.html) ไม่ได้ลองในโปรแกรมจริง. หน้า `/plugins` แบบแยกยังอยู่ใช้ได้
+10. **คู่มือสร้าง plugin สำหรับให้ AI อ่าน:** ไฟล์ `docs/PLUGIN_GUIDE_FOR_AI.md` (ต้นฉบับ) ฝังสำเนาไว้ใน `plugin_manager.py` เป็น `PLUGIN_GUIDE_MD` เสิร์ฟที่ `GET /plugins/docs` (`?download=1` = ดาวน์โหลด) — ไม่มีไฟล์ใหม่ใน dist. หน้า ตั้งค่า > ปลั๊กอิน มีปุ่ม อ่าน/คัดลอก/ดาวน์โหลดคู่มือ (ล่างซ้ายของหน้า). **ถ้าแก้คู่มือ ต้องฝังสำเนาใหม่ใน plugin_manager.py ให้ตรงกัน** (สคริปต์ `_to_delete/plg_doc_patch.py` เป็นตัวอย่างวิธีฝัง). Backup `_to_delete/index.html.pre_plugin_doc`, `_to_delete/plugin_manager.py.pre_doc`. ทดสอบเฉพาะ harness cloud
+11. **เมาส์พิเศษเห็นผลทันที (ไม่ต้องรีสตาร์ต):** สคริปต์เมาส์ใน `src/index.html` ตอนนี้ดึง `/api/plugins/ui` ซ้ำเมื่อ (ก) กดเปิด/ปิด plugin หรือ Safe Mode ในหน้าตั้งค่า (ส่งสัญญาณผ่าน BroadcastChannel `bp3_plugin_ui` ไปทุกหน้าต่างของโปรแกรม รวมหน้าต่างหลักตอนตั้งค่าเปิดเป็น popout) และ (ข) ตอนหน้าต่างได้โฟกัส. ปิด plugin = ลบ `<style id=bp3-plugin-cursor>` ทันที. Backup `_to_delete/index.html.pre_plugin_live`. ทดสอบ harness cloud เท่านั้น
+
+✅ พร้อมสำหรับ release **v3.62** (Meng สั่ง "ทำ 3.62 ได้เลย" แล้วจะให้ AI อีกตัว release เอง) — Claude (Cowork) เตรียมไฟล์เสร็จแล้ว **แต่ไม่ได้ build/ไม่ได้ release และทุกอย่างทดสอบบน harness cloud (Playwright) เท่านั้น ยังไม่เคยรันบนโปรแกรมจริง/dist/Windows/OBS**. v3.62 ที่เตรียมไว้ไม่เคยถูกปล่อย จึงรวมทุกอย่างเป็น v3.62 ครั้งเดียว (ข้ามเลข 3.62). ข้อความ HOLD เดิม (ปลดแล้ว แต่ยังเป็นรายการที่ควรตรวจหลัง build): ห้าม release จนกว่า Meng จะทดสอบหน้า ASK (คำถาม & โหวตสด) ที่ย่อให้ compact + นับถอยหลังไม่กระพริบ ใน src/index.html แล้วยืนยันเอง (ถ้าไม่ยืนยัน อย่าปล่อย v3.62). Backup ก่อนแพตช์: _to_delete/index.html.pre_ask_patch + แก้บั๊กหน้าโปรไฟล์ผู้ใช้ (จาก User Manager) เปิดแล้วหายทันที: popout หน้า author-profile เปิดตัวเองซ้ำแล้ว closeAllPopoutWindows() ปิดตัวเอง → เพิ่ม guard ใน openToolWindow/popoutToolWindow (ยังไม่ผ่านการทดสอบในแอปจริง รอ Meng ยืนยัน) + src/user_controls.js: ลบประวัติแชทเก่าเกิน 7 วันเฉพาะตอนเปิดโปรแกรมครั้งเดียว (เอา setInterval รายชั่วโมง และการลบตอนเปิดโปรไฟล์ออก) backup: _to_delete/user_controls.js.pre_prune
+
+---
+
+- **Key Enhancements & Architectural Milestones (v3.31 - v3.62)**:
+  0. **Plugin System v1 & CPU/RAM Optimizations (v3.62)**:
+     - Full Plugin System (JavaScript/iframe sandbox + CSP `connect-src 'none'`) with Settings UI integration (Settings -> Plugins pane), live toggle, Safe Mode, and documentation guide at `/plugins/docs`.
+     - CPU/RAM optimizations: Replaced heavy 1254px icons with optimized `bp-icon-64.png` (12KB), switched `updater.py` torch check to non-import spec inspection (`find_spec`), and eliminated duplicate chat poller loop in `initRealChatPoller`.
+     - Restored compact view & custom fonts in ASK widget; added popout close guard for User Manager / Author Profile.
   0. **Chat Widget Platform Logo Path Resolution (v3.60, Hotfix)**:
      - Fixed issue where platform icons (Twitch, YouTube, Kick, TikTok, SOOP, MyLive) in Composer Chat Widget & `legacy_chat.html` showed broken images in production builds.
      - Resolved route `/logo/<platform>` in `launch_dev.py` to prioritize `DIST_DIR/assets/<platform>.png` before falling back to `SRC_DIR/assets/`.

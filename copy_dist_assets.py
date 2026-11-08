@@ -66,7 +66,7 @@ if os.path.exists(src_assets):
         d = os.path.join(dst_assets, item)
         if os.path.isdir(s):
             shutil.copytree(s,d,dirs_exist_ok=True)
-        elif os.path.isfile(s) and not os.path.exists(d):
+        elif os.path.isfile(s):
             shutil.copyfile(s, d)
             print(f"Copied asset {item} to dist/assets/")
 

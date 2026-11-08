@@ -2580,6 +2580,23 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
         path = parsed.path
+        # --- plugin system hook (isolated; any failure falls through to core handlers) ---
+        try:
+            from plugin_manager import plugin_manager as _plg_pm
+            if path == '/plugins' or path.startswith('/plugins/') or path.startswith('/api/plugins'):
+                _pb = None
+                _plg_r = _plg_pm.handle_http('GET', path, parsed.query, _pb, self.headers)
+                if _plg_r is not None:
+                    self.send_response(_plg_r[0])
+                    for _k, _v in _plg_r[1].items():
+                        self.send_header(_k, _v)
+                    self.send_header('Content-Length', str(len(_plg_r[2])))
+                    self.end_headers()
+                    self.wfile.write(_plg_r[2])
+                    return
+        except Exception:
+            pass
+        # --- end plugin system hook ---
 
 
 
@@ -5853,6 +5870,23 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
         path = parsed.path
+        # --- plugin system hook (isolated; any failure falls through to core handlers) ---
+        try:
+            from plugin_manager import plugin_manager as _plg_pm
+            if path == '/plugins' or path.startswith('/plugins/') or path.startswith('/api/plugins'):
+                _pb = self.rfile.read(int(self.headers.get('Content-Length', 0) or 0))
+                _plg_r = _plg_pm.handle_http('POST', path, parsed.query, _pb, self.headers)
+                if _plg_r is not None:
+                    self.send_response(_plg_r[0])
+                    for _k, _v in _plg_r[1].items():
+                        self.send_header(_k, _v)
+                    self.send_header('Content-Length', str(len(_plg_r[2])))
+                    self.end_headers()
+                    self.wfile.write(_plg_r[2])
+                    return
+        except Exception:
+            pass
+        # --- end plugin system hook ---
 
 
 

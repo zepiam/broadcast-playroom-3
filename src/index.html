@@ -594,7 +594,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.60</title>
+  <title>Broadcast Playroom v3.62</title>
 
 
 
@@ -1211,9 +1211,9 @@ window.addEventListener('keydown', (e) => {
     <!-- 0. DESKTOP TITLE BAR (Native Frameless Title Bar: ไอคอน + ชื่อแอป + ย่อ/ขยาย/ปิด) -->
   <div class="desktop-titlebar pywebview-drag-region" id="desktopTitlebar">
     <div class="desktop-titlebar-left">
-      <img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.src='./favicon.png'">
+      <img src="./assets/bp-icon-64.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.onerror=null;this.src='./assets/bp-full-icon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.60</span>
+      <span class="desktop-titlebar-tag">v3.62</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -5212,870 +5212,47 @@ window.addEventListener('keydown', (e) => {
 
 
 
-        <!-- Status Banner -->
-
-
-
-
-
-
-
-        <div id="askCountdownBarBox" style="display:none; margin-bottom:12px; background:rgba(0,0,0,0.3); border-radius:6px; padding:8px 12px; border:1px solid rgba(255,255,255,0.08);">
-
-
-
-          <div style="display:flex; justify-content:space-between; align-items:center; font-size:12px; margin-bottom:6px;">
-
-
-
-            <span style="font-weight:700; color:#38bdf8;" id="askCountdownLabel">⏱️ เวลานับถอยหลัง</span>
-
-
-
-            <span style="font-weight:700; color:#fbbf24;" id="askCountdownValue">0s</span>
-
-
-
-          </div>
-
-
-
-          <div style="width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
-
-
-
-            <div id="askCountdownProgress" style="width:100%; height:100%; background:linear-gradient(90deg, #10b981, #38bdf8); transition:width 0.3s ease;"></div>
-
-
-
-          </div>
-
-
-
+        <!-- ASK tab 1 (compact) -->
+        <div id="askCountdownBarBox" class="ak1-count" style="display:none;">
+          <div class="ak1-count-row"><span id="askCountdownLabel" class="ak1-count-lbl">⏱️ เวลานับถอยหลัง</span><span id="askCountdownValue" class="ak1-count-val">0s</span></div>
+          <div class="ak1-count-track"><div id="askCountdownProgress" class="ak1-count-fill" style="width:100%;"></div></div>
         </div>
-
-
-
-
-
-
-
-        <div id="askLiveStatusBanner" class="clean-row" style="background:#162032; border:1px solid #1e293b; padding:10px 14px; border-radius:8px; margin-bottom:12px;">
-
-
-
-
-
-
-
-          <div style="display:flex; align-items:center; gap:8px;">
-
-
-
-
-
-
-
-            <span class="status-indicator-dot" id="askStatusDot" style="background:#64748b;"></span>
-
-
-
-
-
-
-
-            <span style="font-size:13px; font-weight:700; color:#cbd5e1;" id="askStatusText">⚪ สถานะ: พร้อมเริ่มโพลใหม่</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div style="display:flex; gap:10px; align-items:center;" id="askStatusMeta">
-
-
-
-
-
-
-
-            <span style="font-size:11.5px; color:#64748b;" id="askStatusHint">กรอกคำถามและตัวเลือก แล้วกดปุ่ม "🚀 เริ่มเปิดโหวตขึ้นจอ OBS"</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
+        <div id="askLiveStatusBanner" class="ak1-status">
+          <span class="status-indicator-dot" id="askStatusDot" style="background:#64748b;"></span>
+          <span id="askStatusText" class="ak1-status-text">⚪ สถานะ: พร้อมเริ่มโพลใหม่</span>
+          <span id="askStatusMeta" class="ak1-status-meta"><span id="askStatusHint" class="ak1-hint">กรอกคำถามและตัวเลือก แล้วกด "🚀 เริ่มเปิดโหวตขึ้นจอ OBS"</span></span>
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- Card 1: Preset โพล -->
-
-
-
-
-
-
-
-        <div class="modal-form-group" style="margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <label class="modal-form-label">🎯 Preset โพลที่บันทึกไว้</label>
-
-
-
-
-
-
-
-          <div style="display: flex; gap: 8px;">
-
-
-
-
-
-
-
-            <select class="voice-select-box" style="margin: 0; flex: 1;">
-
-
-
-
-
-
-
-              <option>-- โพลสตรีมประจำวัน (เล่นเกมอะไรต่อดี?) --</option>
-
-
-
-
-
-
-
-              <option>โพลทายผลการแข่งขัน (ทีม A หรือ ทีม B)</option>
-
-
-
-
-
-
-
-              <option>โพลความพึงพอใจคนดู</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-            <button class="btn-topbar-action" style="height: 36px;" onclick="showToast('💾 บันทึก Preset โพลแล้ว')">💾 บันทึก</button>
-
-
-
-
-
-
-
-            <button class="btn-topbar-action" style="height: 36px;" onclick="showToast('➕ สร้าง Preset โพลใหม่')">+ ใหม่</button>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- Card 2: คำถาม & ตัวเลือก -->
-
-
-
-
-
-
-
-        <div class="modal-form-group" style="margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <label class="modal-form-label">คำถามโพลหลัก</label>
-
-
-
-
-
-
-
-          <input type="text" class="modal-input" id="askQuestion" value="สตรีมวันนี้ เล่นเกมอะไรต่อดีครับ?">
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-form-group" style="margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-
-
-
-
-
-
-
-            <label class="modal-form-label">ตัวเลือกการโหวต</label>
-
-
-
-
-
-
-
-            <button class="btn-topbar-action" style="height:26px; font-size:11.5px;" onclick="addAskChoice()">+ เพิ่มตัวเลือก</button>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div id="askChoicesList" style="display:flex; flex-direction:column; gap:6px;">
-
-
-
-
-
-
-
-            <div class="ask-choice-row">
-
-
-
-
-
-
-
-              <span class="choice-tag">A</span>
-
-
-
-
-
-
-
-              <input type="text" value="Valorant">
-
-
-
-
-
-
-
-              <button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button>
-
-
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-            <div class="ask-choice-row">
-
-
-
-
-
-
-
-              <span class="choice-tag">B</span>
-
-
-
-
-
-
-
-              <input type="text" value="ROV / Garena">
-
-
-
-
-
-
-
-              <button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button>
-
-
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-            <div class="ask-choice-row">
-
-
-
-
-
-
-
-              <span class="choice-tag">C</span>
-
-
-
-
-
-
-
-              <input type="text" value="Just Chatting คุยกับคนดู">
-
-
-
-
-
-
-
-              <button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button>
-
-
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-            <div class="ask-choice-row">
-
-
-
-
-
-
-
-              <span class="choice-tag">D</span>
-
-
-
-
-
-
-
-              <input type="text" value="Minecraft สร้างบ้าน">
-
-
-
-
-
-
-
-              <button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button>
-
-
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <!-- Card 3: กติกา & ระยะเวลา -->
-
-
-
-
-
-
-
-        <div class="modal-grid-2" style="margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">โหมดการพิมพ์โหวต</label>
-
-
-
-
-
-
-
-            <select class="voice-select-box" id="askAnswerMode" style="margin:0;">
-
-
-
-
-
-
-
-              <option value="letters">ตัวอักษรภาษาอังกฤษ (A B C D ...)</option>
-
-
-
-
-
-
-
-              <option value="numbers">ตัวเลขอารบิก (1 2 3 4 ...)</option>
-
-
-
-
-
-
-
-            </select>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div class="modal-form-group">
-
-
-
-
-
-
-
-            <label class="modal-form-label">การจับเวลานับถอยหลัง</label>
-
-
-
-
-
-
-
-            <div style="display: flex; gap: 8px;">
-
-
-
-
-
-
-
-              <select class="voice-select-box" id="askDurationSelect" style="margin:0; flex: 1;">
-
-
-
-
-
-
-
-                <option value="30">จับเวลา 30 วินาที</option>
-
-
-
-
-
-
-
-                <option value="60">จับเวลา 60 วินาที</option>
-
-
-
-
-
-
-
-                <option value="120">จับเวลา 2 นาที</option>
-
-
-
-
-
-
-
-                <option value="0">ไม่จำกัดเวลา (สตรีมเมอร์กดปิดเอง)</option>
-
-
-
-
-
-
-
-              </select>
-
-
-
-
-
-
-
-            </div>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-        </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="clean-row" style="background:#1e1f22; padding: 10px 14px; border-radius: 6px; margin-bottom: 12px;">
-
-
-
-
-
-
-
-          <div>
-
-
-
-
-
-
-
-            <div style="font-weight: 600; font-size: 13px;">การแสดงผลคะแนนบนจอ</div>
-
-
-
-
-
-
-
-            <div style="font-size: 11.5px; color: var(--dc-text-dim);">แสดงแท่งคะแนนวิ่งแบบเรียลไทม์ หรือ ซ่อนไว้เพื่อรอเปิดตอนสรุปผล</div>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <select class="voice-select-box" id="askRealtime" style="margin:0; width: 200px;">
-
-
-
-
-
-
-
-            <option>📊 แสดงผลสด</option>
-
-
-
-
-
-
-
-            <option>🔒 ซ่อนไว้เปิดตอนสรุปผล</option>
-
-
-
-
-
-
-
+        <div class="ak1-row">
+          <select class="voice-select-box ak1-ctl" aria-label="Preset โพลที่บันทึกไว้" style="flex:1;">
+            <option>🎯 Preset: -- โพลสตรีมประจำวัน (เล่นเกมอะไรต่อดี?) --</option>
+            <option>โพลทายผลการแข่งขัน (ทีม A หรือ ทีม B)</option>
+            <option>โพลความพึงพอใจคนดู</option>
           </select>
-
-
-
-
-
-
-
+          <button class="btn-topbar-action ak1-btn" onclick="showToast('💾 บันทึก Preset โพลแล้ว')">💾 บันทึก</button>
+          <button class="btn-topbar-action ak1-btn" onclick="showToast('➕ สร้าง Preset โพลใหม่')">+ ใหม่</button>
         </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <div class="modal-form-group"><label class="modal-form-label">แสดงผลสรุป (วินาที, 0 = จนกว่าจะกดปิด)</label><input id="askResultsDuration" class="modal-input" type="number" min="0" max="3600" value="20"></div>
-
-
-
-
-
-
-
-        <!-- Live Preview Bar Graph -->
-
-
-
-
-
-
-
-        <div class="section-card">
-
-
-
-
-
-
-
-          <div class="section-card-title">
-
-
-
-
-
-
-
-            <span>📊 ตัวอย่างแท่งคะแนนโหวตสด</span>
-
-
-
-
-
-
-
-            <span style="font-size: 11px; color: #34d399;" id="lblAskTotalVotes">ยอดโหวตรวม: 0 โหวต</span>
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div id="askLiveGraphContainer" style="display:flex; flex-direction:column; gap:8px;">
-
-
-
-
-
-
-
-            <!-- Populated dynamically by emitAskState() -->
-
-
-
-
-
-
-
-          </div>
-
-
-
-
-
-
-
+        <label class="ak1-lbl" for="askQuestion">คำถามโพล</label>
+        <input type="text" class="modal-input ak1-ctl" id="askQuestion" value="สตรีมวันนี้ เล่นเกมอะไรต่อดีครับ?">
+        <div class="ak1-head"><span class="ak1-lbl" style="margin:0;">ตัวเลือกการโหวต</span><button class="btn-topbar-action ak1-btn" onclick="addAskChoice()">+ เพิ่มตัวเลือก</button></div>
+        <div id="askChoicesList" class="ak1-choices">
+          <div class="ask-choice-row"><span class="choice-tag">A</span><input type="text" value="Valorant"><button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button></div>
+          <div class="ask-choice-row"><span class="choice-tag">B</span><input type="text" value="ROV / Garena"><button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button></div>
+          <div class="ask-choice-row"><span class="choice-tag">C</span><input type="text" value="Just Chatting คุยกับคนดู"><button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button></div>
+          <div class="ask-choice-row"><span class="choice-tag">D</span><input type="text" value="Minecraft สร้างบ้าน"><button class="btn-win-action close-red" style="height:24px; width:24px;" onclick="this.closest('.ask-choice-row').remove()">✕</button></div>
+        </div>
+        <div class="ak1-opts">
+          <div><label class="ak1-lbl" for="askAnswerMode">พิมพ์โหวตด้วย</label>
+            <select class="voice-select-box ak1-ctl" id="askAnswerMode"><option value="letters">ตัวอักษร (A B C D ...)</option><option value="numbers">ตัวเลข (1 2 3 4 ...)</option></select></div>
+          <div><label class="ak1-lbl" for="askDurationSelect">เวลานับถอยหลัง</label>
+            <select class="voice-select-box ak1-ctl" id="askDurationSelect"><option value="30">30 วินาที</option><option value="60">60 วินาที</option><option value="120">2 นาที</option><option value="0">ไม่จำกัด (กดปิดเอง)</option></select></div>
+          <div title="แสดงแท่งคะแนนวิ่งแบบเรียลไทม์ หรือซ่อนไว้เพื่อรอเปิดตอนสรุปผล"><label class="ak1-lbl" for="askRealtime">คะแนนบนจอ</label>
+            <select class="voice-select-box ak1-ctl" id="askRealtime"><option>📊 แสดงสด</option><option>🔒 ซ่อนไว้เปิดตอนสรุป</option></select></div>
+          <div title="0 = แสดงจนกว่าจะกดปิด"><label class="ak1-lbl" for="askResultsDuration">แสดงสรุป (วินาที)</label>
+            <input id="askResultsDuration" class="modal-input ak1-ctl" type="number" min="0" max="3600" value="20"></div>
+        </div>
+        <div class="ak1-graph">
+          <div class="ak1-head"><span class="ak1-lbl" style="margin:0;">📊 แท่งคะแนนสด</span><span id="lblAskTotalVotes" class="ak1-total">ยอดโหวตรวม: 0 โหวต</span></div>
+          <div id="askLiveGraphContainer" class="ak1-bars"></div>
         </div>
 
 
@@ -6504,6 +5681,35 @@ window.addEventListener('keydown', (e) => {
 
 
 
+<style id="ask1-compact-style">
+#win-ask #paneAskTab1{--a1-line:var(--dc-border-hover,rgba(255,255,255,.14));--a1-muted:var(--dc-text-muted,#949ba4);padding:2px 0;}
+#win-ask .ak1-ctl{width:100%;box-sizing:border-box;min-height:30px;height:30px;margin:0;padding:3px 8px;font-size:13px;}
+#win-ask .ak1-btn{height:30px;font-size:12px;padding:0 10px;white-space:nowrap;}
+#win-ask .ak1-lbl{display:block;font-size:11.5px;font-weight:700;color:var(--a1-muted);margin:6px 0 2px;}
+#win-ask .ak1-row{display:flex;gap:6px;align-items:center;margin-bottom:2px;}
+#win-ask .ak1-head{display:flex;justify-content:space-between;align-items:center;margin:8px 0 4px;gap:8px;}
+#win-ask .ak1-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 8px;}
+#win-ask .ak1-choices .ask-choice-row{padding:2px 6px;margin:0;min-width:0;}
+#win-ask .ak1-choices .ask-choice-row input{min-width:0;height:26px;font-size:13px;}
+#win-ask .ak1-opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:2px 8px;margin-top:2px;}
+#win-ask .ak1-status{display:flex;align-items:center;gap:8px;padding:5px 10px;margin:0 0 6px;border:1px solid #1e293b;border-radius:8px;background:#162032;min-width:0;}
+#win-ask .ak1-status-text{font-size:12.5px;font-weight:700;color:#cbd5e1;white-space:nowrap;}
+#win-ask .ak1-status-meta{display:flex;gap:8px;align-items:center;min-width:0;flex:1;justify-content:flex-end;}
+#win-ask .ak1-hint{font-size:11px;color:#64748b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#win-ask .ak1-count{margin:0 0 6px;padding:5px 10px;border-radius:8px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.08);}
+#win-ask .ak1-count-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;margin-bottom:4px;}
+#win-ask .ak1-count-lbl{font-weight:700;color:#38bdf8;}#win-ask .ak1-count-val{font-weight:700;color:#fbbf24;font-variant-numeric:tabular-nums;min-width:3.2em;text-align:right;}
+#win-ask .ak1-count-track{width:100%;height:5px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+#win-ask .ak1-count-fill{height:100%;width:100%;background:linear-gradient(90deg,#10b981,#38bdf8);transform-origin:left center;transform:scaleX(1);will-change:transform;transition:transform 1s linear;}
+#win-ask #askTimerBadge{display:inline-block;min-width:3.8em;text-align:center;font-variant-numeric:tabular-nums;}
+#win-ask .ak1-graph{margin-top:6px;padding:6px 10px 8px;border:1px solid var(--a1-line);border-radius:8px;background:rgba(0,0,0,.18);}
+#win-ask .ak1-graph .ak1-head{margin:0 0 4px;}
+#win-ask .ak1-total{font-size:11px;color:#34d399;font-variant-numeric:tabular-nums;}
+#win-ask .ak1-bars{display:flex;flex-direction:column;gap:5px;contain:content;}
+#win-ask .ak1-bars>div>div:first-child{margin-bottom:1px!important;font-size:11.5px!important;}
+#win-ask .ak1-bars>div>div:last-child{height:6px!important;}
+@media (max-width:620px){#win-ask .ak1-choices{grid-template-columns:minmax(0,1fr);}#win-ask .ak1-hint{display:none;}}
+</style>
 <style id="ask-ui-style">
 #win-ask{--ak-text:var(--dc-text-primary,#f2f3f5);--ak-muted:var(--dc-text-muted,#949ba4);--ak-line:var(--dc-border-hover,rgba(255,255,255,.16));--ak-accent:var(--app-accent,var(--dc-blurple,#5865f2));--ak-card:var(--dc-bg-card,#232428);--ak-surface:var(--dc-bg-input,#1e1f22);--ak-red:var(--dc-red,#f23f43);}
 #win-ask .ak-wrap{container:akbody/inline-size;width:100%;}
@@ -9233,6 +8439,10 @@ window.addEventListener('keydown', (e) => {
 
 
 
+
+        <div class="settings-nav-item" id="nav-sec-plugins" data-sec="plugins" title="เปิด/ปิด plugin เสริมของโปรแกรม" onclick="switchSettingsSection('plugins')">
+          <span>🧩</span> <span>ปลั๊กอิน (Plugins)</span>
+        </div>
 
         <div class="settings-nav-item" id="nav-sec-defender" data-sec="defender" title="คลิกเปิดการตั้งค่า / คลิกขวาเพื่อปักหมุดไว้ที่ Server Rail" onclick="switchSettingsSection('defender')">
 
@@ -15978,6 +15188,36 @@ window.addEventListener('keydown', (e) => {
 
 
 
+
+        <!-- Plugins (เปิด/ปิด plugin) -->
+        <div id="sec-plugins" class="settings-section-pane" style="display: none;">
+          <div class="settings-section-title">🧩 ปลั๊กอิน (Plugins)</div>
+          <div class="settings-section-desc">
+            เพิ่มความสามารถให้โปรแกรมด้วย plugin เสริม — ทำงานในกล่องแยก (sandbox) แตะระบบหลักไม่ได้ และอ่านข้อมูลได้เฉพาะสิทธิ์ที่คุณอนุมัติ ปิด plugin แล้วโปรแกรมทำงานเหมือนเดิม
+          </div>
+          <div class="section-card" style="flex-direction:row; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:14px;">
+            <label style="display:flex; align-items:center; gap:12px; cursor:pointer; margin:0;">
+              <span class="cwc-switch"><input type="checkbox" id="plgSafeMode"><span class="cwc-switch-slider"></span></span>
+              <span>
+                <span style="display:block; font-size:13px; font-weight:700; color:var(--dc-text-primary);">Safe Mode</span>
+                <span style="display:block; font-size:12px; color:var(--dc-text-muted);">ปิด plugin ทั้งหมดชั่วคราว ใช้ตอนสงสัยว่า plugin ทำให้เกิดปัญหา</span>
+              </span>
+            </label>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button type="button" class="btn-topbar-action" id="plgReload">🔄 โหลดใหม่</button>
+              <button type="button" class="btn-topbar-action" id="plgFolder">📁 เปิดโฟลเดอร์ plugins</button>
+            </div>
+          </div>
+          <div id="plgMsg" class="settings-section-desc" style="display:none; color:var(--dc-amber);"></div>
+          <div id="plgApprove"></div>
+          <div id="plgList" style="display:flex; flex-direction:column; gap:10px;"></div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-start; margin-top:6px;">
+            <button type="button" class="btn-topbar-action" id="plgDoc">📖 อ่านคู่มือสร้าง plugin</button>
+            <button type="button" class="btn-topbar-action" id="plgDocCopy">📋 คัดลอกคู่มือ (ส่งให้ AI)</button>
+            <button type="button" class="btn-topbar-action" id="plgDocDl">⬇️ ดาวน์โหลด .md</button>
+          </div>
+          <div class="settings-section-desc" style="margin:0;">ส่งคู่มือนี้ให้ AI แล้วบอกว่าอยากได้ plugin อะไร AI จะสร้างโฟลเดอร์ plugin ให้วางลงในโฟลเดอร์ plugins ได้เลย</div>
+        </div>
 
         <!-- Windows Defender 1-Click Exclusion -->
 
@@ -29512,6 +28752,17 @@ const _origGetElementById = document.getElementById.bind(document);
 
         function popoutToolWindow(name, section) {
       if (name === 'voice') name = 'voice-settings';
+      // BP3 fix: a standalone popout page must never re-open itself (it would navigate itself, then closeAllPopoutWindows() on pagehide closes it -> window flashes and vanishes)
+      try {
+        let _po = new URLSearchParams(window.location.search).get('popout');
+        if (_po) {
+          _po = _po.toLowerCase();
+          if (_po === 'voice') _po = 'voice-settings';
+          if (_po === 'reply') _po = 'replie';
+          if (_po === 'users') _po = 'user-manager';
+          if (_po === name) { try { window.focus(); } catch (_) {} return; }
+        }
+      } catch (_) {}
       if (name === 'author-profile' && section) {
         try {
           const raw = localStorage.getItem('bp3_active_author_profile');
@@ -30574,6 +29825,17 @@ const _origGetElementById = document.getElementById.bind(document);
 
 
 
+      // BP3 fix: a standalone popout page must never re-open itself (it would navigate itself, then closeAllPopoutWindows() on pagehide closes it -> window flashes and vanishes)
+      try {
+        let _po = new URLSearchParams(window.location.search).get('popout');
+        if (_po) {
+          _po = _po.toLowerCase();
+          if (_po === 'voice') _po = 'voice-settings';
+          if (_po === 'reply') _po = 'replie';
+          if (_po === 'users') _po = 'user-manager';
+          if (_po === name) { try { window.focus(); } catch (_) {} return; }
+        }
+      } catch (_) {}
       const shouldPopout = (typeof window._autoPopoutWindows !== 'undefined') ? window._autoPopoutWindows : _autoPopoutWindows;
       if (shouldPopout) {
         popoutToolWindow(name, section);
@@ -36283,6 +35545,7 @@ try {
 
       try {
         if (sectionId === 'supporters' && window.SupportersUI?.load) window.SupportersUI.load();
+        if (sectionId === 'plugins' && window.BP3PluginsPane) window.BP3PluginsPane.load();
         if (sectionId === 'defender') {
           if (typeof checkDefenderSettingsPane === 'function') checkDefenderSettingsPane();
         }
@@ -47123,6 +46386,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+      'plugins': { name: 'ปลั๊กอิน', icon: '🧩' },
       'defender': { name: 'การยกเว้นสแกนไวรัส', icon: '🛡️' },
 
 
@@ -57272,293 +56536,54 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     function renderAskPollResultInChat(pollState) {
-
-
-
       if (!pollState) return;
-
-
-
       const chatList = document.getElementById('chatList');
-
-
-
       if (!chatList) return;
-
-
-
-
-
-
-
+      const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
       const choices = pollState.choices || [];
-
-
-
       const totalVotes = choices.reduce((acc, c) => acc + (c.votes || 0), 0);
-
-
-
       const totalVoters = Object.keys(pollState.voters || {}).length || totalVotes;
-
-
-
       const winner = pollState.winner;
-
-
-
       const question = pollState.question || 'แบบสำรวจความคิดเห็น';
-
-
-
-
-
-
-
-      choices.forEach(c => {
-
-
-
-        c.pct = totalVotes > 0 ? Math.round(((c.votes || 0) / totalVotes) * 100) : 0;
-
-
-
-      });
-
-
-
-
-
-
+      const maxVotes = choices.reduce((m, c) => Math.max(m, c.votes || 0), 0);
+      choices.forEach(c => { c.pct = totalVotes > 0 ? Math.round(((c.votes || 0) / totalVotes) * 100) : 0; });
 
       const row = document.createElement('div');
-
-
-
       row.className = 'chat-row ask-poll-result-row';
+      row.style.cssText = 'padding:8px 10px;margin:6px 0;background:#232428;border:1px solid rgba(56,189,248,.28);border-left:4px solid #38bdf8;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.28);';
 
-
-
-      row.style.cssText = 'padding: 12px 14px; margin: 8px 0; background: #232428; border: 1px solid rgba(56, 189, 248, 0.35); border-left: 5px solid #38bdf8; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
-
-
-
-
-
-
-
-      let choicesHtml = '';
-
-
-
+      let rowsHtml = '';
       choices.forEach((c) => {
-
-
-
-        const isWinner = winner && winner.key === c.key && (c.votes || 0) > 0;
-
-
-
-        const barColor = c.color || '#38bdf8';
-
-
-
-        choicesHtml += `
-
-
-
-          <div style="margin-bottom: 7px;">
-
-
-
-            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; margin-bottom: 3px;">
-
-
-
-              <span style="color: ${isWinner ? '#34d399' : '#f1f5f9'}; font-weight: ${isWinner ? '700' : '600'}; display: flex; align-items: center; gap: 4px;">
-
-
-
-                <span style="background: rgba(255,255,255,0.08); padding: 1px 6px; border-radius: 4px; font-size: 11px; color: #94a3b8;">${c.label}</span>
-
-
-
-                <span>${c.text}</span>
-
-
-
-                ${isWinner ? '<span title="อันดับ 1 (ชนะโหวต)" style="font-size: 13px;">👑</span>' : ''}
-
-
-
-              </span>
-
-
-
-              <span style="font-size: 11.5px; color: #94a3b8; font-weight: 600;">
-
-
-
-                <strong style="color: ${barColor}; font-size: 12px;">${c.votes || 0}</strong> โหวต (${c.pct}%)
-
-
-
-              </span>
-
-
-
-            </div>
-
-
-
-            <div style="height: 7px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden; position: relative;">
-
-
-
-              <div style="width: ${c.pct}%; height: 100%; background: ${barColor}; border-radius: 999px; transition: width 0.5s ease;"></div>
-
-
-
-            </div>
-
-
-
-          </div>
-
-
-
-        `;
-
-
-
+        const votes = c.votes || 0;
+        const isWinner = votes > 0 && votes === maxVotes && (!winner || winner.key === c.key || votes === (winner.votes || 0));
+        const color = c.color || '#38bdf8';
+        rowsHtml += `
+          <div style="position:relative;display:flex;align-items:center;gap:6px;height:24px;padding:0 8px 0 4px;margin-top:3px;border-radius:6px;overflow:hidden;background:rgba(255,255,255,.05);${isWinner ? 'box-shadow:inset 0 0 0 1px rgba(52,211,153,.55);' : ''}">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:${c.pct}%;background:linear-gradient(90deg,${isWinner ? 'rgba(52,211,153,.45)' : 'rgba(56,189,248,.28)'},${isWinner ? 'rgba(52,211,153,.18)' : 'rgba(56,189,248,.10)'});"></div>
+            <span style="position:relative;min-width:18px;height:18px;line-height:18px;text-align:center;border-radius:4px;background:rgba(0,0,0,.35);color:${esc(color)};font-size:11px;font-weight:800;">${esc(c.label)}</span>
+            <span style="position:relative;flex:1;min-width:0;font-size:12px;font-weight:${isWinner ? 700 : 600};color:${isWinner ? '#34d399' : '#f1f5f9'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(c.text)}${isWinner ? ' 👑' : ''}</span>
+            <span style="position:relative;font-size:11px;color:#cbd5e1;font-variant-numeric:tabular-nums;white-space:nowrap;"><strong style="color:#f8fafc;">${votes}</strong> · ${c.pct}%</span>
+          </div>`;
       });
 
-
-
-
-
-
+      const winTxt = winner && (winner.votes || 0) > 0
+        ? `🏆 <strong style="color:#34d399;">${esc(winner.label)}. ${esc(winner.text)}</strong>`
+        : '<span style="color:#64748b;">ไม่มีคะแนนโหวต</span>';
 
       row.innerHTML = `
-
-
-
-        <div style="width: 100%;">
-
-
-
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-
-
-
-            <div style="display: flex; align-items: center; gap: 6px;">
-
-
-
-              <span style="font-size: 15px;">📊</span>
-
-
-
-              <span style="font-weight: 700; font-size: 13px; color: #38bdf8;">สรุปผลโหวต ASK</span>
-
-
-
-              <span style="font-size: 11px; padding: 1px 7px; background: rgba(16, 185, 129, 0.2); color: #34d399; border-radius: 10px; font-weight: 600;">เสร็จสิ้น</span>
-
-
-
-            </div>
-
-
-
-            <button type="button" class="btn-chat-action btn-delete" title="ลบการ์ดสรุปผลนี้" onclick="this.closest('.chat-row').remove()" style="opacity: 0.7;">✕</button>
-
-
-
+        <div style="width:100%;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:13px;">📊</span>
+            <span style="font-weight:700;font-size:12px;color:#38bdf8;">สรุปผลโหวต</span>
+            <span style="font-size:10.5px;padding:0 6px;background:rgba(148,163,184,.15);color:#94a3b8;border-radius:8px;font-weight:600;">${totalVotes} โหวต · ${totalVoters} คน</span>
+            <span style="flex:1;"></span>
+            <button type="button" class="btn-chat-action btn-delete" title="ลบการ์ดนี้" onclick="this.closest('.chat-row').remove()" style="opacity:.6;">✕</button>
           </div>
-
-
-
-
-
-
-
-          <div style="font-size: 13px; font-weight: 700; color: #f8fafc; margin-bottom: 10px; line-height: 1.4;">
-
-
-
-            ${question}
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div style="display: flex; flex-direction: column;">
-
-
-
-            ${choicesHtml}
-
-
-
-          </div>
-
-
-
-
-
-
-
-          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: #94a3b8; flex-wrap: wrap; gap: 6px;">
-
-
-
-            <div>
-
-
-
-              👥 ยอดโหวตรวม: <strong style="color: #e2e8f0;">${totalVotes} คะแนน</strong> (${totalVoters} คน)
-
-
-
-            </div>
-
-
-
-            <div>
-
-
-
-              ${winner && (winner.votes || 0) > 0 ? `🏆 ชนะอันดับ 1: <strong style="color: #34d399;">${winner.label}. ${winner.text}</strong>` : '<span style="color: #64748b;">(ไม่มีคะแนนโหวต)</span>'}
-
-
-
-            </div>
-
-
-
-          </div>
-
-
-
+          <div style="font-size:12.5px;font-weight:700;color:#f8fafc;margin:3px 0 2px;line-height:1.35;">${esc(question)}</div>
+          <div style="display:grid;grid-template-columns:${choices.length > 6 ? 'repeat(2,minmax(0,1fr))' : '1fr'};column-gap:6px;">${rowsHtml}</div>
+          <div style="margin-top:5px;font-size:11.5px;color:#94a3b8;">${winTxt}</div>
         </div>
-
-
-
       `;
-
-
-
-
-
-
-
       appendLiveChatRow(chatList, row);
 
 
@@ -58068,6 +57093,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
       updateAskUIState('voting');
+      try { updateAskTimerDisplay(); } catch(e) {}
 
 
 
@@ -58307,7 +57333,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          if (progEl) progEl.style.width = Math.max(0, Math.round((remRes / resultSeconds) * 100)) + '%';
+          if (progEl) askSetBar(progEl, Math.max(0, remRes - 1) / resultSeconds, 1000, remRes / resultSeconds);
 
 
 
@@ -58735,7 +57761,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          badge.textContent = `⏱ ${rem}s`;
+          askSetText(badge, `⏱ ${rem}s`);
 
 
 
@@ -58751,7 +57777,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        if (lblEl) lblEl.textContent = '⏱️ เหลือเวลาโหวต:';
+        if (lblEl) askSetText(lblEl, '⏱️ เหลือเวลาโหวต:');
 
 
 
@@ -58759,7 +57785,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          valEl.textContent = `${rem}s`;
+          askSetText(valEl, `${rem}s`);
 
 
 
@@ -58775,7 +57801,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          progEl.style.width = pct + '%';
+          askSetBar(progEl, dur > 0 ? Math.max(0, rem - 1) / dur : 1, 1000, dur > 0 ? rem / dur : 1);
 
 
 
@@ -59159,7 +58185,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-            progEl.style.width = '100%';
+            askSetBar(progEl, 1, 0);
 
 
 
@@ -59343,6 +58369,41 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+    // In-place DOM updates so the ASK window never blinks while the poll counts down
+    function askSetBar(el, frac, linearMs, from) {
+      if (!el) return;
+      frac = Math.max(0, Math.min(1, frac));
+      const prev = el._askF;
+      el._askF = frac;
+      el.style.width = '100%';
+      if (prev == null || frac > prev + 0.001) {
+        el.style.transition = 'none'; el.style.transform = 'scaleX(' + Math.max(frac, Math.min(1, from == null ? frac : from)) + ')'; void el.offsetWidth; el.style.transition = '';
+      }
+      if (linearMs) el.style.transition = 'transform ' + linearMs + 'ms linear';
+      el.style.transform = 'scaleX(' + frac + ')';
+    }
+    function askSetText(el, txt) { if (el && el.textContent !== txt) el.textContent = txt; }
+    function askMorph(a, b) {
+      const bc = b.childNodes;
+      for (let i = 0; i < bc.length; i++) {
+        const n = bc[i], o = a.childNodes[i];
+        if (!o) { a.appendChild(n.cloneNode(true)); continue; }
+        if (o.nodeType !== n.nodeType || o.nodeName !== n.nodeName) { a.replaceChild(n.cloneNode(true), o); continue; }
+        if (n.nodeType === 3) { if (o.nodeValue !== n.nodeValue) o.nodeValue = n.nodeValue; continue; }
+        if (n.nodeType === 1) {
+          for (const at of Array.from(n.attributes)) { if (o.getAttribute(at.name) !== at.value) o.setAttribute(at.name, at.value); }
+          for (const at of Array.from(o.attributes)) { if (!n.hasAttribute(at.name)) o.removeAttribute(at.name); }
+          askMorph(o, n);
+        }
+      }
+      while (a.childNodes.length > bc.length) a.removeChild(a.lastChild);
+    }
+    function askSetHtml(el, html) {
+      if (el._askHtml === html) return;
+      el._askHtml = html;
+      const tmp = el.ownerDocument.createElement('div'); tmp.innerHTML = html;
+      askMorph(el, tmp);
+    }
     function renderAskPreviewGraph(choices, totalVotes) {
 
 
@@ -59355,11 +58416,12 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      if (lblTotal) lblTotal.textContent = `ยอดโหวตรวม: ${totalVotes} โหวต`;
+      askSetText(lblTotal, `ยอดโหวตรวม: ${totalVotes} โหวต`);
 
 
 
       if (!container) return;
+      const _askBox = { set innerHTML(h) { askSetHtml(container, h); } };
 
 
 
@@ -59383,7 +58445,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        container.innerHTML = displayChoices.map(c => `
+        _askBox.innerHTML = displayChoices.map(c => `
 
 
 
@@ -59427,7 +58489,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        container.innerHTML = displayChoices.map((c, idx) => {
+        _askBox.innerHTML = displayChoices.map((c, idx) => {
 
 
 
@@ -63636,8 +62698,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         _realChatPollerTimer = setInterval(pollIncomingRealChats, 800); window._realChatPollerTimer = _realChatPollerTimer;
       }
 
-      // Safeguard interval fallback to ensure polling always fires
-      if (!_realChatPollerTimer) {
+      // Safeguard interval fallback: only when the worker ticker is unavailable (avoids double polling)
+      if (!_realChatWorker && !_realChatPollerTimer) {
         _realChatPollerTimer = setInterval(pollIncomingRealChats, 1200); window._realChatPollerTimer = _realChatPollerTimer;
       }
 
@@ -68623,6 +67685,96 @@ try {
     window.addEventListener('pagehide', persist);
     window.addEventListener('beforeunload', persist);
   } catch (_) {}
+})();
+</script>
+<script>
+/* plugin: เมาส์พิเศษ (ทำงานเฉพาะเมื่อมี plugin เปิดอยู่; พังเมื่อไหร่ก็เงียบ ไม่กระทบโปรแกรม) */
+(function(){try{
+  function apply(){fetch('/api/plugins/ui',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){
+    var old=document.getElementById('bp3-plugin-cursor');
+    if(!d||!d.cursor_css){if(old)old.remove();return}
+    if(old){if(old.textContent!==d.cursor_css)old.textContent=d.cursor_css;return}
+    var s=document.createElement('style');s.id='bp3-plugin-cursor';s.textContent=d.cursor_css;document.head.appendChild(s)}).catch(function(){})}
+  window.BP3PluginUI={refresh:apply};
+  apply();
+  try{var bc=new BroadcastChannel('bp3_plugin_ui');bc.onmessage=apply}catch(e){}
+  window.addEventListener('focus',apply);
+}catch(e){}})();
+</script>
+<script>
+/* หน้าตั้งค่า > ปลั๊กอิน (ฝั่งแสดงผลเท่านั้น; พัง = เงียบ ไม่กระทบส่วนอื่น) */
+(function(){
+  try{
+    var H={'Content-Type':'application/json','X-BP3-Plugin':'1'},S={plugins:[],perms:{}},pending=null,bound=false;
+    function $(i){return document.getElementById(i)}
+    function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+    function get(p){return fetch(p,{cache:'no-store'}).then(function(r){return r.json()})}
+    function post(p,b){return fetch(p,{method:'POST',headers:H,body:JSON.stringify(b||{})}).then(function(r){return r.json()})}
+    var LBL={enabled:['เปิดอยู่','var(--dc-green)'],disabled:['ปิดอยู่','var(--dc-text-muted)'],needs_approval:['ต้องอนุมัติใหม่','var(--dc-amber)'],safe_mode:['ถูกปิดโดย Safe Mode','var(--dc-amber)'],unsupported:['API ไม่รองรับ','var(--dc-red)'],invalid:['ใช้งานไม่ได้','var(--dc-red)']};
+    function msg(t){var m=$('plgMsg');if(!m)return;m.textContent=t||'';m.style.display=t?'block':'none'}
+    function permList(p){return (p.permissions||[]).map(function(k){return '<li style="margin:2px 0;">'+esc(S.perms[k]||k)+'</li>'}).join('')}
+    function render(){
+      var l=$('plgList');if(!l)return;
+      if(!S.plugins.length){l.innerHTML='<div class="section-card" style="text-align:center;color:var(--dc-text-muted);font-size:13px;">ยังไม่มีปลั๊กอิน — กด “เปิดโฟลเดอร์ plugins” แล้ววางโฟลเดอร์ plugin ลงไป จากนั้นกด “โหลดใหม่”</div>';return}
+      l.innerHTML=S.plugins.map(function(p,i){
+        var b=LBL[p.status]||['ไม่ทราบสถานะ','var(--dc-red)'],can=p.status!=='invalid'&&p.status!=='unsupported';
+        var obs=(p.status==='enabled'&&p.widget)?'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><span style="font-size:12px;color:var(--dc-text-muted);">ลิงก์ OBS (Browser Source):</span><code style="font-size:12px;color:#38bdf8;background:var(--dc-bg-input);padding:3px 8px;border-radius:6px;user-select:all;">'+esc(location.origin+'/plugins/host/'+encodeURIComponent(p.id))+'</code><button type="button" class="btn-topbar-action" data-plg-copy="'+i+'">คัดลอก</button></div>':'';
+        return '<div class="section-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">'+
+          '<div style="min-width:0;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;"><span style="font-size:14px;font-weight:700;color:var(--dc-text-primary);">'+esc(p.name)+'</span>'+
+          '<span style="font-size:11.5px;font-weight:700;color:'+b[1]+';border:1px solid currentColor;padding:1px 9px;border-radius:20px;">'+b[0]+'</span></div>'+
+          '<div style="font-size:12px;color:var(--dc-text-muted);margin-top:2px;">'+esc((p.version?'v'+p.version:'')+(p.author?' · '+p.author:''))+'</div></div>'+
+          '<label class="cwc-switch" title="'+(can?'เปิด/ปิด':'ใช้งานไม่ได้')+'"><input type="checkbox" data-plg-toggle="'+i+'"'+(p.enabled?' checked':'')+(can?'':' disabled')+'><span class="cwc-switch-slider"></span></label></div>'+
+          (p.description?'<div style="font-size:12.5px;color:var(--dc-text-primary);">'+esc(p.description)+'</div>':'')+
+          (p.reason?'<div style="font-size:12px;color:var(--dc-amber);">'+esc(p.reason)+'</div>':'')+
+          (p.permissions&&p.permissions.length?'<div style="font-size:12px;color:var(--dc-text-muted);">สิทธิ์ที่ขอ:<ul style="margin:4px 0 0;padding-left:18px;">'+permList(p)+'</ul></div>':'<div style="font-size:12px;color:var(--dc-text-muted);">ไม่ขอสิทธิ์ใดเลย</div>')+
+          obs+'</div>';
+      }).join('');
+    }
+    function renderApprove(){
+      var a=$('plgApprove');if(!a)return;
+      if(!pending){a.innerHTML='';return}
+      var p=pending;
+      a.innerHTML='<div class="section-card" style="border-color:var(--dc-amber);margin-bottom:10px;"><div class="section-card-title">เปิด “'+esc(p.name)+'” ?</div>'+
+        '<div style="font-size:12.5px;color:var(--dc-text-muted);">'+(p.permissions.length?'ปลั๊กอินนี้ขอสิทธิ์:':'ปลั๊กอินนี้ไม่ขอสิทธิ์ใดเลย (แสดงผลอย่างเดียว)')+'</div>'+
+        (p.permissions.length?'<ul style="margin:0;padding-left:18px;font-size:12.5px;color:var(--dc-text-primary);">'+permList(p)+'</ul>':'')+
+        '<div style="display:flex;gap:8px;justify-content:flex-end;"><button type="button" class="btn-topbar-action" id="plgNo">ยกเลิก</button><button type="button" class="btn-topbar-action primary" id="plgYes">อนุมัติและเปิด</button></div></div>';
+    }
+    var uch=null;
+    function uiSync(){try{if(window.BP3PluginUI)window.BP3PluginUI.refresh();if(!uch)uch=new BroadcastChannel('bp3_plugin_ui');uch.postMessage(1)}catch(_){}}
+    function load(){
+      bind();
+      get('/api/plugins').then(function(d){uiSync();S.plugins=d.plugins||[];S.perms=d.permissions||{};var c=$('plgSafeMode');if(c)c.checked=!!d.safe_mode;render();renderApprove()}).catch(function(){var l=$('plgList');if(l)l.innerHTML='<div class="section-card" style="color:var(--dc-text-muted);font-size:13px;">โหลดรายการ plugin ไม่ได้</div>'});
+    }
+    function bind(){
+      if(bound)return;var root=$('sec-plugins');if(!root)return;bound=true;
+      root.addEventListener('change',function(e){
+        var t=e.target;
+        if(t.id==='plgSafeMode'){post('/api/plugins/safe-mode',{on:t.checked}).then(load);return}
+        if(t.hasAttribute&&t.hasAttribute('data-plg-toggle')){
+          var p=S.plugins[+t.getAttribute('data-plg-toggle')];if(!p)return;
+          if(!t.checked){post('/api/plugins/enable',{id:p.id,enabled:false}).then(load);return}
+          t.checked=false;pending=p;renderApprove();
+        }
+      });
+      root.addEventListener('click',function(e){
+        var t=e.target;if(!t||!t.closest)return;
+        var c=t.closest('[data-plg-copy]');
+        if(c){var p=S.plugins[+c.getAttribute('data-plg-copy')];if(p){var u=location.origin+'/plugins/host/'+encodeURIComponent(p.id);try{navigator.clipboard.writeText(u)}catch(_){}}return}
+        if(t.id==='plgDoc'){try{window.open('/plugins/docs','_blank')}catch(_){}return}
+        if(t.id==='plgDocDl'){try{var a=document.createElement('a');a.href='/plugins/docs?download=1';a.download='BP3_Plugin_Guide.md';document.body.appendChild(a);a.click();a.remove()}catch(_){}return}
+        if(t.id==='plgDocCopy'){var bt=t;fetch('/plugins/docs',{cache:'no-store'}).then(function(r){return r.text()}).then(function(tx){
+          function done(ok){var o=bt.textContent;bt.textContent=ok?'✅ คัดลอกแล้ว':'คัดลอกไม่ได้ — ใช้ปุ่มอ่านแล้วคัดลอกเอง';setTimeout(function(){bt.textContent=o},2200)}
+          try{navigator.clipboard.writeText(tx).then(function(){done(true)},function(){fb()})}catch(_){fb()}
+          function fb(){try{var ta=document.createElement('textarea');ta.value=tx;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();var ok=document.execCommand('copy');ta.remove();done(ok)}catch(_){done(false)}}
+        }).catch(function(){});return}
+        if(t.id==='plgReload'){msg('');load();return}
+        if(t.id==='plgFolder'){post('/api/plugins/open-folder').then(function(r){msg(r.ok?'':'เปิดโฟลเดอร์เองไม่ได้ — โฟลเดอร์อยู่ที่: '+(r.path||''))}).catch(function(){});return}
+        if(t.id==='plgNo'){pending=null;renderApprove();return}
+        if(t.id==='plgYes'&&pending){var p2=pending;pending=null;post('/api/plugins/enable',{id:p2.id,enabled:true,granted:p2.permissions}).then(function(r){msg(r.ok?'':(r.error||'เปิดไม่ได้'));load()});}
+      });
+    }
+    window.BP3PluginsPane={load:load};
+  }catch(e){}
 })();
 </script>
 </body>

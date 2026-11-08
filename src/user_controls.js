@@ -40,7 +40,7 @@ window.pruneViewerChatHistory = pruneViewerChatHistory;
 
 pruneViewerChatHistory();
 
-setInterval(pruneViewerChatHistory,60*60*1000);
+// prune once at startup only (above); no hourly timer
 
 window._blockedUsers=read('bp3_blocked_users',{});
 
@@ -701,7 +701,7 @@ window.openAuthorModal=function(username,platform,avatar,nickname,isVip){
 
  window.pruneViewerChatHistory = pruneViewerChatHistory;
 
- pruneViewerChatHistory();
+ // (removed) prune only runs once at startup
 
  const person=people.get(String(platform || 'Twitch').toLowerCase()+':'+String(username).toLowerCase());
 

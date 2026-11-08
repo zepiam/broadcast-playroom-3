@@ -4,6 +4,10 @@
 > เอกสารฉบับนี้เป็นข้อกำหนดอย่างเป็นทางการ (Official Specification) สำหรับการสร้าง Plugin เสริมให้กับโปรแกรม Broadcast Playroom 3
 > AI สามารถอ่านเอกสารนี้และสร้าง Plugin ที่พร้อมใช้งานได้ทันทีโดยไม่ต้องแก้ไขซอร์สโค้ดหลักของโปรแกรม
 
+> **ไฟล์นี้เป็นแบบเก่า — ใช้ `docs/PLUGIN_GUIDE_FOR_AI.md` แทน (คู่มือ API v1 ฉบับจริง)**
+>
+> **อัปเดต Plugin API v1:** ปลั๊กอินเฟสแรกเป็น **JavaScript ล้วน** รันใน iframe sandbox — `plugin.json` ต้องมี `\"api_version\": 1`, `\"widget\": \"widget.html\"` และ `permissions` ได้เฉพาะ `events_read`, `chat_read`. ใน widget ใช้ `BP3Plugin.on('chat_message', fn)` (ชื่อ event: chat_message, chat_clear, chat_delete, ask_update, giveaway_update, randomizer_spin). เรียกเน็ตภายนอกยังไม่ได้ในเฟสนี้. ส่วน `main.py`/`tts_speak`/`overlay_push` ด้านล่างเป็นแบบเก่า **ยังไม่ทำงาน**. ตัวอย่าง: `docs/plugin_examples/hello-widget/`
+
 ---
 
 ## 1. ปรัชญาการออกแบบ (Design Philosophy)

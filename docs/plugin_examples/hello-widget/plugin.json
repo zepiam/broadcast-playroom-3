@@ -1,0 +1,10 @@
+{
+  "id": "hello-widget",
+  "name": "Hello Widget",
+  "version": "1.0.0",
+  "author": "ตัวอย่าง",
+  "description": "แสดงข้อความแชทล่าสุดบนหน้าจอ (ตัวอย่างสำหรับนักพัฒนา)",
+  "api_version": 1,
+  "permissions": ["chat_read"],
+  "widget": "widget.html"
+}

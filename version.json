@@ -1,39 +1,39 @@
 {
-  "version": "3.60",
-  "latest_version": "3.60",
+  "version": "3.62",
+  "latest_version": "3.62",
   "release_date": "2026-11-08",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.60\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.60:\n- **แก้โลโก้แพลตฟอร์มหน้าข้อความใน Chat Widget ของ Composer เป็นไอคอนภาพขาด**:\n  - สาเหตุ: เส้นทาง `/logo/<แพลตฟอร์ม>` ของเซิร์ฟเวอร์ค้นหาไฟล์โลโก้จากโฟลเดอร์ `src` เท่านั้น แต่โปรแกรมที่ติดตั้งจริงไม่มีโฟลเดอร์ `src` (มีแต่ `dist`) จึงหาภาพไม่เจอ\n  - แก้ให้ค้นหาจาก `dist/assets` ก่อน แล้วค่อยถอยไปหา `src/assets` (รองรับทั้งโหมดใช้งานจริงและโหมดพัฒนา)\n",
+  "changelog": "# Broadcast Playroom v3.62\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.62:\n- **ระบบปลั๊กอิน (Plugin) รุ่นแรก**:\n  - เปิด/ปิด plugin ได้ที่ ตั้งค่า > เกี่ยวกับระบบ > ปลั๊กอิน มี Safe Mode ปิดทั้งหมดชั่วคราว และมีปุ่มอ่าน/คัดลอก/ดาวน์โหลดคู่มือสร้าง plugin (ส่งให้ AI ช่วยสร้างให้ได้)\n  - plugin ทำงานในกล่องแยก (sandbox) แตะระบบหลักและเครดิตผู้พัฒนา/ปุ่มสนับสนุนไม่ได้ อ่านข้อมูลได้เฉพาะสิทธิ์ที่ผู้ใช้อนุมัติ ปิดแล้วโปรแกรมทำงานเหมือนเดิม\n  - รองรับ widget สำหรับ OBS (รับแชท/ASK/ชิงโชค/สุ่มแบบอ่านอย่างเดียว) และเมาส์พิเศษ มี plugin ตัวอย่าง \"เมาส์พิเศษ\" ปิดไว้ให้ลองใช้\n- **หน้า ASK (คำถามและโหวตสด)**: ปรับให้กะทัดรัดอ่านง่าย แถบเวลานับถอยหลังเคลื่อนไหลลื่น เนื้อหาไม่กระพริบ และมีการ์ดสรุปผลโหวตในแชทสดหน้าแรก รองรับตั้งแต่ 2 ถึงจำนวนตัวเลือกสูงสุด\n- **แก้หน้าโปรไฟล์ผู้ใช้ (จาก User Manager) เปิดแล้วหายทันที**\n- **ประวัติแชทผู้ใช้**: ลบข้อมูลที่เก่าเกิน 7 วันครั้งเดียวตอนเปิดโปรแกรม (เลิกลบซ้ำทุกชั่วโมง)\n- **ลดการใช้ CPU/RAM โดยไม่กระทบฟีเจอร์**:\n  - ตรวจชนิดโปรแกรม (Full/Lite) โดยไม่โหลดไลบรารี AI เสียง (torch) เข้าหน่วยความจำอีกต่อไป ประหยัดทั้ง RAM และ CPU ตอนเปิดโปรแกรม/เช็กอัปเดต\n  - ใช้ไอคอนขนาดเล็ก (64 พิกเซล) ที่แถบหัวหน้าต่างแทนไฟล์ 1254 พิกเซล ลด RAM ต่อหน้าต่าง\n  - เลิกสร้างตัวดึงข้อความแชทซ้ำซ้อน ลดจำนวนคำขอไปยังเซิร์ฟเวอร์ลงครึ่งหนึ่งในส่วนนี้\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.60-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.60/patch-v3.60-lite.zip",
-      "sha256": "a15ec04f4085bef97d8a76a163a3389e70c6f7edccd1df85672922385a2bb46e",
-      "size": 35921194,
+      "file": "patch-v3.62-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.62/patch-v3.62-lite.zip",
+      "sha256": "c6a1331de3d39c91ca37d83766d50b956f7d757ac1015095b67c8a771ff1e0ce",
+      "size": 33911876,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.60-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.62-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.60-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.60/patch-v3.60-full.zip",
-      "sha256": "a15ec04f4085bef97d8a76a163a3389e70c6f7edccd1df85672922385a2bb46e",
-      "size": 35921194,
+      "file": "patch-v3.62-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.62/patch-v3.62-full.zip",
+      "sha256": "c6a1331de3d39c91ca37d83766d50b956f7d757ac1015095b67c8a771ff1e0ce",
+      "size": 33911876,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.60-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.62-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.60-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.60/patch-v3.60-lite.zip",
-    "sha256": "a15ec04f4085bef97d8a76a163a3389e70c6f7edccd1df85672922385a2bb46e",
-    "size": 35921194
+    "file": "patch-v3.62-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.62/patch-v3.62-lite.zip",
+    "sha256": "c6a1331de3d39c91ca37d83766d50b956f7d757ac1015095b67c8a771ff1e0ce",
+    "size": 33911876
   },
   "full": {
-    "file": "patch-v3.60-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.60/patch-v3.60-full.zip",
-    "sha256": "a15ec04f4085bef97d8a76a163a3389e70c6f7edccd1df85672922385a2bb46e",
-    "size": 35921194
+    "file": "patch-v3.62-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.62/patch-v3.62-full.zip",
+    "sha256": "c6a1331de3d39c91ca37d83766d50b956f7d757ac1015095b67c8a771ff1e0ce",
+    "size": 33911876
   }
 }

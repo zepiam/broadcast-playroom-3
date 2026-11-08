@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.60"
+CURRENT_VERSION = "3.62"
 
 REPO_OWNER = "zepiam"
 
@@ -197,11 +197,11 @@ def get_build_type() -> str:
 
     try:
 
-        import torch  # noqa: F401
+        import importlib.util as _ilu  # check install without loading torch (saves RAM/CPU)
 
-        return "full"
+        return "full" if _ilu.find_spec("torch") is not None else "lite"
 
-    except ImportError:
+    except Exception:
 
         return "lite"
 
