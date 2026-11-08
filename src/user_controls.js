@@ -16,6 +16,16 @@ const validPeople = Array.isArray(rawRoster)
   : [];
 const people = new Map(validPeople);
 
+// Remove sample/test viewers left by the old "simulate activity" button (never real viewers).
+(function purgeMockViewers(){
+  const MOCK=new Set(['twitch:testviewer','twitch:alexgamer','twitch:kittenlover','twitch:prostreamer99','twitch:richwhale','twitch:speedrunnerth','twitch:newwatcher','youtube:somsak studio','youtube:animefanatic','youtube:gamingchannel','tiktok:ploy_charming','tiktok:megasupporter','tiktok:user123456','tiktok:tiktoklover','kick:kickchampion','promptpay:นายกิตติคุณ (ไม่ประสงค์ออกนาม)','truemoney:น้องมิว สายเปย์']);
+  let removed=false;
+  for(const [key,person] of [...people.entries()]){
+    if(MOCK.has(key) && Number(person.count||0)<=3){people.delete(key);removed=true;}
+  }
+  if(removed){try{localStorage.setItem('bp3_user_roster',JSON.stringify([...people.values()]));}catch(_){}}
+})();
+
 const CHAT_RETENTION_MS=7*24*60*60*1000;
 
 function pruneViewerChatHistory(now=Date.now()){

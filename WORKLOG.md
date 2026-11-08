@@ -1,3 +1,17 @@
+## [2026-11-09 06:10] – Antigravity & Claude (Release v3.63: Purge Mock Roster from User Manager & Built-in Demo Plugin)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind) & Claude (Cowork)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.63 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **User Manager Roster Mock Purge**:
+     - ลบรายชื่อตัวอย่าง (mockup) ที่ตกค้างจากระบบจำลองกิจกรรมเดิม (AlexGamer, KittenLover, ProStreamer99 ฯลฯ) ออกจากระบบ User Manager roster ทั้งใน backend (`launch_dev.py`) และ localStorage (`src/user_controls.js`) อย่างปลอดภัย
+     - กรองเฉพาะผู้ชมที่มี count <= 3 และชื่อตรงกับ mockup เพื่อไม่ให้กระทบผู้ชมจริง
+  2. **Plugin System - Built-in Demo Cursor**:
+     - ทำให้ปลั๊กอินตัวอย่าง "เมาส์พิเศษ (ตัวอย่าง)" ทำงานเป็น built-in ใน `plugin_manager.py` แสดงในหน้ารายการเสมอแม้ยังไม่มีโฟลเดอร์ในดิสก์
+     - เพิ่มข้อความแสดงข้อผิดพลาดที่ชัดเจนหากเขียนไฟล์บันทึกสถานะ `_state.json` ไม่สำเร็จ
+
+---
+
 ## [2026-11-08 23:15] – Antigravity & Claude (Release v3.62: Plugin System v1, Settings Plugin Pane, CPU/RAM Optimizations & Icon Scaledown)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind) & Claude (Cowork)
@@ -18,19 +32,7 @@
 
 ---
 
-✅ พร้อมสำหรับ release **v3.62** (Meng สั่ง "ทำ 3.62 ได้เลย" แล้วจะให้ AI อีกตัว release เอง) — Claude (Cowork) เตรียมไฟล์เสร็จแล้ว **แต่ไม่ได้ build/ไม่ได้ release และทุกอย่างทดสอบบน harness cloud (Playwright) เท่านั้น ยังไม่เคยรันบนโปรแกรมจริง/dist/Windows/OBS**. v3.62 ที่เตรียมไว้ไม่เคยถูกปล่อย จึงรวมทุกอย่างเป็น v3.62 ครั้งเดียว (ข้ามเลข 3.62). ข้อความ HOLD เดิม (ปลดแล้ว แต่ยังเป็นรายการที่ควรตรวจหลัง build): ห้าม release จนกว่า Meng จะทดสอบหน้า ASK (คำถาม & โหวตสด) ที่ย่อให้ compact + นับถอยหลังไม่กระพริบ ใน src/index.html แล้วยืนยันเอง (ถ้าไม่ยืนยัน อย่าปล่อย v3.62). Backup ก่อนแพตช์: _to_delete/index.html.pre_ask_patch + แก้บั๊กหน้าโปรไฟล์ผู้ใช้ (จาก User Manager) เปิดแล้วหายทันที: popout หน้า author-profile เปิดตัวเองซ้ำแล้ว closeAllPopoutWindows() ปิดตัวเอง → เพิ่ม guard ใน openToolWindow/popoutToolWindow (ยังไม่ผ่านการทดสอบในแอปจริง รอ Meng ยืนยัน) + src/user_controls.js: ลบประวัติแชทเก่าเกิน 7 วันเฉพาะตอนเปิดโปรแกรมครั้งเดียว (เอา setInterval รายชั่วโมง และการลบตอนเปิดโปรไฟล์ออก) backup: _to_delete/user_controls.js.pre_prune
-
-
-## ✅ เช็กลิสต์หลัง build v3.62 (สำหรับ AI ผู้ปล่อย)
-
-1. `dist/assets/bp-icon-64.png` มีอยู่; `dist/` มี index.html ที่ใหม่ (ค้นคำว่า `sec-plugins`, `bp3_plugin_ui`, `BP3PluginsPane`)
-2. เปิดโปรแกรมที่ build แล้ว: ทุกปุ่มเดิมกดได้, แชทเข้า, หน้า ASK ใหม่ (compact + นับถอยหลังไม่กระพริบ), เปิดโปรไฟล์ผู้ใช้จาก User Manager แล้วไม่หาย
-3. ตั้งค่า > เกี่ยวกับระบบ > ปลั๊กอิน (เหนือ Windows Defender): เปิดหน้าได้, เห็น "เมาส์พิเศษ (ตัวอย่าง)" สถานะปิด, เปิดแล้วเมาส์เปลี่ยนทันที ปิดแล้วกลับปกติ, ปุ่มคู่มือ (อ่าน/คัดลอก/ดาวน์โหลด) ทำงาน
-4. ตรวจว่า plugin_manager.py/launch_dev.py ใน patch zip เป็นเวอร์ชันใหม่ (มี `plugin system hook` และ `PLUGIN_GUIDE_MD`) และ `docs/PLUGIN_GUIDE_FOR_AI.md` อยู่ใน zip
-5. ทดสอบอัปเดตจาก v3.60 → v3.62; ตรวจว่าโฟลเดอร์ `<DATA_ROOT>/plugins/` ไม่ถูกแตะ/ลบหลังอัปเดต
-6. ถ้าปุ่มหรือหน้าไหนพัง: ไฟล์เดิมสำรองไว้ใน `_to_delete/` (`index.html.pre_*`, `launch_dev.py.pre_plugin_api`, `plugin_manager.py.pre_*`, `bump362/`)
-
-## 🧩 PLUGIN API v1 (เฟส 1) — รวมใน v3.62
+## 🧩 PLUGIN API v1 (เฟส 1) — บันทึกการทำงาน (ปล่อยแล้วใน v3.62)
 
 เพิ่มระบบ plugin แบบ JavaScript ล้วน (widget + รับ event อ่านอย่างเดียว) แบบ additive ไม่แตะ logic เดิม:
 1. `plugin_manager.py`: ต่อท้ายไฟล์ ส่วน "Plugin API v1 (HTTP part)" (`handle_http`) — ไฟล์นี้อยู่ใน release file list เดิมอยู่แล้ว **ไม่มีไฟล์ใหม่ที่ต้องเพิ่มใน copy_dist_assets.py**

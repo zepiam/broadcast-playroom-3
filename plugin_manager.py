@@ -267,7 +267,36 @@ def _plg_scan(self):
         except Exception as e:
             item["reason"] = "อ่าน plugin.json ไม่ได้: %s" % e
         out.append(item)
+    try:
+        if not any(i["id"] == "demo-cursor" for i in out):
+            out.append(_plg_builtin_demo_item(state, safe))
+    except Exception:
+        pass
     return out
+
+
+def _plg_builtin_demo_item(state, safe):
+    """Built-in example plugin: always listed, needs no files on disk. A real folder with the same id overrides it."""
+    m = _PLUGIN_DEMO_MANIFEST
+    item = {
+        "id": m["id"], "name": m["name"], "version": m["version"], "author": m["author"],
+        "description": m["description"], "permissions": list(m["permissions"]), "widget": "",
+        "status": "disabled", "reason": "", "enabled": False, "errors": 0, "cursor": True, "builtin": True,
+    }
+    ps = state.get("plugins", {}).get(m["id"], {})
+    item["errors"] = int(ps.get("errors", 0) or 0)
+    if ps.get("enabled"):
+        if sorted(ps.get("granted") or []) != sorted(item["permissions"]):
+            item["status"] = "needs_approval"
+            item["reason"] = "สิทธิ์เปลี่ยนไปหลังอนุมัติ ต้องเปิดใหม่"
+        elif safe:
+            item["status"] = "safe_mode"
+        else:
+            item["status"] = "enabled"
+            item["enabled"] = True
+    elif ps.get("disabled_reason"):
+        item["reason"] = str(ps["disabled_reason"])
+    return item
 
 
 def _plg_cursor_css(d, m):
@@ -279,7 +308,15 @@ def _plg_cursor_css(d, m):
         f = d / name
         if not f.is_file() or f.stat().st_size > 32768:
             return None
-        data = f.read_bytes()
+        return _plg_cursor_css_bytes(f.read_bytes(), m)
+    except Exception:
+        return None
+
+
+def _plg_cursor_css_bytes(data, m):
+    try:
+        if len(data) > 32768:
+            return None
         if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
             return None
         w = int.from_bytes(data[16:20], "big")
@@ -300,6 +337,12 @@ def _plg_ui(self):
     """What the main window may apply on behalf of enabled plugins (cursor only)."""
     try:
         for it in _plg_scan(self):
+            if it["status"] == "enabled" and it.get("cursor") and it.get("builtin"):
+                import base64
+                css = _plg_cursor_css_bytes(base64.b64decode(PLUGIN_DEMO_CURSOR_B64), _PLUGIN_DEMO_MANIFEST)
+                if css:
+                    return {"cursor_css": css, "plugin": it["id"]}
+                continue
             if it["status"] == "enabled" and it.get("cursor"):
                 with open(self.plugins_dir / it["id"] / "plugin.json", "r", encoding="utf-8") as f:
                     m = json.load(f)
@@ -395,7 +438,6 @@ def _plg_handle_http(self, method, path, query="", body=None, headers=None):
         if not self.plugins_dir:
             return None
         headers = headers or {}
-        _plg_seed(self)
         if method == "GET":
             if path == "/plugins":
                 return _plg_html(_PLG_MANAGER_HTML)
@@ -445,7 +487,10 @@ def _plg_handle_http(self, method, path, query="", body=None, headers=None):
                         state["plugins"][it["id"]] = {"enabled": True, "granted": it["permissions"], "errors": 0}
                     else:
                         state["plugins"][it["id"]] = {"enabled": False, "granted": [], "errors": 0}
-                    _plg_write_state(self, state)
+                    try:
+                        _plg_write_state(self, state)
+                    except Exception as e:
+                        return _plg_json({"ok": False, "error": "บันทึกสถานะไม่ได้ (%s) โฟลเดอร์: %s" % (e, self.plugins_dir)}, 500)
                     return _plg_json({"ok": True})
                 if path == "/api/plugins/safe-mode":
                     state["safe_mode"] = bool(data.get("on"))

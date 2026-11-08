@@ -1258,6 +1258,31 @@ def _get_user_roster_paths():
             res.append(pt)
     return res
 
+# Sample/test viewers from the old 'simulate activity' button. They are never real viewers,
+# so they are removed from the roster wherever they were saved (any version, any data folder).
+_MOCK_ROSTER_KEYS = frozenset([
+    ('twitch', 'testviewer'), ('twitch', 'alexgamer'), ('twitch', 'kittenlover'), ('twitch', 'prostreamer99'),
+    ('twitch', 'richwhale'), ('twitch', 'speedrunnerth'), ('twitch', 'newwatcher'),
+    ('youtube', 'somsak studio'), ('youtube', 'animefanatic'), ('youtube', 'gamingchannel'),
+    ('tiktok', 'ploy_charming'), ('tiktok', 'megasupporter'), ('tiktok', 'user123456'), ('tiktok', 'tiktoklover'),
+    ('kick', 'kickchampion'),
+    ('promptpay', 'นายกิตติคุณ (ไม่ประสงค์ออกนาม)'), ('truemoney', 'น้องมิว สายเปย์'),
+])
+
+
+def _is_mock_roster_entry(item):
+    try:
+        if not isinstance(item, dict):
+            return False
+        key = (str(item.get('platform') or 'Twitch').strip().lower(), str(item.get('username') or item.get('name') or '').strip().lower())
+        if key not in _MOCK_ROSTER_KEYS:
+            return False
+        # a real, active viewer who happens to share a name keeps their record
+        return int(item.get('count') or 0) <= 3
+    except Exception:
+        return False
+
+
 def _merge_user_rosters(base_list, incoming_list):
     """ผสานรายชื่อผู้ชม รายละเอียดประวัติ และกิจกรรมเข้าด้วยกัน ป้องกันการสูญหายข้ามโฟลเดอร์/อัปเดต"""
     merged = {}
@@ -1307,7 +1332,7 @@ def _merge_user_rosters(base_list, incoming_list):
                         ev_unique.append(ev)
             ev_unique.sort(key=lambda x: x.get('time') or 0)
             cur['events'] = ev_unique[-250:]
-    return list(merged.values())
+    return [_p for _p in merged.values() if not _is_mock_roster_entry(_p)]
 
 def _load_user_roster():
     merged_roster = []
@@ -1329,6 +1354,21 @@ def _load_user_roster():
             try:
                 if not pt.exists() or pt.stat().st_size <= 10:
                     pt.parent.mkdir(parents=True, exist_ok=True)
+                    with open(pt, 'w', encoding='utf-8') as f:
+                        json.dump(merged_roster, f, ensure_ascii=False, indent=2)
+            except Exception:
+                pass
+    global _roster_mock_purged
+    if found_any and not globals().get('_roster_mock_purged'):
+        _roster_mock_purged = True
+        for pt in _get_user_roster_paths():
+            try:
+                if not pt.is_file() or pt.stat().st_size <= 10:
+                    continue
+                with open(pt, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                items = data.get('roster') if isinstance(data, dict) and isinstance(data.get('roster'), list) else data
+                if isinstance(items, list) and any(_is_mock_roster_entry(x) for x in items):
                     with open(pt, 'w', encoding='utf-8') as f:
                         json.dump(merged_roster, f, ensure_ascii=False, indent=2)
             except Exception:
