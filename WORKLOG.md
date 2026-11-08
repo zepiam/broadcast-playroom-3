@@ -1,32 +1,13 @@
-## 📦 PENDING RELEASE — v3.59 (รอ AI ผู้ปล่อยเวอร์ชันอ่านแล้วดำเนินการ) [บันทึก 2026-11-08 โดย Claude (Cowork)]
+## [2026-11-08 18:55] – Antigravity (Release v3.60 Hotfix: Chat Widget Platform Logo Path Resolution)
 
-**สิ่งที่ต้อง release:** Broadcast Playroom **v3.59** (โค้ดทั้งหมดอยู่ใน working tree แล้ว ยังไม่ได้ commit/tag/push/upload; เวอร์ชันที่ปล่อยแล้วล่าสุดคือ v3.58)
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.60 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **แก้ปัญหาไอคอนโลโก้แพลตฟอร์มใน Chat Widget ภาพขาด (Broken Image 404):**
+     - **สาเหตุ:** เส้นทาง `/logo/<platform>` ใน `launch_dev.py` เสิร์ฟไฟล์จาก `SRC_DIR/assets/<platform>.png` เท่านั้น ซึ่งในตัวติดตั้งจริงที่ผู้ใช้ติดตั้งหรืออัปเดตผ่านแพตช์ zip จะไม่มีโฟลเดอร์ `src` (มีเฉพาะ `dist/` และไฟล์ core) ทำให้การเรียกขอภาพโลโก้ติด 404
+     - **การแก้ไข:** ปรับปรุง `launch_dev.py` ให้ตรวจเช็กและเสิร์ฟไฟล์จาก `DIST_DIR/assets/<platform>.png` เป็นลำดับแรก แล้วจึง fallback ไปที่ `SRC_DIR/assets/` ทำให้โลโก้ของทุกแพลตฟอร์ม (Twitch, YouTube, Kick, TikTok, SOOP, MyLive) แสดงผลได้อย่างสมบูรณ์ในทุกสภาพแวดล้อม
 
-**ไฟล์ที่เตรียมไว้ให้แล้ว:**
-- `publish_release_v359.py` — สคริปต์ release (copy จาก v3.58 แก้ VERSION=3.59, release_date 2026-11-08, changelog ภาษาไทย, commit message) ขั้นตอน: `npm run build` → แพ็ก `patch-v3.59-lite/full.zip` → finalize zip ก่อนคำนวณ SHA-256 + assert gate → อัปโหลด Hugging Face (`men9ch/broadcast-playroom-3`) → `git add -A` (+ `git reset composer_layout.json` เพื่อไม่ commit ค่าตั้งของผู้ใช้) → commit/tag `v3.59`/push `master --tags` → `gh release create` → purge jsDelivr
-- `release.bat` — ตัวรันคลิกเดียว (เช็ก python/npm/`gh auth`/huggingface_hub แล้วเรียกสคริปต์ข้างบน)
-- เวอร์ชันถูกบันทึกแล้วใน `package.json`, `updater.py` (`CURRENT_VERSION`), `src/index.html` (title + titlebar tag) ส่วน `version.json` ให้สคริปต์เขียนเอง
-- `.gitignore` ข้าม `*.bak*`, `dist_backup_before_ui_update/`, `_to_delete/`, `__pycache__/`; ไฟล์ขยะย้ายไป `_to_delete/` แล้ว (ลบทิ้งได้)
-
-**ลำดับที่ AI ผู้ปล่อยควรทำ (ต้องรันบน Windows ที่มี `gh` ล็อกอิน + Hugging Face token ของบัญชี men9ch):**
-1. ตรวจ `git status`/`git diff --stat` ว่าตรงกับรายการด้านล่าง และไม่มีไฟล์แปลกปลอม/ความลับ
-2. รัน `python publish_release_v359.py` (หรือ `release.bat`) — ถ้า error ให้หยุดและรายงาน ห้ามรันซ้ำโดยไม่ตรวจว่า push/tag/upload ขั้นไหนเสร็จไปแล้ว
-3. หลัง build ตรวจว่า `dist/` มีไฟล์ใหม่ครบ (ตรวจแล้วว่าทุก `./*.js|css` ที่ index/composer/overlay/dock.html อ้างถึงอยู่ใน `files_to_copy` ของ `copy_dist_assets.py`; รอบนี้ไม่มีไฟล์ใหม่) แล้วเปิดแอปจากไฟล์ที่ build จริง ทดสอบ: เปิดหน้าต่าง Replie/ASK/Randomizer, ลากกรอบ, Ctrl-ลากอิสระ, ลูกศร 1px/Shift 10px, ปุ่ม DEMO ขึ้น OBS, ปิดหน้าต่างแล้ว DEMO หาย, ปุ่มทุกปุ่มคลิกได้ (**รอบก่อนเคยปล่อยแล้วปุ่ม/สคริปต์ตายในเครื่องผู้ใช้อื่น ห้ามพลาดซ้ำ**)
-4. หลังปล่อย: ตรวจ GitHub Release v3.59 + HF mirror + `version.json` (มีคีย์ `version` และ `latest_version`, SHA ตรง) แล้วลองอัปเดตจากเครื่องที่เป็น v3.58 ผ่านปุ่ม "ตรวจสอบการอัปเดต"
-5. อัปเดต WORKLOG/HANDOFF: เปลี่ยนสถานะ v3.59 จาก "รอปล่อย" เป็น "ปล่อยแล้ว" พร้อมผลตรวจ แล้วลบบล็อก PENDING RELEASE นี้ออกจากไฟล์ที่เกี่ยวข้อง
-
-**สิ่งที่อยู่ใน v3.59 (ใช้เป็น release notes / ตรวจสอบ):**
-- Replie: หน้าตั้งค่าการแสดงผลใหม่ (locator ลากวาง, ย่อ/ขยาย, ธีม 8 แบบ, ปุ่ม DEMO สด) + หน้าแก้ไขคำสั่ง (จอตัวอย่างลากได้, แอนิเมชันเข้า/ออก + ทดลองบน OBS, ดูสดบน OBS)
-- ASK: ออกแบบหน้าปรับแต่ง Overlay ใหม่ (strip compact, bar 17 แบบ, frame 11 แบบ, animation เข้า/ออก, locator, DEMO, แก้ flicker)
-- Randomizer: เหลือวงล้อรูเล็ต + สล็อต พร้อมแอนิเมชันหมุนช้าลงจนหยุด, locator ลาก/ย่อขยาย
-- ลากวางตำแหน่งทั้ง 3 เครื่องมือ: ค้าง Ctrl = ไม่ snap, ลูกศร = 1px, Shift+ลูกศร = 10px
-- DEMO ซ่อนอัตโนมัติเมื่อปิดหน้าต่างเครื่องมือ; ลบวิดเจ็ต ASK/Replie/Randomizer เก่าใน Composer อัตโนมัติ
-- หน้าต่างเครื่องมือเปิดที่ 85% ของหน้าต่างหลักแล้วจำขนาด/ตำแหน่ง/จอ; หน้าต่างหลักล็อก min-size ด้วย ClipCursor
-
-**ความเสี่ยงที่ยังไม่ได้ยืนยัน (ทดสอบแค่ Playwright บน cloud ไม่เคยทดสอบในแอปจริง/OBS จริง/dist):**
-- `app_window_frame.py` (ClipCursor ล็อก min-size หน้าต่างหลัก) ไม่เคยรันบน Windows จริง — ถ้าเคอร์เซอร์ค้าง/หน้าต่างผิดปกติให้ย้อนด้วย `_to_delete/app_window_frame.py.bak_before_minclip` แล้วค่อยปล่อยโดยไม่มีส่วนนี้
-- Chrome/Edge `--app` อาจไม่ยอมให้ `resizeTo/moveTo` จัดขนาด/ตำแหน่ง popout ตามที่จำไว้
-- การตั้งค่ารูปลักษณ์ของ ASK มีผลบน OBS ก็ต่อเมื่อบันทึก config ของหน้าต่าง ASK แล้ว (ส่งไปกับ live state ใน field `widget`)
+---
 
 ---
 

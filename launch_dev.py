@@ -4431,7 +4431,12 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                self.serve_custom_file(os.path.join(SRC_DIR,'assets',platform+'.png'),'image/png')
+                _logo_file=None
+                for _logo_base in (DIST_DIR,SRC_DIR):
+                    _logo_cand=os.path.join(_logo_base,'assets',platform+'.png')
+                    if os.path.isfile(_logo_cand):_logo_file=_logo_cand;break
+                if _logo_file:self.serve_custom_file(_logo_file,'image/png')
+                else:self.send_error(404)
 
 
 
