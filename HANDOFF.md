@@ -1,5 +1,5 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.63)
-- **Current Version**: v3.63 (Released & Verified In-App Auto-Update)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.64)
+- **Current Version**: v3.64 (Released & Verified In-App Auto-Update)
 - **Status**: Stable & Fully Verified across GitHub Releases & Hugging Face Mirrors.
 ---
 
@@ -20,7 +20,10 @@
 
 ---
 
-- **Key Enhancements & Architectural Milestones (v3.31 - v3.63)**:
+- **Key Enhancements & Architectural Milestones (v3.31 - v3.64)**:
+  0. **TTS Audio Preferences Persistence & Multi-Window Sync (v3.64)**:
+     - Fixed issue where TTS voice volume, speech rate, pitch (Full build), mixed voice toggle, character limits, limit alert settings, and voice test messages reset to defaults on app restart.
+     - Added `restoreTtsAudioPrefs()`, `initTtsTestMessagePersist()`, and a cross-window `storage` listener in `src/index.html` ensuring settings modified in popout Settings windows synchronize seamlessly with the main window.
   0. **Mock Roster Purge & Built-in Demo Plugin (v3.63)**:
      - Automatically purged legacy mock viewers (AlexGamer, KittenLover, etc.) from User Manager roster and localStorage while strictly protecting real viewers with counts > 3.
      - Built-in `demo-cursor` plugin fallback in `plugin_manager.py` without requiring filesystem writes on startup; enhanced error visibility on plugin state persistence failure.

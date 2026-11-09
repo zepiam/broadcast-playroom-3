@@ -1,3 +1,16 @@
+## [2026-11-09 18:40] – Antigravity & Claude (Release v3.64: Persist TTS Audio Preferences, Limits, and Test Message)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind) & Claude (Cowork)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.64 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **สรุปสิ่งที่ดำเนินการและปรับปรุง:**
+  1. **หน้า ตั้งค่า > เสียง TTS ค่าไม่เซฟ (TTS Preferences Persistence)**:
+     - แก้ไขปัญหาการตั้งค่าเสียงอ่านข้อความ (TTS) ที่ระดับเสียง ความเร็ว และระดับเสียงพูด (Pitch สำหรับรุ่น Full) รวมถึงสวิตช์สุ่มเพศเสียง (`secMixedVoice`) ไม่คืนค่ากลับมาหลังเปิดโปรแกรมใหม่
+     - แก้ไขการตั้งค่าจำกัดตัวอักษรและการแจ้งเตือนเมื่อเกินลิมิต (`initTtsLimitSettings`) ให้โหลดและทำงานอย่างถูกต้องในทุกสภาวะ
+     - บันทึกข้อความทดสอบเสียง (`bp3_tts_test_message`) จำค่าเดิมไว้เสมอ
+     - เพิ่มตัวดักจับ `storage` event ข้ามหน้าต่าง ทำให้เมื่อปรับค่าเสียงในหน้าต่างตั้งค่าแบบ popout หน้าต่างหลักจะอัปเดตค่าตามทันทีแบบ Real-time
+
+---
+
 ## [2026-11-09 06:10] – Antigravity & Claude (Release v3.63: Purge Mock Roster from User Manager & Built-in Demo Plugin)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind) & Claude (Cowork)
