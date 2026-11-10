@@ -1,6 +1,7 @@
 /* Native desktop overlays: real windows, retained legacy URLs and geometry. */
 (()=>{'use strict';
 let state={instances:[],settings:{}},overlayPlusEntries=[];
+const lci=n=>'<svg class="lci" aria-hidden="true"><use href="#lci-'+n+'"/></svg>';
 async function refresh(){
   try{
     const response=await fetch('/api/desktop-overlays');
@@ -18,6 +19,8 @@ async function refresh(){
       const isGameActive = !!game;
       btnGame.classList.toggle('active', isGameActive);
       btnGame.setAttribute('aria-pressed', String(isGameActive));
+      const gameIcon = btnGame.firstElementChild;
+      if (gameIcon && !gameIcon.classList.contains('btn-label-text')) gameIcon.innerHTML = lci(isGameActive ? 'monitor-x' : 'screen-share');
       const lbl = btnGame.querySelector('.btn-label-text');
       if (lbl) {
         lbl.textContent = isGameActive ? 'ปิด Game Overlay' : 'Game Overlay';
@@ -40,7 +43,7 @@ async function refresh(){
         const isEditing = game.editing !== false;
         const frameLbl = btnGameFrame.querySelector('.frame-label-text');
         if (frameLbl) {
-          frameLbl.textContent = isEditing ? '👁️ ซ่อนกรอบ' : '📐 แสดงกรอบ';
+          frameLbl.innerHTML = isEditing ? lci('square-dashed-x-corner') + ' ซ่อนกรอบ' : lci('square-dashed') + ' แสดงกรอบ';
         }
         btnGameFrame.title = isEditing ? 'คลิกเพื่อล็อกตำแหน่งและซ่อนกรอบสีแดง (Ctrl+Shift+H)' : 'คลิกเพื่อแสดงกรอบสีแดงสำหรับลากปรับตำแหน่ง (Ctrl+Shift+H)';
         if (isEditing) {
@@ -103,7 +106,7 @@ async function refresh(){
         const isEditing = overlayPlus.editing !== false;
         const frameLbl = btnOpFrame.querySelector('.frame-label-text');
         if (frameLbl) {
-          frameLbl.textContent = isEditing ? '👁️ ซ่อนกรอบ' : '📐 แสดงกรอบ';
+          frameLbl.innerHTML = isEditing ? lci('square-dashed-x-corner') + ' ซ่อนกรอบ' : lci('square-dashed') + ' แสดงกรอบ';
         }
         btnOpFrame.title = isEditing ? 'คลิกเพื่อล็อกตำแหน่งและซ่อนกรอบสีแดง (Ctrl+Shift+N)' : 'คลิกเพื่อแสดงกรอบสีแดงสำหรับลากปรับตำแหน่ง (Ctrl+Shift+N)';
         if (isEditing) {

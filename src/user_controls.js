@@ -232,6 +232,13 @@ function render(){
    wrap.style.display = 'flex';
    wrap.style.alignItems = 'center';
    wrap.style.gap = '8px';
+   if (isBlocked(person.username)) {
+    const bi = doc.createElement('span');
+    bi.title = 'ถูกบล็อก';
+    bi.style.cssText = 'color:#ef4444;display:inline-flex;flex-shrink:0;font-size:16px;';
+    bi.innerHTML = '<svg class="lci" aria-hidden="true"><use href="#lci-user-round-x"/></svg>';
+    wrap.append(bi);
+   }
    if (person.avatar) {
     const img = doc.createElement('img');
     img.src = person.avatar;

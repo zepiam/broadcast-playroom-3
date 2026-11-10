@@ -1,3 +1,30 @@
+## 📦 PENDING RELEASE — v3.68 (รอ AI ผู้ปล่อยเวอร์ชันอ่านแล้วดำเนินการ) [บันทึก 2026-11-11 โดย Claude (Cowork)]
+
+**สถานะก่อนหน้า:** v3.66 ปล่อยแล้ว (commit `2ce326f`) — v3.67 ไม่เคยถูกปล่อย เปลี่ยนทั้งหมดรวมเป็น v3.68
+
+**สิ่งที่ต้อง release:** **v3.68** — รวมหลายรายการ (ดูรายการด้านล่างทั้งหมด): **ซ่อนการ์ด "Chat Widget Customizer" ในหน้า Chat Setting ของแชทสด** (ผู้ใช้แจ้งว่าฟีเจอร์ไม่ได้ใช้แล้ว)
+- `src/index.html`: เปลี่ยน `display: flex` → `display: none` ของการ์ดเดียว (ปุ่มบน rail `btnRailChatWidget` ซ่อนอยู่แล้วก่อนหน้านี้) **ไม่ลบโค้ด/หน้าต่าง chat-widget** — ย้อนกลับได้โดยคืนค่า display
+- **เพิ่มเติม:** แถบล่างสุด (footer) ปุ่ม "แจ้งบัค" เปลี่ยนเป็น "Discord" + ไอคอน Discord (inline SVG, ลิงก์เดิม `discord.gg/nj4KNs6b92`) — ไม่แตะปุ่ม "สนับสนุนการพัฒนาโปรแกรม"/เครดิต
+- **เพิ่มเติม (ไอคอน Lucide, ISC):** `src/index.html` ฝัง sprite `<svg id="lciSprite">` (พร้อมข้อความลิขสิทธิ์ ISC ในคอมเมนต์) + CSS `.lci`; เปลี่ยนอีโมจิ 5 ปุ่ม rail (Composer=monitor-stop, Replie=message-circle-reply, ASK=list-todo, Randomizer=dice-6, UserManager=contact-round), หัวข้อ settings nav 17 รายการ + `_settingsSectionsMeta` (ปุ่มปักหมุดบน rail) ผ่านฟังก์ชัน `_lci()`, และไอคอน heart-pulse หน้าข้อความ "สนับสนุนการพัฒนาโปรแกรม" (ข้อความเดิมไม่ถูกแก้). ไม่มีไฟล์ใหม่ (inline) ปุ่ม rail ที่ไม่ได้ระบุ (Playroom 🎮, Giveaway 🎁, Settings ⚙️) ยังเป็นอีโมจิ. backup: `_to_delete/index.html.pre_lucide`
+- **เพิ่มเติม (ข้อความหน้าตั้งค่า):** nav "Windows Defender (1-Click)" → "Windows Defender"; `.settings-nav-header` "การทำงานหลัก (คลิกขวาเพื่อปักหมุด)" → ขึ้นบรรทัดใหม่ + ไอคอน Lucide flag-triangle-left + "คลิกขวาปักหมุดหน้าแรก". backup: `_to_delete/index.html.pre_hdr`
+- **เพิ่มเติม (หัวช่องแชทสด):** ไอคอน Lucide — btnChatSystem=triangle-exclamation-point, btnChatCodeMute=user-round-x, clear-chat=trash, btnChatSettings=settings-2, btnEventsToggle=zap; สีสถานะผ่าน CSS (class `toggled-on`/`active`: system+events เหลือง, code-mute เขียว, ปิด=เทา; ลบ inline style สีฟ้าของ Events); ป้ายยอดคนดูรวม (`chatTotalViewersBadge`)=triangle-exclamation-point และป้าย `chatTtsLatencyBadge`=clock-4 สีเหลือง — **JS ที่เขียนข้อความป้ายทั้งสอง (`updateLiveChatViewersBadge`, ตัว handler เวลา TTS) เปลี่ยนจาก textContent เป็น innerHTML + `window._LCI_SVG`** (ป้ายยอดคนดูรายแพลตฟอร์ม 👥 ในการ์ดซ้ายไม่ถูกแตะ). backup: `_to_delete/index.html.pre_chathdr`
+- **เพิ่มเติม (ปุ่มขวาบน topbar):** `src/index.html` + `src/desktop_overlay_controls.js` (ไฟล์เดิมใน copy_dist_assets.py แล้ว) — translate: languages (โหมดแปลภาษา) / letters (โหมดอ่านทุกภาษา) ใน `setTranslateMode`; Game Overlay: screen-share → monitor-x ตอนเปิดอยู่ (JS สลับไอคอนใน `refresh`); ปุ่มกรอบ: square-dashed-x-corner ("ซ่อนกรอบ") และ square-dashed ("แสดงกรอบ" — ผู้ใช้ไม่ได้ระบุ ผมเลือกเอง); Overlay+: monitor-dot (ทั้งตอนเปิด/ปิด ผู้ใช้ไม่ได้ระบุไอคอนตอนเปิด). backup: `_to_delete/*pre_topbar`
+- **เพิ่มเติม:** ปุ่ม `btnRailSettings` (ซ้ายล่าง) → Lucide `cog`. backup: `_to_delete/index.html.pre_cog`
+- **เพิ่มเติม (topbar):** ปุ่ม `tbGenderFemale/tbGenderMale` ถูกแทนด้วยปุ่มเดียว `tbGenderToggle` (toggle ผ่าน `selectVoiceGender`, อัปเดต `tbGenderIcon/tbGenderLabel`; id เดิมยังถูกอ้างแบบ null-safe ใน selectVoiceGender และ `dock_controls.js` ไม่พัง); ข้อความปุ่มแปลภาษา → "แปลภาษาในแชทให้เป็นไทย"/"อ่านทุกภาษาในแชท" (ปุ่ม + เมนูคลิกขวา). backup: `_to_delete/index.html.pre_gender`
+  - เพิ่มเติม: ไอคอนหัวข้อบนสุดในแต่ละหน้าตั้งค่า (`.settings-section-title`) เปลี่ยนจาก emoji เป็น Lucide ให้ตรงกับเมนู (16 หน้า; หน้า 'เกี่ยวกับ' ไม่มีหัวข้อ) และตัด '(1-Click Exclusion)' ออกจากหัวข้อ Windows Defender (`_to_delete/settings_titles_icons_patch.py`)
+  - เพิ่มเติม: หน้าต่าง Chat Setting (แชทสด) — การ์ด 'ตัวอย่างแชทสด' ฝั่งขวาเป็น `position:sticky` ค้างอยู่กับที่ ขณะเลื่อนเมนูตั้งค่าฝั่งซ้าย
+  - เพิ่มเติม: หน้า User Manager (รายชื่อ) — คนที่ถูกบล็อกมีไอคอน Lucide `user-round-x` สีแดงนำหน้าชื่อ (`src/user_controls.js`, hover = 'ถูกบล็อก')
+  - เพิ่มเติม: ป้าย RVC บนแถบบน — แทนจุดสีด้วยไอคอน Lucide `bot-message-square` (สีตามสถานะ: เขียว/เหลือง/เทา) และแสดงเฉพาะชื่อโมเดล ไม่มี 'RVC:' นำหน้า (`src/index.html`, `src/rvc_controls.js`; สถานะปิด/กำลังโหลดยังเป็นข้อความเดิม 'RVC: ปิด' / 'RVC โหลด...')
+  - เพิ่มเติม: ป้ายยอดคนดูรวมในแถบแชทสด — เปลี่ยนจาก triangle-exclamation-point เป็น Lucide `eye` (แสดงตัวเลข) และ `eye-closed` เมื่อกดซ่อน (`•••`); ใช้ทั้งหน้าหลักและหน้าต่าง popout
+  - เพิ่มเติม: ปุ่มสลับเสียงเพศบนแถบบน — ไอคอนเปลี่ยนจาก 👩/👨 เป็น Lucide `venus` (ผู้หญิง) / `mars` (ผู้ชาย)
+  - เพิ่มเติม: Hover ของปุ่มไอคอน (หัวแชทสด, แถบบน, ปุ่มเฟืองการ์ดแพลตฟอร์ม, ปุ่มย่อแถบข้าง, ปุ่มสลับเพศ) ตามสีไฮไลต์ที่ตั้งใน Settings > ธีม (`--dc-blurple`) + เงาปุ่มแถบซ้ายที่ active ตามสีไฮไลต์ด้วย (`src/styles.css` ท้ายไฟล์); ปุ่มแปลภาษาคงสี amber เดิม; ปุ่มสลับเสียงหญิง/ชาย (`#tbGenderToggle`) ไม่มีอนิเมชั่น/เปลี่ยนสีตอน hover
+  - เพิ่มเติม: แก้บัคเปลี่ยนธีม/สีไฮไลต์ใน Settings (หน้าต่าง popout) แล้วหน้าแรกไม่เปลี่ยนจนกว่าจะเปิดโปรแกรมใหม่ — เพิ่ม `storage` event listener ใน `src/index.html` (ถัดจาก `initAppTheme`) ให้หน้าหลักเรียก `initAppTheme()` ทันทีเมื่อ `bp3_app_theme`/`bp3_app_accent` เปลี่ยน
+- ไฟล์ที่เปลี่ยน: `src/index.html`, `src/user_controls.js`, `src/rvc_controls.js`, `src/styles.css` (+bump 3.68: `package.json`, `version.json`, `updater.py`, `release.bat`, `publish_release_v368.py` ใหม่ (คัดลอกจาก v366, เปลี่ยน VERSION/changelog/commit message), title + `desktop-titlebar-tag`)
+- **ทดสอบ:** ยังไม่ได้เปิดดูในโปรแกรมจริง/Windows ไม่ได้ build/release
+- backup: `_to_delete/index.html.pre_hidecw`
+
+---
+
 ## [2026-11-11 04:02] – Antigravity (Release v3.66: Bundle TikTokLive 7.0.1+ Dependencies in Patch & Full Version Sync)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)

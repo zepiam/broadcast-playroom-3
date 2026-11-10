@@ -1,39 +1,39 @@
 {
-  "version": "3.66",
-  "latest_version": "3.66",
+  "version": "3.68",
+  "latest_version": "3.68",
   "release_date": "2026-11-11",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.66\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.66:\n- **รวมชุดไลบรารี TikTok LIVE 7.0.1+ ในตัวแพตช์ (Bundled Dependencies)**:\n  - บันเดิลชุดไลบรารี `TikTokLive`, `TikTokLiveProto`, `EulerApiSdk` พร้อม dependencies ทั้งหมดลงในแพตช์ (`_internal/`) ทำให้ผู้ใช้งานโปรแกรมแบบติดตั้ง (Standalone .exe) สามารถเชื่อมต่อ TikTok LIVE ได้ทันที 100% โดยไม่ต้องติดตั้ง Python หรือรันคำสั่ง pip เอง\n- **อัปเดตเลขเวอร์ชัน v3.66 ครบถ้วนทุกจุด**:\n  - อัปเดต `updater.py` (`CURRENT_VERSION`), แถบหัวหน้าต่าง (`<title>`) และป้ายเวอร์ชัน (`desktop-titlebar-tag`) ใน `src/index.html`, `package.json`, และ `version.json` ให้แสดงผลเป็นเวอร์ชัน 3.66 อย่างถูกต้องตรงกันทั้งหมด\n",
+  "changelog": "# Broadcast Playroom v3.68\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.68:\n- **ซ่อนการ์ด Chat Widget Customizer** ในหน้า Chat Setting ของแชทสด (ฟีเจอร์ไม่ได้ใช้แล้ว) — ซ่อนอย่างเดียว ไม่ลบโค้ด\n- **ปุ่มแถบล่างสุด**: เปลี่ยนข้อความ \"แจ้งบัค\" เป็น \"Discord\" พร้อมไอคอน Discord นำหน้า (ลิงก์เดิม)\n- **เปลี่ยนไอคอนแถบซ้ายและเมนูตั้งค่าเป็น Lucide**: ปุ่ม Composer/Replie/ASK/Randomizer/User Manager, หัวข้อเมนูตั้งค่าทั้ง 17 หัวข้อ (รวมที่ปักหมุดบนแถบซ้าย และไอคอนหัวข้อบนสุดของแต่ละหน้าตั้งค่าให้ตรงกับเมนู) และไอคอนหัวใจหน้าปุ่ม \"สนับสนุนการพัฒนาโปรแกรม\" ที่มุมขวาล่าง\n- **หน้าตั้งค่า**: เมนู \"Windows Defender (1-Click)\" เหลือ \"Windows Defender\" และหัวข้อ \"การทำงานหลัก\" ขึ้นบรรทัดใหม่เป็นไอคอนธง + \"คลิกขวาปักหมุดหน้าแรก\"\n- **ปุ่มและป้ายในหัวช่องแชทสด**: เปลี่ยนเป็นไอคอน Lucide — แสดงสถานะระบบ (เปิดเหลือง/ปิดเทา), ปิดเสียงโค้ดลับ (เปิดเขียว/ปิดเทา), ถังขยะ, ตั้งค่า, Events (เปิดเหลือง/ปิดเทา), ป้ายยอดคนดูรวม และป้ายเวลาอ่าน TTS\n- **ปุ่มขวาบนของโปรแกรม**: เปลี่ยนเป็นไอคอน Lucide — แปลภาษา/อ่านทุกภาษา, Game Overlay (เปิด/ปิด), ซ่อนกรอบ/แสดงกรอบ และ Overlay+\n- **หน้าต่าง Chat Setting**: การ์ดตัวอย่างแชทสดฝั่งขวาค้างอยู่กับที่ขณะเลื่อนเมนูฝั่งซ้าย\n- **User Manager**: คนที่ถูกบล็อกมีไอคอนบล็อกสีแดงนำหน้าชื่อในหน้ารายชื่อ\n- **ป้าย RVC บนแถบบน**: ใช้ไอคอน bot-message-square แทนจุดสี และแสดงเฉพาะชื่อโมเดล (ไม่มีคำว่า \"RVC:\")\n- **ป้ายยอดคนดูรวม**: ใช้ไอคอน eye และเปลี่ยนเป็น eye-closed เมื่อกดซ่อนยอด\n- **ปุ่มสลับเสียงเพศ**: ใช้ไอคอน venus (ผู้หญิง) / mars (ผู้ชาย)\n- **สีไฮไลต์ประจำโปรแกรม**: Hover ของปุ่มไอคอนบนหน้าแรกตามสีไฮไลต์ที่เลือกใน Settings > ธีม\n- **แก้บัค**: เปลี่ยนธีม/สีไฮไลต์ในหน้า Settings แล้วหน้าแรกเปลี่ยนตามทันที ไม่ต้องปิดเปิดโปรแกรมใหม่\n- **ปุ่มตั้งค่าซ้ายล่าง**: เปลี่ยนเป็นไอคอน Lucide `cog`\n- **แถบบนซ้าย/ขวา**: ปุ่มเลือกเสียงหญิง/ชายเหลือปุ่มเดียวแบบสลับ (\"อ่านเสียงผู้หญิง\" / \"อ่านเสียงผู้ชาย\") และปุ่มแปลภาษาเปลี่ยนข้อความเป็น \"แปลภาษาในแชทให้เป็นไทย\" / \"อ่านทุกภาษาในแชท\"\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.66-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-lite.zip",
-      "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
-      "size": 40640730,
+      "file": "patch-v3.68-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-lite.zip",
+      "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
+      "size": 40649085,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.66-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.68-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.66-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-full.zip",
-      "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
-      "size": 40640730,
+      "file": "patch-v3.68-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-full.zip",
+      "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
+      "size": 40649085,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.66-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.68-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.66-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-lite.zip",
-    "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
-    "size": 40640730
+    "file": "patch-v3.68-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-lite.zip",
+    "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
+    "size": 40649085
   },
   "full": {
-    "file": "patch-v3.66-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-full.zip",
-    "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
-    "size": 40640730
+    "file": "patch-v3.68-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-full.zip",
+    "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
+    "size": 40649085
   }
 }

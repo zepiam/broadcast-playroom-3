@@ -74,7 +74,7 @@
    const curModel=models.find(m=>m.id===status.selected);
    const modelName=curModel?curModel.name:(status.selected || '');
    badge.title=modelName ? ('RVC พร้อมใช้งาน: ' + modelName) : 'RVC พร้อมใช้งาน';
-   if(textEl)textEl.textContent=modelName ? ('RVC: ' + modelName) : 'RVC: พร้อม';
+   if(textEl)textEl.textContent=modelName ? modelName : 'พร้อม';
   }else{
    badge.classList.add('rvc-off');
    badge.title='RVC ปิดใช้งาน (คลิกเพื่อตั้งค่า)';

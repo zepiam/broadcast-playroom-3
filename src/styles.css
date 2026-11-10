@@ -4111,3 +4111,25 @@ body.popout-standalone-window .floating-window.active .win-resize-handle {
 html.popout-standalone-window .settings-sidebar, #win-settings .settings-sidebar { display: flex !important; visibility: visible !important; }
 
 #topbar-item-overlay { display: none !important; }
+
+/* ── Hover ของปุ่มไอคอน ตามสีไฮไลต์ประจำโปรแกรม (Settings > ธีม) ── */
+.btn-chat-header:hover:not(.danger-btn):not(.toggled-on),
+.topbar-single-btn:hover:not(.toggled-on):not(#topbar-item-translate),
+.btn-plat-gear:hover,
+.btn-plat-toggle-compact:hover {
+  color: var(--dc-blurple) !important;
+  border-color: var(--dc-blurple) !important;
+}
+.rail-icon-btn.active {
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--dc-blurple) 35%, transparent);
+}
+
+/* ปุ่ม toggle เสียงหญิง/ชาย: ไม่มีอนิเมชั่น/เปลี่ยนสีตอน hover */
+#tbGenderToggle,
+#tbGenderToggle:hover {
+  transition: none !important;
+  animation: none !important;
+  transform: none !important;
+  background-color: var(--dc-blurple, #5865f2) !important;
+  color: #ffffff !important;
+}
