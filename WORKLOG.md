@@ -1,3 +1,22 @@
+## [2026-11-11 03:46] – Antigravity (Release v3.65: TikTok LIVE Chat Stability & TikTokLive 7.0.1+ Upgrade)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.65 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **สรุปสิ่งที่ดำเนินการและปล่อยใน v3.65:**
+  1. **ปรับปรุงความเสถียรของ TikTok LIVE Chat (รองรับ TikTokLive 7.0.1+)**:
+     - อัปเกรดการรองรับไลบรารี TikTokLive สู่เวอร์ชัน 7.0.1+ เพื่อแก้ปัญหาเซิร์ฟเวอร์สำรอง WebSocket ดีดกลับ HTTP 400 Bad Request ที่ทำให้หน้าจอแสดงผลว่าเชื่อมต่อสำเร็จแต่ไม่สามารถดึงข้อความแชทและยอดคนดูสดได้
+     - ปิดการเรียก `fetch_room_info` ตอนเริ่มต้น เพื่อป้องกันข้อผิดพลาดการเข้าห้องไลฟ์ที่จำกัดอายุ (Age-Restricted 18+) โดยยอดคนดูยังคงอัปเดตแบบเรียลไทม์ได้ตามปกติผ่าน `RoomUserSeqEvent`
+     - เพิ่มระบบแจ้งเตือนตรวจสอบความเข้ากันได้ของเวอร์ชัน TikTokLive อัตโนมัติ พร้อมคำแนะนำในการอัปเกรดหากพบว่าในเครื่องยังใช้เวอร์ชันต่ำกว่า 7.0.1
+  2. **Release Artifacts & Deployment Verification**:
+     - Frontend rebuild ด้วย Vite สำเร็จ
+     - สร้างแพตช์ `patch-v3.65-lite.zip` และ `patch-v3.65-full.zip` (ขนาด 33,912,656 bytes)
+     - ผ่าน Integrity Gate ตรวจสอบ SHA256 ตรงกับไฟล์บิลด์สุดท้าย 100%
+     - อัปโหลดแพตช์และ manifest ขึ้น Hugging Face Model Hub สำเร็จ
+     - สร้าง Git commit, Tag `v3.65`, และ GitHub Release สำเร็จ
+     - ทำการ Purge แคช jsDelivr CDN (`version.json`) สำเร็จ
+
+---
+
 ## [2026-11-11 03:40] – Antigravity (Investigation & Fix: TikTok LIVE Connection & Chat Ingestion)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)

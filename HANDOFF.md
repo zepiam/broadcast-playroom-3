@@ -1,5 +1,5 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.64)
-- **Current Version**: v3.64 (Released & Verified In-App Auto-Update)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.65)
+- **Current Version**: v3.65 (Released & Verified In-App Auto-Update)
 - **Status**: Stable & Fully Verified across GitHub Releases & Hugging Face Mirrors.
 ---
 
@@ -20,8 +20,8 @@
 
 ---
 
-- **Key Enhancements & Architectural Milestones (v3.31 - v3.64)**:
-  0. **TikTok LIVE Chat Ingestion Stability & TikTokLive 7.0.1 Upgrade**:
+- **Key Enhancements & Architectural Milestones (v3.31 - v3.65)**:
+  0. **TikTok LIVE Chat Ingestion Stability & TikTokLive 7.0.1 Upgrade (v3.65)**:
      - Resolved "Connected but no chat messages retrieved" issue caused by TikTok Webcast sign server routing through EulerStream fallback proxy (`ws-fallback.eulerstream.com`).
      - Upgraded environment to `TikTokLive==7.0.1` fixing raw unencoded User-Agent route params in WebSocket URI builder (HTTP 400 rejection).
      - Adjusted `chat_tiktok.py` to use `fetch_room_info=False` to prevent `AgeRestrictedError` on 18+ mature broadcasts, relying on continuous `RoomUserSeqEvent` pushes for viewer count.
