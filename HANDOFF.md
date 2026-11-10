@@ -1,5 +1,5 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.65)
-- **Current Version**: v3.65 (Released & Verified In-App Auto-Update)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.66)
+- **Current Version**: v3.66 (Released & Verified In-App Auto-Update)
 - **Status**: Stable & Fully Verified across GitHub Releases & Hugging Face Mirrors.
 ---
 
@@ -20,7 +20,12 @@
 
 ---
 
-- **Key Enhancements & Architectural Milestones (v3.31 - v3.65)**:
+- **Key Enhancements & Architectural Milestones (v3.31 - v3.66)**:
+  0. **TikTok LIVE 7.0.1+ Bundled Dependencies & Titlebar/Updater Version Sync (v3.66)**:
+     - Bundled all 27 runtime packages (`TikTokLive`, `TikTokLiveProto`, `EulerApiSdk`, `betterproto2`, `httpx`, `pydantic`, `websockets_proxy`, etc.) into `_internal/` of the patch distribution archive, allowing standalone `.exe` installations to run TikTok LIVE chat without needing Python or `pip install`.
+     - Synced bundled packages into `build_trials/lite` and `build_trials/full` `_internal/` directories.
+     - Added auto-loader `_tt_base_dirs` in `chat_tiktok.py` dynamically injecting `_internal` and application directory to `sys.path`.
+     - Completely synchronized version numbering across `updater.py` (`CURRENT_VERSION`), window title & header tag in `src/index.html`, `package.json`, and `version.json` to `v3.66`.
   0. **TikTok LIVE Chat Ingestion Stability & TikTokLive 7.0.1 Upgrade (v3.65)**:
      - Resolved "Connected but no chat messages retrieved" issue caused by TikTok Webcast sign server routing through EulerStream fallback proxy (`ws-fallback.eulerstream.com`).
      - Upgraded environment to `TikTokLive==7.0.1` fixing raw unencoded User-Agent route params in WebSocket URI builder (HTTP 400 rejection).

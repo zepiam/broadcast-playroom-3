@@ -1,3 +1,28 @@
+## [2026-11-11 04:02] – Antigravity (Release v3.66: Bundle TikTokLive 7.0.1+ Dependencies in Patch & Full Version Sync)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.66 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **ปัญหาที่พบจากรอบ v3.65 (จาก Feedback ของ Claude):**
+  1. ตัวแพตช์ v3.65 มีเฉพาะโค้ด `chat_tiktok.py` แต่ไม่ได้รวมแพ็กเกจไลบรารี `TikTokLive 7.0.1` และ dependencies ไปด้วย ทำให้ผู้ใช้ทั่วไปที่ใช้โปรแกรมแบบติดตั้ง (Standalone .exe) ยังคงไม่มีไลบรารีและพบข้อความเตือนให้ `pip install` ซึ่งผู้ใช้ทั่วไปไม่สามารถทำเองได้
+  2. เลขเวอร์ชันไม่ตรงกัน: `CURRENT_VERSION` ใน `updater.py` ยังค้างอยู่ที่ 3.64 รวมถึง `<title>` และป้าย `desktop-titlebar-tag` ใน `src/index.html` ยังแสดงผลเป็น 3.64
+- **สิ่งที่ดำเนินการแก้ไขและปล่อยใน v3.66:**
+  1. **มัดรวมชุดไลบรารี TikTokLive 7.0.1+ ทั้งหมดลงในแพตช์ (`_internal/`)**:
+     - บันเดิลแพ็กเกจ 27 รายการ ได้แก่ `TikTokLive`, `TikTokLiveProto`, `EulerApiSdk`, `betterproto2`, `websockets`, `websockets_proxy`, `python_socks`, `pyee`, `mashumaro`, `async_timeout`, `httpx`, `httpcore`, `sniffio`, `anyio`, `h11`, `idna`, `typing_inspection`, `typing_extensions`, `annotated_types`, `pydantic`, `pydantic_core`, `attrs`, `attr`, `dateutil`, `six`, `ffmpy`, `certifi` ลงในโฟลเดอร์ `_internal/` ของแพตช์
+     - ซิงค์ชุดไลบรารีทั้ง 27 รายการเข้าสู่ `build_trials/lite/BroadcastPlayroom3-Lite/_internal` และ `build_trials/full/BroadcastPlayroom3-Full/_internal` เพื่อความพร้อมของตัวติดตั้งใหม่ทุกประเภท
+     - เพิ่มตัวจัดการไดเรกทอรี `_tt_base_dirs` บนหัวไฟล์ `chat_tiktok.py` ดึง path ของ `_internal` และ exe directory เข้าสู่ `sys.path` โดยอัตโนมัติ เพื่อรับประกันว่าไม่ว่าจะรันจากโฟลเดอร์ใด โค้ดจะมองเห็นและ import `TikTokLive` ได้ 100%
+  2. **ปรับเลขเวอร์ชันให้ตรงกันสมบูรณ์ทุกจุด**:
+     - `updater.py`: แก้ไข `CURRENT_VERSION = "3.66"`
+     - `src/index.html`: แก้ไข `<title>Broadcast Playroom v3.66</title>` และ `<span class="desktop-titlebar-tag">v3.66</span>`
+     - `package.json`: แก้ไขเป็น `"version": "3.66"`
+     - `version.json`: อัปเดต manifest เป็น `"version": "3.66"`, `"latest_version": "3.66"`
+  3. **Release & Verification**:
+     - ผ่าน Smoke Test Gate (ทั้ง Static check และ Playwright Headless Browser) 100%
+     - สร้างแพตช์ `patch-v3.66-lite.zip` และ `patch-v3.66-full.zip` (ขนาด 40,642,886 bytes) พร้อมผ่าน Strict SHA256 integrity check
+     - อัปโหลดขึ้น Hugging Face และสร้าง Git commit (`2ce326f`), Tag `v3.66`, GitHub Release สำเร็จ
+     - ดำเนินการ Purge แคช jsDelivr CDN สำเร็จ
+
+---
+
 ## [2026-11-11 03:46] – Antigravity (Release v3.65: TikTok LIVE Chat Stability & TikTokLive 7.0.1+ Upgrade)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
