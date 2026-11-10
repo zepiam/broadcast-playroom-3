@@ -321,11 +321,20 @@ class TikTokChat:
 
                 f"ไม่ได้ติดตั้ง TikTokLive library: {_IMPORT_ERROR}\n"
 
-                "ติดตั้งด้วย: pip install TikTokLive"
+                "ติดตั้งด้วย: pip install --upgrade TikTokLive>=7.0.1"
 
             )
 
             return False
+
+        # ตรวจสอบเวอร์ชัน TikTokLive เพื่อแจ้งเตือนหากยังใช้รุ่นเก่าที่มีบั๊ก WebSocket fallback 400
+        try:
+            import TikTokLive.__version__ as _tt_v
+            _ver_str = getattr(_tt_v, "PACKAGE_VERSION", "")
+            if _ver_str and isinstance(_ver_str, str) and (_ver_str.startswith("6.") or _ver_str == "7.0.0"):
+                self.on_status(f"⚠️ กำลังใช้ TikTokLive {_ver_str} ซึ่งมีบั๊กการดึงแชท แนะนำอัปเกรดเป็น >=7.0.1: pip install --upgrade TikTokLive")
+        except Exception:
+            pass
 
 
         unique_id = unique_id.strip().lstrip("@").strip()
@@ -844,7 +853,7 @@ class TikTokChat:
 
                     process_connect_events=True,
 
-                    fetch_room_info=True,  # เพื่อ initial viewer count
+                    fetch_room_info=False,  # ป้องกัน AgeRestrictedError ในไลฟ์ 18+ (ยอดคนดูส่งผ่าน RoomUserSeqEvent อยู่แล้ว)
 
                     fetch_gift_info=False,
 

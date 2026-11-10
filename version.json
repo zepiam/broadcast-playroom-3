@@ -1,39 +1,39 @@
 {
-  "version": "3.64",
-  "latest_version": "3.64",
-  "release_date": "2026-11-09",
+  "version": "3.65",
+  "latest_version": "3.65",
+  "release_date": "2026-11-11",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.64\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.64:\n- **แก้หน้า ตั้งค่า > เสียง TTS ค่าไม่เซฟ**: ระดับเสียง ความเร็ว (และพิตช์ในรุ่น Full) สวิตช์สุ่มเพศเสียง จำกัดตัวอักษร สวิตช์/ระดับเสียงแจ้งเตือนเมื่อเกินลิมิต และข้อความทดสอบ จะจำค่าที่ปรับไว้หลังปิด/เปิดหน้าตั้งค่าหรือเปิดโปรแกรมใหม่ (เดิมบันทึกแล้วแต่ไม่เคยอ่านกลับมา) และหน้าต่างหลักรับค่าที่เปลี่ยนจากหน้าตั้งค่าแบบ popout ด้วย\n",
+  "changelog": "# Broadcast Playroom v3.65\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.65:\n- **ปรับปรุงการเชื่อมต่อ TikTok LIVE Chat (รองรับ TikTokLive 7.0.1+)**:\n  - รองรับการเชื่อมต่อ TikTokLive เวอร์ชัน 7.0.1+ แก้ปัญหาเซิร์ฟเวอร์สำรอง WebSocket ดีดกลับ HTTP 400 Bad Request ที่ทำให้สถานะขึ้นว่าเชื่อมต่อแล้วแต่ไม่ได้รับข้อความแชท\n  - ปิดการเรียก `fetch_room_info` ตอนเริ่มต้น เพื่อป้องกันข้อผิดพลาดการเข้าห้องไลฟ์ที่จำกัดอายุ (Age-Restricted 18+) โดยยอดคนดูสดจะยังคงอัปเดตแบบเรียลไทม์ได้ตามปกติผ่าน `RoomUserSeqEvent`\n  - เพิ่มระบบแจ้งเตือนตรวจสอบเวอร์ชัน TikTokLive ในเครื่อง พร้อมคำแนะนำคำสั่งอัปเกรดอัตโนมัติหากใช้เวอร์ชันต่ำกว่า 7.0.1\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.64-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.64/patch-v3.64-lite.zip",
-      "sha256": "d00fff50a1f5bc8558e2500f72d3c7f4395016d55475a9bf56c6bf82d1246ac8",
-      "size": 33913212,
+      "file": "patch-v3.65-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-lite.zip",
+      "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
+      "size": 33913688,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.64-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.65-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.64-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.64/patch-v3.64-full.zip",
-      "sha256": "d00fff50a1f5bc8558e2500f72d3c7f4395016d55475a9bf56c6bf82d1246ac8",
-      "size": 33913212,
+      "file": "patch-v3.65-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-full.zip",
+      "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
+      "size": 33913688,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.64-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.65-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.64-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.64/patch-v3.64-lite.zip",
-    "sha256": "d00fff50a1f5bc8558e2500f72d3c7f4395016d55475a9bf56c6bf82d1246ac8",
-    "size": 33913212
+    "file": "patch-v3.65-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-lite.zip",
+    "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
+    "size": 33913688
   },
   "full": {
-    "file": "patch-v3.64-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.64/patch-v3.64-full.zip",
-    "sha256": "d00fff50a1f5bc8558e2500f72d3c7f4395016d55475a9bf56c6bf82d1246ac8",
-    "size": 33913212
+    "file": "patch-v3.65-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-full.zip",
+    "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
+    "size": 33913688
   }
 }

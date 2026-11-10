@@ -1,3 +1,28 @@
+## [2026-11-11 03:40] – Antigravity (Investigation & Fix: TikTok LIVE Connection & Chat Ingestion)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **หัวข้อการตรวจสอบ:** ปัญหาผู้ใช้แจ้ง "เชื่อมต่อ TikTok Live ได้ แต่ดึงข้อความแชทไม่ขึ้น"
+- **การวิเคราะห์หาสาเหตุที่แท้จริง (Root Cause Analysis):**
+  1. **EulerStream Fallback Push WebSocket 400 Bad Request**:
+     - TikTok มีการปรับปรุงระบบ Webcast Push / Sign Server ทำให้ EulerStream ต้องส่งต่อผู้ใช้ไปยังเซิร์ฟเวอร์สำรอง `wss://ws-fallback.eulerstream.com/`
+     - ในไลบรารี `TikTokLive 6.6.6` เดิม ตัวฟังก์ชันสร้าง URI (`build_webcast_uri`) ไม่ได้ทำการ Percent-encode พารามิเตอร์ของ `route_params` ที่ส่งกลับมาจาก Sign Server โดยตรง ส่งผลให้ User-Agent ที่มีเว้นวรรค (Spaces) และวงเล็บ ถูกส่งเข้าไปใน WebSocket Handshake request-target แบบดิบๆ ทำให้เซิร์ฟเวอร์ตอบกลับ `HTTP 400 Bad Request` ปฏิเสธการเชื่อมต่อท่อ WebSocket
+     - สอดคล้องกับรายงานใน GitHub Issues #376 และ #379 ของ `isaackogan/TikTokLive` ซึ่งผู้พัฒนาได้ออกเวอร์ชัน `7.0.1` พร้อม commit `be3dceb` เพื่อแก้ปัญหานี้
+  2. **ทำไมผู้ใช้ถึงเห็นว่า "เชื่อมต่อได้"?**:
+     - การยิง HTTP ครั้งแรกเพื่อขอข้อมูลห้องไลฟ์จาก Sign Server ตอบกลับ 200 OK สำเร็จ ทำให้ไลบรารี emit `ConnectEvent` ส่งผลให้หน้าต่างโปรแกรม Broadcast Playroom แสดงสถานะว่าเชื่อมต่อสำเร็จ แต่แท้จริงแล้วท่อ WebSocket ที่ใช้รับข้อความแชทล้มเหลวไปตั้งแต่จังหวะ Handshake
+  3. **Age-restricted (18+) Stream Crash**:
+     - พบว่าการกำหนด `fetch_room_info=True` ใน `client.start()` จะส่งคำขอไปยัง `/room/info/` ซึ่งหากสตรีมเมอร์เปิดโหมด 18+ ไว้ จะเกิด `AgeRestrictedError` ส่งผลให้โปรแกรมตัดการเชื่อมต่อทันที
+- **การดำเนินการแก้ไขและปรับปรุง:**
+  1. **อัปเกรดสภาพแวดล้อม Python เป็น `TikTokLive==7.0.1`**:
+     - ติดตั้ง `TikTokLive 7.0.1` และ `TikTokLiveProto 0.2.2` เรียบร้อย รองรับการเชื่อมต่อผ่าน fallback push server อย่างถูกต้อง
+  2. **ปรับปรุง `chat_tiktok.py`**:
+     - ปรับ `fetch_room_info=False` เพื่อป้องกันการเกิด `AgeRestrictedError` ในห้องไลฟ์ที่มีการจำกัดอายุ 18+ (ยอดคนดูสดจะถูกส่งผ่านอีเวนต์ `RoomUserSeqEvent` ทุก 5-10 วินาทีตามปกติ)
+     - เพิ่มตัวตรวจจับเวอร์ชันของ `TikTokLive` ในฟังก์ชัน `connect()` หากพบว่าเครื่องผู้ใช้ยังรันเวอร์ชัน 6.x หรือ 7.0.0 จะแสดงสถานะแจ้งเตือนแนะนำให้อัปเกรดเป็น `>=7.0.1` ทันที
+     - อัปเดตข้อความแนะนำคำสั่งติดตั้งเป็น `pip install --upgrade TikTokLive>=7.0.1`
+  3. **ผ่านการทดสอบ Gate**:
+     - รัน `smoke_test_gate.py` ผ่าน 100% ทั้งการตรวจ Static check และการทดสอบ Tool Windows แบบ Interactive
+
+---
+
 ## [2026-11-09 18:40] – Antigravity & Claude (Release v3.64: Persist TTS Audio Preferences, Limits, and Test Message)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind) & Claude (Cowork)

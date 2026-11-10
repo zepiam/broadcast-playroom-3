@@ -21,6 +21,11 @@
 ---
 
 - **Key Enhancements & Architectural Milestones (v3.31 - v3.64)**:
+  0. **TikTok LIVE Chat Ingestion Stability & TikTokLive 7.0.1 Upgrade**:
+     - Resolved "Connected but no chat messages retrieved" issue caused by TikTok Webcast sign server routing through EulerStream fallback proxy (`ws-fallback.eulerstream.com`).
+     - Upgraded environment to `TikTokLive==7.0.1` fixing raw unencoded User-Agent route params in WebSocket URI builder (HTTP 400 rejection).
+     - Adjusted `chat_tiktok.py` to use `fetch_room_info=False` to prevent `AgeRestrictedError` on 18+ mature broadcasts, relying on continuous `RoomUserSeqEvent` pushes for viewer count.
+     - Added runtime version warning in `chat_tiktok.py` alerting users if their environment runs outdated `<7.0.1` packages.
   0. **TTS Audio Preferences Persistence & Multi-Window Sync (v3.64)**:
      - Fixed issue where TTS voice volume, speech rate, pitch (Full build), mixed voice toggle, character limits, limit alert settings, and voice test messages reset to defaults on app restart.
      - Added `restoreTtsAudioPrefs()`, `initTtsTestMessagePersist()`, and a cross-window `storage` listener in `src/index.html` ensuring settings modified in popout Settings windows synchronize seamlessly with the main window.
