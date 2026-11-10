@@ -1,39 +1,39 @@
 {
-  "version": "3.65",
-  "latest_version": "3.65",
+  "version": "3.66",
+  "latest_version": "3.66",
   "release_date": "2026-11-11",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.65\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.65:\n- **ปรับปรุงการเชื่อมต่อ TikTok LIVE Chat (รองรับ TikTokLive 7.0.1+)**:\n  - รองรับการเชื่อมต่อ TikTokLive เวอร์ชัน 7.0.1+ แก้ปัญหาเซิร์ฟเวอร์สำรอง WebSocket ดีดกลับ HTTP 400 Bad Request ที่ทำให้สถานะขึ้นว่าเชื่อมต่อแล้วแต่ไม่ได้รับข้อความแชท\n  - ปิดการเรียก `fetch_room_info` ตอนเริ่มต้น เพื่อป้องกันข้อผิดพลาดการเข้าห้องไลฟ์ที่จำกัดอายุ (Age-Restricted 18+) โดยยอดคนดูสดจะยังคงอัปเดตแบบเรียลไทม์ได้ตามปกติผ่าน `RoomUserSeqEvent`\n  - เพิ่มระบบแจ้งเตือนตรวจสอบเวอร์ชัน TikTokLive ในเครื่อง พร้อมคำแนะนำคำสั่งอัปเกรดอัตโนมัติหากใช้เวอร์ชันต่ำกว่า 7.0.1\n",
+  "changelog": "# Broadcast Playroom v3.66\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.66:\n- **รวมชุดไลบรารี TikTok LIVE 7.0.1+ ในตัวแพตช์ (Bundled Dependencies)**:\n  - บันเดิลชุดไลบรารี `TikTokLive`, `TikTokLiveProto`, `EulerApiSdk` พร้อม dependencies ทั้งหมดลงในแพตช์ (`_internal/`) ทำให้ผู้ใช้งานโปรแกรมแบบติดตั้ง (Standalone .exe) สามารถเชื่อมต่อ TikTok LIVE ได้ทันที 100% โดยไม่ต้องติดตั้ง Python หรือรันคำสั่ง pip เอง\n- **อัปเดตเลขเวอร์ชัน v3.66 ครบถ้วนทุกจุด**:\n  - อัปเดต `updater.py` (`CURRENT_VERSION`), แถบหัวหน้าต่าง (`<title>`) และป้ายเวอร์ชัน (`desktop-titlebar-tag`) ใน `src/index.html`, `package.json`, และ `version.json` ให้แสดงผลเป็นเวอร์ชัน 3.66 อย่างถูกต้องตรงกันทั้งหมด\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.65-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-lite.zip",
-      "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
-      "size": 33913688,
+      "file": "patch-v3.66-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-lite.zip",
+      "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
+      "size": 40640730,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.65-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.66-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.65-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-full.zip",
-      "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
-      "size": 33913688,
+      "file": "patch-v3.66-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-full.zip",
+      "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
+      "size": 40640730,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.65-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.66-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.65-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-lite.zip",
-    "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
-    "size": 33913688
+    "file": "patch-v3.66-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-lite.zip",
+    "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
+    "size": 40640730
   },
   "full": {
-    "file": "patch-v3.65-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.65/patch-v3.65-full.zip",
-    "sha256": "315dd9cc7cd7398944c76524f9ee714a5afa0316bc6b6c2d41de0969718a02aa",
-    "size": 33913688
+    "file": "patch-v3.66-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.66/patch-v3.66-full.zip",
+    "sha256": "74e3f6dae8fca0cec85c0a875e3b7b0ae9f82bbb21431c2382ede976def3a8f4",
+    "size": 40640730
   }
 }

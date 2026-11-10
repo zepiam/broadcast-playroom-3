@@ -51,13 +51,23 @@ Callback ได้รับ ChatMessage dataclass (ร่วมกับ Twitch/
 
 
 import asyncio
-
+import os
+import sys
 import threading
-
 import time
-
 from typing import Callable, Optional
 
+# Ensure _internal and current directory are in sys.path for bundled packages in distributed apps
+_tt_base_dirs = [
+    os.path.dirname(os.path.abspath(__file__)),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "_internal"),
+]
+if getattr(sys, "frozen", False):
+    _exe_dir = os.path.dirname(sys.executable)
+    _tt_base_dirs.extend([_exe_dir, os.path.join(_exe_dir, "_internal")])
+for _d in _tt_base_dirs:
+    if os.path.isdir(_d) and _d not in sys.path:
+        sys.path.insert(0, _d)
 
 from chat_twitch import ChatMessage  # reuse shared dataclass
 
