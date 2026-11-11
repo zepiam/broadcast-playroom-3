@@ -647,6 +647,8 @@ class TikTokChat:
 
                 "repeat_end": getattr(event, "repeat_end", 0),
 
+                "suppress_tts": True,
+
             }
 
             self.on_message(
@@ -704,6 +706,8 @@ class TikTokChat:
 
                         else None,
 
+                        "suppress_tts": True,
+
                     },
 
                 )
@@ -738,6 +742,8 @@ class TikTokChat:
                         if event.user
 
                         else None,
+
+                        "suppress_tts": True,
 
                     },
 
@@ -788,6 +794,8 @@ class TikTokChat:
 
                             else None,
 
+                            "suppress_tts": True,
+
                         },
 
                     )
@@ -801,35 +809,9 @@ class TikTokChat:
 
         async def on_join(event):  # noqa: ANN001
 
-            author = _user_display_name(getattr(event, "user", None))
+            # ผู้ใช้ต้องการให้ข้าม event เข้าร่วมไลฟ์/เข้าชมทั้งหมด ไม่ต้องแจ้งเตือน ไม่ต้องแสดงผล และไม่อ่าน TTS
 
-            self.messages_read += 1
-
-            self.on_message(
-
-                ChatMessage(
-
-                    platform="tiktok",
-
-                    author=author,
-
-                    text="👋 เข้าร่วมไลฟ์",
-
-                    event="join",
-
-                    extra={
-
-                        "tiktok_user_id": getattr(event.user, "id", None)
-
-                        if event.user
-
-                        else None,
-
-                    },
-
-                )
-
-            )
+            return
 
 
         # viewer count — TikTok push event ~ทุก 5-10s

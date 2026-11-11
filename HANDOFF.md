@@ -1,5 +1,5 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.68)
-- **Current Version**: v3.68 (Released & Verified In-App Auto-Update)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.69)
+- **Current Version**: v3.69 (Released & Verified In-App Auto-Update)
 - **Status**: Stable & Fully Verified across GitHub Releases & Hugging Face Mirrors.
 ---
 
@@ -20,7 +20,13 @@
 
 ---
 
-- **Key Enhancements & Architectural Milestones (v3.31 - v3.68)**:
+- **Key Enhancements & Architectural Milestones (v3.31 - v3.69)**:
+  0. **TikTok/Multi-Platform Event & TTS Optimization (v3.69)**:
+     - **TTS Message-Only Filtering**: `playChatMessageSpeech` now exclusively queues speakable text for genuine chat messages (`!msg.event || msg.event === 'message'`), completely eliminating TTS audio flooding from TikTok likes, joins, gifts, or follows. The sender name reading setting (`chkReadAuthorName`) applies uniformly across all platforms.
+     - **Inline Compact Gray Activity Stream**: Interactive events (YouTube like, TikTok heart/like, follow, sub/resub, member, donate, superchat, gift, share, bits) now render directly inside `#chatList` as compact gray inline rows (`.chat-event-item`, `11px`, `#94a3b8`) formatted as `{user} {action}` (e.g. `Somchai กดหัวใจ ×15`, `Somchai กดถูกใจไลฟ์`, `Somchai กดติดตาม`, `Somchai ส่ง Super Chat ฿500`) chronologically with live chat, without TTS and without TTS badges.
+     - **Events List Synchronization & Performance**: Events are concurrently mirrored into the `#eventsList` panel on the right without audio. Heart count displays as `×N` instead of `฿N`. Added debouncing for `localStorage` persistence of `bp3_live_activity_events` to ensure 60fps smoothness during high-frequency TikTok like bursts.
+     - **Complete Join Suppression**: `join` events are completely suppressed across `chat_tiktok.py`, `chat_bridge.py`, and `src/index.html`. Zero messages, zero event entries, and zero TTS triggers are generated when viewers enter the live stream.
+     - **Automated Verification**: Fully validated via `tests/verify_event_chat_and_tts.py` (10/10 automated assertions passing) and `smoke_test_gate.py`.
   0. **Lucide Icons Overhaul, Chat Widget Customizer Hide, Sticky Chat Preview & UI Polish (v3.68)**:
      - Hidden unused Chat Widget Customizer card in Chat Setting via non-destructive CSS `display: none`.
      - Replaced emojis with Lucide SVG Icons across Rail (Composer, Replie, ASK, Randomizer, User Manager, Settings), settings navigation (17 categories), section titles, live chat header controls, topbar actions, and footer Discord link.

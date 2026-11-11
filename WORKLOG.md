@@ -1,3 +1,29 @@
+## [2026-11-11 21:30] – Antigravity (Release v3.69: Message-Only TTS, Compact Gray Live Activity Stream, Join Suppression & Event List Sync)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.69 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **รายละเอียดที่ดำเนินการ:**
+  1. **TTS อ่านเฉพาะข้อความแชทจริง (Message-Only TTS Speech)**:
+     - ปรับปรุงการตรวจสอบใน `src/index.html` ฟังก์ชัน `injectIncomingChat` ให้ TTS (`playChatMessageSpeech`) และระบบเสียงลับ (`enqueueSecretSound`) ทำงานเฉพาะเมื่อข้อความเป็นคอมเมนต์แชทจริง (`!msg.event || msg.event === 'message'`)
+     - รองรับการตั้งค่าอ่านชื่อผู้ส่ง (`chkReadAuthorName` / `bp3_tts_read_author`) สอดคล้องเท่าเทียมกันทุกแพลตฟอร์ม
+  2. **แสดงกิจกรรมไลฟ์เป็นข้อความตัวเล็กสีเทาในแชทสด (Compact Gray Event Stream)**:
+     - เมื่อมีกิจกรรม เช่น กดถูกใจใน YouTube, กดหัวใจใน TikTok, กดติดตาม (Follow), ซับสไครบ์/สมัครสมาชิก (Sub/Member), โดเนท (Donate), ส่ง Super Chat หรือส่งของขวัญ (Gift):
+     - ระบบจะสร้างแถวแบบกระชับ `.chat-event-item` แสดงข้อความตัวเล็กสีเทา (`#94a3b8`) ต่อคิวเรียงตามเวลาในแชทสด (`#chatList`) เช่น `{user} กดหัวใจ ×15`, `{user} กดถูกใจไลฟ์`, `{user} กดติดตาม`, `{user} ส่ง Super Chat ฿500`
+     - แถวกิจกรรมนี้จะไม่ถูกอ่านออกเสียง TTS และไม่แสดงป้าย "รออ่าน"
+  3. **เชื่อมต่อไปยังกระดานกิจกรรมด้านขวา (Events List Synchronization)**:
+     - กิจกรรมข้างต้นยังคงบันทึกลงในรายการกิจกรรมด้านขวา (`#eventsList`) ตามปกติโดยไม่มีเสียง TTS
+     - ปรับการคำนวณจำนวนหัวใจ TikTok ในรายการกิจกรรมให้แสดง `×N` แทน `฿N`
+     - เพิ่ม Debounce ให้กับการบันทึกลง `localStorage` (`bp3_live_activity_events`) เพื่อป้องกันอาการเฟรมเรตตกเมื่อมีคนกดหัวใจรัวๆ
+  4. **ปิดการทำงานของ Event เข้าร่วมไลฟ์/เข้าชมห้องอย่างสมบูรณ์ (Complete Join Suppression)**:
+     - ใน `chat_tiktok.py`: ปิดการส่ง `on_join` ทำให้ไม่มีการส่ง event เข้าร่วมไลฟ์ออกมา
+     - ใน `chat_bridge.py`: ดักตัด event `join` ออกทันที
+     - ใน `src/index.html`: ดัก return ทันทีหาก `msg.event === 'join'` ไม่ให้แสดงในแชทสด รายการกิจกรรม หรือส่งเสียง TTS ใดๆ ทั้งสิ้น
+  5. **การทดสอบ (Verification)**:
+     - เขียนชุดทดสอบอัตโนมัติ `tests/verify_event_chat_and_tts.py` ครอบคลุม 10 กรณีทดสอบ (แชทปกติ, กดหัวใจ TikTok, ไลฟ์ YouTube, ติดตาม, สมาชิก, โดเนท, ของขวัญ, เข้าร่วมไลฟ์, คิว TTS และการแสดงผล) ผ่านฉลุย 100%
+     - รัน `build_now.py` และ `smoke_test_gate.py` ผ่าน 100% ปราศจาก runtime errors
+
+---
+
 ## [2026-11-11 06:10] – Antigravity & Claude (Release v3.68: Lucide Icons Overhaul, Hide Chat Widget Customizer, Sticky Chat Preview & UI Polish)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind) & Claude (Cowork)

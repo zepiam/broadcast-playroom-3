@@ -1,39 +1,39 @@
 {
-  "version": "3.68",
-  "latest_version": "3.68",
+  "version": "3.69",
+  "latest_version": "3.69",
   "release_date": "2026-11-11",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.68\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.68:\n- **ซ่อนการ์ด Chat Widget Customizer** ในหน้า Chat Setting ของแชทสด (ฟีเจอร์ไม่ได้ใช้แล้ว) — ซ่อนอย่างเดียว ไม่ลบโค้ด\n- **ปุ่มแถบล่างสุด**: เปลี่ยนข้อความ \"แจ้งบัค\" เป็น \"Discord\" พร้อมไอคอน Discord นำหน้า (ลิงก์เดิม)\n- **เปลี่ยนไอคอนแถบซ้ายและเมนูตั้งค่าเป็น Lucide**: ปุ่ม Composer/Replie/ASK/Randomizer/User Manager, หัวข้อเมนูตั้งค่าทั้ง 17 หัวข้อ (รวมที่ปักหมุดบนแถบซ้าย และไอคอนหัวข้อบนสุดของแต่ละหน้าตั้งค่าให้ตรงกับเมนู) และไอคอนหัวใจหน้าปุ่ม \"สนับสนุนการพัฒนาโปรแกรม\" ที่มุมขวาล่าง\n- **หน้าตั้งค่า**: เมนู \"Windows Defender (1-Click)\" เหลือ \"Windows Defender\" และหัวข้อ \"การทำงานหลัก\" ขึ้นบรรทัดใหม่เป็นไอคอนธง + \"คลิกขวาปักหมุดหน้าแรก\"\n- **ปุ่มและป้ายในหัวช่องแชทสด**: เปลี่ยนเป็นไอคอน Lucide — แสดงสถานะระบบ (เปิดเหลือง/ปิดเทา), ปิดเสียงโค้ดลับ (เปิดเขียว/ปิดเทา), ถังขยะ, ตั้งค่า, Events (เปิดเหลือง/ปิดเทา), ป้ายยอดคนดูรวม และป้ายเวลาอ่าน TTS\n- **ปุ่มขวาบนของโปรแกรม**: เปลี่ยนเป็นไอคอน Lucide — แปลภาษา/อ่านทุกภาษา, Game Overlay (เปิด/ปิด), ซ่อนกรอบ/แสดงกรอบ และ Overlay+\n- **หน้าต่าง Chat Setting**: การ์ดตัวอย่างแชทสดฝั่งขวาค้างอยู่กับที่ขณะเลื่อนเมนูฝั่งซ้าย\n- **User Manager**: คนที่ถูกบล็อกมีไอคอนบล็อกสีแดงนำหน้าชื่อในหน้ารายชื่อ\n- **ป้าย RVC บนแถบบน**: ใช้ไอคอน bot-message-square แทนจุดสี และแสดงเฉพาะชื่อโมเดล (ไม่มีคำว่า \"RVC:\")\n- **ป้ายยอดคนดูรวม**: ใช้ไอคอน eye และเปลี่ยนเป็น eye-closed เมื่อกดซ่อนยอด\n- **ปุ่มสลับเสียงเพศ**: ใช้ไอคอน venus (ผู้หญิง) / mars (ผู้ชาย)\n- **สีไฮไลต์ประจำโปรแกรม**: Hover ของปุ่มไอคอนบนหน้าแรกตามสีไฮไลต์ที่เลือกใน Settings > ธีม\n- **แก้บัค**: เปลี่ยนธีม/สีไฮไลต์ในหน้า Settings แล้วหน้าแรกเปลี่ยนตามทันที ไม่ต้องปิดเปิดโปรแกรมใหม่\n- **ปุ่มตั้งค่าซ้ายล่าง**: เปลี่ยนเป็นไอคอน Lucide `cog`\n- **แถบบนซ้าย/ขวา**: ปุ่มเลือกเสียงหญิง/ชายเหลือปุ่มเดียวแบบสลับ (\"อ่านเสียงผู้หญิง\" / \"อ่านเสียงผู้ชาย\") และปุ่มแปลภาษาเปลี่ยนข้อความเป็น \"แปลภาษาในแชทให้เป็นไทย\" / \"อ่านทุกภาษาในแชท\"\n",
+  "changelog": "# Broadcast Playroom v3.69\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.69:\n- **TTS อ่านเฉพาะข้อความแชทจริง (Message-Only TTS)**:\n  - แก้ไขปัญหาเสียงอ่าน TTS แน่นค้างในไลฟ์ TikTok โดยปรับให้ระบบส่งเสียงอ่านเฉพาะข้อความที่ผู้ชมพิมพ์คุยเข้ามาจริง ๆ (`event === 'message'`)\n  - กิจกรรมอื่น ๆ เช่น กดหัวใจ, กด Like, ติดตาม, ซับสไครบ์, โดเนท, ส่งของขวัญ จะไม่อ่านออกเสียง และไม่ขึ้นป้าย \"รออ่าน\" แย่งคิวเสียง\n  - ตัวเลือก \"อ่านชื่อผู้แชท\" ทำงานอย่างสม่ำเสมอเท่าเทียมกันทุกแพลตฟอร์ม\n- **แสดงกิจกรรมไลฟ์เป็นข้อความตัวเล็กสีเทาในแชทสด (Compact Gray Event Stream)**:\n  - กิจกรรมต่าง ๆ (กด Like YouTube, กดหัวใจ TikTok, Follow, Sub, Member, Donate, Super Chat, Gift, Share) แสดงเป็นแถวกะทัดรัดตัวอักษรสีเทา (`#94a3b8`) ต่อคิวเรียงตามเวลาในแชทสดโดยอัตโนมัติ\n  - แสดงข้อความชัดเจน เช่น `Somchai กดหัวใจ ×15`, `Somchai กดถูกใจไลฟ์`, `Somchai กดติดตาม`, `Somchai ส่ง Super Chat ฿200`\n- **แสดงใน Event List ด้านขวาแบบไม่มีเสียง TTS**:\n  - กิจกรรมทั้งหมดถูกส่งไปบันทึกและแสดงผลในแถบ \"รายการกิจกรรม\" (Event List) ด้านขวาควบคู่กันโดยไม่มีเสียงอ่าน TTS\n  - แก้ไขการแสดงผลจำนวนหัวใจ TikTok ในรายการกิจกรรมให้ขึ้นเป็น `×N` (จากเดิมที่แสดงเป็น `฿N`)\n- **ปิด Event เข้าร่วมไลฟ์/เข้าชมห้องอย่างสมบูรณ์ (Join Event Suppression)**:\n  - ปิดไม่ให้ส่งและไม่แสดงผล event การเข้าห้องชมไลฟ์ (ทั้งใน TikTok และแพลตฟอร์มอื่น) 100% ไม่มีข้อความในแชท ไม่มีในรายการกิจกรรม และไม่มีเสียงอ่าน\n- **เพิ่มประสิทธิภาพความลื่นไหล (Smooth Performance)**:\n  - เพิ่มระบบ Debounce การบันทึกข้อมูลกิจกรรมลงหน่วยความจำ ทำให้หน้าจอไม่กระตุกและคงความลื่นไหล 60fps แม้จะมีคนกดหัวใจใน TikTok รัว ๆ\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.68-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-lite.zip",
-      "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
-      "size": 40649085,
+      "file": "patch-v3.69-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-lite.zip",
+      "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
+      "size": 40650150,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.68-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.69-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.68-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-full.zip",
-      "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
-      "size": 40649085,
+      "file": "patch-v3.69-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-full.zip",
+      "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
+      "size": 40650150,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.68-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.69-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.68-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-lite.zip",
-    "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
-    "size": 40649085
+    "file": "patch-v3.69-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-lite.zip",
+    "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
+    "size": 40650150
   },
   "full": {
-    "file": "patch-v3.68-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.68/patch-v3.68-full.zip",
-    "sha256": "0bc83c64a364b64b529e38e9c0591cdb4d36ff9dc53bfbb66c502b9db563142e",
-    "size": 40649085
+    "file": "patch-v3.69-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-full.zip",
+    "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
+    "size": 40650150
   }
 }

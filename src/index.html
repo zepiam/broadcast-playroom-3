@@ -601,7 +601,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.68</title>
+  <title>Broadcast Playroom v3.69</title>
 
 
 
@@ -1281,7 +1281,7 @@ SOFTWARE.
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-icon-64.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.onerror=null;this.src='./assets/bp-full-icon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.68</span>
+      <span class="desktop-titlebar-tag">v3.69</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -53281,6 +53281,10 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+    window.getActivityEventsList = () => _activityEventsList;
+
+
+
 
 
 
@@ -53521,7 +53525,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        like: 'กดถูกใจไลฟ์',
+        like: (String(ev.platform_key || ev.platform || '').toLowerCase() === 'tiktok') ? 'กดหัวใจ' : 'กดถูกใจไลฟ์',
 
 
 
@@ -53714,6 +53718,14 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
           amountStr = rawAmt.toLowerCase().includes('bit') ? rawAmt : `${rawAmt} Bits`;
+
+
+
+        } else if (eventKey === 'like') {
+
+
+
+          amountStr = (rawAmt && Number(rawAmt) > 1) ? `×${rawAmt}` : '';
 
 
 
@@ -54189,7 +54201,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      if (!msg || !msg.event || msg.event === 'message') return;
+      if (!msg || !msg.event || msg.event === 'message' || msg.event === 'join') return;
 
 
 
@@ -54281,15 +54293,23 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      try {
+      if (typeof _saveEventsTimer === 'undefined') window._saveEventsTimer = null;
 
+      if (!window._saveEventsTimer) {
 
+        window._saveEventsTimer = setTimeout(() => {
 
-        localStorage.setItem('bp3_live_activity_events', JSON.stringify(_activityEventsList));
+          window._saveEventsTimer = null;
 
+          try {
 
+            localStorage.setItem('bp3_live_activity_events', JSON.stringify(_activityEventsList));
 
-      } catch (_) {}
+          } catch (_) {}
+
+        }, 800);
+
+      }
 
 
 
@@ -54825,6 +54845,10 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+      if (!msg || msg.event === 'join') return;
+
+
+
       if(!msg.sent_from_program){const echoKey=String(msg.platform_key || msg.platform || '').toLowerCase()+':'+String(msg.username || '').toLowerCase()+':'+String(msg.text || '').trim().toLowerCase();const echoAt=_recentSentHostMessages.get(echoKey);if(echoAt && Date.now()-echoAt<10000){_recentSentHostMessages.delete(echoKey);return;}}
 
 
@@ -54931,6 +54955,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
+      const isEvent = Boolean(msg.event && msg.event !== 'message');
+
       const chatList = document.getElementById('chatList');
 
 
@@ -54941,13 +54967,165 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
       if (chatList && !moderation.hide) {
 
+        if (isEvent) {
+
+          const row = document.createElement('div');
+
+          row.className = 'chat-row chat-event-item';
+
+          row.dataset.messageId = String(msg.id);
+
+          row.dataset.username = String(msg.username || '');
+
+          row.dataset.platform = String(msg.platform || 'Twitch');
 
 
 
+          const evKey = String(msg.event).toLowerCase();
+
+          const platKey = String(msg.platform_key || msg.platform || '').toLowerCase();
+
+          let icon = '⚡';
+
+          let actionText = '';
 
 
 
-        const row = document.createElement('div');
+          if (evKey === 'like') {
+
+            icon = '❤️';
+
+            const cnt = msg.amount || msg.count;
+
+            const cntStr = (cnt && Number(cnt) > 1) ? ` ×${cnt}` : '';
+
+            actionText = (platKey === 'tiktok') ? `กดหัวใจ${cntStr}` : `กดถูกใจไลฟ์${cntStr}`;
+
+          } else if (evKey === 'follow') {
+
+            icon = '⭐';
+
+            actionText = 'กดติดตาม';
+
+          } else if (evKey === 'sub' || evKey === 'subscribe') {
+
+            icon = '👑';
+
+            actionText = msg.months ? `ต่ออายุสมาชิก (${msg.months} เดือน)` : 'สมัครสมาชิก';
+
+          } else if (evKey === 'resub') {
+
+            icon = '👑';
+
+            actionText = msg.months ? `ต่ออายุสมาชิก (${msg.months} เดือน)` : 'ต่ออายุสมาชิก';
+
+          } else if (evKey === 'subgift') {
+
+            icon = '🎁';
+
+            const cnt = msg.amount || msg.count;
+
+            actionText = cnt ? `มอบสมาชิกให้ผู้ชม ×${cnt}` : 'มอบสมาชิกให้ผู้ชม';
+
+          } else if (evKey === 'member' || evKey === 'membership') {
+
+            icon = '👑';
+
+            actionText = 'สมัครสมาชิกช่อง';
+
+          } else if (evKey === 'superchat' || evKey === 'super_chat') {
+
+            icon = '💰';
+
+            const amt = msg.amount ? (msg.currency ? `${msg.currency}${msg.amount}` : `฿${msg.amount}`) : (msg.extra?.amount || '');
+
+            actionText = `ส่ง Super Chat ${amt}`.trim();
+
+          } else if (evKey === 'supersticker' || evKey === 'super_sticker') {
+
+            icon = '✨';
+
+            const amt = msg.amount ? (msg.currency ? `${msg.currency}${msg.amount}` : `฿${msg.amount}`) : (msg.extra?.amount || '');
+
+            actionText = `ส่ง Super Sticker ${amt}`.trim();
+
+          } else if (evKey === 'donate' || evKey === 'donation' || evKey === 'tip') {
+
+            icon = '💵';
+
+            const amt = msg.amount ? (msg.currency ? `${msg.currency}${msg.amount}` : `฿${msg.amount}`) : (msg.extra?.amount || '');
+
+            actionText = `โดเนท ${amt}`.trim();
+
+          } else if (evKey === 'gift') {
+
+            icon = '🎁';
+
+            const gName = msg.gift_name || msg.extra?.gift_name || 'ของขวัญ';
+
+            const gCnt = msg.count || msg.extra?.repeat_count || msg.extra?.count;
+
+            actionText = `ส่งของขวัญ ${gName}${gCnt ? ' ×' + gCnt : ''}`;
+
+          } else if (evKey === 'bits' || evKey === 'cheer') {
+
+            icon = '💎';
+
+            actionText = `เชียร์ ${msg.amount || ''} Bits`.trim();
+
+          } else if (evKey === 'share') {
+
+            icon = '📤';
+
+            actionText = 'แชร์ไลฟ์สด';
+
+          } else if (evKey === 'raid') {
+
+            icon = '🚀';
+
+            actionText = `พาผู้ชมเข้ามา (Raid ${msg.viewers || msg.amount || ''} คน)`.trim();
+
+          } else {
+
+            actionText = msg.text || evKey;
+
+          }
+
+
+
+          row.style.cssText = 'padding:3px 10px; margin:2px 0; display:flex; align-items:center; gap:6px; font-size:11px; color:var(--dc-text-muted,#94a3b8); background:rgba(255,255,255,0.02); border-radius:6px; min-height:24px; border-left:2px solid rgba(148,163,184,0.3);';
+
+
+
+          const platIconUrl = msg.icon || ('/logo/' + encodeURIComponent(platKey));
+
+
+
+          row.innerHTML = `
+
+            <span style="font-size:12px; display:inline-flex; align-items:center;">${icon}</span>
+
+            <img src="${platIconUrl}" alt="${msg.platform || ''}" style="width:12px; height:12px; border-radius:2px; opacity:0.75;" onerror="this.style.display='none'">
+
+            <span style="display:inline-flex; align-items:center; gap:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+
+              <strong class="chat-event-username" style="color:#cbd5e1; font-weight:500; cursor:pointer;" onclick="openAuthorModal('${msg.username}', '${msg.platform}')">${effectiveName}</strong>
+
+              <span style="color:#94a3b8;">${actionText}</span>
+
+            </span>
+
+            <span class="chat-timestamp" style="margin-left:auto; font-size:10px; color:#64748b; white-space:nowrap;">${msg.time || ''}</span>
+
+          `;
+
+
+
+          appendLiveChatRow(chatList, row);
+
+        } else {
+
+          const row = document.createElement('div');
 
 
 
@@ -55206,11 +55384,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
         appendLiveChatRow(chatList,row);
 
-
-
-
-
-
+        }
 
       }
 
@@ -55360,11 +55534,12 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      const isHostEcho = !!msg.suppress_self_tts;
+      const isChatMessage = !isEvent;
+      const isHostEcho = !!msg.suppress_self_tts || !!msg.suppress_tts;
 
 
 
-      if (_masterTtsEnabled && !isHostEcho && spokenText && !isOverTtsLimit) {
+      if (isChatMessage && _masterTtsEnabled && !isHostEcho && spokenText && !isOverTtsLimit) {
 
 
 
@@ -55372,7 +55547,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      } else if (isOverTtsLimit && !isHostEcho && !block.mute) {
+      } else if (isChatMessage && isOverTtsLimit && !isHostEcho && !block.mute) {
         if (typeof playTtsLimitAlertSound === 'function') playTtsLimitAlertSound();
       }
 
@@ -55386,7 +55561,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      if (_masterTtsEnabled && !isHostEcho && !block.mute && !userMuted && !moderation.matched && secretSound) {
+      if (isChatMessage && _masterTtsEnabled && !isHostEcho && !block.mute && !userMuted && !moderation.matched && secretSound) {
 
 
 

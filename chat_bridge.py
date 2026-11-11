@@ -322,6 +322,8 @@ class ChatBridge:
 
 
     def _on_message(self, platform_name: str, msg: ChatMessage):
+        if getattr(msg, 'event', '') == 'join':
+            return
         author = getattr(msg, 'author', '') or getattr(msg, 'username', 'ผู้ชม')
         text = getattr(msg, 'text', '')
         extra = getattr(msg, 'extra', {}) or {}
@@ -424,6 +426,16 @@ class ChatBridge:
                 'system_text': getattr(msg, 'system_text', '') or '',
 
                 'character_job': extra.get('character_job', extra.get('_job','')),
+
+                'gift_name': extra.get('gift_name', ''),
+
+                'gift_icon': extra.get('gift_icon', ''),
+
+                'count': extra.get('repeat_count') or getattr(msg, 'amount', None),
+
+                'extra': extra,
+
+                'suppress_tts': bool(extra.get('suppress_tts')),
 
                 'time': time.strftime('%H:%M', time.localtime())
 
