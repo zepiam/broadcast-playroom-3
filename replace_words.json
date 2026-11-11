@@ -1,8 +1,9 @@
 {
   "type": "replace_words",
   "last_sync": "28/10/2026 09:25:52",
-  "total": 39,
+  "total": 40,
   "replace_words": {
+    "{URL}": "แนบลิงก์",
     "เย้": "เย่",
     "สระ": "ศ่ะ",
     "youtube": "ยูทู๊ป",

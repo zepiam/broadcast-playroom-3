@@ -1,39 +1,39 @@
 {
-  "version": "3.69",
-  "latest_version": "3.69",
+  "version": "3.70",
+  "latest_version": "3.70",
   "release_date": "2026-11-11",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.69\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.69:\n- **TTS อ่านเฉพาะข้อความแชทจริง (Message-Only TTS)**:\n  - แก้ไขปัญหาเสียงอ่าน TTS แน่นค้างในไลฟ์ TikTok โดยปรับให้ระบบส่งเสียงอ่านเฉพาะข้อความที่ผู้ชมพิมพ์คุยเข้ามาจริง ๆ (`event === 'message'`)\n  - กิจกรรมอื่น ๆ เช่น กดหัวใจ, กด Like, ติดตาม, ซับสไครบ์, โดเนท, ส่งของขวัญ จะไม่อ่านออกเสียง และไม่ขึ้นป้าย \"รออ่าน\" แย่งคิวเสียง\n  - ตัวเลือก \"อ่านชื่อผู้แชท\" ทำงานอย่างสม่ำเสมอเท่าเทียมกันทุกแพลตฟอร์ม\n- **แสดงกิจกรรมไลฟ์เป็นข้อความตัวเล็กสีเทาในแชทสด (Compact Gray Event Stream)**:\n  - กิจกรรมต่าง ๆ (กด Like YouTube, กดหัวใจ TikTok, Follow, Sub, Member, Donate, Super Chat, Gift, Share) แสดงเป็นแถวกะทัดรัดตัวอักษรสีเทา (`#94a3b8`) ต่อคิวเรียงตามเวลาในแชทสดโดยอัตโนมัติ\n  - แสดงข้อความชัดเจน เช่น `Somchai กดหัวใจ ×15`, `Somchai กดถูกใจไลฟ์`, `Somchai กดติดตาม`, `Somchai ส่ง Super Chat ฿200`\n- **แสดงใน Event List ด้านขวาแบบไม่มีเสียง TTS**:\n  - กิจกรรมทั้งหมดถูกส่งไปบันทึกและแสดงผลในแถบ \"รายการกิจกรรม\" (Event List) ด้านขวาควบคู่กันโดยไม่มีเสียงอ่าน TTS\n  - แก้ไขการแสดงผลจำนวนหัวใจ TikTok ในรายการกิจกรรมให้ขึ้นเป็น `×N` (จากเดิมที่แสดงเป็น `฿N`)\n- **ปิด Event เข้าร่วมไลฟ์/เข้าชมห้องอย่างสมบูรณ์ (Join Event Suppression)**:\n  - ปิดไม่ให้ส่งและไม่แสดงผล event การเข้าห้องชมไลฟ์ (ทั้งใน TikTok และแพลตฟอร์มอื่น) 100% ไม่มีข้อความในแชท ไม่มีในรายการกิจกรรม และไม่มีเสียงอ่าน\n- **เพิ่มประสิทธิภาพความลื่นไหล (Smooth Performance)**:\n  - เพิ่มระบบ Debounce การบันทึกข้อมูลกิจกรรมลงหน่วยความจำ ทำให้หน้าจอไม่กระตุกและคงความลื่นไหล 60fps แม้จะมีคนกดหัวใจใน TikTok รัว ๆ\n",
+  "changelog": "# Broadcast Playroom v3.70\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.70:\n- **ดักจับ URL และแทนที่ด้วยเสียงอ่าน \"แนบลิงก์\" (Comprehensive URL TTS Replacement)**:\n  - แก้ไขปัญหาเสียงอ่าน TTS สะกดตัวอักษร URL ยาว ๆ ที่คนดูแปะในแชท (เช่น `https://...`, `www....`, หรือลิงก์ย่อ `vt.tiktok.com`, `youtu.be`, `bit.ly` ฯลฯ)\n  - ระบบจะแปลงลิงก์เป็นคำว่า **\"แนบลิงก์\"** สั้น ๆ ชัดเจนสำหรับส่งเข้าคิวเสียง TTS โดยอัตโนมัติ\n  - หากมีข้อความอื่นพิมพ์มาคู่กับลิงก์ เช่น *\"ดูคลิปนี้สิ https://youtube.com/...\"* TTS จะอ่านว่า *\"ดูคลิปนี้สิ แนบลิงก์\"*\n  - หากแปะหลายลิงก์ติดกัน ระบบจะยุบให้อ่านคำว่า \"แนบลิงก์\" อย่างกระชับ ไม่พูดย้ำซ้ำซ้อน\n  - ช่วยแก้ปัญหาข้อความถูกตัดข้ามเพราะยาวเกินกำหนด (TTS Character Limit) โดยอัตโนมัติ เนื่องจากลิงก์ยาวหลายร้อยตัวอักษรถูกย่อเหลือเพียงคำว่า \"แนบลิงก์\"\n- **คงการแสดงผลลิงก์เต็มรูปแบบในหน้าต่างแชทสด (UI Link Preservation)**:\n  - บนหน้าต่างแชทสด แถวแชทยังคงแสดงผล URL ตัวเต็มตามที่ผู้ชมพิมพ์มาจริง เพื่อให้สตรีมเมอร์และแอดมินมองเห็นลิงก์ได้ชัดเจน\n- **ซิงค์ระบบคลังคำอ่านฝั่งเซิร์ฟเวอร์ (Backend Dictionary Sync)**:\n  - เพิ่ม `{URL}: \"แนบลิงก์\"` เข้าสู่ `replace_words.json` และ `dictionary_manager.py` เพื่อความครอบคลุมทั้งระบบเสียง Edge-TTS ออนไลน์และเสียงสำรองของระบบ\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.69-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-lite.zip",
-      "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
-      "size": 40650150,
+      "file": "patch-v3.70-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.70/patch-v3.70-lite.zip",
+      "sha256": "88387ff00d820d8f51238a4aceac0247364a16c6f6aedd12139a96af23fd8e63",
+      "size": 40651006,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.69-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.70-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.69-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-full.zip",
-      "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
-      "size": 40650150,
+      "file": "patch-v3.70-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.70/patch-v3.70-full.zip",
+      "sha256": "88387ff00d820d8f51238a4aceac0247364a16c6f6aedd12139a96af23fd8e63",
+      "size": 40651006,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.69-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.70-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.69-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-lite.zip",
-    "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
-    "size": 40650150
+    "file": "patch-v3.70-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.70/patch-v3.70-lite.zip",
+    "sha256": "88387ff00d820d8f51238a4aceac0247364a16c6f6aedd12139a96af23fd8e63",
+    "size": 40651006
   },
   "full": {
-    "file": "patch-v3.69-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.69/patch-v3.69-full.zip",
-    "sha256": "7b3e33d6af9b621e8391dc7c700888e662aa7848acc436fdc7eeb32a47d8c32d",
-    "size": 40650150
+    "file": "patch-v3.70-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.70/patch-v3.70-full.zip",
+    "sha256": "88387ff00d820d8f51238a4aceac0247364a16c6f6aedd12139a96af23fd8e63",
+    "size": 40651006
   }
 }

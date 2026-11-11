@@ -1,5 +1,5 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.69)
-- **Current Version**: v3.69 (Released & Verified In-App Auto-Update)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.70)
+- **Current Version**: v3.70 (Released & Verified In-App Auto-Update)
 - **Status**: Stable & Fully Verified across GitHub Releases & Hugging Face Mirrors.
 ---
 
@@ -20,7 +20,12 @@
 
 ---
 
-- **Key Enhancements & Architectural Milestones (v3.31 - v3.69)**:
+- **Key Enhancements & Architectural Milestones (v3.31 - v3.70)**:
+  0. **Comprehensive URL Detection & TTS "แนบลิงก์" Replacement (v3.70)**:
+     - Automatically intercepts all URL / web link patterns (`http://`, `https://`, `www.`, and shortlinks such as `youtu.be`, `vt.tiktok.com`, `bit.ly`, etc.) in chat messages, pronouncing them cleanly as `"แนบลิงก์"` via TTS speech.
+     - Preserves full URL rendering in UI chat rows while shortening speech input, preventing character limit skips and eliminating tedious character-by-character URL spelling.
+     - Fully synchronized across frontend speech preparation (`getSpeakableChatText`), backend pronunciation manager (`dictionary_manager.py`), and default dictionary (`replace_words.json`).
+     - Automated test coverage extended to 12 passing test cases in `tests/verify_event_chat_and_tts.py`.
   0. **TikTok/Multi-Platform Event & TTS Optimization (v3.69)**:
      - **TTS Message-Only Filtering**: `playChatMessageSpeech` now exclusively queues speakable text for genuine chat messages (`!msg.event || msg.event === 'message'`), completely eliminating TTS audio flooding from TikTok likes, joins, gifts, or follows. The sender name reading setting (`chkReadAuthorName`) applies uniformly across all platforms.
      - **Inline Compact Gray Activity Stream**: Interactive events (YouTube like, TikTok heart/like, follow, sub/resub, member, donate, superchat, gift, share, bits) now render directly inside `#chatList` as compact gray inline rows (`.chat-event-item`, `11px`, `#94a3b8`) formatted as `{user} {action}` (e.g. `Somchai กดหัวใจ ×15`, `Somchai กดถูกใจไลฟ์`, `Somchai กดติดตาม`, `Somchai ส่ง Super Chat ฿500`) chronologically with live chat, without TTS and without TTS badges.

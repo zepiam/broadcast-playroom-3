@@ -219,10 +219,46 @@ with tempfile.TemporaryDirectory(prefix='bp3-events-') as tmp:
             page.evaluate("""
                 localStorage.setItem('bp3_tts_read_author', 'true');
                 window.__audio_sentences = [];
-                // Spy on utterance generation if speech synth or Audio called
             """)
 
-            print("ALL 10 TESTS PASSED: Chat message TTS, compact gray event rows, eventsList sync, join complete suppression!")
+            # 11. URL in chat message (TTS MUST pronounce 'แนบลิงก์' while UI displays full URL)
+            page.evaluate("""
+                injectIncomingChat({
+                    id: 'msg-url-1',
+                    username: 'LinkPoster',
+                    platform: 'YouTube',
+                    platform_key: 'youtube',
+                    text: 'ดูคลิปนี้สิ https://www.youtube.com/watch?v=dQw4w9WgXcQ สนุกมาก',
+                    event: 'message'
+                });
+            """)
+            page.wait_for_timeout(200)
+
+            tts_queue = page.evaluate("window.__tts")
+            assert len(tts_queue) == 3, f"Expected 3 TTS items, got {len(tts_queue)}"
+            assert tts_queue[2]['text'] == 'ดูคลิปนี้สิ แนบลิงก์ สนุกมาก'
+            # UI must preserve the real URL text
+            assert 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' in page.locator('#chatList').inner_text()
+
+            # 12. URL only in chat message
+            page.evaluate("""
+                injectIncomingChat({
+                    id: 'msg-url-2',
+                    username: 'RawLink',
+                    platform: 'TikTok',
+                    platform_key: 'tiktok',
+                    text: 'https://vt.tiktok.com/ZS12345/',
+                    event: 'message'
+                });
+            """)
+            page.wait_for_timeout(200)
+
+            tts_queue = page.evaluate("window.__tts")
+            assert len(tts_queue) == 4, f"Expected 4 TTS items, got {len(tts_queue)}"
+            assert tts_queue[3]['text'] == 'แนบลิงก์'
+            assert 'https://vt.tiktok.com/ZS12345/' in page.locator('#chatList').inner_text()
+
+            print("ALL 12 TESTS PASSED: Chat message TTS, compact gray event rows, eventsList sync, join complete suppression, and URL replacement 'แนบลิงก์'!")
             browser.close()
     finally:
         server.shutdown()

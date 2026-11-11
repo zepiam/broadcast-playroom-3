@@ -1,3 +1,26 @@
+## [2026-11-11 22:15] – Antigravity (Release v3.70: Comprehensive URL Speech Replacement with "แนบลิงก์")
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** เผยแพร่เวอร์ชัน 3.70 สำเร็จ 100% (GitHub Releases + Hugging Face Mirrors)
+- **สรุปสิ่งที่ดำเนินการใน v3.70:**
+  1. **ระบบดักจับ URL และแทนที่ด้วยเสียงอ่าน "แนบลิงก์" (Comprehensive URL TTS Replacement)**:
+     - ปรับปรุงฟังก์ชัน `getSpeakableChatText` ใน `src/index.html` ให้ตรวจจับลิงก์เว็บทุกรูปแบบ ทั้ง `http://`, `https://`, `www.` และลิงก์ย่อต่าง ๆ (`youtu.be`, `vt.tiktok.com`, `bit.ly` ฯลฯ)
+     - แปลงลิงก์เหล่านั้นเป็นคำว่า `"แนบลิงก์"` สำหรับส่งเข้าคิวเสียง TTS โดยอัตโนมัติ
+     - ยุบคำอ่านกรณีมีคนแปะลิงก์หลาย ๆ ลิงก์ติดกัน ให้เหลือเสียงอ่านกระชับ ไม่พูดย้ำซ้ำซ้อน
+     - ช่วยแก้ปัญหาข้อความยาวเกินกำหนด (TTS Char Limit) โดยอัตโนมัติ เพราะลิงก์ยาวหลายร้อยตัวอักษรจะถูกย่อเหลือคำว่า "แนบลิงก์" ทำให้ข้อความสามารถอ่านเสียงได้อย่างถูกต้อง
+  2. **คงการแสดงผลลิงก์เต็มรูปแบบในหน้าต่างแชทสด (UI Link Preservation)**:
+     - บนหน้าต่างแชทสด แถวแชทยังคงแสดงผล URL ตัวเต็มตามที่ผู้ชมพิมพ์มาจริง เพื่อให้สตรีมเมอร์และแอดมินมองเห็นลิงก์ได้ชัดเจน
+  3. **ซิงค์ระบบคลังคำอ่านฝั่งเซิร์ฟเวอร์ (Backend Dictionary Sync)**:
+     - อัปเดต `dictionary_manager.py` ให้รองรับรูปแบบ URL ครอบคลุมลิงก์ย่อและโดเมนยอดนิยม
+     - เพิ่ม `{URL}: "แนบลิงก์"` เข้าสู่ `replace_words.json` เป็นค่าเริ่มต้น เพื่อให้ครอบคลุมทั้งเสียงอ่าน Edge-TTS และ WebSpeech Fallback
+  4. **การทดสอบความปลอดภัยและการปล่อยอัปเดต**:
+     - ขยายชุดทดสอบอัตโนมัติ `tests/verify_event_chat_and_tts.py` เป็น 12 กรณีทดสอบ ผ่านฉลุย 100%
+     - ผ่าน Smoke Test Gate ตรวจสอบความสมบูรณ์ของระบบ
+     - บิลด์และแพ็กเกจ `patch-v3.70-lite.zip` และ `patch-v3.70-full.zip` พร้อมไลบรารี TikTok ครบถ้วน
+     - อัปโหลดขึ้น Hugging Face และปล่อย GitHub Release `v3.70`
+
+---
+
 ## [2026-11-11 21:30] – Antigravity (Release v3.69: Message-Only TTS, Compact Gray Live Activity Stream, Join Suppression & Event List Sync)
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)

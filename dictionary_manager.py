@@ -23,6 +23,8 @@ class DictionaryManager:
                 with open(DICT_FILE, 'r', encoding='utf-8') as f:
                     data = json.load(f)
                     self._words = data.get('replace_words', {})
+                    if '{URL}' not in self._words:
+                        self._words['{URL}'] = 'แนบลิงก์'
                     self._last_sync_time = data.get('last_sync', 'บันทึกในเครื่อง')
                     print(f"[DICT] Loaded {len(self._words)} words from local {DICT_FILE}")
             except Exception as e:
@@ -153,7 +155,7 @@ class DictionaryManager:
                 continue
             repeat = re.fullmatch(r'(.+?)\{(\d+)\+\}', key)
             if key == '{URL}':
-                expression, priority = r'https?://\S+|www\.\S+', 0
+                expression, priority = r'(?:https?://|www\.)\S+|[a-zA-Z0-9-]+\.(?:com|org|net|co|in\.th|th|gg|me|tv|be|ly|link|app|io)(?:/\S*)?', 0
             elif repeat:
                 count = int(repeat.group(2))
                 if count > 1000: continue
@@ -165,7 +167,12 @@ class DictionaryManager:
             patterns.append((priority, -len(replacement), expression, replacement))
         for _, _, expression, replacement in sorted(patterns, key=lambda item: (item[0], item[1])):
             text = re.sub(expression, lambda match: replacement, text, flags=re.IGNORECASE | re.UNICODE)
-        return text
+        url_rep = self._words.get('{URL}', 'แนบลิงก์')
+        if isinstance(url_rep, dict):
+            url_rep = url_rep.get('read', 'แนบลิงก์')
+        if isinstance(url_rep, str) and url_rep:
+            text = re.sub(r'(?:' + re.escape(url_rep) + r'\s*)+', url_rep + ' ', text)
+        return text.strip()
 
 # Global singleton
 dict_manager = DictionaryManager()
