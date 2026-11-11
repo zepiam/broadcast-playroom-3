@@ -1002,7 +1002,7 @@ function spawnSliderMessage(msg) {
                             Math.ceil((Number(config.slider_font_size) || 24) * 1.6));
   const H = chatEl.clientHeight || window.innerHeight;
   // ★ โซนแสดงผล: top (30%) / middle (40%) / bottom (30%) / full (ทั้งจอ)
-  const zone = config.slider_zone || 'middle';
+  const zone = (config.slider_zone === 'all' ? 'full' : config.slider_zone) || 'middle';  // Composer Editor ใช้ค่า 'all' = เต็มหน้าจอ
   let bandTop, bandBottom;
   const PAD = Math.ceil(laneH * 0.6);  // ★ ระยะห่างจากขอบบน/ล่าง (กันแชทติดขอบสุด)
   if (zone === 'top') {

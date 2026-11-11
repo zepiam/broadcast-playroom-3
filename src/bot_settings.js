@@ -12,9 +12,17 @@
  function form(id,open){const d=doc(),node=d.getElementById(id);if(node)node.hidden=!open;}
  window.addBotCommandPrompt=()=>{form('botCommandForm',true);doc().getElementById('botCommandName')?.focus();};
  window.closeBotCommandForm=()=>form('botCommandForm',false);
+ const COMMAND_PRESETS={
+  discord:{command:'!discord',response:'เข้าร่วมคอมมูนิตี้ Discord ของเราได้ที่ #URL',cooldown:30},
+  social:{command:'!social',response:'ติดตามช่องทางอื่นของเราได้ที่ #URL',cooldown:30},
+  donate:{command:'!donate',response:'สนับสนุนสตรีมเมอร์ได้ที่ #URL ขอบคุณมากครับ/ค่ะ',cooldown:60},
+  rules:{command:'!rules',response:'กติกาห้องแชท: สุภาพ ไม่สแปม ไม่โฆษณา',cooldown:30},
+  lurk:{command:'!lurk',response:'ขอบคุณที่แวะมาเงียบๆ นะ สนุกกับสตรีมได้เลย',cooldown:10}
+ };
+ window.applyBotCommandPreset=id=>{const preset=COMMAND_PRESETS[id],d=doc();if(!preset)return;form('botCommandForm',true);const name=d.getElementById('botCommandName'),response=d.getElementById('botCommandResponse'),cooldown=d.getElementById('botCommandCooldown');if(name)name.value=preset.command;if(response){response.value=preset.response;response.focus();const at=preset.response.indexOf('#URL');if(at>=0&&response.setSelectionRange)response.setSelectionRange(at,at+4);}if(cooldown)cooldown.value=preset.cooldown;};
  window.openBotTimerForm=()=>{form('botTimerForm',true);doc().getElementById('botTimerText')?.focus();};
  window.closeBotTimerForm=()=>form('botTimerForm',false);
- window.saveBotCommand=()=>{const d=doc(),name=d.getElementById('botCommandName'),response=d.getElementById('botCommandResponse'),cooldown=d.getElementById('botCommandCooldown');const command=name.value.trim(),reply=response.value.trim();if(!/^![^\s]+$/.test(command)||!reply){showToast('กรุณากรอกคำสั่งที่ขึ้นต้นด้วย ! และข้อความตอบกลับ');return;}if(state.commands.some(item=>item.command.toLowerCase()===command.toLowerCase())){showToast('มีคำสั่งนี้อยู่แล้ว');return;}state.commands.push({id:crypto.randomUUID(),command,response:reply,cooldown:Math.max(1,Number(cooldown.value)||5)});save();render();name.value='';response.value='';form('botCommandForm',false);showToast('บันทึกคำสั่งแล้ว');};
+ window.saveBotCommand=()=>{const d=doc(),name=d.getElementById('botCommandName'),response=d.getElementById('botCommandResponse'),cooldown=d.getElementById('botCommandCooldown');const command=name.value.trim(),reply=response.value.trim();if(!/^![^\s]+$/.test(command)||!reply){showToast('กรุณากรอกคำสั่งที่ขึ้นต้นด้วย ! และข้อความตอบกลับ');return;}if(/#URL/i.test(reply)){showToast('ยังไม่ได้แทนที่ #URL ในข้อความตอบกลับ — ใส่ลิงก์จริงก่อนบันทึก');return;}if(state.commands.some(item=>item.command.toLowerCase()===command.toLowerCase())){showToast('มีคำสั่งนี้อยู่แล้ว');return;}state.commands.push({id:crypto.randomUUID(),command,response:reply,cooldown:Math.max(1,Number(cooldown.value)||5)});save();render();name.value='';response.value='';form('botCommandForm',false);showToast('บันทึกคำสั่งแล้ว');};
  window.saveBotTimer=()=>{const d=doc(),text=d.getElementById('botTimerText'),interval=d.getElementById('botTimerInterval'),min=d.getElementById('botTimerMinChat');if(!text.value.trim()){showToast('กรุณากรอกข้อความ Timer');return;}state.timers.push({id:crypto.randomUUID(),text:text.value.trim(),minutes:Math.max(1,Number(interval.value)||1),minChat:Math.max(0,Number(min.value)||0)});save();render();text.value='';form('botTimerForm',false);showToast('บันทึก Timer แล้ว');};
  async function updateAuth(){
   try{const response=await fetch('/api/chatbot/auth/status');if(!response.ok)return;const statuses=await response.json(),d=doc();window._botAuthStatuses=statuses;let ready=0;

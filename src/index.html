@@ -20,6 +20,11 @@
 html:not([data-gw="1"]) #btnRailGw,
 html:not([data-gw="1"]) #win-giveaway,
 html:not([data-gw="1"]) .btn-add-widget[data-widget-type="giveaway"]{display:none !important;}
+/* Offline TTS ผูกกับสลับลับเดียวกัน (20 คลิกที่จุดเขียว): ยังไม่ปลดล็อก = ซ่อนปุ่มเลือกโมเดล Online/Offline ทั้งหมด ใช้ Online TTS */
+html:not([data-gw="1"]) .voice-setting-card:has(#secEngineAzure),
+html:not([data-gw="1"]) .voice-pill-group:has(#winEngineAzure),
+html:not([data-gw="1"]) #secWayuVoiceContainer,
+html:not([data-gw="1"]) #winWayuVoiceContainer{display:none !important;}
 /* donation goal widget: hidden for now (existing widgets and saved data are untouched) */
 .btn-add-widget[data-widget-type="donate_goal"]{display:none !important;}
 /* Replie, ASK and Randomizer are built-in overlay layers now (always on top, no widget needed) */
@@ -27,7 +32,7 @@ html:not([data-gw="1"]) .btn-add-widget[data-widget-type="giveaway"]{display:non
 #composerCanvasStage .composer-widget.type-ask,#composerCanvasStage .composer-widget.type-replie,#composerCanvasStage .composer-widget.type-randomizer{display:none !important;}
 #statusDotLocal{position:relative;flex:none;}
 #statusDotLocal::after{content:"";position:absolute;inset:-9px;}
-#statusDotLocal.gw-tick{transform:scale(1.7);transition:transform .12s ease;}
+#statusDotLocal,#statusDotLocal:active{transition:none !important;animation:none !important;}
 .lci{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-0.2em;flex-shrink:0;pointer-events:none}
 #btnChatSystem,#btnChatCodeMute,#btnEventsToggle{color:#9ca3af}
 #btnChatSystem.toggled-on{color:#facc15}
@@ -43,7 +48,8 @@ html:not([data-gw="1"]) .btn-add-widget[data-widget-type="giveaway"]{display:non
   function paint(){if(isOn())root.setAttribute('data-gw','1');else root.removeAttribute('data-gw');}
   function afterChange(on){
     if(!on){try{if(window._isGwCodeBroadcasting&&typeof window.toggleGwLiveCode==='function')window.toggleGwLiveCode();}catch(e){}
-            try{if(typeof closeToolWindow==='function')closeToolWindow('giveaway');}catch(e){}}
+            try{if(typeof closeToolWindow==='function')closeToolWindow('giveaway');}catch(e){}
+            try{if(window._currentTtsEngine==='wayu'&&typeof window.selectTtsEngine==='function')window.selectTtsEngine('azure');}catch(e){}}
   }
   function set(on){try{localStorage.setItem(KEY,on?'1':'0');}catch(e){mem=!!on;}paint();afterChange(on);}
   paint();
@@ -58,10 +64,10 @@ html:not([data-gw="1"]) .btn-add-widget[data-widget-type="giveaway"]{display:non
     if(typeof o==='function'&&!o.__gwGate){var g=function(name){if(name==='giveaway'&&!isOn())return;return o.apply(this,arguments);};g.__gwGate=1;window.openToolWindow=g;}
     var n=0,label=document.getElementById('localServerStatus'),live=document.getElementById('gwGateLive'),restore=0,orig='';
     dot.addEventListener('click',function(){
-      n++;dot.classList.add('gw-tick');setTimeout(function(){dot.classList.remove('gw-tick');},120);
+      n++;
       if(n<NEED)return;
       n=0;var on=!isOn();set(on);
-      var msg=on?'เปิดโหมด Giveaway แล้ว':'ซ่อนโหมด Giveaway แล้ว';
+      var msg=on?'เปิดฟีเจอร์ที่ถูกซ่อนไว้แล้ว':'ปิดฟีเจอร์ที่ถูกซ่อนไว้แล้ว';
       if(live)live.textContent=msg;
       if(label){if(!restore)orig=label.textContent;label.textContent=msg;clearTimeout(restore);restore=setTimeout(function(){label.textContent=orig;restore=0;},2500);}
     });
@@ -601,7 +607,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.70</title>
+  <title>Broadcast Playroom v3.71</title>
 
 
 
@@ -1021,6 +1027,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
     if (targetName === 'voice') targetName = 'voice-settings';
     
     document.addEventListener('DOMContentLoaded', () => {
+    window.syncTtsEngineUi?.();
       document.body.classList.add('popout-standalone-window');
       const win = document.getElementById('win-' + targetName);
       if (win) {
@@ -1281,7 +1288,7 @@ SOFTWARE.
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-icon-64.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.onerror=null;this.src='./assets/bp-full-icon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.70</span>
+      <span class="desktop-titlebar-tag">v3.71</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -1431,7 +1438,7 @@ SOFTWARE.
 
 
 
-      <div class="topbar-divider"></div>
+      <div class="topbar-divider" id="topbarServerDivider"></div>
 
 
 
@@ -10506,6 +10513,29 @@ SOFTWARE.
 
 
 
+          <!-- Card 0: โมเดลเสียงสังเคราะห์ (TTS Engine) -->
+          <div class="voice-setting-card" style="margin-bottom: 12px;">
+            <div class="voice-setting-card-title">
+              <span>🤖 โมเดลเสียงสังเคราะห์ (TTS Engine)</span>
+              <span style="font-size: 12px; color: #38bdf8; font-weight: 600;" id="secTtsEngineStatusLabel">🌐 Azure</span>
+            </div>
+            <div>
+              <div style="font-size: 12px; color: var(--dc-text-muted); margin-bottom: 8px;">เลือกเครื่องมือสร้างเสียงอ่าน:</div>
+              <div class="voice-pill-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button type="button" class="voice-pill-btn active" id="secEngineAzure" onclick="selectTtsEngine('azure')" style="padding: 10px 14px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <span>🌐 Online TTS</span>
+                </button>
+                <button type="button" class="voice-pill-btn" id="secEngineWayu" onclick="selectTtsEngine('wayu')" style="padding: 10px 14px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                  <span>⚡ Offline TTS</span>
+                </button>
+              </div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 8px; line-height: 1.4;">
+                • <strong>Online TTS</strong>: เสียง Premwadee / Niwat ผ่าน Microsoft Edge-TTS Cloud<br>
+                • <strong>Offline TTS</strong>: โมเดลภาษาไทยในเครื่อง 82M ออฟไลน์ 100% ตอบสนองไว ไม่ต้องต่อเน็ต
+              </div>
+            </div>
+          </div>
+
           <!-- Card 1: เพศเสียงอ่าน -->
 
 
@@ -10570,7 +10600,35 @@ SOFTWARE.
 
 
 
-            </div>
+            
+              <!-- Wayu Voice Selector (เฉพาะตอนเลือกโมเดล Wayu) -->
+              <div id="secWayuVoiceContainer" style="display: none; margin-top: 10px; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                  <span style="font-size: 12px; font-weight: 600; color: #f2f3f5;">🎙️ โทนเสียงโมเดล Wayu (หญิง 8 / ชาย 4)</span>
+                  <button type="button" class="btn-topbar-action" onclick="previewSelectedWayuVoice()" style="height: 26px; padding: 0 10px; font-size: 11px; background: #5865f2; color: #fff; border: none; border-radius: 4px; cursor: pointer;" title="กดเพื่อทดลองฟังเสียงที่เลือก">
+                    🔊 ทดลองฟังเสียงนี้
+                  </button>
+                </div>
+                <select id="secWayuVoiceSelect" class="voice-select-box" style="margin: 0; width: 100%; height: 34px; background: #1e1f22; color: #f2f3f5; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 0 8px; font-size: 12.5px;" onchange="onWayuVoiceChanged(this.value)">
+                  <optgroup label="👩 เสียงผู้หญิง (8 เสียง)">
+                    <option value="f_young_clear">👩 สาวเสียงใส ชัดเจน</option>
+                    <option value="f_young_bright">✨ สาวสดใส ร่าเริง</option>
+                    <option value="f_young_warm">🌸 สาวเสียงอบอุ่น นุ่มนวล</option>
+                    <option value="f_teen_bright">👧 สาววัยรุ่น ขี้เล่น</option>
+                    <option value="f_mid_clear">💼 หญิงวัยทำงาน ชัดเจน สุภาพ</option>
+                    <option value="f_mid_warm">☕ หญิงวัยทำงาน เสียงอบอุ่น</option>
+                    <option value="f_elderly_low">👵 หญิงสูงวัย เสียงทุ้ม มีภูมิฐาน</option>
+                    <option value="f_elderly_soft">🧓 หญิงสูงวัย เสียงนุ่มนวล ใจดี</option>
+                  </optgroup>
+                  <optgroup label="👨 เสียงผู้ชาย (4 เสียง)">
+                    <option value="m_young_clear">👨 หนุ่มเสียงใส สุภาพ</option>
+                    <option value="m_teen_bright">👦 หนุ่มวัยรุ่น สดใส กระตือรือร้น</option>
+                    <option value="m_mid_warm">☕ หนุ่มวัยทำงาน อบอุ่น สุภาพ</option>
+                    <option value="m_elderly_deep">👴 ชายสูงวัย เสียงทุ้มลึก น่าเชื่อถือ</option>
+                  </optgroup>
+                </select>
+              </div>
+</div>
 
 
 
@@ -13438,15 +13496,25 @@ SOFTWARE.
 
 
 
+            <div id="botCommandPresets" style="margin-bottom:8px;">
+              <div style="font-size:11.5px; color:#949ba4; margin-bottom:5px;">ตัวอย่างสำเร็จรูป (กดเพื่อเติมลงฟอร์ม แล้วแก้ข้อความ / แทน <b style="color:#fbbf24;">#URL</b> ด้วยลิงก์จริง):</div>
+              <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                <button type="button" class="btn-topbar-action" style="height:24px; padding:0 10px; font-size:11.5px;" onclick="applyBotCommandPreset('discord')">!discord</button>
+                <button type="button" class="btn-topbar-action" style="height:24px; padding:0 10px; font-size:11.5px;" onclick="applyBotCommandPreset('social')">!social</button>
+                <button type="button" class="btn-topbar-action" style="height:24px; padding:0 10px; font-size:11.5px;" onclick="applyBotCommandPreset('donate')">!donate</button>
+                <button type="button" class="btn-topbar-action" style="height:24px; padding:0 10px; font-size:11.5px;" onclick="applyBotCommandPreset('rules')">!rules</button>
+                <button type="button" class="btn-topbar-action" style="height:24px; padding:0 10px; font-size:11.5px;" onclick="applyBotCommandPreset('lurk')">!lurk</button>
+              </div>
+            </div>
             <div id="botCommandForm" hidden class="bot-editor-form">
 
 
 
-              <label>คำสั่ง <input id="botCommandName" type="text" class="modal-input" placeholder="!discord"></label>
+              <label>คำสั่ง <input id="botCommandName" type="text" class="modal-input" placeholder="เช่น !discord (ขึ้นต้นด้วย ! ไม่มีเว้นวรรค)"></label>
 
 
 
-              <label>ข้อความตอบกลับ <input id="botCommandResponse" type="text" class="modal-input" placeholder="ข้อความตอบกลับ"></label>
+              <label>ข้อความตอบกลับ <input id="botCommandResponse" type="text" class="modal-input" placeholder="เช่น เข้าร่วม Discord ได้ที่ https://discord.gg/xxxx"></label>
 
 
 
@@ -14162,7 +14230,7 @@ SOFTWARE.
 
 
 
-              <div class="settings-section-title"><svg class="lci" aria-hidden="true"><use href="#lci-book-bookmark"/></svg> คลังคำแทนที่การอ่าน (Dictionary & Word Replacement)</div>
+              <div class="settings-section-title"><svg class="lci" aria-hidden="true"><use href="#lci-book-bookmark"/></svg> คลังคำแทนที่การอ่าน (Dictionary &amp; Word Replacement)<span class="dict-azure-only-badge">รองรับเฉพาะ Online TTS เท่านั้น</span></div>
 
 
 
@@ -14843,7 +14911,7 @@ SOFTWARE.
 
 
 
-                <th>Replie</th><th>Overlay</th><th>TTS</th><th>ทุกส่วน</th>
+                <th>TTS</th><th>Overlay</th><th>Replie</th><th>ทุกส่วน</th>
 
 
 
@@ -18120,24 +18188,24 @@ SOFTWARE.
           <input type="checkbox" id="chkProfBlockAll" onchange="onProfBlockAllToggled(this.checked)" style="width:18px; height:18px; accent-color:#ef4444; cursor:pointer;">
         </label>
 
-        <!-- 3 Columns Sub-Grid -->
+        <!-- 3 Columns Sub-Grid: TTS, Overlay, Replie -->
         <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:8px;">
-          <!-- Col 1: OBS Overlay -->
-          <label style="display:flex; flex-direction:column; justify-content:space-between; background:#1e1f22; border:1px solid rgba(255,255,255,0.08); padding:9px 11px; border-radius:8px; cursor:pointer; gap:6px;">
-            <div style="display:flex; align-items:center; justify-content:space-between;">
-              <span style="font-size:12px; font-weight:700; color:#f2f3f5;">🖥️ ซ่อนจาก OBS</span>
-              <input type="checkbox" id="chkProfBlockOverlay" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;">
-            </div>
-            <div style="font-size:10.5px; color:var(--dc-text-muted); line-height:1.35;">ไม่แสดงข้อความของคนดูคนนี้บนหน้าจอถ่ายทอดสด</div>
-          </label>
-
-          <!-- Col 2: Mute TTS -->
+          <!-- Col 1: Mute TTS -->
           <label style="display:flex; flex-direction:column; justify-content:space-between; background:#1e1f22; border:1px solid rgba(255,255,255,0.08); padding:9px 11px; border-radius:8px; cursor:pointer; gap:6px;">
             <div style="display:flex; align-items:center; justify-content:space-between;">
               <span style="font-size:12px; font-weight:700; color:#f2f3f5;">🔇 ปิดเสียง TTS</span>
               <input type="checkbox" id="chkProfBlockTts" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;">
             </div>
             <div style="font-size:10.5px; color:var(--dc-text-muted); line-height:1.35;">ไม่อ่านออกเสียงข้อความของคนดูคนนี้</div>
+          </label>
+
+          <!-- Col 2: OBS Overlay -->
+          <label style="display:flex; flex-direction:column; justify-content:space-between; background:#1e1f22; border:1px solid rgba(255,255,255,0.08); padding:9px 11px; border-radius:8px; cursor:pointer; gap:6px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <span style="font-size:12px; font-weight:700; color:#f2f3f5;">🖥️ ซ่อนจาก OBS</span>
+              <input type="checkbox" id="chkProfBlockOverlay" style="width:16px; height:16px; accent-color:#3b82f6; cursor:pointer;">
+            </div>
+            <div style="font-size:10.5px; color:var(--dc-text-muted); line-height:1.35;">ไม่แสดงข้อความของคนดูคนนี้บนหน้าจอถ่ายทอดสด</div>
           </label>
 
           <!-- Col 3: Block Replie -->
@@ -18862,47 +18930,24 @@ SOFTWARE.
 
 
 
-      <!-- Card 1: เพศเสียงอ่าน -->
-
-
-
-
-
-
-
-      <div class="voice-setting-card">
-
-
-
-
-
-
-
+      <!-- Card 0: โมเดลเสียงสังเคราะห์ (TTS Engine) -->
+      <div class="voice-setting-card" style="margin-bottom: 12px;">
         <div class="voice-setting-card-title">
-
-
-
-
-
-
-
-          <span>🗣️ เพศเสียงอ่าน</span>
-
-
-
-
-
-
-
+          <span>🤖 โมเดลและเพศเสียงอ่าน</span>
+          <span style="display:none;" id="winTtsEngineStatusLabel">🌐 Azure</span>
           <span style="font-size: 12px; color: #38bdf8; font-weight: 600;" id="winVoiceStatusLabel">✅ หญิง</span>
-
-
-
-
-
-
-
         </div>
+        <div>
+          <div class="voice-pill-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button type="button" class="voice-pill-btn active" id="winEngineAzure" onclick="selectTtsEngine('azure')" style="padding: 10px 14px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>🌐 Online TTS</span>
+            </button>
+            <button type="button" class="voice-pill-btn" id="winEngineWayu" onclick="selectTtsEngine('wayu')" style="padding: 10px 14px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>⚡ Offline TTS</span>
+            </button>
+          </div>
+        </div>
+        <div style="height:0;"></div>
 
 
 
@@ -18919,14 +18964,6 @@ SOFTWARE.
 
 
         <div>
-
-
-
-
-
-
-
-          <div style="font-size: 12px; color: var(--dc-text-muted); margin-bottom: 8px;">เลือกเพศเสียงอ่าน:</div>
 
 
 
@@ -18998,7 +19035,34 @@ SOFTWARE.
 
 
 
-        </div>
+        
+          <!-- Wayu Voice Selector (เฉพาะตอนเลือกโมเดล Wayu) -->
+          <div id="winWayuVoiceContainer" style="display: none; margin-top: 8px; padding: 8px 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <select id="winWayuVoiceSelect" class="voice-select-box" style="margin: 0; flex: 1; min-width: 0; width: auto; height: 34px; background: #1e1f22; color: #f2f3f5; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 0 8px; font-size: 12.5px;" onchange="onWayuVoiceChanged(this.value)">
+              <optgroup label="👩 เสียงผู้หญิง (8 เสียง)">
+                <option value="f_young_clear">👩 สาวเสียงใส ชัดเจน</option>
+                <option value="f_young_bright">✨ สาวสดใส ร่าเริง</option>
+                <option value="f_young_warm">🌸 สาวเสียงอบอุ่น นุ่มนวล</option>
+                <option value="f_teen_bright">👧 สาววัยรุ่น ขี้เล่น</option>
+                <option value="f_mid_clear">💼 หญิงวัยทำงาน ชัดเจน สุภาพ</option>
+                <option value="f_mid_warm">☕ หญิงวัยทำงาน เสียงอบอุ่น</option>
+                <option value="f_elderly_low">👵 หญิงสูงวัย เสียงทุ้ม มีภูมิฐาน</option>
+                <option value="f_elderly_soft">🧓 หญิงสูงวัย เสียงนุ่มนวล ใจดี</option>
+              </optgroup>
+              <optgroup label="👨 เสียงผู้ชาย (4 เสียง)">
+                <option value="m_young_clear">👨 หนุ่มเสียงใส สุภาพ</option>
+                <option value="m_teen_bright">👦 หนุ่มวัยรุ่น สดใส กระตือรือร้น</option>
+                <option value="m_mid_warm">☕ หนุ่มวัยทำงาน อบอุ่น สุภาพ</option>
+                <option value="m_elderly_deep">👴 ชายสูงวัย เสียงทุ้มลึก น่าเชื่อถือ</option>
+              </optgroup>
+            </select>
+            <button type="button" class="btn-topbar-action" onclick="previewSelectedWayuVoice()" style="height: 34px; white-space: nowrap; flex-shrink: 0; padding: 0 10px; font-size: 11px; background: #5865f2; color: #fff; border: none; border-radius: 4px; cursor: pointer;" title="กดเพื่อทดลองฟังเสียงที่เลือก">
+                🔊 ทดลองฟังเสียงนี้
+              </button>
+          </div>
+          </div>
+</div>
 
 
 
@@ -36745,7 +36809,12 @@ try {
 
 
 
-        const url = `/api/tts?text=${encodeURIComponent(text)}&gender=${gender}&rate=${encodeURIComponent(rate)}&pitch=${encodeURIComponent(pitch)}`;
+        // ผ่านขั้นตอนเดียวกับแชทจริง: ตัดคำสั่งบอท/โค้ดลับ/แปลงลิงก์เป็น 'แนบลิงก์' (ส่วนคำศัพท์ Replace ทำที่เซิร์ฟเวอร์ใน /api/tts เหมือนกัน)
+        // ถ้าตัวกรองตัดจนว่าง (เช่นพิมพ์คำสั่ง/โค้ดลับล้วน) ให้อ่านข้อความที่พิมพ์ตามเดิม — ช่องทดลองต้องอ่านได้ทุกข้อความ
+        let speakText = '';
+        try { speakText = getSpeakableChatText(text); } catch (_) { speakText = ''; }
+        if (!speakText) speakText = text;
+        const url = `/api/tts?text=${encodeURIComponent(speakText)}&gender=${gender}&rate=${encodeURIComponent(rate)}&pitch=${encodeURIComponent(pitch)}&model=${encodeURIComponent(window._currentTtsEngine || 'azure')}&voice=${encodeURIComponent(window._currentWayuVoice || '')}`;
 
 
 
@@ -43842,6 +43911,195 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     let _currentVoiceGender = localStorage.getItem('bp3_voice_gender') || 'female';
+    let _currentTtsEngine = localStorage.getItem('bp3_tts_engine') || 'azure';
+    // Offline TTS ใช้ได้เมื่อปลดล็อกแล้วเท่านั้น (ยังไม่ปลดล็อก/ซ่อนอยู่ → บังคับกลับเป็น Online TTS)
+    window.isOfflineTtsUnlocked = () => { try { return !!(window.BP3GiveawayGate && window.BP3GiveawayGate.isEnabled()); } catch (_) { return false; } };
+    if (_currentTtsEngine === 'wayu' && !window.isOfflineTtsUnlocked()) {
+      _currentTtsEngine = 'azure';
+      try { localStorage.setItem('bp3_tts_engine', 'azure'); } catch (_) {}
+    }
+    window._currentTtsEngine = _currentTtsEngine;
+
+    function selectTtsEngine(engine) {
+      _currentTtsEngine = (engine === 'wayu' && window.isOfflineTtsUnlocked()) ? 'wayu' : 'azure';
+      window._currentTtsEngine = _currentTtsEngine;
+      try { localStorage.setItem('bp3_tts_engine', _currentTtsEngine); } catch (_) {}
+      syncTtsEngineUi();
+      selectVoiceGender(null, _currentVoiceGender || 'female', false);
+      const label = _currentTtsEngine === 'wayu' ? '⚡ Wayu (Offline ในเครื่อง)' : '🌐 Azure (ออนไลน์)';
+      if (typeof showToast === 'function') showToast('สลับโมเดลเสียง: ' + label);
+    }
+    window.selectTtsEngine = selectTtsEngine;
+
+    function syncTtsEngineUi() {
+      const isWayu = window._currentTtsEngine === 'wayu';
+      const secAzure = document.getElementById('secEngineAzure');
+      const secWayu = document.getElementById('secEngineWayu');
+      const winAzure = document.getElementById('winEngineAzure');
+      const winWayu = document.getElementById('winEngineWayu');
+      if (secAzure) secAzure.classList.toggle('active', !isWayu);
+      if (secWayu) secWayu.classList.toggle('active', isWayu);
+      if (winAzure) winAzure.classList.toggle('active', !isWayu);
+      if (winWayu) winWayu.classList.toggle('active', isWayu);
+
+      const secLbl = document.getElementById('secTtsEngineStatusLabel');
+      const winLbl = document.getElementById('winTtsEngineStatusLabel');
+      const text = isWayu ? '⚡ Offline TTS' : '🌐 Online TTS';
+      if (secLbl) secLbl.textContent = text;
+      if (winLbl) winLbl.textContent = text;
+      // Wayu ทำงาน Offline ในเครื่อง: ซ่อน Server Status ที่ตรวจการเชื่อมต่อ (Azure เท่านั้นที่ต้องใช้)
+      const srvWrap = document.getElementById('topbarServerStatus');
+      if (srvWrap) srvWrap.style.display = isWayu ? 'none' : '';
+      const srvDiv = document.getElementById('topbarServerDivider');
+      if (srvDiv) srvDiv.style.display = isWayu ? 'none' : '';
+      if (!isWayu && window._ttsStatusWasHidden && typeof recheckAzureConnection === 'function') {
+        setTimeout(() => { try { recheckAzureConnection(); } catch (_) {} }, 0);
+      }
+      window._ttsStatusWasHidden = isWayu;
+      if (isWayu && typeof warmUpWayuModel === 'function') setTimeout(() => { try { warmUpWayuModel(); } catch (_) {} }, 0);
+      // Wayu ไม่รองรับการปรับ Pitch (มีแค่ speed) → ซ่อนสไลเดอร์ Pitch ทั้งหน้า Setting และหน้าต่างเสียง
+      document.documentElement.classList.toggle('tts-engine-wayu', isWayu);
+      if (typeof updateWayuContainers === 'function') updateWayuContainers();
+    }
+    window.syncTtsEngineUi = syncTtsEngineUi;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(syncTtsEngineUi, 0));
+    } else {
+      setTimeout(syncTtsEngineUi, 0);
+    }
+    // ซิงก์ข้ามหน้าต่าง: เปลี่ยนโมเดล/เพศ/เสียง Wayu จากหน้าต่าง Settings/Voice (popout) แล้วหน้าแรกอัปเดตทันที
+    window.addEventListener('storage', (e) => {
+      try {
+        if (e.key === 'bp3_tts_engine') {
+          const eng = (e.newValue === 'wayu' && window.isOfflineTtsUnlocked()) ? 'wayu' : 'azure';
+          if (eng !== _currentTtsEngine) {
+            _currentTtsEngine = eng;
+            window._currentTtsEngine = eng;
+            syncTtsEngineUi();
+          }
+        } else if (e.key === 'bp3_wayu_voice' && e.newValue) {
+          _currentWayuVoice = e.newValue;
+          window._currentWayuVoice = e.newValue;
+          if (typeof updateWayuContainers === 'function') updateWayuContainers();
+        } else if (e.key === 'bp3_voice_gender' && e.newValue && e.newValue !== _currentVoiceGender) {
+          selectVoiceGender(null, e.newValue === 'male' ? 'male' : 'female', false);
+        }
+      } catch (_) {}
+    });
+    let _currentWayuVoice = localStorage.getItem('bp3_wayu_voice') || (_currentVoiceGender === 'male' ? 'm_young_clear' : 'f_young_clear');
+    window._currentWayuVoice = _currentWayuVoice;
+
+    function onWayuVoiceChanged(voice) {
+      if (!voice) return;
+      _currentWayuVoice = voice;
+      window._currentWayuVoice = voice;
+      try { localStorage.setItem('bp3_wayu_voice', voice); } catch (_) {}
+
+      // Sync select boxes
+      const secSel = document.getElementById('secWayuVoiceSelect');
+      const winSel = document.getElementById('winWayuVoiceSelect');
+      if (secSel && secSel.value !== voice) secSel.value = voice;
+      if (winSel && winSel.value !== voice) winSel.value = voice;
+
+      // Automatically sync gender button if needed
+      const isFemaleVoice = voice.startsWith('f_');
+      const targetGender = isFemaleVoice ? 'female' : 'male';
+      if (_currentVoiceGender !== targetGender) {
+        selectVoiceGender(null, targetGender, false);
+      } else {
+        syncTtsEngineUi();
+      }
+      if (typeof showToast === 'function') {
+        showToast('เลือกเสียง Wayu: ' + voice);
+      }
+    }
+    window.onWayuVoiceChanged = onWayuVoiceChanged;
+
+    let _wayuPreviewAudio = null;
+    // ค่า Speed / Pitch / Volume จากหน้า Setting สำหรับปุ่มทดลองฟังทุกปุ่ม (สูตรเดียวกับ playVoiceTest)
+    function getTtsProsodyForPreview() {
+      const speedVal = parseInt(document.getElementById('winSliderSpeed')?.value || document.getElementById('secSliderSpeed')?.value || '0', 10) || 0;
+      const pitchVal = parseInt(document.getElementById('winSliderPitch')?.value || document.getElementById('secSliderPitch')?.value || '0', 10) || 0;
+      const volVal = Number(document.getElementById('winSliderVol')?.value || document.getElementById('secSliderVol')?.value || 80);
+      const rate = (speedVal >= 0 ? '+' : '') + speedVal + '%';
+      const pitch = (pitchVal >= 0 ? '+' : '') + pitchVal + 'Hz';
+      return { rate, pitch, query: '&rate=' + encodeURIComponent(rate) + '&pitch=' + encodeURIComponent(pitch), volume: Math.max(0, Math.min(1, volVal / 100)) };
+    }
+    window.getTtsProsodyForPreview = getTtsProsodyForPreview;
+    // โหลดโมเดล Wayu ล่วงหน้า (เซิร์ฟเวอร์โหลดแบบ lazy ตอนเรียกครั้งแรก ซึ่งอาจนานหลายสิบวินาที) และแจ้งสถานะ/เวลาที่ใช้
+    let _wayuWarmState = 'idle'; // idle | loading | ready
+    async function warmUpWayuModel() {
+      if (_wayuWarmState !== 'idle') return;
+      if (!document.getElementById('serverStatusDot')) return; // หน้าแรกเท่านั้น (popout ไม่ต้องทำ)
+      _wayuWarmState = 'loading';
+      const t0 = performance.now();
+      if (typeof showToast === 'function') showToast('⚡ กำลังโหลดโมเดล Wayu... (ครั้งแรกอาจใช้เวลาครู่หนึ่ง ระหว่างนี้เสียง Wayu อาจยังไม่ออก)');
+      try {
+        const voice = window._currentWayuVoice || 'f_young_clear';
+        const res = await fetch(`/api/tts?preview=1&text=${encodeURIComponent('ทดสอบ')}&model=wayu&voice=${encodeURIComponent(voice)}&gender=${encodeURIComponent(window._currentVoiceGender || 'female')}`, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        await res.arrayBuffer();
+        _wayuWarmState = 'ready';
+        if (typeof showToast === 'function') showToast('✅ โมเดล Wayu พร้อมใช้งานแล้ว (ใช้เวลา ' + ((performance.now() - t0) / 1000).toFixed(1) + ' วินาที)');
+      } catch (err) {
+        _wayuWarmState = 'idle';
+        if (typeof showToast === 'function') showToast('⚠️ โหลดโมเดล Wayu ไม่สำเร็จ: ' + ((err && err.message) || 'ไม่ทราบสาเหตุ'));
+      }
+    }
+    window.warmUpWayuModel = warmUpWayuModel;
+    function previewSelectedWayuVoice() {
+      const voice = window._currentWayuVoice || (_currentVoiceGender === 'male' ? 'm_young_clear' : 'f_young_clear');
+      const isFemale = voice.startsWith('f_');
+      const sampleText = isFemale ? 'สวัสดีค่ะ นี่คือเสียงตัวอย่างของ Wayu ค่ะ' : 'สวัสดีครับ นี่คือเสียงตัวอย่างของ Wayu ครับ';
+      if (_wayuPreviewAudio) {
+        try { _wayuPreviewAudio.pause(); } catch (_) {}
+        _wayuPreviewAudio = null;
+      }
+      const url = `/api/tts?preview=1&text=${encodeURIComponent(sampleText)}&model=wayu&voice=${encodeURIComponent(voice)}&gender=${isFemale ? 'female' : 'male'}${getTtsProsodyForPreview().query}`;
+      const audio = new Audio(url);
+      audio.volume = getTtsProsodyForPreview().volume;
+      _wayuPreviewAudio = audio;
+      audio.onerror = () => { if (typeof showToast === 'function') showToast('ไม่สามารถเล่นเสียง Wayu ได้'); };
+      audio.play().catch(() => {});
+    }
+    window.previewSelectedWayuVoice = previewSelectedWayuVoice;
+
+    function updateWayuContainers() {
+      const isWayu = window._currentTtsEngine === 'wayu';
+      const secCont = document.getElementById('secWayuVoiceContainer');
+      const winCont = document.getElementById('winWayuVoiceContainer');
+      if (secCont) secCont.style.display = isWayu ? 'block' : 'none';
+      if (winCont) winCont.style.display = isWayu ? 'block' : 'none';
+
+      const gender = (window._currentVoiceGender === 'male' || _currentVoiceGender === 'male') ? 'male' : 'female';
+      let voice = window._currentWayuVoice || (gender === 'male' ? 'm_young_clear' : 'f_young_clear');
+      // ให้ dropdown โชว์เฉพาะเสียงของเพศที่เลือก (ไม่ปนสองเพศ)
+      if (voice.startsWith(gender === 'male' ? 'f_' : 'm_')) {
+        voice = gender === 'male' ? 'm_young_clear' : 'f_young_clear';
+        _currentWayuVoice = voice;
+        window._currentWayuVoice = voice;
+        try { localStorage.setItem('bp3_wayu_voice', voice); } catch (_) {}
+      }
+      ['secWayuVoiceSelect', 'winWayuVoiceSelect'].forEach((id) => {
+        const sel = document.getElementById(id);
+        if (!sel) return;
+        if (!sel._wayuGroups) {
+          const gs = [...sel.querySelectorAll('optgroup')];
+          sel._wayuGroups = { female: gs[0], male: gs[1] };
+        }
+        const grp = sel._wayuGroups[gender];
+        if (grp && !(sel.children.length === 1 && sel.firstElementChild === grp)) sel.replaceChildren(grp);
+        sel.value = voice;
+      });
+    }
+    // กรองรายการเสียง Wayu ตามเพศที่บันทึกไว้ ตั้งแต่เปิดโปรแกรม
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(updateWayuContainers, 0));
+    } else {
+      setTimeout(updateWayuContainers, 0);
+    }
+
+
 
 
 
@@ -43865,7 +44123,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-    function selectVoiceGender(triggerEl, gender) {
+    function selectVoiceGender(triggerEl, gender, notify = true) {
 
 
 
@@ -44125,7 +44383,24 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      if (statusLabel) statusLabel.textContent = `✅ ${voiceName}`;
+      const engineTag = _currentTtsEngine === 'wayu' ? '⚡ Wayu' : '🌐 Azure';
+      if (_currentTtsEngine === 'wayu') {
+        const currentIsFemale = (_currentWayuVoice || '').startsWith('f_');
+        if (isFemale && !currentIsFemale) {
+          _currentWayuVoice = 'f_young_clear';
+          window._currentWayuVoice = _currentWayuVoice;
+          try { localStorage.setItem('bp3_wayu_voice', _currentWayuVoice); } catch (_) {}
+        } else if (!isFemale && currentIsFemale) {
+          _currentWayuVoice = 'm_young_clear';
+          window._currentWayuVoice = _currentWayuVoice;
+          try { localStorage.setItem('bp3_wayu_voice', _currentWayuVoice); } catch (_) {}
+        }
+        if (typeof updateWayuContainers === 'function') updateWayuContainers();
+      }
+
+      if (statusLabel) statusLabel.textContent = `✅ ${engineTag}: ${voiceName}`;
+      const secStatusLabel = document.getElementById('secVoiceStatusLabel');
+      if (secStatusLabel) secStatusLabel.textContent = `✅ ${engineTag}: ${voiceName}`;
 
 
 
@@ -44149,7 +44424,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      showToast(isFemale ? '👩 สลับเสียงอ่าน: หญิง' : '👨 สลับเสียงอ่าน: ชาย');
+      if (notify) showToast(isFemale ? `👩 สลับเสียงอ่าน: ${engineTag} (หญิง)` : `👨 สลับเสียงอ่าน: ${engineTag} (ชาย)`);
 
 
 
@@ -52375,6 +52650,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
       if(_ttsHealthChecking)return;
+      if(window._currentTtsEngine==='wayu')return; // Wayu = Offline ไม่ต้องตรวจการเชื่อมต่อ
 
 
 
@@ -52402,7 +52678,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        const response=await fetch('/api/tts?preview=1&text='+encodeURIComponent('ทดสอบเสียง'),{signal:controller.signal,cache:'no-store'});
+        const response=await fetch('/api/tts?preview=1&text='+encodeURIComponent('ทดสอบเสียง')+'&model='+encodeURIComponent(window._currentTtsEngine || 'azure'),{signal:controller.signal,cache:'no-store'});
 
 
 
@@ -52437,6 +52713,30 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     }
+    // สลับกลับมาใช้ Azure: เชื่อมต่อ Edge-TTS server ใหม่ (ลอง 2 รอบ) แล้วแจ้งผล เพื่อให้มั่นใจว่ากลับมาเชื่อมต่อสำเร็จ
+    async function recheckAzureConnection() {
+      try {
+        if (window._currentTtsEngine === 'wayu') return;
+        if (!document.getElementById('serverStatusDot')) return; // หน้าต่าง popout ไม่มีป้ายสถานะ ให้หน้าแรกทำเอง
+        let waited = 0;
+        while (_ttsHealthChecking && waited < 25000) { await new Promise(r => setTimeout(r, 250)); waited += 250; }
+        if (typeof showToast === 'function') showToast('กำลังเชื่อมต่อ Azure (Edge-TTS)...');
+        for (let attempt = 0; attempt < 2; attempt++) {
+          if (window._currentTtsEngine === 'wayu') return;
+          _ttsHasRetriedOnce = true;
+          await checkTtsServerHealth(true);
+          if (_ttsServerHealthState !== 'red') break;
+          if (attempt === 0) await new Promise(r => setTimeout(r, 1500));
+        }
+        if (window._currentTtsEngine === 'wayu') return;
+        if (typeof showToast === 'function') {
+          showToast(_ttsServerHealthState === 'red'
+            ? '⚠️ เชื่อมต่อ Azure ไม่สำเร็จ (คลิกป้าย Server Status เพื่อลองใหม่ หรือสลับไปใช้ Wayu)'
+            : '✅ เชื่อมต่อ Azure สำเร็จ');
+        }
+      } catch (_) {}
+    }
+    window.recheckAzureConnection = recheckAzureConnection;
 
 
 
@@ -60671,7 +60971,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      _audioTtsQueue.push({ sentence, gender: chosenGender, rate, pitch, platform: platformKey, author: cleanAuthor, messageId });
+      _audioTtsQueue.push({ sentence, gender: chosenGender, rate, pitch, platform: platformKey, author: cleanAuthor, messageId, model: window._currentTtsEngine || 'azure', wayuVoice: window._currentWayuVoice || '' });
 
 
 
@@ -60824,7 +61124,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      const url = item.kind==='secret' ? item.url : `/api/tts?text=${encodeURIComponent(item.sentence)}&gender=${item.gender}&rate=${encodeURIComponent(item.rate)}&pitch=${encodeURIComponent(item.pitch)}`;
+      const url = item.kind==='secret' ? item.url : `/api/tts?text=${encodeURIComponent(item.sentence)}&gender=${item.gender}&rate=${encodeURIComponent(item.rate)}&pitch=${encodeURIComponent(item.pitch)}&model=${encodeURIComponent(item.model || window._currentTtsEngine || 'azure')}&voice=${encodeURIComponent(item.wayuVoice || window._currentWayuVoice || '')}`;
 
 
 
@@ -61411,7 +61711,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        const url = `/api/tts?text=${encodeURIComponent(text)}&gender=${gender}&rate=${encodeURIComponent(rate)}&pitch=${encodeURIComponent(pitch)}`;
+        const url = `/api/tts?text=${encodeURIComponent(text)}&gender=${gender}&rate=${encodeURIComponent(rate)}&pitch=${encodeURIComponent(pitch)}&model=${encodeURIComponent(window._currentTtsEngine || 'azure')}&voice=${encodeURIComponent(window._currentWayuVoice || '')}`;
 
 
 
@@ -62160,31 +62460,37 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
     let dictionaryPreviewAudio = null;
+    // เล่นเสียงทดลองฟังคำ: ดึงเสียงจากเซิร์ฟเวอร์ก่อน (เห็นสถานะ/สาเหตุถ้าล้มเหลว) แล้วค่อยเล่น
+    async function playDictionaryPreview(text) {
+      text = String(text || '').trim();
+      if (!text) { showToast('กรุณากรอกคำที่ต้องการทดลองฟัง'); return; }
+      if (dictionaryPreviewAudio) { try { dictionaryPreviewAudio.pause(); } catch (_) {} dictionaryPreviewAudio = null; }
+      const engineName = window._currentTtsEngine === 'wayu' ? 'Wayu' : 'Azure (Edge-TTS)';
+      const pr = getTtsProsodyForPreview();
+      const url = `/api/tts?preview=1&text=${encodeURIComponent(text)}&gender=${encodeURIComponent(_currentVoiceGender || 'female')}&model=${encodeURIComponent(window._currentTtsEngine || 'azure')}&voice=${encodeURIComponent(window._currentWayuVoice || '')}${pr.query}`;
+      showToast('🔊 กำลังสร้างเสียง ' + engineName + '...');
+      try {
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const blob = await res.blob();
+        if (!blob.size) throw new Error('ได้ไฟล์เสียงว่าง');
+        const objUrl = URL.createObjectURL(blob);
+        const audio = new Audio(objUrl);
+        audio.volume = pr.volume;
+        audio.onended = () => { try { URL.revokeObjectURL(objUrl); } catch (_) {} };
+        dictionaryPreviewAudio = audio;
+        await audio.play();
+      } catch (err) {
+        showToast('⚠️ เล่นเสียง ' + engineName + ' ไม่สำเร็จ: ' + ((err && err.message) || 'ไม่ทราบสาเหตุ'));
+      }
+    }
     async function previewDictionaryWord(id) {
       const doc = getToolDocument('settings') || document;
-      const text = doc.getElementById(id)?.value.trim();
-      if(!text){showToast('กรุณากรอกคำที่ต้องการทดลองฟัง');return;}
-      if(dictionaryPreviewAudio){dictionaryPreviewAudio.pause();dictionaryPreviewAudio=null;}
-      const audio=new Audio(`/api/tts?preview=1&text=${encodeURIComponent(text)}&gender=${encodeURIComponent(_currentVoiceGender || 'female')}`);
-      dictionaryPreviewAudio=audio;audio.onerror=()=>showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');
-      try{await audio.play();}catch(_){showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');}
+      return playDictionaryPreview(doc.getElementById(id)?.value);
     }
-    window.previewDictionaryWord=previewDictionaryWord;
-
+    window.previewDictionaryWord = previewDictionaryWord;
     async function previewDictionaryDirect(text) {
-      if (!text) return;
-      if (dictionaryPreviewAudio) {
-        dictionaryPreviewAudio.pause();
-        dictionaryPreviewAudio = null;
-      }
-      const audio = new Audio(`/api/tts?preview=1&text=${encodeURIComponent(text)}&gender=${encodeURIComponent(_currentVoiceGender || 'female')}`);
-      dictionaryPreviewAudio = audio;
-      audio.onerror = () => showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');
-      try {
-        await audio.play();
-      } catch (_) {
-        showToast('ไม่สามารถเล่นเสียง Edge-TTS ได้');
-      }
+      return playDictionaryPreview(text);
     }
     window.previewDictionaryDirect = previewDictionaryDirect;
 
@@ -67640,7 +67946,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        <input type="checkbox" id="chkBlockOverlay" style="accent-color: #5865f2; width: 17px; height: 17px; margin-top: 2px;">
+        <input type="checkbox" id="chkBlockTts" style="accent-color: #5865f2; width: 17px; height: 17px; margin-top: 2px;">
 
 
 
@@ -67648,11 +67954,11 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          <div style="font-weight: 600; font-size: 13px; color: #e2e8f0;">👁️ ไม่แสดงผล (ซ่อนจาก OBS Overlay)</div>
+          <div style="font-weight: 600; font-size: 13px; color: #e2e8f0;">🔇 ไม่อ่าน TTS (ปิดเสียงอ่าน)</div>
 
 
 
-          <div style="font-size: 11.5px; color: #94a3b8; line-height: 1.4;">ซ่อนข้อความของผู้ใช้นี้ ไม่ให้ขึ้นบนหน้าจอถ่ายทอดสด</div>
+          <div style="font-size: 11.5px; color: #94a3b8; line-height: 1.4;">ข้ามการอ่านออกเสียงข้อความของผู้ใช้นี้ทั้งหมด</div>
 
 
 
@@ -67672,7 +67978,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        <input type="checkbox" id="chkBlockTts" style="accent-color: #5865f2; width: 17px; height: 17px; margin-top: 2px;">
+        <input type="checkbox" id="chkBlockOverlay" style="accent-color: #5865f2; width: 17px; height: 17px; margin-top: 2px;">
 
 
 
@@ -67680,11 +67986,11 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-          <div style="font-weight: 600; font-size: 13px; color: #e2e8f0;">🔇 ไม่อ่าน TTS (ปิดเสียงอ่าน)</div>
+          <div style="font-weight: 600; font-size: 13px; color: #e2e8f0;">👁️ ไม่แสดงผล (ซ่อนจาก OBS Overlay)</div>
 
 
 
-          <div style="font-size: 11.5px; color: #94a3b8; line-height: 1.4;">ข้ามการอ่านออกเสียงข้อความของผู้ใช้นี้ทั้งหมด</div>
+          <div style="font-size: 11.5px; color: #94a3b8; line-height: 1.4;">ซ่อนข้อความของผู้ใช้นี้ ไม่ให้ขึ้นบนหน้าจอถ่ายทอดสด</div>
 
 
 

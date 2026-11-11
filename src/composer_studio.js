@@ -398,9 +398,9 @@
 
       const zone = w.slider_zone || 'middle';
       let minY = 0.05, maxY = 0.90;
-      if (zone === 'top') { minY = 0.05; maxY = 0.45; }
+      if (zone === 'top' || zone === 'top50') { minY = 0.05; maxY = 0.45; }
       else if (zone === 'middle') { minY = 0.25; maxY = 0.70; }
-      else if (zone === 'bottom') { minY = 0.55; maxY = 0.92; }
+      else if (zone === 'bottom' || zone === 'bottom50') { minY = 0.55; maxY = 0.92; }
 
       const topPct = (minY + Math.random() * (maxY - minY)) * 100;
       const fsz = w.fontSize || 24;
@@ -3886,10 +3886,10 @@
               <div class="cwc-row">
                 <span class="cwc-label">ตำแหน่งการแสดงผล:</span>
                 <select class="cwc-select" id="cwcSliderZone">
-                  <option value="all" ${(w.slider_zone || 'middle') === 'all' ? 'selected' : ''}>เต็มหน้าจอ</option>
-                  <option value="top" ${w.slider_zone === 'top' ? 'selected' : ''}>ครึ่งบน</option>
+                  <option value="full" ${['full','all'].includes(w.slider_zone || 'middle') ? 'selected' : ''}>เต็มหน้าจอ</option>
+                  <option value="top50" ${['top','top50'].includes(w.slider_zone) ? 'selected' : ''}>ครึ่งบน</option>
                   <option value="middle" ${(w.slider_zone || 'middle') === 'middle' ? 'selected' : ''}>ตรงกลาง</option>
-                  <option value="bottom" ${w.slider_zone === 'bottom' ? 'selected' : ''}>ครึ่งล่าง</option>
+                  <option value="bottom50" ${['bottom','bottom50'].includes(w.slider_zone) ? 'selected' : ''}>ครึ่งล่าง</option>
                 </select>
               </div>
               <div class="cwc-row">

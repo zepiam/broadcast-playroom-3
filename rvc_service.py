@@ -165,7 +165,8 @@ class RVCService:
         self.require_full();self.cancel_event.set();return self.status()
 
     def convert(self,audio_bytes):
-        if self.edition!='full':return audio_bytes,'audio/mpeg'
+        default_mime = 'audio/wav' if (audio_bytes and audio_bytes[:4] == b'RIFF') else 'audio/mpeg'
+        if self.edition!='full':return audio_bytes, default_mime
 
         # If RVC model is currently loading, wait for worker thread to complete instead of discarding RVC
         with self.lock:
@@ -176,11 +177,11 @@ class RVCService:
             worker.join(timeout=10.0)
 
         with self.lock:enabled=self.data['enabled'] and self.data['loaded']
-        if not enabled:return audio_bytes,'audio/mpeg'
+        if not enabled:return audio_bytes, default_mime
         import numpy as np
         import soundfile as sf
         with self.model_lock:
-            if not self.engine:return audio_bytes,'audio/mpeg'
+            if not self.engine:return audio_bytes, default_mime
             audio,sample_rate=sf.read(io.BytesIO(audio_bytes),dtype='float32')
             if getattr(audio,'ndim',1)>1:audio=audio.mean(axis=1)
             if self.engine_factory:

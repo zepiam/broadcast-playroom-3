@@ -11014,6 +11014,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
             volume = qs.get('volume', ['+0%'])[0]
+            model = qs.get('model', ['azure'])[0]
+            voice = qs.get('voice', [''])[0]
 
 
 
@@ -11045,7 +11047,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                processed_text = text if preview else dict_manager.apply_replace(text)
+                processed_text = text if (preview or str(model).lower() == 'wayu') else dict_manager.apply_replace(text)  # Wayu อ่านตรง ไม่ผ่านคำแทนที่ (ออกแบบไว้สำหรับ Azure)
 
 
 
@@ -11085,7 +11087,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                cache_key = (processed_text, gender, rate, pitch, volume, preview, rvc_enabled, rvc_model)
+                cache_key = (processed_text, gender, rate, pitch, volume, preview, rvc_enabled, rvc_model, model, voice)
 
 
 
@@ -11173,7 +11175,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                    audio_bytes = tts_service.generate_audio_bytes(processed_text, gender, rate, pitch, volume)
+                    audio_bytes = tts_service.generate_audio_bytes(processed_text, gender, rate, pitch, volume, model=model, voice=voice)
 
 
 
@@ -11197,7 +11199,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                            audio_mime = 'audio/mpeg'
+                            audio_mime = 'audio/wav' if audio_bytes[:4] == b'RIFF' else 'audio/mpeg'
 
 
 
@@ -11253,7 +11255,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                                audio_mime = 'audio/mpeg'
+                                audio_mime = 'audio/wav' if audio_bytes[:4] == b'RIFF' else 'audio/mpeg'
 
 
 

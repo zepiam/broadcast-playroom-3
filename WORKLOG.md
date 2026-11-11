@@ -1,3 +1,222 @@
+## [2026-11-12] – Antigravity (ปล่อย Release v3.71 สำเร็จ)
+
+- **สถานะ:** ตรวจสอบความถูกต้องของ build, smoke test gate ผ่าน 100% (10/10 Tool Windows, 0 runtime errors)
+- **การปล่อยอัปเดต:** รันสคริปต์ `publish_release_v371.py` สำเร็จ
+  - Rebuild frontend distribution (`npm run build` + `copy_dist_assets.py`) เรียบร้อย
+  - สร้างแพ็กเกจ `patch-v3.71-lite.zip` และ `patch-v3.71-full.zip`
+  - ตรวจสอบผ่านเกณฑ์ความปลอดภัยเข้มงวด Strict SHA-256 post-pack gate 100%
+  - อัปโหลด dual-mirror สมบูรณ์: Hugging Face (`men9ch/broadcast-playroom-3`) และ GitHub Release (`v3.71`)
+  - Commit และแท็ก git `v3.71` พร้อม push ขึ้น `origin master --tags`
+  - ล้างแคช jsDelivr CDN สำหรับ `version.json` ครบทั้งสอง URL
+
+## [2026-11-12] – Claude (Cowork) (เตรียม Release v3.71 — PENDING รอ Antigravity รัน)
+
+- **สถานะ:** เตรียมไฟล์พร้อมแล้ว **ยังไม่ได้ build / commit / push / release** — ให้ AI ตัวปล่อยรัน `release.bat` (เรียก `publish_release_v371.py`) ตามกฎ Strict Release Invariants ใน HANDOFF.md
+- **เลขเวอร์ชัน → 3.71:** `package.json`, `version.json` (version/latest_version/release_date/changelog/ชื่อไฟล์+URL patch, sha256 ว่าง — สคริปต์เขียนใหม่ตอน build), `updater.py` CURRENT_VERSION, `release.bat`, `src/index.html` (title + desktop-titlebar-tag), `publish_release_v371.py` (VERSION, release_date 2026-11-12, changelog, commit message) — สำรองก่อนแก้ใน `_to_delete/*.pre_371`
+- **ตรวจแล้ว:** py_compile publish_release_v371.py/updater.py ผ่าน, version.json parse ได้, changelog ใน publish script exec ได้ (1,592 ตัวอักษร); ไม่เหลือ '3.70' ในไฟล์ที่แก้
+- **รวมในรุ่นนี้:** งานตั้งแต่ v3.70 — Wayu offline engine ของ Antigravity (ซ่อนไว้หลังจุดเขียว 20 คลิก, ผู้ใช้ทั่วไปใช้ Online TTS) + งานของ Claude: หน้า/หน้าต่างตั้งค่าเสียงกะทัดรัด, ปุ่มทดลองฟังตาม Speed/Pitch/Volume, ปุ่มลำโพงหน้าคำแทนที่, ตรวจ Azure ใหม่ตอนสลับกลับ, Offline อ่านตรงไม่ผ่านคำแทนที่ + ป้ายหน้าคำแทนที่, Chatbot preset คำสั่ง, แก้ Danmaku โซน 'เต็มหน้าจอ', ลำดับคอลัมน์บล็อก, ข้อความ/ไม่มีอนิเมชั่นของจุดเขียวลับ
+- **ข้อควรระวังสำหรับคนรัน release:**
+  1. สคริปต์ patch ยัง **ไม่ bundle แพ็กเกจ Wayu** (`wayu_tts`, soundfile, scikit-learn ฯลฯ) ใน `_internal/` — ถ้าผู้ใช้ปลดล็อก Offline TTS ในเครื่องที่ไม่มีแพ็กเกจเหล่านี้ Wayu จะโหลดไม่ได้และระบบถอยไปใช้ Azure เอง; ถ้าต้องการให้ Offline ใช้ได้จริงใน production ต้องเพิ่มการ bundle (และโมเดลโหลดจาก Hugging Face ตอนใช้ครั้งแรก)
+  2. Wayu โมเดลใช้สัญญาอนุญาต CC-BY-NC-4.0 (ห้ามเชิงพาณิชย์) — เจ้าของโปรแกรมแจ้งว่าแจกฟรีและไม่มีรายได้เกี่ยวข้อง; ยังไม่มีหน้าเครดิตในโปรแกรม (ผู้ใช้จะหาที่วางเอง)
+  3. `git diff` จะโชว์ไฟล์ทั้งไฟล์เปลี่ยน (ไฟล์ในโฟลเดอร์เป็น CRLF, repo เป็น LF) — เนื้อหาจริงเปลี่ยนน้อยกว่ามาก (`git diff --ignore-cr-at-eol`)
+  4. ทุกอย่างที่ Claude แก้ทดสอบเฉพาะใน cloud harness/py_compile — ยังไม่ได้ทดสอบกับแอปจริง (Windows/Edge-TTS/Wayu/RVC); แนะนำรัน smoke_test_gate ก่อนปล่อย
+  5. `composer_layout.json` มีการแก้จากแอป — สคริปต์ release ตัดออกจาก commit อยู่แล้ว
+
+## [2026-11-12] – Claude (Cowork) (ปุ่มจุดเขียวลับ: ไม่มีอนิเมชั่น)
+
+- เอาอนิเมชั่นขยายจุด (`gw-tick`) ตอนคลิกออกทั้ง CSS และ JS; ตั้ง `#statusDotLocal` ไม่มี transition/animation; ยังนับ 20 คลิกเหมือนเดิม; สำรอง `_to_delete/index.html.pre_notick`; ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (ข้อความสลับฟีเจอร์ลับ)
+
+- ข้อความตอนคลิกจุดเขียวครบ 20 ครั้ง: 'เปิดฟีเจอร์ที่ถูกซ่อนไว้แล้ว' / 'ปิดฟีเจอร์ที่ถูกซ่อนไว้แล้ว' (แทน 'เปิด/ซ่อนโหมด Giveaway') ใน `src/index.html` บรรทัด ~70; สำรอง `_to_delete/index.html.pre_gatemsg`; ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (ซ่อน Offline TTS ไว้หลังปุ่มลับเดียวกับ Giveaway)
+
+- **พฤติกรรม:** ใช้กลไกเดิม `BP3GiveawayGate` (คลิกจุดเขียว `#statusDotLocal` 20 ครั้ง สลับ `data-gw`) — ยังไม่ปลดล็อก = ซ่อนการ์ดเลือกโมเดล Online/Offline ในหน้า Setting TTS + ปุ่มในหน้าต่างเสียง + กล่องเลือกเสียง Wayu; ใช้ Online TTS; ปลดล็อกแล้วแสดงตามเดิม. สลับพร้อม Giveaway (ผู้ใช้เลือกแบบนี้)
+- **ย้อนกลับอัตโนมัติ:** ตอนโหลดหน้า ถ้า `bp3_tts_engine=wayu` แต่ยังไม่ปลดล็อก → บังคับ azure; ตอนซ่อน (20 คลิกอีกรอบ/จากหน้าต่างอื่นผ่าน storage) ถ้าใช้ Wayu อยู่ → `selectTtsEngine('azure')`; `selectTtsEngine('wayu')` ถูกปฏิเสธเมื่อยังล็อก
+- **ทดสอบใน cloud harness (Playwright):** ล็อก/บันทึกไว้ wayu → azure, ปลดล็อก, เลือก wayu, ซ่อนซ้ำ → กลับ azure, 20 คลิกจริงที่จุดเขียวเปิดได้ — ยังไม่ได้ทดสอบในแอปจริง; สำรอง `_to_delete/index.html.pre_offlinegate`; ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (ถอด Kunato ออกทั้งหมด)
+
+- ผู้ใช้ทดลองแล้วโมเดลใช้ไม่ได้ (ขึ้นเสียงสำรองตลอด) จึงให้ลบ: คืน `tts_service.py`, `launch_dev.py`, `src/index.html` จากสำรอง `_to_delete/*.pre_kunato` (ไม่มีการแก้อื่นทับหลังจุดสำรอง) และย้าย `test_kunato_tts.py` ไป `_to_delete/test_kunato_tts.py.unused`
+- รายการ WORKLOG เรื่อง Kunato ก่อนหน้านี้ถือว่าถูกยกเลิก; ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (ทดลอง: เพิ่มโมเดลที่ 3 'Kunato' = kunato/wayu-kokoro-thai-v1 ออฟไลน์)
+
+- **ที่ทำ:** `tts_service.py` เพิ่ม `get_kunato_tts` / `synthesize_kunato` (ONNX ผ่านโค้ด `kokoro_thai` ที่มากับ repo, G2P = tltk; โหลดด้วย `snapshot_download` ครั้งแรก ~330MB; ตัดข้อความเป็นท่อน ≤110 ตัวอักษร; speed จาก rate, ไม่มี pitch); `generate_audio_bytes(model='kunato')` **ไม่ fallback ไป Azure** (เพื่อให้เห็นว่าใช้ได้จริงไหม); `launch_dev.py` /api/tts ข้ามคำแทนที่เมื่อ model=wayu|kunato
+- **UI `src/index.html`:** ปุ่มที่ 3 '🧪 Kunato' ทั้งหน้า Setting และหน้าต่างเสียง; helper `isOfflineTtsEngine` (wayu|kunato) ใช้กับซ่อน Server Status/Pitch/ตรวจ Azure/ป้ายหน้าคำแทนที่; ใช้ dropdown เสียงเดียวกับ Wayu (ชื่อ 12 เสียงเหมือนกัน); warm-up toast แยกตามโมเดล
+- **ทดสอบแล้ว:** py_compile, ตัดข้อความ, ฝั่ง UI ใน cloud harness (สลับ azure/wayu/kunato, request model=kunato) — **ยังไม่ได้รันโมเดลจริง** (cloud/VM เข้า Hugging Face โดยตรงไม่ได้). ผู้ใช้ต้องรัน `test_kunato_tts.py` บนเครื่อง Windows (ต้อง `pip install onnxruntime tltk` ฯลฯ)
+- **ความไม่แน่นอน:** layout ของ `onnx/voicepacks.npz` และ key ของ `styles.npz` ยังไม่ได้ตรวจ (โค้ดเดาตามชื่อ/ลำดับ และ log keys+shape ตอนโหลด); `kokoro_thai/__init__.py` อาจ import อะไรเพิ่ม; ถ้าไม่ดีให้เอาออก: คืนจาก `_to_delete/*.pre_kunato` (tts_service.py, launch_dev.py, index.html)
+- ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (ป้ายหน้าคำแทนที่)
+
+- ข้อความป้ายเปลี่ยนเป็น 'รองรับเฉพาะ Online TTS เท่านั้น' (`src/index.html`, สำรอง `_to_delete/index.html.pre_badgeonline`) ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (Chatbot: ปุ่ม Preset คำสั่ง + ตรวจ 'โพสต์สรุปผลโหวต ASK')
+
+- **Preset:** `src/index.html` (sec-chatbot) เพิ่มแถวปุ่ม !discord/!social/!donate/!rules/!lurk เหนือฟอร์มเพิ่มคำสั่ง กดแล้วเติมฟอร์ม + เลือกข้อความ `#URL` ไว้ให้แทน; placeholder ของช่องปรับให้เป็นตัวอย่าง; `src/bot_settings.js` เพิ่ม `applyBotCommandPreset` + กันบันทึกเมื่อข้อความยังมี `#URL` (สำรอง `_to_delete/index.html.pre_botpreset`, `bot_settings.js.pre_botpreset`)
+- **ตรวจ ASK post (อ่านโค้ดเท่านั้น ไม่ได้ทดสอบกับ Twitch จริง):** `endAskPoll()` (ทั้งหมดเวลาและปุ่มจบทันที) → `BP3BotPostAskResult` → `POST /api/chatbot/send` (launch_dev.py ~8355) → `client.send_message` ต้องเปิดบอท+Twitch+ติ๊กโพสต์ASK+บัญชีบอทพร้อม+มีผู้โหวต>0; รองรับเฉพาะ Twitch (Kick ซ่อน). จุดเสี่ยง: server ปฏิเสธข้อความที่มี \r\n — ถ้าคำถามโพลมีขึ้นบรรทัดใหม่จะส่งไม่สำเร็จ (ยังไม่แก้)
+- ยังไม่ได้ทดสอบ ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (ชื่อปุ่ม Online TTS / Offline TTS + เอาเครดิต Wayu ออกจากหน้าเกี่ยวกับ)
+
+- ปุ่ม/คำอธิบาย/ป้ายสถานะโมเดล: 'Azure (Online)'→'Online TTS', 'Wayu (Offline)'→'Offline TTS' (`src/index.html`)
+- ลบกล่องเครดิต Wayu ที่เพิ่งใส่ใน `#sec-about` (ผู้ใช้จะหาที่วางใหม่เอง) — สำรอง `_to_delete/index.html.pre_ttsnames`; ยังไม่ได้ทดสอบ ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (เครดิต Wayu ใน Settings > เกี่ยวกับโปรแกรม)
+
+- เพิ่มกล่องเครดิตโมเดล Wayu-Paxa-TTS-Edge (CC BY-NC 4.0 + ลิงก์ HF/GitHub) ล่างสุดของ `#sec-about` ใน `src/index.html` — สำรอง `_to_delete/index.html.pre_wayucredit`; ยังไม่ได้ทดสอบ ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (Danmaku ใน Composer: เลือก 'เต็มหน้าจอ' แต่แชทกระจุกกลางจอ)
+
+- **สาเหตุ (จากการอ่านโค้ด ยังไม่ได้ทดสอบจริง):** Composer Editor (`composer_studio.js` `cwcSliderZone`) เก็บ `slider_zone='all'` แต่ตัว render `legacy_chat.html` รู้จักแค่ `'full'` → ค่า 'all' ตกไป else = โซนกลางจอ 30–70%
+- **แก้:** `legacy_chat.html` แปลง `'all'`→`'full'` ก่อนคำนวณโซน (สำรอง `_to_delete/legacy_chat.html.pre_zoneall`)
+- **เพิ่ม:** `composer_studio.js` ตัวเลือก 'ตำแหน่งการแสดงผล' เปลี่ยนค่าเป็น full / top50 / middle / bottom50 (ค่าเก่า all/top/bottom แสดงเป็นตัวเลือกที่ตรงกัน) เพื่อให้ตัว render เลือกเลนสุ่มทั่วทั้งโซนครึ่งบน/ล่าง (สำรอง `_to_delete/composer_studio.js.pre_zones`)
+- **ข้อสังเกต:** `live_overlay.js` สุ่ม top 0–80% โดยไม่ดู slider_zone; Composer 'top'/'bottom' (ป้าย 'ครึ่งบน/ครึ่งล่าง') ในตัว render เป็น 30% — ยังไม่ได้แก้ ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (ป้าย 'รองรับเฉพาะ Azure TTS' หน้าคำแทนที่)
+
+- `src/index.html` หัวข้อ 'คลังคำแทนที่การอ่าน' เพิ่ม `<span class="dict-azure-only-badge">`; `src/styles.css` แสดงเฉพาะเมื่อ `html.tts-engine-wayu` (ขวาบนของหัวข้อ)
+- สำรอง `_to_delete/index.html.pre_dictbadge`, `styles.css.pre_dictbadge` — ยังไม่ได้ทดสอบ ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (Wayu อ่านตรง ข้ามคำแทนที่)
+
+- **ที่มา:** ผู้ใช้แจ้งว่าคำแทนที่ออกแบบมาสำหรับ Azure พอ Wayu อ่านแล้วเพี้ยน
+- **แก้:** `launch_dev.py` /api/tts (~บรรทัด 11050) ข้าม `dict_manager.apply_replace` เมื่อ `model=wayu` (เดิมข้ามเฉพาะ preview) — Azure ยังผ่านคำแทนที่เหมือนเดิม; คีย์แคชมี model อยู่แล้ว
+- **สำรอง:** `_to_delete/launch_dev.py.pre_wayunoreplace` — ทดสอบเฉพาะ py_compile ยังไม่ได้รันกับแอปจริง ไม่ได้ build/release
+
+## [2026-11-12] – Claude (Cowork) (สลับโมเดลแล้วเสียงเงียบ ~30 วินาที — เพิ่มการโหลด Wayu ล่วงหน้า + แจ้งเวลา)
+
+- **อาการจากผู้ใช้ (dev):** แชทจากเว็บสตรีมอ่านเสียงปกติ แต่หลังกดสลับโมเดลจะไม่มีเสียงราว 30 วินาที; ปุ่ม 'ทดสอบฟัง' หน้าคำแทนที่ยังไม่ทำงานใน dev (ยังไม่ทราบข้อความ toast ที่ขึ้น)
+- **สมมติฐาน (ยังไม่ยืนยัน):** `get_wayu_tts()` โหลดโมเดลแบบ lazy ตอนเรียกครั้งแรก (ถือ lock ตลอดการโหลด; อาจเช็ก Hugging Face ตอน `from_pretrained`) → คำขอ Wayu ครั้งแรกค้างนาน; ฝั่ง client ไม่มีโค้ดที่ล้างคิวเสียงตอนสลับโมเดล และเซิร์ฟเวอร์เป็น ThreadingHTTPServer
+- `src/index.html`: เพิ่ม `warmUpWayuModel()` — เรียกเมื่อเลือก Wayu (และตอนเปิดโปรแกรมถ้าบันทึกไว้เป็น Wayu) ส่งคำขอ `preview=1&model=wayu` เบาๆ ครั้งเดียวต่อรอบการใช้งาน แล้ว toast 'กำลังโหลด…' และ '✅ พร้อมใช้งาน (ใช้เวลา N วินาที)' ใช้วัดว่าโหลดจริงช้าแค่ไหน
+- ทดสอบ harness cloud ด้วย mock เท่านั้น; ยังไม่ได้ลองกับโมเดลจริง; backup `_to_delete/index.html.pre_wayuwarm`
+- **ต้องการข้อมูลจากเครื่องจริง:** เวลาที่ toast รายงาน, บรรทัด log `Initializing/loaded Wayu…` ในคอนโซล launch_dev.py, ข้อความ toast ตอนกดลำโพงหน้าคำแทนที่
+
+---
+
+## [2026-11-12] – Claude (Cowork) (ปุ่มลำโพงในหน้า คำแทนที่ แจ้งสถานะ/สาเหตุเมื่อเล่นไม่ได้)
+
+- อาการ: กดลำโพงแล้วเงียบไม่มีอะไรเกิดขึ้น — **ยังหาสาเหตุจริงไม่เจอ** (reproduce บน harness ไม่ได้ เพราะไม่มี backend/Edge-TTS/Wayu); โค้ดฝั่งปุ่มทำงานปกติเมื่อเซิร์ฟเวอร์ตอบเสียง
+- `src/index.html`: `previewDictionaryWord/Direct` ใช้ `playDictionaryPreview()` ใหม่ — แสดง toast 'กำลังสร้างเสียง <Wayu|Azure>…', ดึงเสียงด้วย fetch (เช็ก HTTP status/ไฟล์ว่าง) ก่อนเล่น, ถ้าล้มเหลวขึ้น '⚠️ เล่นเสียง … ไม่สำเร็จ: HTTP 500' ฯลฯ, ใช้ Speed/Pitch/Volume จาก Setting; ยังเป็น preview=1 (ข้าม Replace)
+- ถ้าขึ้น HTTP 500 = เซิร์ฟเวอร์สร้างเสียงไม่ได้ (Azure ต่อ Microsoft ไม่ได้ หรือ Wayu โหลด/สังเคราะห์ไม่ผ่าน) → ดูบรรทัด `TTS ...` ในคอนโซลของ launch_dev.py
+- backup: `_to_delete/index.html.pre_dictplay`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (สลับกลับ Azure → เชื่อมต่อ Edge-TTS ใหม่และแจ้งผล)
+
+- `src/index.html`: เพิ่ม `recheckAzureConnection()` (ถัดจาก `checkTtsServerHealth`) เรียกจาก `syncTtsEngineUi()` ตอนสลับ Wayu→Azure: รอเช็กเดิมจบ, ลองเชื่อมต่อสูงสุด 2 รอบ (ห่าง 1.5 วินาที, โหมด interactive), แล้ว toast '✅ เชื่อมต่อ Azure สำเร็จ' หรือ '⚠️ เชื่อมต่อ Azure ไม่สำเร็จ…'; ข้ามถ้าเป็นหน้าต่าง popout (ไม่มีป้ายสถานะ)
+- ทดสอบ harness cloud ด้วยการ mock `/api/tts` (500 / 200) ยังไม่ได้ลองกับ Edge-TTS จริง; backup `_to_delete/index.html.pre_recheck`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (เลือก Wayu → ซ่อนสไลเดอร์ Pitch)
+
+- เหตุผล: เอกสารโมเดล (HF model card + GitHub wayu-tts-inference) ระบุว่า Wayu ควบคุมได้แค่ `speed` ไม่มี pitch/style
+- `src/index.html` `syncTtsEngineUi()` ใส่คลาส `tts-engine-wayu` ที่ `<html>`; `src/styles.css` ท้ายไฟล์: `html.tts-engine-wayu [data-feature="pitch"]{display:none!important}` (ใช้ทั้ง Settings และหน้าต่างเสียง; ซิงก์ข้าม popout ผ่าน storage listener เดิม)
+- ทดสอบ harness cloud ด้วย element จำลอง (Lite ไม่มีสไลเดอร์ Pitch) ยังไม่ได้ลองรุ่น Full จริง; backup `_to_delete/index.html.pre_hidepitch`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (ปุ่มทดลองฟังอ้างอิง Speed/Pitch/Volume จากหน้า Setting)
+
+- `src/index.html`: เพิ่ม `getTtsProsodyForPreview()` (สูตรเดียวกับ `playVoiceTest`) ใช้กับปุ่ม 'ทดลองฟังเสียงนี้' ของ Wayu (`previewSelectedWayuVoice`: ส่ง `&rate=&pitch=` + ตั้ง `audio.volume`) และปุ่มพรีวิวคำในคลังคำแทนที่ (`previewDictionaryWord/Direct`); ยังเป็น `preview=1` (ข้าม Replace) เหมือนเดิม
+- **ข้อจำกัดที่พบ:** `tts_service.synthesize_wayu()` รับแค่ `rate` (→ speed ของโมเดล) ยังไม่ใช้ `pitch` → Wayu ยังไม่ตอบสนอง Pitch (Azure ใช้ได้) ทั้งแชทจริงและทดลองฟัง ยังไม่ได้แก้ฝั่งเซิร์ฟเวอร์
+- ทดสอบ harness cloud เท่านั้น; backup `_to_delete/index.html.pre_prosody`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (ซ่อนเส้นคั่น | ข้าง Server Status ด้วย)
+
+- `src/index.html`: ใส่ id `topbarServerDivider` ให้เส้นคั่นถัดจาก Server Status และซ่อน/แสดงพร้อมกันใน `syncTtsEngineUi()` เมื่อเลือก Wayu/Azure; ทดสอบ harness cloud เท่านั้น; backup `_to_delete/index.html.pre_divider`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (ซิงก์โมเดล/เพศ/เสียง Wayu จาก popout → หน้าแรกทันที)
+
+- **สถานะ:** ทดสอบ harness cloud เท่านั้น ไม่ได้ build/release
+- สาเหตุ: เปลี่ยนโมเดลในหน้าต่าง Settings/Voice (popout) ค่าถูกเซฟลง localStorage แต่หน้าแรกไม่รู้ → ไม่ซ่อน/แสดง Server Status จนรีสตาร์ต
+- `src/index.html`: เพิ่ม `storage` listener (ถัดจาก init ของ `syncTtsEngineUi`) ฟัง `bp3_tts_engine`, `bp3_wayu_voice`, `bp3_voice_gender`
+- backup: `_to_delete/index.html.pre_enginesync`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (เลือก Wayu Offline → ซ่อน Server Status บนซ้าย)
+
+- **สถานะ:** ทดสอบ harness cloud เท่านั้น ไม่ได้ build/release
+- `src/index.html`: `syncTtsEngineUi()` ซ่อน `#topbarServerStatus` เมื่อเลือก Wayu (และเรียกตอนเปิดโปรแกรมด้วย), `checkTtsServerHealth()` ข้ามเมื่อเป็น Wayu, สลับกลับ Azure แล้วแสดงและตรวจสถานะใหม่ทันที
+- backup: `_to_delete/index.html.pre_hidestatus`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (ปุ่ม 'ทดลองอ่าน' ผ่าน pipeline เดียวกับแชทจริง)
+
+- **สถานะ:** ทดสอบ harness cloud เท่านั้น ไม่ได้ build/release
+- `playVoiceTest()` ใน `src/index.html`: ก่อนเรียก `/api/tts` ส่งข้อความผ่าน `getSpeakableChatText()` (ตัดคำสั่งบอท/โค้ดลับ, ลิงก์→'แนบลิงก์') เหมือนแชทจริง; ถ้าผลว่างจะอ่านข้อความที่พิมพ์ตามเดิม (ช่องทดลองต้องอ่านได้ทุกข้อความ). ส่วนคำศัพท์ Replace ทำที่เซิร์ฟเวอร์ใน `/api/tts` อยู่แล้ว (ไม่ใช่ preview=1) ใช้ได้ทั้ง Azure/Wayu
+- ปุ่มพรีวิวคำในหน้าคลังคำแทนที่ + ปุ่มทดลองฟังเสียง Wayu ยังใช้ `preview=1` (ข้าม Replace) โดยตั้งใจ
+- backup: `_to_delete/index.html.pre_testpipeline`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (TTS: แก้ข้อความปุ่ม/ชื่อเสียง Wayu + ทำหน้าต่างตั้งค่าเสียงอ่านให้กระชับ)
+
+- **สถานะ:** ทดสอบบน harness cloud เท่านั้น ยังไม่ได้เปิดโปรแกรมจริง/Windows ไม่ได้ build/release
+- ปุ่มโมเดล: `Azure (Online)` / `Wayu (Offline)` (ทั้ง Settings > เสียงอ่าน และหน้าต่าง Voice)
+- dropdown โทนเสียง Wayu: ตัดรหัส `f_xxx`/`m_xxx` และ `(ค่าเริ่มต้น)` หน้า/หลังชื่อ เหลือแค่คำอธิบายเสียง (value เดิมไม่เปลี่ยน)
+- หน้าต่างตั้งค่าเสียงอ่าน (`#win-voice-settings`, ปุ่มหน้าแรก): รวมการ์ด 'โมเดล' + 'เพศเสียง' เป็นการ์ดเดียว, ตัดข้อความ caption, dropdown เสียง Wayu + ปุ่มทดลองฟังอยู่แถวเดียวกัน, ลด padding/gap (CSS ต่อท้าย `src/styles.css` ขอบเขต `#win-voice-settings` เท่านั้น); หน้า Settings > เสียงอ่าน (`#sec-tts`) ยังไม่ได้ทำให้กระชับ
+- backup: `_to_delete/index.html.pre_ttscompact`
+
+---
+
+## [2026-11-12] – Claude (Cowork) (Wayu: dropdown โทนเสียงแสดงเฉพาะเพศที่เลือก)
+
+- **สถานะ:** แก้แล้ว ทดสอบบน harness cloud เท่านั้น ยังไม่ได้เปิดโปรแกรมจริง/Windows และไม่ได้ build/release
+- `src/index.html` → `updateWayuContainers()`: dropdown `secWayuVoiceSelect` / `winWayuVoiceSelect` แสดงเฉพาะ optgroup ของเพศที่เลือก (หญิง 8 / ชาย 4) ไม่ปนกัน, ถ้าเสียงที่จำไว้ไม่ตรงเพศจะรีเซ็ตเป็น `f_young_clear`/`m_young_clear`, และเรียกกรองตอนเปิดโปรแกรมด้วย
+- backup: `_to_delete/index.html.pre_wayugender`
+
+---
+
+## [2026-11-12 04:30] – Antigravity (Wayu-Paxa-TTS-Edge Offline Integration & Blacklist UI Reordering)
+
+- **ผู้ดำเนินการ:** Antigravity (Google DeepMind)
+- **สถานะ:** พัฒนาและทดสอบผ่านฉลุย 100% (Smoke Test Gate & 12 Voices Verified) รอดำเนินการปล่อย Release หรือให้ AI ตัวต่อไปสานต่อ
+- **รายละเอียดสิ่งที่ดำเนินการ:**
+  1. **ตรวจสอบระบบ Blacklist และสลับลำดับคอลัมน์ (TTS -> Overlay -> Replie)**:
+     - ตรวจสอบยืนยันระบบบล็อกทั้ง 3 ด้าน: บล็อก TTS (ปิดเสียง/ตัดคิวเสียง), บล็อก Overlay (แนบ hide_from_overlay ซ่อนจาก OBS), และบล็อก Replie (ปิดการตอบสนองคำสั่งบอท) ใช้งานได้จริง 100%
+     - ยืนยันพฤติกรรม "บล็อกทั้งหมด" (`rule.all`): ดักสกัดข้อความตั้งแต่จังหวะแรกใน `injectIncomingChat` ทำให้ไม่ปรากฏในแชทสดเลยเด็ดขาด
+     - สลับลำดับคอลัมน์และตัวเลือกให้เป็น **TTS -> Overlay -> Replie** ใน 3 ตำแหน่ง:
+       1) ตารางรายชื่อคนดูที่ถูกบล็อกใน Settings (`#blockedViewerList`) ใน `src/index.html` และ `src/user_controls.js`
+       2) หน้าต่างป๊อปอัปบล็อกด่วนในแชทสด (`#modal-block-user`)
+       3) หน้าต่างโปรไฟล์คนดู (`paneProfTab4` ใน User Manager / Author Profile)
+  2. **สำรวจและวิจัย Paxa Labs & Wayu Research (TTS AI สัญชาติไทย)**:
+     - สำรวจเว็บไซต์ paxalabs.com และโมเดล open-weights `wayu-ai/wayu-paxa-tts-edge` บน Hugging Face
+     - พบว่า Paxa Labs ให้บริการ Cloud API แบบคิดเงินตามตัวอักษร มีฟีเจอร์ Directed Delivery/Emotion Tags เช่น `[whispering]`, `[happy]`, `[laughs]`
+     - ในขณะที่โมเดล `Wayu-Paxa-TTS-Edge` (ขนาด 82M พารามิเตอร์) เป็นโมเดลเปิดฟรี รันบน CPU แบบ Offline 100% ได้โดยไม่ต้องต่อเน็ต และรองรับเสียงไทย-อังกฤษ
+  3. **เชื่อมต่อโมเดล Wayu-Paxa-TTS-Edge เข้าสู่โปรแกรม (Offline TTS Engine)**:
+     - ติดตั้งแพ็กเกจ `wayu-tts-inference` และปรับความเข้ากันได้ของ `scikit-learn` / `numpy`
+     - พัฒนาโมดูล Lazy Loader ใน `tts_service.py` พร้อม Thread Lock เพื่อความปลอดภัยในการเรียกใช้งาน
+     - เพิ่มฟังก์ชัน `synthesize_wayu` ถอดรหัสเสียงสังเคราะห์เป็นไฟล์ 24kHz WAV ความเร็วสูง (~0.2 – 0.4 วินาทีต่อประโยคบน CPU)
+     - รองรับการปรับความเร็วเสียง (Rate / Speed) โดยแปลงจากสเกลเปอร์เซ็นต์เป็นตัวคูณ speed ของโมเดล Wayu
+     - ปรับปรุง `launch_dev.py` ที่เอนด์พอยต์ `/api/tts` ให้รับพารามิเตอร์ `model` (azure / wayu) และ `voice` พร้อมปรับแคชคีย์แยกกัน และคืนค่า MIME type `audio/wav` อย่างถูกต้อง
+     - ตรวจสอบการทำงานร่วมกับระบบแปลงเสียง AI RVC ใน `rvc_service.py` พบว่าสามารถรับคลื่นเสียงของ Wayu ไปแปลงเป็นเสียงคาแรคเตอร์ได้สมบูรณ์แบบ 100%
+  4. **เพิ่ม UI ให้เลือกสลับโมเดลเสียงและโทนเสียงทั้ง 12 เสียง (หญิง 8 / ชาย 4)**:
+     - เพิ่มการ์ด **"🤖 โมเดลเสียงสังเคราะห์ (TTS Engine)"** เหนือช่องเลือกเพศ ทั้งในหน้า Settings (`#sec-tts`) และ Voice Tool Window
+     - รองรับการเลือกเพศ **"👩 หญิง"** และ **"👨 ชาย"** ได้อย่างสมบูรณ์ทั้งสองโมเดล
+     - เพิ่มกล่องตัวเลือก **"🎙️ โทนเสียงโมเดล Wayu"** พร้อมปุ่ม **"🔊 ทดลองฟังเสียงนี้"** ที่จะแสดงเฉพาะเมื่อเลือกโมเดล Wayu
+     - รองรับรายชื่อโทนเสียงครบทั้ง 12 เสียง:
+       - เสียงผู้หญิง (8 เสียง): `f_young_clear`, `f_young_bright`, `f_young_warm`, `f_teen_bright`, `f_mid_clear`, `f_mid_warm`, `f_elderly_low`, `f_elderly_soft`
+       - เสียงผู้ชาย (4 เสียง): `m_young_clear`, `m_teen_bright`, `m_mid_warm`, `m_elderly_deep`
+     - ซิงค์ระบบเลือกเพศอัตโนมัติ: เลือกเสียง `f_*` จะสลับปุ่มเป็นหญิง, เลือกเสียง `m_*` จะสลับปุ่มเป็นชาย
+     - ซิงค์พารามิเตอร์ `&model=` และ `&voice=` ในทุกจุดที่มีการเรียก `/api/tts` (รวมถึงแชทสด, พรีวิวการตั้งค่า, พรีวิวคลังคำอ่าน)
+  5. **การทดสอบความสมบูรณ์ (Verification)**:
+     - ทดสอบสร้างเสียงจริงครบทั้ง 12 เสียงของ Wayu ผ่านฉลุย 100%
+     - ทดสอบแปลงเสียง Wayu ผ่านระบบ AI RVC สำเร็จ 100%
+     - รัน `build_now.py` และ `smoke_test_gate.py` ผ่านฉลุย 100% (All 10 Tool Windows interactive, 0 runtime errors)
+
+---
+
 ## [2026-11-11 22:15] – Antigravity (Release v3.70: Comprehensive URL Speech Replacement with "แนบลิงก์")
 
 - **ผู้ดำเนินการ:** Antigravity (Google DeepMind)

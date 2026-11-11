@@ -4133,3 +4133,18 @@ html.popout-standalone-window .settings-sidebar, #win-settings .settings-sidebar
   background-color: var(--dc-blurple, #5865f2) !important;
   color: #ffffff !important;
 }
+
+/* ── หน้าต่างตั้งค่าเสียงอ่าน: กระชับพื้นที่ ── */
+#win-voice-settings .floating-body { gap: 8px !important; padding: 10px 14px !important; }
+#win-voice-settings .voice-setting-card { padding: 9px 12px; gap: 7px; margin-bottom: 0 !important; }
+#win-voice-settings .voice-setting-card-title { font-size: 12.5px; }
+#win-voice-settings .voice-pill-btn { padding: 6px 10px !important; font-size: 12.5px !important; }
+#win-voice-settings .voice-pill-group { gap: 6px !important; margin-top: 6px; }
+
+/* Wayu ไม่มี Pitch: ซ่อนสไลเดอร์ Pitch */
+html.tts-engine-wayu [data-feature="pitch"] { display: none !important; }
+
+.dict-azure-only-badge{display:none;margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:0;white-space:nowrap;color:#f59e0b;background:color-mix(in srgb,#f59e0b 14%,transparent);border:1px solid color-mix(in srgb,#f59e0b 45%,transparent);}
+html.tts-engine-wayu .dict-azure-only-badge{display:inline-block;}
+.settings-section-title:has(.dict-azure-only-badge){display:flex !important;width:100% !important;box-sizing:border-box;align-items:center;gap:6px;flex-wrap:wrap;}
+.settings-section-title > .dict-azure-only-badge{margin-left:auto !important;}

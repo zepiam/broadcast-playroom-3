@@ -421,7 +421,7 @@ function renderBlockedSettings(){
 
   const row=doc.createElement('tr');row.append(cell(doc,name));
 
-  for(const [field,label] of [['replie','Replie'],['overlay','Overlay'],['tts','TTS'],['all','ทุกส่วน']]){
+  for(const [field,label] of [['tts','TTS'],['overlay','Overlay'],['replie','Replie'],['all','ทุกส่วน']]){
 
    const td=cell(doc,''),checkbox=doc.createElement('input');checkbox.type='checkbox';checkbox.setAttribute('aria-label','บล็อก '+label+' '+name);checkbox.checked=window.BP3Blacklist.classify({username:name}).rule[field];
 

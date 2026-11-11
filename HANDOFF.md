@@ -1,6 +1,55 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.70)
-- **Current Version**: v3.70 (Released & Verified In-App Auto-Update)
-- **Status**: Stable & Fully Verified across GitHub Releases & Hugging Face Mirrors.
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.71)
+- **Current Version**: v3.71 (Released & Published to GitHub + Hugging Face)
+- **Status**: Stable & Verified via Smoke Test Gate (10/10 tool windows healthy, 0 runtime errors).
+---
+
+## 🚀 RELEASED v3.71 (ปล่อยอัปเดตเรียบร้อย)
+
+- ปรับปรุง Setting > TTS และหน้าต่างตั้งค่าเสียงให้กภทัดรัดขื้น, ปุ่มทดลองฟังตาม Speed/Pitch/Volume, Offline Thai TTS ซ่อนหลังจุดเขียว 20 คลิก, Chatbot presets, แก้ Danmaku full screen zone, สลับลำดับคอลัมน์บล็อก TTS -> Overlay -> Replie
+
+## ⚡ ACTIVE DEVELOPMENT (กำลังพัฒนา / รอดำเนินการต่อ)
+
+### 1. 🇹🇭 Wayu-Paxa-TTS-Edge (Offline Thai TTS Engine & 12 Voices Roster)
+- **วัตถุประสงค์**: แก้ปัญหา Microsoft Edge-TTS เชื่อมต่อไม่ได้ หรือสำหรับผู้ใช้ที่ต้องการระบบเสียงอ่านภาษาไทยแบบ Offline 100% ในเครื่อง ไม่ต้องต่อเน็ต
+- **เทคโนโลยี & โมเดล**:
+  - ใช้โมเดล open-weights `wayu-ai/wayu-paxa-tts-edge` (82M parameters, Kokoro/StyleTTS architecture) บน CPU
+  - แพ็กเกจที่ติดตั้ง: `wayu-tts-inference` (ปรับแต่งความเข้ากันได้กับ numpy 2 / scikit-learn เรียบร้อย)
+  - น้ำหนักโมเดลแคชอยู่ที่ `C:\Users\Meng-PC\.cache\huggingface\hub\models--wayu-ai--wayu-paxa-tts-edge`
+- **การเปลี่ยนแปลงในระบบ**:
+  1. `tts_service.py`:
+     - เพิ่ม `get_wayu_tts()` พร้อม Thread Lock แบบ lazy load ไม่หน่วงตอนเริ่มโปรแกรม
+     - เพิ่ม `synthesize_wayu(text, gender, rate, voice)` สังเคราะห์เสียง 24kHz WAV พร้อมแปลงความเร็วเสียง
+     - ขยาย `generate_audio_bytes` ให้รับพารามิเตอร์ `model` ('azure' / 'wayu') และ `voice` (ชื่อเสียงย่อย)
+  2. `launch_dev.py`:
+     - เอนด์พอยต์ `/api/tts` รับพารามิเตอร์ `model` และ `voice`
+     - แคชคีย์ `_TTS_AUDIO_CACHE` เพิ่ม `model` และ `voice` ป้องกันการชนกันของเสียง
+     - ตรวจสอบ MIME type ถ้าหัวไฟล์เป็น `RIFF` จะส่งกลับเป็น `audio/wav` ถูกต้อง
+  3. `rvc_service.py`:
+     - รองรับการรับเข้าไฟล์เสียง WAV จาก Wayu และส่งต่อไปแปลงเสียง AI RVC ได้ทันที 100% (ทดสอบแล้ว)
+  4. `src/index.html`:
+     - เพิ่มการ์ดเลือกโมเดลเสียง **"🤖 โมเดลเสียงสังเคราะห์ (TTS Engine)"** เหนือช่องเลือกเพศ ทั้งใน Settings (`#sec-tts`) และ Voice Tool Window:
+       - `🌐 Azure (ตัวปัจจุบัน)`
+       - `⚡ Wayu (Offline ในเครื่อง)`
+     - ปุ่มเพศ **"👩 หญิง"** และ **"👨 ชาย"** ยังคงใช้งานได้สมบูรณ์ทั้งสองโมเดล
+     - เพิ่มกล่องตัวเลือก **"🎙️ โทนเสียงโมเดล Wayu"** พร้อมปุ่ม **"🔊 ทดลองฟังเสียงนี้"** ที่จะแสดงเฉพาะเมื่อเลือก Wayu รองรับทั้ง 12 เสียง:
+       - **หญิง (8 เสียง)**: `f_young_clear`, `f_young_bright`, `f_young_warm`, `f_teen_bright`, `f_mid_clear`, `f_mid_warm`, `f_elderly_low`, `f_elderly_soft`
+       - **ชาย (4 เสียง)**: `m_young_clear`, `m_teen_bright`, `m_mid_warm`, `m_elderly_deep`
+     - ซิงค์พารามิเตอร์ `&model=` และ `&voice=` ในทุกจุดเรียก `/api/tts`
+
+- **เพิ่ม (Claude Cowork, 2026-11-12):** dropdown โทนเสียง Wayu แสดงเฉพาะเพศที่เลือก (แก้ใน `updateWayuContainers()` ใน `src/index.html`; ทดสอบ harness cloud เท่านั้น) backup `_to_delete/index.html.pre_wayugender`
+
+- **เพิ่ม (Claude Cowork, 2026-11-12):** ปุ่มโมเดลเป็น `Azure (Online)`/`Wayu (Offline)`, ชื่อเสียง Wayu ไม่มีรหัสนำหน้า, หน้าต่าง `#win-voice-settings` กระชับขึ้น (รวมการ์ดโมเดล+เพศ; CSS ท้าย `styles.css`) — ดู WORKLOG บนสุด; ทดสอบ harness cloud เท่านั้น
+
+### 2. 🚫 Blacklist System Verification & UI Reordering
+- **ตรวจสอบการทำงาน**:
+  - TTS (`rule.tts`), Overlay (`rule.overlay`), Replie (`rule.replie`) ใช้งานได้จริง 100%
+  - บล็อกทั้งหมด (`rule.all`): ดักทิ้งตั้งแต่ `injectIncomingChat` ไม่แสดงในแชทสดเลยเด็ดขาด
+- **สลับลำดับคอลัมน์/ช่องเลือก**:
+  - สลับเป็น **`TTS` -> `Overlay` -> `Replie`** ครบ 3 จุด:
+    1. ตารางตั้งค่าบล็อกคนดู (`#blockedViewerList`) ใน `src/index.html` และ `src/user_controls.js`
+    2. หน้าต่างป๊อปอัปบล็อกด่วนในแชทสด (`#modal-block-user`)
+    3. หน้าต่างข้อมูลคนดู (`paneProfTab4` ใน User Profile)
+
 ---
 
 ## 🧩 PLUGIN API v1 (เฟส 1) — บันทึกการทำงาน (ปล่อยแล้วใน v3.62)
