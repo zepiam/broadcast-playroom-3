@@ -1,7 +1,16 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.73)
-- **Current Version**: v3.73 (Released & Published to GitHub + Hugging Face)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.74)
+- **Current Version**: v3.74 (Released & Published to GitHub + Hugging Face)
 - **Status**: Stable & Verified via Smoke Test Gate (10/10 tool windows healthy, 0 runtime errors).
 ---
+
+## 🚀 RELEASED v3.74 (ปล่อยอัปเดตเรียบร้อย)
+**ผู้ทำ release รัน `release.bat` (เรียก `publish_release_v374.py`)**
+- v3.73 ปล่อยแล้วและตรวจบนเครื่องจริงว่าไฟล์ `_internal/*.py` ตรงกับไฟล์หลักครบ แต่ RVC บน production ยังไม่กลับ (dev ปกติ)
+- หลักฐาน: `/api/rvc/status` หลังเปิดเอง = `ready`, `loaded: true`, `cuda:0` (โหลดโมเดลได้) แต่เสียงอ่านแชทไม่ใช่ RVC; ตอนเปิดแอปใหม่สถานะเป็น `idle`/progress 0 (ยังไม่ชัดว่า autoload ทำงานไหม)
+- สมมติฐาน (ยังไม่ยืนยัน): `rvc_service.convert()` ล้มใน production แล้ว `launch_dev` กลืน error (fallback เป็นเสียง Edge) และ warmup ตอนโหลดก็กลืน error ระดับ debug; แอปไม่มี logging config จึงมองไม่เห็น
+- v3.74 แก้เฉพาะ `rvc_service.py`: เขียน `rvc_debug.log` ใน data dir (init/restore, load/warmup/convert ล้มพร้อม traceback, "convert skipped" 5 ครั้งแรก) และ `status()` ส่ง `last_convert_error`; พฤติกรรมการแปลงเสียงไม่เปลี่ยน
+- หลังอัปเดตให้อ่าน `data/rvc_debug.log` + `/api/rvc/status` เพื่อหาสาเหตุจริง แล้วแก้ใน v3.75
+- เทสต์: mock ในคลาวด์เท่านั้น (logging + status) ยังไม่ได้รันแอปจริง
 
 ## 🚀 RELEASED v3.73 (ปล่อยอัปเดตเรียบร้อย)
 **ผู้ทำ release ต้องรัน `release.bat` (เรียก `publish_release_v373.py`) แล้วทดสอบอัปเดตเครื่องจริง**

@@ -5,6 +5,23 @@ from pathlib import Path
 
 ROOT=Path(__file__).resolve().parent
 
+def _rvc_diag(message, exc=False):
+    """Append a diagnostic line (and traceback) to <data>/rvc_debug.log. Never raises."""
+    try:
+        import time, traceback
+        base = Path(os.environ.get('BP3_DATA_DIR', ROOT))
+        base.mkdir(parents=True, exist_ok=True)
+        log_file = base / 'rvc_debug.log'
+        if log_file.is_file() and log_file.stat().st_size > 512 * 1024:
+            log_file.replace(base / 'rvc_debug.old.log')
+        with open(log_file, 'a', encoding='utf-8') as handle:
+            handle.write('[%s] %s\n' % (time.strftime('%Y-%m-%d %H:%M:%S'), message))
+            if exc:
+                handle.write(traceback.format_exc() + '\n')
+    except Exception:
+        pass
+
+
 class RVCService:
     def __init__(self, edition=None, model_dir=None, state_file=None, roots=None, engine_factory=None, downloader=None):
         self.edition=(edition or os.environ.get('BP3_EDITION','full')).lower()
@@ -25,16 +42,21 @@ class RVCService:
         ])
         self.lock=threading.RLock();self.model_lock=threading.Lock()
         self.engine_factory=engine_factory;self.downloader=downloader
-        self.engine=None;self.cancel_event=threading.Event();self.worker=None
+        self.engine=None;self.cancel_event=threading.Event();self.worker=None;self.last_convert_error=''
         self.data={'enabled':False,'selected':None,'state':'idle','progress':0,'error':'','loaded':False}
+        _rvc_diag('init: edition=%s state_file=%s exists=%s model_dir=%s' % (self.edition, self.state_file, self.state_file.is_file(), self.model_dir))
         if self.edition=='full' and self.state_file.is_file():
             try:
                 previous=json.loads(self.state_file.read_text(encoding='utf-8'))
+                _rvc_diag('init: saved state %s' % previous)
                 self.data['selected']=previous.get('selected')
                 if previous.get('enabled') and self.data['selected']:
                     try:self.select(self.data['selected'],enabled=True)
-                    except Exception as error:self.data.update(state='error',error=str(error),loaded=False,enabled=False)
-            except (OSError,ValueError):pass
+                    except Exception as error:
+                        _rvc_diag('init: auto-load failed: %s' % error, exc=True)
+                        self.data.update(state='error',error=str(error),loaded=False,enabled=False)
+            except (OSError,ValueError):
+                _rvc_diag('init: could not read saved state', exc=True)
 
     def require_full(self):
         if self.edition!='full':raise PermissionError('RVC is available only in FULL')
@@ -58,7 +80,7 @@ class RVCService:
 
     def status(self):
         self.require_full()
-        with self.lock:return dict(self.data,device=getattr(self.engine,'device',None) if self.engine else None)
+        with self.lock:return dict(self.data,device=getattr(self.engine,'device',None) if self.engine else None,last_convert_error=getattr(self,'last_convert_error',''))
 
     def _save(self):
         self.state_file.parent.mkdir(parents=True,exist_ok=True)
@@ -117,10 +139,13 @@ class RVCService:
                             self.engine.convert_array(dummy, 16000, RVCParams(index_path=self.index_path))
                     except Exception as warmup_err:
                         logging.getLogger(__name__).debug('RVC warmup notice: %s', warmup_err)
+                        _rvc_diag('warmup conversion failed: %s' % warmup_err, exc=True)
+                        self.last_convert_error = 'warmup: %s' % warmup_err
                 with self.lock:self.data.update(state='ready',enabled=True,loaded=True,progress=100,error='')
                 self._save()
             except Exception as error:
                 logging.getLogger(__name__).exception('RVC model loading failed')
+                _rvc_diag('load failed: %s' % error, exc=True)
                 with self.lock:self.data.update(state='error',enabled=False,loaded=False,error=str(error))
         self._start(load);return self.status()
 
@@ -183,19 +208,29 @@ class RVCService:
             worker.join(timeout=30.0)
 
         with self.lock:enabled=self.data['enabled'] and self.data['loaded']
-        if not enabled:return audio_bytes, default_mime
-        import numpy as np
-        import soundfile as sf
-        with self.model_lock:
-            if not self.engine:return audio_bytes, default_mime
-            audio,sample_rate=sf.read(io.BytesIO(audio_bytes),dtype='float32')
-            if getattr(audio,'ndim',1)>1:audio=audio.mean(axis=1)
-            if self.engine_factory:
-                result,rate=self.engine.convert_array(audio,sample_rate)
-            else:
-                from rvc_engine import RVCParams
-                result,rate=self.engine.convert_array(audio,sample_rate,RVCParams(index_path=getattr(self,'index_path','')))
-        out=io.BytesIO();sf.write(out,np.asarray(result),int(rate),format='WAV',subtype='PCM_16')
-        return out.getvalue(),'audio/wav'
+        if not enabled:
+            self._skip_logged = getattr(self, '_skip_logged', 0)
+            if self._skip_logged < 5:
+                self._skip_logged += 1
+                _rvc_diag('convert skipped: enabled=%s loaded=%s state=%s' % (self.data.get('enabled'), self.data.get('loaded'), self.data.get('state')))
+            return audio_bytes, default_mime
+        try:
+            import numpy as np
+            import soundfile as sf
+            with self.model_lock:
+                if not self.engine:return audio_bytes, default_mime
+                audio,sample_rate=sf.read(io.BytesIO(audio_bytes),dtype='float32')
+                if getattr(audio,'ndim',1)>1:audio=audio.mean(axis=1)
+                if self.engine_factory:
+                    result,rate=self.engine.convert_array(audio,sample_rate)
+                else:
+                    from rvc_engine import RVCParams
+                    result,rate=self.engine.convert_array(audio,sample_rate,RVCParams(index_path=getattr(self,'index_path','')))
+            out=io.BytesIO();sf.write(out,np.asarray(result),int(rate),format='WAV',subtype='PCM_16')
+            return out.getvalue(),'audio/wav'
+        except Exception as convert_error:
+            self.last_convert_error = '%s: %s' % (type(convert_error).__name__, convert_error)
+            _rvc_diag('convert failed: %s' % self.last_convert_error, exc=True)
+            raise
 
 rvc_service=RVCService()
