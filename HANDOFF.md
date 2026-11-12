@@ -1,7 +1,16 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.72)
-- **Current Version**: v3.72 (Released & Published to GitHub + Hugging Face)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.73)
+- **Current Version**: v3.73 (Released & Published to GitHub + Hugging Face)
 - **Status**: Stable & Verified via Smoke Test Gate (10/10 tool windows healthy, 0 runtime errors).
 ---
+
+## 🚀 RELEASED v3.73 (ปล่อยอัปเดตเรียบร้อย)
+**ผู้ทำ release ต้องรัน `release.bat` (เรียก `publish_release_v373.py`) แล้วทดสอบอัปเดตเครื่องจริง**
+- **อาการ:** ฉบับติดตั้งจริง (production) RVC/TTS หลุดเป็นเสียงสำรองตั้งแต่ v3.71 ส่วน dev ปกติ; v3.72 ไม่หาย
+- **สาเหตุ (จากการเทียบไฟล์ในเครื่อง production แบบอ่านอย่างเดียว):** `full/_internal/` มีสำเนา `.py` รุ่นเก่าค้าง (`tts_service`, `dictionary_manager`, `chat_bridge`, `chat_tiktok`, `plugin_manager`) และ `package_entry.py` ใส่ `_internal` ไว้หน้าสุดของ `sys.path` จึงบังไฟล์ที่แพตช์ลงโฟลเดอร์หลัก. `launch_dev.py` (3.71+) เรียก `tts_service.generate_audio_bytes(..., model=, voice=)` ซึ่งสำเนาเก่าไม่รองรับ → TypeError → เสียงสำรอง. ไฟล์ใน `full/` ตรงกับ dev ครบ (แพตช์ลงครบ) — ยังไม่ได้รันแอปจริง จึงเป็นข้อสรุปจากการเทียบไฟล์
+- **การแก้:** (1) บล็อกบนสุดของ `launch_dev.py` ย้ายโฟลเดอร์ exe ขึ้นหน้า `_internal` เมื่อ frozen (2) `publish_release_v373.py` เขียน `.py` ใน CORE_FILES ลงทั้ง root และ `_internal/` ในแพตช์เพื่อทับสำเนาเก่า (3) เลขเวอร์ชัน 3.73 ใน package.json, updater.py, release.bat, src/index.html (`version.json` สคริปต์สร้างเอง)
+- **ข้อควรระวัง:** ตัวบูต `package_entry.py` ถูกคอมไพล์ในตัว exe การแก้ไฟล์บนดิสก์ไม่มีผล — ห้ามพึ่งการแก้ไฟล์นั้น
+- **ตรวจหลังอัปเดต:** md5 ของ `full/_internal/tts_service.py` ต้องตรงกับ `full/tts_service.py`; ลองใช้ RVC; ถ้ายังไม่หายให้ดู log ต่อ
+- **เทสต์ที่ทำ:** เฉพาะ syntax และจำลองลำดับ sys.path ในคลาวด์เท่านั้น
 
 ## 🚀 RELEASED v3.71 (ปล่อยอัปเดตเรียบร้อย)
 

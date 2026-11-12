@@ -1,3 +1,18 @@
+# --- v3.73: packaged builds must prefer app-folder files over stale copies in _internal ---
+# package_entry.py puts <exe>/_internal at sys.path[0], so an old _internal/<module>.py
+# (left by earlier patches) would shadow the freshly patched <exe>/<module>.py.
+import sys as _bp3_sys
+try:
+    from pathlib import Path as _bp3_Path
+    if getattr(_bp3_sys, 'frozen', False):
+        _bp3_exe_dir = str(_bp3_Path(_bp3_sys.executable).parent)
+        if _bp3_exe_dir in _bp3_sys.path:
+            _bp3_sys.path.remove(_bp3_exe_dir)
+        _bp3_sys.path.insert(0, _bp3_exe_dir)
+except Exception:
+    pass
+# --- end v3.73 ---
+
 import webbrowser
 _orig_webbrowser_open = webbrowser.open
 
