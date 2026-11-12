@@ -1,5 +1,5 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.71)
-- **Current Version**: v3.71 (Released & Published to GitHub + Hugging Face)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.72)
+- **Current Version**: v3.72 (Released & Published to GitHub + Hugging Face)
 - **Status**: Stable & Verified via Smoke Test Gate (10/10 tool windows healthy, 0 runtime errors).
 ---
 

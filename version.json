@@ -1,39 +1,39 @@
 {
-  "version": "3.71",
-  "latest_version": "3.71",
+  "version": "3.72",
+  "latest_version": "3.72",
   "release_date": "2026-11-12",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.71\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.71:\n- **ปรับปรุงหน้า Setting > TTS และหน้าต่างตั้งค่าเสียงให้กะทัดรัดขึ้น**:\n  - รวมการ์ดเลือกการตั้งค่าเสียงและเพศเสียงไว้ด้วยกัน ลดความลึกของหน้าต่าง ปรับค่าได้เร็วขึ้น\n  - ปุ่มทดลองฟังทุกจุด (รวมช่อง \"ทดลองอ่าน\" และปุ่มลำโพงในหน้าคำแทนที่) อ้างอิงค่า Speed / Pitch / Volume จากหน้า Setting และช่อง \"ทดลองอ่าน\" อ่านข้อความที่พิมพ์ได้ทุกข้อความผ่านขั้นตอนเดียวกับแชทจริง\n  - ปุ่มลำโพงในหน้าคำแทนที่แจ้งสถานะและสาเหตุเมื่อเล่นเสียงไม่ได้\n  - สลับการตั้งค่าเสียงแล้วตรวจการเชื่อมต่อ Edge-TTS ใหม่พร้อมแจ้งผลทันที\n- **หน้า Chat Bot: เพิ่มตัวอย่างสำเร็จรูปของคำสั่ง (`!discord`, `!social`, `!donate`, `!rules`, `!lurk`)**:\n  - กดแล้วเติมฟอร์มให้อัตโนมัติ พร้อมจุด `#URL` ให้แทนด้วยลิงก์จริง ระบบป้องกันการบันทึกถ้ายังไม่ได้แทนที่ `#URL`\n- **แก้แชท Danmaku ใน Composer ที่ตั้ง \"เต็มหน้าจอ\" แล้วกระจุกกลางจอ**:\n  - แก้ค่าตำแหน่ง \"เต็มหน้าจอ\" ให้ตัวแสดงผลรู้จัก และจัด \"ครึ่งบน/ครึ่งล่าง\" เป็นครึ่งจอจริง ข้อความสุ่มแถวว่างทั่วทั้งโซน\n- **ปรับลำดับคอลัมน์การบล็อกเป็น TTS -> Overlay -> Replie** ในหน้า Setting, หน้าต่างบล็อกด่วน และโปรไฟล์คนดู\n",
+  "changelog": "# Broadcast Playroom v3.72\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.72:\n- **ปรับปรุงและแก้ไขระบบแปลงเสียง AI RVC (Full Edition)**:\n  - แก้ไขปัญหาเสียงไม่ถูกแปลงเป็น RVC โดยปรับการตรวจสอบสถานะการโหลดโมเดลเข้า GPU/RAM ให้แม่นยำยิ่งขึ้น\n  - ขยายเวลา Timeout สำหรับการโหลดโมเดลขนาดใหญ่เข้า GPU ป้องกันการดีดกลับไปเป็นเสียงอ่านเดิมก่อนที่โมเดลจะพร้อม\n  - ป้องกันการเกิดสถานะ 'RVC is busy' เมื่อผู้ใช้กดเลือกโมเดลซ้ำระหว่างกำลังเตรียมโมเดล\n  - ล้างแคชไฟล์เสียงอัตโนมัติเมื่อมีการสลับโมเดล RVC เพื่อให้เสียงใหม่ถูกนำมาใช้งานทันที\n  - รวมไฟล์บริการโมเดลเสียง RVC เข้าสู่แพ็กเกจอัปเดตโดยตรง\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.71-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.71/patch-v3.71-lite.zip",
-      "sha256": "662f9816f4ee5f8984b26714bc2262fd892139f1bae9dcbc5b1e035abbbe50d9",
-      "size": 40659417,
+      "file": "patch-v3.72-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.72/patch-v3.72-lite.zip",
+      "sha256": "55cfb8a91a9d8c536a90ba9aee527f8afbee5af4a46cd8f25e7a8ff3ad09fdcd",
+      "size": 40681385,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.71-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.72-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.71-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.71/patch-v3.71-full.zip",
-      "sha256": "662f9816f4ee5f8984b26714bc2262fd892139f1bae9dcbc5b1e035abbbe50d9",
-      "size": 40659417,
+      "file": "patch-v3.72-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.72/patch-v3.72-full.zip",
+      "sha256": "55cfb8a91a9d8c536a90ba9aee527f8afbee5af4a46cd8f25e7a8ff3ad09fdcd",
+      "size": 40681385,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.71-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.72-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.71-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.71/patch-v3.71-lite.zip",
-    "sha256": "662f9816f4ee5f8984b26714bc2262fd892139f1bae9dcbc5b1e035abbbe50d9",
-    "size": 40659417
+    "file": "patch-v3.72-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.72/patch-v3.72-lite.zip",
+    "sha256": "55cfb8a91a9d8c536a90ba9aee527f8afbee5af4a46cd8f25e7a8ff3ad09fdcd",
+    "size": 40681385
   },
   "full": {
-    "file": "patch-v3.71-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.71/patch-v3.71-full.zip",
-    "sha256": "662f9816f4ee5f8984b26714bc2262fd892139f1bae9dcbc5b1e035abbbe50d9",
-    "size": 40659417
+    "file": "patch-v3.72-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.72/patch-v3.72-full.zip",
+    "sha256": "55cfb8a91a9d8c536a90ba9aee527f8afbee5af4a46cd8f25e7a8ff3ad09fdcd",
+    "size": 40681385
   }
 }

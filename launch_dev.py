@@ -10069,7 +10069,10 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                if path == '/api/rvc/select':result=rvc_service.select(body.get('id'),body.get('enabled',True))
+                if path == '/api/rvc/select':
+                    result=rvc_service.select(body.get('id'),body.get('enabled',True))
+                    with _TTS_CACHE_LOCK:
+                        _TTS_AUDIO_CACHE.clear()
 
 
 
@@ -11071,7 +11074,10 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                rvc_enabled = bool(rvc_service and getattr(rvc_service, 'data', {}).get('enabled') and getattr(rvc_service, 'data', {}).get('loaded'))
+                rvc_enabled = bool(rvc_service and getattr(rvc_service, 'edition', '') == 'full' and (
+                    (getattr(rvc_service, 'data', {}).get('enabled') and getattr(rvc_service, 'data', {}).get('loaded')) or
+                    (getattr(rvc_service, 'data', {}).get('state') == 'loading' and getattr(rvc_service, 'data', {}).get('selected'))
+                ))
 
 
 

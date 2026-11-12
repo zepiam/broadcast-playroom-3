@@ -1,3 +1,17 @@
+## [2026-11-12] – Claude (Cowork) (ตรวจ RVC ใช้ไม่ได้ — ยังไม่พบสาเหตุยืนยัน)
+
+- อ่านโค้ด: เส้นทาง /api/tts → `rvc_service.convert` (ข้ามเมื่อ preview, ต้อง `enabled` และ `loaded`); ไฟล์ RVC (`rvc_service.py`, `rvc_engine.py`, `rvc_runtime.py`) ไม่มีการแก้เนื้อหาในช่วงนี้; `rvc_settings.json` มี `enabled:false` (เขียนล่าสุดโดยแอป 2026-11-12 06:31 เวลาไทย)
+- **สมมติฐานที่ยังไม่ยืนยัน:** ตอนติดตั้ง Wayu ใน Python 3.10 ของเครื่อง dev มีการปรับ numpy 2 / scikit-learn → อาจทำให้ไลบรารี RVC (rvc_python/fairseq/faiss/numba/librosa) โหลดไม่ขึ้น → `select()` ล้มเหลว → enabled=False
+- เพิ่ม `diag_rvc.py` (อ่านอย่างเดียว) ให้ผู้ใช้รันบนเครื่องจริงเพื่อดูเวอร์ชันแพ็กเกจ+traceback โหลด/แปลงเสียง; ยังไม่ได้แก้โค้ดใดๆ
+
+## [2026-11-12] – Antigravity (ปล่อย Release v3.72 — แก้ไขระบบแปลงเสียง AI RVC Full Edition)
+
+- **สถานะ:** แก้ไขปัญหา RVC ไม่ถูกนำมาใช้งานในเวอร์ชัน Full พร้อมปล่อย Release v3.72
+- **จุดที่แก้ไข:**
+  1. `rvc_service.py`: ป้องกันการเกิดข้อผิดพลาด 'RVC is busy' เมื่อผู้ใช้กดเลือกโมเดลซ้ำระหว่างกำลังโหลดโมเดล และเพิ่ม timeout เป็น 30 วินาที เพื่อให้โมเดลโหลดเข้า GPU ได้ทันก่อน fallback
+  2. `launch_dev.py`: ปรับปรุงการตรวจสอบสถานะ `rvc_enabled` ให้ครอบคลุมระหว่างที่โมเดลกำลังเตรียมการ และสั่งล้างแคชเสียง TTS อัตโนมัติเมื่อกดเลือก/เปิดใช้งานโมเดล RVC
+  3. `publish_release_v372.py`: เพิ่มไฟล์ `rvc_service.py`, `rvc_engine.py`, `rvc_runtime.py`, `voice_downloader.py` เข้าสู่ `CORE_FILES` ของแพ็กเกจ Patch เพื่อให้โปรแกรม Full ดึงโค้ดเวอร์ชันล่าสุดไปใช้งานได้ทันที
+
 ## [2026-11-12] – Antigravity (ปล่อย Release v3.71 สำเร็จ)
 
 - **สถานะ:** ตรวจสอบความถูกต้องของ build, smoke test gate ผ่าน 100% (10/10 Tool Windows, 0 runtime errors)

@@ -84,6 +84,12 @@ class RVCService:
                 if self.engine:self.engine.unload()
                 self.engine=None
             self._save();return self.status()
+        with self.lock:
+            if self.data.get('selected') == model_id:
+                if self.data.get('state') == 'loading' and self.worker and self.worker.is_alive():
+                    return self.status()
+                if self.data.get('state') == 'ready' and self.data.get('loaded') and self.data.get('enabled') and self.engine:
+                    return self.status()
         model=self.models().get(model_id)
         if not model:raise ValueError('Model not found; refresh the list')
         def load():
@@ -174,7 +180,7 @@ class RVCService:
             worker = self.worker
         if is_loading and worker and worker.is_alive():
             logging.getLogger(__name__).info('RVC model is still loading; waiting for initialization to finish...')
-            worker.join(timeout=10.0)
+            worker.join(timeout=30.0)
 
         with self.lock:enabled=self.data['enabled'] and self.data['loaded']
         if not enabled:return audio_bytes, default_mime
