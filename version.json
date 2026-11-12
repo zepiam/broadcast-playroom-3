@@ -1,39 +1,39 @@
 {
-  "version": "3.74",
-  "latest_version": "3.74",
+  "version": "3.75",
+  "latest_version": "3.75",
   "release_date": "2026-11-12",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.74\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.74:\n- **เพิ่มระบบบันทึกข้อผิดพลาดของ RVC (Full Edition)**:\n  - บันทึกสาเหตุเมื่อโหลดโมเดลหรือแปลงเสียง RVC ไม่สำเร็จลงไฟล์ rvc_debug.log ในโฟลเดอร์ data\n  - แสดงข้อผิดพลาดล่าสุดของการแปลงเสียงในสถานะ RVC เพื่อใช้ตรวจสอบปัญหาได้ง่ายขึ้น\n",
+  "changelog": "# Broadcast Playroom v3.75\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.75:\n- **แก้ปัญหาเสียง RVC ไม่ทำงานในฉบับติดตั้งจริง (Full Edition)**:\n  - สาเหตุ: โมดูลแคชของ Numba (package_numba_cache) ไม่อยู่ในโปรแกรม ทำให้ขั้นแปลงเสียงโหลดไลบรารีไม่ได้\n  - รวมไฟล์ดังกล่าวเข้าแพตช์ และเพิ่มระบบสำรองกรณีโหลดไม่ได้\n- **นำ Wayu TTS (Offline TTS) ออกจากระบบทั้งหมด**: เหลือ Edge-TTS (Online TTS) และ RVC เท่านั้น\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.74-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.74/patch-v3.74-lite.zip",
-      "sha256": "d45de85f65451df9afb65981732fa69c078fab5d463e1a69e78e5c8a5c6102f1",
-      "size": 40886505,
+      "file": "patch-v3.75-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.75/patch-v3.75-lite.zip",
+      "sha256": "c19cd562b00beb969c46eb969e8ce135b50d0a7719e5dcfb09d5f82e88dc5f3d",
+      "size": 40881954,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.74-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.75-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.74-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.74/patch-v3.74-full.zip",
-      "sha256": "d45de85f65451df9afb65981732fa69c078fab5d463e1a69e78e5c8a5c6102f1",
-      "size": 40886505,
+      "file": "patch-v3.75-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.75/patch-v3.75-full.zip",
+      "sha256": "c19cd562b00beb969c46eb969e8ce135b50d0a7719e5dcfb09d5f82e88dc5f3d",
+      "size": 40881954,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.74-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.75-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.74-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.74/patch-v3.74-lite.zip",
-    "sha256": "d45de85f65451df9afb65981732fa69c078fab5d463e1a69e78e5c8a5c6102f1",
-    "size": 40886505
+    "file": "patch-v3.75-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.75/patch-v3.75-lite.zip",
+    "sha256": "c19cd562b00beb969c46eb969e8ce135b50d0a7719e5dcfb09d5f82e88dc5f3d",
+    "size": 40881954
   },
   "full": {
-    "file": "patch-v3.74-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.74/patch-v3.74-full.zip",
-    "sha256": "d45de85f65451df9afb65981732fa69c078fab5d463e1a69e78e5c8a5c6102f1",
-    "size": 40886505
+    "file": "patch-v3.75-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.75/patch-v3.75-full.zip",
+    "sha256": "c19cd562b00beb969c46eb969e8ce135b50d0a7719e5dcfb09d5f82e88dc5f3d",
+    "size": 40881954
   }
 }

@@ -1,7 +1,15 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.74)
-- **Current Version**: v3.74 (Released & Published to GitHub + Hugging Face)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.75)
+- **Current Version**: v3.75 (Released & Published to GitHub + Hugging Face)
 - **Status**: Stable & Verified via Smoke Test Gate (10/10 tool windows healthy, 0 runtime errors).
 ---
+
+## 🚀 RELEASED v3.75 (ปล่อยอัปเดตเรียบร้อย)
+**ผู้ทำ release รัน `release.bat` (เรียก `publish_release_v375.py`) แล้วทดสอบอัปเดตบนเครื่องจริง**
+- **สาเหตุจริงของ RVC เสียงไม่ทำงานบน production (จาก `rvc_debug.log` ของ v3.74):** `Failed to import 'package_numba_cache.FrozenDataCacheLocator'` → numba/librosa โหลดไม่ได้ → ทุกการแปลงเสียงล้มและถูกกลืนเป็นเสียง Edge ปกติ. ไฟล์ `package_numba_cache.py` มีใน dev แต่ไม่มีในโฟลเดอร์ production (exe ตั้ง env `NUMBA_CACHE_LOCATOR_CLASSES` ให้ FULL). ยังอธิบายไม่ได้ว่าทำไมรุ่นก่อนหน้าเคยใช้ได้
+- **แก้:** เพิ่ม `package_numba_cache.py` ใน CORE_FILES ของ `publish_release_v375.py` (ลง `_internal/` ด้วย) + `launch_dev.py` ลบ env ดังกล่าวถ้าหาโมดูลไม่เจอ (ใช้ locator ปกติของ numba) + ไม่แคชเสียงที่ RVC แปลงล้มเหลวเป็นผลลัพธ์ RVC
+- **ลบ Wayu TTS ทั้งระบบ (ผู้ใช้สั่ง):** เหลือ Edge-TTS + RVC. แก้ `src/index.html`, `src/styles.css`, `tts_service.py`, `launch_dev.py` (ดูรายละเอียดใน WORKLOG). สวิตช์ลับ 20 คลิกที่จุดเขียวคุมเฉพาะ Giveaway. สำรองไฟล์เดิมไว้ที่ `_to_delete/*.pre_nowayu`
+- **เทสต์:** syntax ทั้ง py และ inline JS, Playwright โหลดหน้าด้วย API จำลอง — ยังไม่ได้รันแอปจริง
+- **ตรวจหลังอัปเดต:** อ่านแชท 1 ข้อความตอนเปิด RVC ต้องเป็นเสียง RVC; `data/rvc_debug.log` ไม่มี "convert failed" ใหม่; หน้า Setting > TTS ไม่มีปุ่มเลือกโมเดล
 
 ## 🚀 RELEASED v3.74 (ปล่อยอัปเดตเรียบร้อย)
 **ผู้ทำ release รัน `release.bat` (เรียก `publish_release_v374.py`)**

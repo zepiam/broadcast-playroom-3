@@ -1,6 +1,7 @@
 # --- v3.73: packaged builds must prefer app-folder files over stale copies in _internal ---
 # package_entry.py puts <exe>/_internal at sys.path[0], so an old _internal/<module>.py
 # (left by earlier patches) would shadow the freshly patched <exe>/<module>.py.
+import os
 import sys as _bp3_sys
 try:
     from pathlib import Path as _bp3_Path
@@ -9,6 +10,15 @@ try:
         if _bp3_exe_dir in _bp3_sys.path:
             _bp3_sys.path.remove(_bp3_exe_dir)
         _bp3_sys.path.insert(0, _bp3_exe_dir)
+except Exception:
+    pass
+# v3.75: numba is told (by the packaged entry point) to use package_numba_cache.FrozenDataCacheLocator.
+# If that module cannot be imported, librosa/numba (needed by RVC pitch extraction) fails to import.
+# Fall back to numba's default cache locators in that case.
+try:
+    import importlib.util as _bp3_iu
+    if 'package_numba_cache' in os.environ.get('NUMBA_CACHE_LOCATOR_CLASSES', '') and _bp3_iu.find_spec('package_numba_cache') is None:
+        os.environ.pop('NUMBA_CACHE_LOCATOR_CLASSES', None)
 except Exception:
     pass
 # --- end v3.73 ---
@@ -11032,8 +11042,6 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
             volume = qs.get('volume', ['+0%'])[0]
-            model = qs.get('model', ['azure'])[0]
-            voice = qs.get('voice', [''])[0]
 
 
 
@@ -11065,7 +11073,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                processed_text = text if (preview or str(model).lower() == 'wayu') else dict_manager.apply_replace(text)  # Wayu อ่านตรง ไม่ผ่านคำแทนที่ (ออกแบบไว้สำหรับ Azure)
+                processed_text = text if preview else dict_manager.apply_replace(text)
 
 
 
@@ -11108,7 +11116,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                cache_key = (processed_text, gender, rate, pitch, volume, preview, rvc_enabled, rvc_model, model, voice)
+                cache_key = (processed_text, gender, rate, pitch, volume, preview, rvc_enabled, rvc_model)
 
 
 
@@ -11196,7 +11204,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                    audio_bytes = tts_service.generate_audio_bytes(processed_text, gender, rate, pitch, volume, model=model, voice=voice)
+                    _rvc_convert_failed = False
+                    audio_bytes = tts_service.generate_audio_bytes(processed_text, gender, rate, pitch, volume)
 
 
 
@@ -11269,6 +11278,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
                                 logging.getLogger('tts_service').exception('RVC conversion failed; returning original Edge-TTS audio')
+                                _rvc_convert_failed = True  # do not cache unconverted audio as if it were RVC output
 
 
 
@@ -11292,7 +11302,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-                            _TTS_AUDIO_CACHE[cache_key] = (audio_bytes, audio_mime)
+                            if not _rvc_convert_failed:
+                                _TTS_AUDIO_CACHE[cache_key] = (audio_bytes, audio_mime)
 
 
 

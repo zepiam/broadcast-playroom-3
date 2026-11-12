@@ -1,3 +1,10 @@
+## [2026-11-13] – Antigravity (ปล่อย Release v3.75 สำเร็จ)
+
+- **สถานะ:** ปล่อย Release v3.75 เรียบร้อย
+- **การแก้ไข:**
+  1. แก้ไขสาเหตุ RVC ใน Full: เพิ่ม `package_numba_cache.py` ลงใน CORE_FILES (ทั้งโฟลเดอร์หลักและ `_internal/`) และ fallback locator ใน `launch_dev.py` ป้องกัน numba/librosa ขัดข้อง
+  2. ลบโมเดล Wayu TTS ออกจากระบบทั้งหมดตามความต้องการของผู้ใช้ กลับมาใช้ Edge-TTS + RVC อย่างสมบูรณ์และเสถียร
+
 ## [2026-11-13] – Antigravity (ปล่อย Release v3.74 สำเร็จ)
 
 - **สถานะ:** ปล่อย Release v3.74 เรียบร้อย
@@ -2542,3 +2549,10 @@ Evidence from the real install: `/api/rvc/status` after manual enable -> state r
 Likely cause (hypothesis, unverified): `rvc_service.convert()` raises in production and launch_dev swallows it (falls back to original Edge-TTS audio); the load warmup also swallows its own error (debug level). The app has no logging config, so nothing is visible.
 Changes (rvc_service.py only + version bump 3.74): `_rvc_diag()` writes `<BP3_DATA_DIR>/rvc_debug.log` (init/restore decision, load failure, warmup failure, convert failure with traceback, first 5 "convert skipped" events); `status()` now returns `last_convert_error`; convert re-raises as before (behaviour unchanged). Version bumped in package.json, updater.py, release.bat, src/index.html; `publish_release_v374.py` created from v373. Cloud mock test only (logging + status), real app not run.
 After update: user reads `data/rvc_debug.log` and `/api/rvc/status` -> `last_convert_error`, then fix the real cause in v3.75.
+
+## 2026-11-13 — PENDING RELEASE v3.75 (prepared by Claude; NOT built/released)
+1) RVC ROOT CAUSE FOUND (from v3.74 `rvc_debug.log` on the real install): `warmup/convert failed: RuntimeError: Failed to import 'package_numba_cache.FrozenDataCacheLocator' specified via NUMBA_CACHE_LOCATOR_CLASSES` (ModuleNotFoundError: package_numba_cache) -> librosa/numba import fails inside rvc_python RMVPE -> every RVC conversion raises; launch_dev swallowed it and returned plain Edge audio. `package_numba_cache.py` exists in dev but is NOT in the production folder/_internal (package_entry.py of the exe sets the env var for FULL). Autoload at startup works (log shows init + load). Why earlier versions worked is not explained.
+   Fix: `package_numba_cache.py` added to CORE_FILES in `publish_release_v375.py` (also copied to `_internal/`); launch_dev.py top block drops NUMBA_CACHE_LOCATOR_CLASSES if the module cannot be found (fallback to numba defaults). Also: failed RVC conversions are no longer cached as RVC output (`_rvc_convert_failed`).
+2) WAYU TTS REMOVED (user request; only Edge-TTS + RVC remain): index.html (engine cards/buttons, Wayu voice selectors, selectTtsEngine/warm-up/preview JS, `model`/`voice` request params, dictionary badge, gate CSS/JS), styles.css (pitch hide + badge rules), tts_service.py (all Wayu code; `generate_audio_bytes(text, gender, rate, pitch, volume)`), launch_dev.py (`model`/`voice` params, Replace-bypass). Old localStorage keys `bp3_tts_engine`/`bp3_wayu_voice` are cleared on load. Secret gate (20 clicks on green dot) now only controls Giveaway. Backups: `_to_delete/*.pre_nowayu`. Not touched: older WORKLOG/HANDOFF history, publish_release_v371.py, `wayu_tts` pip package is not bundled anywhere.
+3) Version 3.75: package.json, updater.py, release.bat, src/index.html; `publish_release_v375.py` created. Tests: syntax (py + all inline JS via node --check), Playwright load of src/index.html with stubbed API (no Wayu elements, selectTtsEngine/syncTtsEngineUi/getTtsProsodyForPreview present; the one page error "Cannot convert undefined or null to object" also occurs on the pre-change file with the stub API). Real app NOT run.
+Verify after update: RVC voice on a chat message; `data/rvc_debug.log` no new "convert failed"; Setting > TTS page shows only gender/voice settings (no engine buttons).

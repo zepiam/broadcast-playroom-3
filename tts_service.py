@@ -178,54 +178,6 @@ def resolve_voice(text: str, gender: str = 'female') -> tuple[str, str]:
     # English characters or fallback -> Thai voice model
     return VOICES[f'{g}_th'], g
 
-# Wayu-Paxa-TTS-Edge (Offline) Engine Support
-_WAYU_TTS_INSTANCE = None
-_WAYU_LOCK = None
-
-def get_wayu_tts():
-    global _WAYU_TTS_INSTANCE, _WAYU_LOCK
-    if _WAYU_LOCK is None:
-        import threading
-        _WAYU_LOCK = threading.Lock()
-    with _WAYU_LOCK:
-        if _WAYU_TTS_INSTANCE is None:
-            try:
-                from wayu_tts import ThaiTTS
-                logger.info("Initializing Wayu-Paxa-TTS-Edge model...")
-                _WAYU_TTS_INSTANCE = ThaiTTS.from_pretrained('wayu-ai/wayu-paxa-tts-edge')
-                logger.info("Wayu-Paxa-TTS-Edge loaded successfully.")
-            except Exception as e:
-                logger.error(f"Failed to load Wayu TTS model: {e}")
-                return None
-        return _WAYU_TTS_INSTANCE
-
-def parse_rate_to_speed(rate_str: str) -> float:
-    if not rate_str:
-        return 1.0
-    try:
-        cleaned = str(rate_str).replace('%', '').replace('+', '').strip()
-        val = float(cleaned)
-        speed = 1.0 + (val / 100.0)
-        return max(0.5, min(2.5, speed))
-    except Exception:
-        return 1.0
-
-def synthesize_wayu(text: str, gender: str = 'female', rate: str = '', voice: str = '') -> bytes:
-    tts = get_wayu_tts()
-    if not tts:
-        return b""
-    voice_name = voice.strip() if voice and voice.strip() in getattr(tts, 'voices', []) else ('f_young_clear' if gender == 'female' else 'm_young_clear')
-    speed = parse_rate_to_speed(rate)
-    try:
-        audio = tts(text, voice=voice_name, speed=speed)
-        import io, soundfile as sf
-        buf = io.BytesIO()
-        sf.write(buf, audio, 24000, format='WAV')
-        return buf.getvalue()
-    except Exception as e:
-        logger.error(f"Wayu TTS synthesis error: {e}")
-        return b""
-
 class TTSService:
     def __init__(self):
         self.dns_settings = None
@@ -323,17 +275,8 @@ class TTSService:
 
         return merge_audio_segments(audio_parts)
 
-    def generate_audio_bytes(self, text: str, gender: str = 'female', rate: str = '', pitch: str = '', volume: str = '', model: str = 'azure', voice: str = '') -> bytes:
+    def generate_audio_bytes(self, text: str, gender: str = 'female', rate: str = '', pitch: str = '', volume: str = '') -> bytes:
         """Synchronous wrapper to run async synthesis safely across threads and event loops"""
-        if str(model).lower() in ('wayu', 'wayu_offline', 'offline'):
-            try:
-                wayu_audio = synthesize_wayu(text, gender, rate, voice=voice)
-                if wayu_audio:
-                    return wayu_audio
-                logger.warning("Wayu TTS returned empty audio; falling back to Azure Edge-TTS")
-            except Exception as e:
-                logger.error(f"Wayu TTS execution failed: {e}; falling back to Azure Edge-TTS")
-
         try:
             try:
                 loop = asyncio.get_running_loop()
