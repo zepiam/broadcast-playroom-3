@@ -8,8 +8,8 @@
     "lite": {
       "file": "patch-v3.77-lite.zip",
       "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-lite.zip",
-      "sha256": "",
-      "size": 0,
+      "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
+      "size": 40892211,
       "mirrors": [
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.77-lite.zip"
       ]
@@ -17,8 +17,8 @@
     "full": {
       "file": "patch-v3.77-full.zip",
       "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-full.zip",
-      "sha256": "",
-      "size": 0,
+      "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
+      "size": 40892211,
       "mirrors": [
         "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.77-full.zip"
       ]
@@ -27,13 +27,13 @@
   "lite": {
     "file": "patch-v3.77-lite.zip",
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-lite.zip",
-    "sha256": "",
-    "size": 0
+    "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
+    "size": 40892211
   },
   "full": {
     "file": "patch-v3.77-full.zip",
     "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-full.zip",
-    "sha256": "",
-    "size": 0
+    "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
+    "size": 40892211
   }
 }
