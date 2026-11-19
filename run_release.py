@@ -198,5 +198,8 @@ def main():
 
 if __name__ == '__main__':
     code = main()
-    input("กด [Enter] เพื่อปิดหน้าต่างนี้...")
+    try:
+        input("กด [Enter] เพื่อปิดหน้าต่างนี้...")
+    except Exception:
+        pass
     sys.exit(code)
