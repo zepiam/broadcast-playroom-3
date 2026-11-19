@@ -166,23 +166,6 @@ def main():
         print(f"   • GitHub  : https://github.com/zepiam/broadcast-playroom-3/releases/tag/v{pkg_ver}")
         print(f"   • HF Mirror: https://huggingface.co/men9ch/broadcast-playroom-3")
         
-        # Sync to local installation if available
-        inst_full = Path(r"E:\DOCS\Documents\BroadcastPlayroom3\full")
-        if inst_full.is_dir():
-            print("\n🔄 กำลังซิงค์ไฟล์ล่าสุดลงโฟลเดอร์โปรแกรมในเครื่องของคุณ...")
-            sync_files = ['launch_dev.py', 'tts_service.py', 'rvc_service.py', 'package_numba_cache.py', 'version.json']
-            for sf in sync_files:
-                src_f = ROOT / sf
-                if src_f.is_file():
-                    try:
-                        shutil.copy2(src_f, inst_full / sf)
-                        internal_dir = inst_full / "_internal"
-                        if internal_dir.is_dir():
-                            shutil.copy2(src_f, internal_dir / sf)
-                    except Exception as ex:
-                        print(f"   [!] ข้อสังเกตตอนซิงค์ {sf}: {ex}")
-            print("   [✓] ซิงค์ไฟล์ลงโฟลเดอร์ติดตั้งในเครื่องเรียบร้อยแล้ว!")
-
         # Play chime
         try:
             import winsound
