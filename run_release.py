@@ -127,10 +127,15 @@ def main():
         except Exception:
             pass
 
+    sync_local = "--sync-local" in sys.argv
+
     print("\n" + "-" * 72)
     print(f"  📦 สคริปต์ที่จะรัน : {script_path.name}")
     print(f"  🏷️  เวอร์ชันที่จะปล่อย : v{pkg_ver}")
-    print(f"  🌐 อัปโหลดคู่ขนาน  : GitHub Releases + Hugging Face (men9ch/broadcast-playroom-3)")
+    if sync_local:
+        print(f"  🌐 ปลายทาง        : GitHub + Hugging Face + 🔄 ซิงค์ลงเครื่อง (BroadcastPlayroom3\\full)")
+    else:
+        print(f"  🌐 ปลายทาง        : GitHub + Hugging Face (เฉพาะ Cloud ไม่แตะต้องไฟล์ในเครื่อง)")
     print("-" * 72 + "\n")
 
     # Confirmation prompt
@@ -166,6 +171,24 @@ def main():
         print(f"   • GitHub  : https://github.com/zepiam/broadcast-playroom-3/releases/tag/v{pkg_ver}")
         print(f"   • HF Mirror: https://huggingface.co/men9ch/broadcast-playroom-3")
         
+        # Sync to local installation if requested
+        if sync_local:
+            inst_full = Path(r"E:\DOCS\Documents\BroadcastPlayroom3\full")
+            if inst_full.is_dir():
+                print("\n🔄 กำลังซิงค์ไฟล์ล่าสุดลงโฟลเดอร์โปรแกรมในเครื่องของคุณ...")
+                sync_files = ['launch_dev.py', 'tts_service.py', 'rvc_service.py', 'package_numba_cache.py', 'version.json']
+                for sf in sync_files:
+                    src_f = ROOT / sf
+                    if src_f.is_file():
+                        try:
+                            shutil.copy2(src_f, inst_full / sf)
+                            internal_dir = inst_full / "_internal"
+                            if internal_dir.is_dir():
+                                shutil.copy2(src_f, internal_dir / sf)
+                        except Exception as ex:
+                            print(f"   [!] ข้อสังเกตตอนซิงค์ {sf}: {ex}")
+                print("   [✓] ซิงค์ไฟล์ลงโฟลเดอร์ติดตั้งในเครื่องเรียบร้อยแล้ว!")
+
         # Play chime
         try:
             import winsound
