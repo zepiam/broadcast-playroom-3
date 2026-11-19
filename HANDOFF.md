@@ -3,6 +3,16 @@
 - **Status**: Stable & Verified via Smoke Test Gate (10/10 tool windows healthy, 0 runtime errors).
 ---
 
+> 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
+
+## ⏳ PENDING RELEASE v3.76 — เสถียรภาพเมื่อเปิดทิ้งไว้นาน (เตรียมโดย Claude 2026-11-19 — ยังไม่ build/commit/release)
+**รัน `release.bat` (→ `run_release.py` เลือก `publish_release_v376.py` อัตโนมัติ) แล้วทดสอบบน Windows จริง**
+- **ปัญหา:** ผู้ใช้ (รุ่น LITE) แจ้งว่าเปิดนาน ~2 ชม. โปรแกรมค้าง/หายเอง หรือหน้ากลายเป็นสีเทากดไม่ได้. ยังไม่ทราบสาเหตุจริง (สงสัย GPU acceleration / ระบบประหยัดพลังงาน) — แพตช์นี้เป็นการป้องกัน + เก็บข้อมูล
+- **แก้:** ไฟล์ใหม่ `power_guard.py` (กัน Windows sleep, ปิด Efficiency mode, watchdog รีสตาร์ตหน้าต่างเมื่อไม่มี heartbeat >180 วิ ขณะ browser ยังอยู่, เขียน `data/ui_health.log`), endpoint `/api/ui/heartbeat`, สคริปต์ heartbeat + Web Lock ใน index.html, รวม `--disable-features=` ที่ซ้ำกันใน `launch_dev.py` เหลือชุดเดียว. ปิดฟีเจอร์ได้ด้วย `data/power_settings.json`
+- **ยังไม่ได้ทดสอบ:** Win32 API จริง, การจับ process ของ Chrome/Edge ผ่าน `--user-data-dir`, `--start-minimized`, ชื่อ feature `HighEfficiencyModeAvailable,BatterySaverModeAvailable` (เดา; ถ้าไม่มีชื่อนี้ Chromium จะข้าม). ทดสอบเฉพาะ logic ของ watchdog แบบ mock ในคลาวด์
+- **ตรวจหลังอัปเดต:** `data/ui_health.log` มีบรรทัด `power_guard started` และ `ok: page heap ...` ทุก 5 นาที; เปิดทิ้งหลายชั่วโมง; ถ้ายังเกิดให้ผู้ใช้ส่ง `ui_health.log`
+- หมายเหตุ: `run_release.py` ซิงค์ไฟล์ลงเครื่องเจ้าของหลัง release จึงไม่ใช่การทดสอบตัวอัปเดตที่สะอาด
+
 ## 🚀 RELEASED v3.75 (ปล่อยอัปเดตเรียบร้อย)
 **ผู้ทำ release รัน `release.bat` (เรียก `publish_release_v375.py`) แล้วทดสอบอัปเดตบนเครื่องจริง**
 - **สาเหตุจริงของ RVC เสียงไม่ทำงานบน production (จาก `rvc_debug.log` ของ v3.74):** `Failed to import 'package_numba_cache.FrozenDataCacheLocator'` → numba/librosa โหลดไม่ได้ → ทุกการแปลงเสียงล้มและถูกกลืนเป็นเสียง Edge ปกติ. ไฟล์ `package_numba_cache.py` มีใน dev แต่ไม่มีในโฟลเดอร์ production (exe ตั้ง env `NUMBA_CACHE_LOCATOR_CLASSES` ให้ FULL). ยังอธิบายไม่ได้ว่าทำไมรุ่นก่อนหน้าเคยใช้ได้

@@ -4863,6 +4863,14 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
                 elif path == '/api/rvc/catalog':self.send_json({'models':rvc_service.public_catalog()})
+                elif path == '/api/ui/heartbeat':
+                    try:
+                        import power_guard
+                        _hb = urllib.parse.parse_qs(parsed.query).get('mem', ['-1'])[0]
+                        power_guard.beat(int(_hb) if _hb.lstrip('-').isdigit() else None)
+                    except Exception:
+                        pass
+                    self.send_json({'ok': True})
 
 
 
@@ -12227,7 +12235,7 @@ def find_browser():
 
 
 
-def open_app_window(main_url):
+def open_app_window(main_url, minimized=False):
     curr_ver = get_current_version()
     browser_bin = find_browser()
     launched = False
@@ -12257,7 +12265,7 @@ def open_app_window(main_url):
             "--disable-background-timer-throttling",
             "--disable-backgrounding-occluded-windows",
             "--disable-renderer-backgrounding",
-            "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading,WebAppWindowControlsOverlay",
+            "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading,WebAppWindowControlsOverlay,Translate,AutofillServerCommunication,AutofillEnableAccountWalletStorage,PasswordGeneration,HighEfficiencyModeAvailable,BatterySaverModeAvailable",
             "--disable-http-cache",
             "--disable-application-cache",
             "--disk-cache-size=1",
@@ -12267,7 +12275,6 @@ def open_app_window(main_url):
             "--disable-plugins",
             "--disable-component-extensions-with-background-pages",
             "--disable-default-apps",
-            "--disable-features=Translate,AutofillServerCommunication,AutofillEnableAccountWalletStorage,PasswordGeneration",
             "--disable-save-password-bubble",
             "--disable-single-click-autofill",
             "--disable-autofill-keyboard-accessory-view",
@@ -12277,6 +12284,8 @@ def open_app_window(main_url):
             "--window-size=1600,950",
             "--window-position=100,50"
         ]
+        if minimized:
+            cmd.append('--start-minimized')
         print(f"[LAUNCH] Opening Desktop App window via {os.path.basename(browser_bin)} (Popouts & Title Bar Native)...", flush=True)
         try:
             proc = subprocess.Popen(cmd)
@@ -12305,6 +12314,13 @@ def open_app_window(main_url):
     if not launched:
         print("[LAUNCH] Opening in default web browser...", flush=True)
         webbrowser.open(main_url)
+
+    # v3.76: keep the program running for hours (no system sleep / efficiency mode) + restart a hung app window
+    try:
+        import power_guard
+        power_guard.start(app_profile_dir, str(DATA_ROOT), lambda: open_app_window(main_url, minimized=True))
+    except Exception as _pg_err:
+        print(f"[WARN] power_guard unavailable: {_pg_err}", flush=True)
 
 
 
