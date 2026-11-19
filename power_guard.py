@@ -1,4 +1,4 @@
-"""power_guard.py - keep Broadcast Playroom 3 running for hours while idle (v3.76).
+"""power_guard.py - keep Broadcast Playroom 3 running for hours while idle (v3.77).
 
 What it does (Windows; every step is best-effort and never raises):
   1. Keep-awake: asks Windows not to enter system sleep while the program runs
@@ -7,15 +7,19 @@ What it does (Windows; every step is best-effort and never raises):
      the app's browser processes, so background work is not slowed down.
   3. UI watchdog: the main page sends a heartbeat every ~10 s (/api/ui/heartbeat). If the browser
      process is still alive but heartbeats stop for HANG_SECONDS (page frozen / slept / grey),
-     the app window is restarted (max 3 times per hour, minimised so it does not steal focus).
-  4. Writes <data>/ui_health.log (page heap size every 5 min and every recovery) for diagnosis.
+     the app window is restarted (max 3 times per hour, restored to normal view).
+  4. Native Windows Process Management: handles process tree killing and tracking directly
+     without requiring third-party libraries like psutil.
+  5. Writes <data>/ui_health.log (page heap size every 5 min and every recovery) for diagnosis.
 
-Opt-out: create <data>/power_settings.json  {"keep_awake": false, "watchdog": false, "no_efficiency_mode": false}
+Opt-out: create <data>/power_settings.json
+  {"keep_awake": false, "watchdog": false, "no_efficiency_mode": false, "disable_gpu": false}
 """
 from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
 import threading
 import time
@@ -33,6 +37,13 @@ _state = {
     'last_mem_log': 0.0,
 }
 _cfg = {'profile_dir': '', 'data_dir': '', 'relaunch': None}
+_active_browser_proc = None
+
+
+def register_browser_process(proc) -> None:
+    """Register the active subprocess.Popen instance of the app browser."""
+    global _active_browser_proc
+    _active_browser_proc = proc
 
 
 def _data_dir() -> Path:
@@ -53,7 +64,7 @@ def _log(message: str) -> None:
 
 
 def _settings() -> dict:
-    values = {'keep_awake': True, 'watchdog': True, 'no_efficiency_mode': True}
+    values = {'keep_awake': True, 'watchdog': True, 'no_efficiency_mode': True, 'disable_gpu': False}
     try:
         file = _data_dir() / 'power_settings.json'
         if file.is_file():
@@ -113,14 +124,21 @@ def _browser_processes():
     return result
 
 
-def _main_browser_alive(procs) -> bool:
-    for proc in procs:
+def _main_browser_alive(procs=None) -> bool:
+    global _active_browser_proc
+    if _active_browser_proc is not None:
         try:
-            cmd = ' '.join(proc.info.get('cmdline') or [])
-            if '--type=' not in cmd:
-                return True
+            return _active_browser_proc.poll() is None
         except Exception:
-            continue
+            pass
+    if procs:
+        for proc in procs:
+            try:
+                cmd = ' '.join(proc.info.get('cmdline') or [])
+                if '--type=' not in cmd:
+                    return True
+            except Exception:
+                continue
     return False
 
 
@@ -137,14 +155,21 @@ def _disable_efficiency_mode(pids) -> None:
         kernel32 = ctypes.windll.kernel32
         kernel32.OpenProcess.restype = wintypes.HANDLE
         state = PROCESS_POWER_THROTTLING_STATE(1, 0x1 | 0x4, 0)   # execution speed + timer resolution: force OFF
-        for pid in pids:
-            handle = kernel32.OpenProcess(0x0200, False, int(pid))   # PROCESS_SET_INFORMATION
-            if not handle:
-                continue
+        valid_pids = set(filter(None, pids))
+        global _active_browser_proc
+        if _active_browser_proc is not None and _active_browser_proc.poll() is None:
+            valid_pids.add(_active_browser_proc.pid)
+        for pid in valid_pids:
             try:
-                kernel32.SetProcessInformation(handle, 4, ctypes.byref(state), ctypes.sizeof(state))  # ProcessPowerThrottling
-            finally:
-                kernel32.CloseHandle(handle)
+                handle = kernel32.OpenProcess(0x0200, False, int(pid))   # PROCESS_SET_INFORMATION
+                if not handle:
+                    continue
+                try:
+                    kernel32.SetProcessInformation(handle, 4, ctypes.byref(state), ctypes.sizeof(state))  # ProcessPowerThrottling
+                finally:
+                    kernel32.CloseHandle(handle)
+            except Exception:
+                pass
     except Exception:
         pass
 
@@ -160,12 +185,23 @@ def _recover() -> None:
         silent = int(now - _state['last_beat'])
     _log('UI watchdog: no heartbeat for %ss while browser is alive (last page heap %s MB) -> restarting app window' % (silent, heap))
     try:
+        global _active_browser_proc
+        # 1. Native Windows tree-kill of the main browser process and all its sub-processes
+        if _active_browser_proc is not None and _active_browser_proc.poll() is None:
+            try:
+                subprocess.run(['taskkill', '/F', '/T', '/PID', str(_active_browser_proc.pid)],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
+
+        # 2. Cleanup any lingering processes for this app profile via psutil if available
         for proc in _browser_processes():
             try:
                 proc.kill()
             except Exception:
                 pass
-        time.sleep(2.0)
+
+        time.sleep(1.5)
         relaunch = _cfg['relaunch']
         if callable(relaunch):
             relaunch()
@@ -191,7 +227,8 @@ def _loop() -> None:
             if cfg['no_efficiency_mode'] and now - last_throttle > 60:
                 last_throttle = now
                 procs = _browser_processes()
-                _disable_efficiency_mode([os.getpid()] + [p.pid for p in procs])
+                pids = [os.getpid()] + [p.pid for p in procs]
+                _disable_efficiency_mode(pids)
             with _lock:
                 last_beat, beats, launched = _state['last_beat'], _state['beats'], _state['launched_at']
                 heap = _state['heap_mb']

@@ -1,11 +1,23 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.75)
-- **Current Version**: v3.75 (Released & Published to GitHub + Hugging Face)
-- **Status**: Stable & Verified via Smoke Test Gate (10/10 tool windows healthy, 0 runtime errors).
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.77)
+- **Current Version**: v3.77 (Ready for Release)
+- **Status**: Tested and Prepared for Universal Release Launcher.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## ⏳ PENDING RELEASE v3.76 — เสถียรภาพเมื่อเปิดทิ้งไว้นาน (เตรียมโดย Claude 2026-11-19 — ยังไม่ build/commit/release)
+## ⏳ PENDING RELEASE v3.77 — แก้ปัญหาหน้าเทาล้วน (Grey Screen) & GPU Crash Limit & Sleeping Tabs หลังเปิดทิ้งไว้นาน
+**รัน `release.bat` หรือ `release_full.bat` เพื่อปล่อยอัปเดต v3.77 ขึ้น GitHub และ Hugging Face ทันที**
+- **ปัญหา:** ผู้ใช้แจ้งว่าเมื่อเปิดโปรแกรมทิ้งไว้ประมาณ 2 ชั่วโมง (โดยไม่มีคนแชทเข้า) โปรแกรมค้างและหน้าต่างกลายเป็นสีเทาล้วน (Solid Grey Screen) คลิกอะไรไม่ได้
+- **สาเหตุจริงที่พบ:**
+  1. **GPU Process Crash Limit & Watchdog:** เมื่อจอคอมดับตามโหมดประหยัดพลังงาน หรือผู้ใช้เปิดเล่นเกม 3D สลับหน้าจอ ไดรเวอร์ GPU จะรีเซ็ต DirectX Swapchain แต่ Chromium มีการจำกัดการแครชของ GPU Process ไว้ที่ 3 ครั้ง ถ้าเกินจะตัดการทำงานของ GPU Compositor ถาวร หน้าต่าง `--app` จึงกลายเป็นแผ่นสีเทา
+  2. **Sleeping Tabs & Discarding:** Microsoft Edge มีระบบ `msSleepingTabs` และ Chrome มี `AutomaticTabDiscarding` สั่ง Freeze/Discard แท็บที่ไม่มีกิจกรรมนานเกินไป
+  3. **Watchdog ขาดการรองรับ Native:** ใน v3.76 มีการใช้ `import psutil` ซึ่งทำให้ผู้ใช้เวอร์ชัน LITE ไม่มี Watchdog คอยดูแล และตอนสั่งรีสตาร์ตหน้าต่างสั่งแบบ `--start-minimized` ทำให้หน้าต่างหายไปจากสายตา
+- **การแก้ไขใน v3.77:**
+  - `launch_dev.py`: เพิ่ม `--disable-gpu-process-crash-limit`, `--disable-gpu-watchdog`, และปิดฟีเจอร์แท็บหลับทั้งหมด (`AutomaticTabDiscarding`, `ProactiveTabFreezeAndDiscard`, `msSleepingTabs`, `msPerformanceMode`, ฯลฯ)
+  - `power_guard.py`: ปรับเป็น Native Windows Process Management ไม่ต้องพึ่งพา `psutil` รองรับทั้ง Full และ LITE 100%, Watchdog รีสตาร์ตหน้าต่างกลับมาแสดงตามปกติ และเพิ่มออปชันปิด GPU (`"disable_gpu": true` ใน `power_settings.json` หรือ `BP3_DISABLE_GPU=1`)
+  - สร้าง `publish_release_v377.py` และอัปเดตเลขเวอร์ชันใน `package.json`, `version.json`, `updater.py`, `src/index.html` สู่ v3.77 เรียบร้อย
+
+## 🚀 RELEASED v3.76 (ปล่อยอัปเดตเรียบร้อย)
 **รัน `release.bat` (→ `run_release.py` เลือก `publish_release_v376.py` อัตโนมัติ) แล้วทดสอบบน Windows จริง**
 - **ปัญหา:** ผู้ใช้ (รุ่น LITE) แจ้งว่าเปิดนาน ~2 ชม. โปรแกรมค้าง/หายเอง หรือหน้ากลายเป็นสีเทากดไม่ได้. ยังไม่ทราบสาเหตุจริง (สงสัย GPU acceleration / ระบบประหยัดพลังงาน) — แพตช์นี้เป็นการป้องกัน + เก็บข้อมูล
 - **แก้:** ไฟล์ใหม่ `power_guard.py` (กัน Windows sleep, ปิด Efficiency mode, watchdog รีสตาร์ตหน้าต่างเมื่อไม่มี heartbeat >180 วิ ขณะ browser ยังอยู่, เขียน `data/ui_health.log`), endpoint `/api/ui/heartbeat`, สคริปต์ heartbeat + Web Lock ใน index.html, รวม `--disable-features=` ที่ซ้ำกันใน `launch_dev.py` เหลือชุดเดียว. ปิดฟีเจอร์ได้ด้วย `data/power_settings.json`

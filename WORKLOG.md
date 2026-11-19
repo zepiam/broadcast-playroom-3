@@ -2569,3 +2569,21 @@ Changes (defensive; cause still unconfirmed):
 - Version 3.76 (package.json, updater.py, src/index.html; `run_release.py` picks the newest `publish_release_v*.py` itself; release.bat now calls run_release.py).
 Tests (cloud only): py syntax, node --check of the new script, power_guard watchdog logic with mocked processes (no action on fresh heartbeat, kill+relaunch after silence, no action when window gone, cap 3 recoveries). NOT tested on Windows / with a real Chrome: Win32 calls (SetThreadExecutionState, SetProcessInformation), process matching by --user-data-dir, `--start-minimized`.
 Verify after update on a real install: `data/ui_health.log` gets "power_guard started" and "ok: page heap ..." lines; leave the app idle for hours; ask the affected user to send `ui_health.log` if it still happens. Note: `run_release.py` copies launch_dev/tts_service/rvc_service/package_numba_cache/version.json into the owner's local install after a release — the owner's install is therefore not a clean test of the updater (add power_guard.py there only if wanted; the patch already ships it).
+
+## 2026-11-19 — Antigravity (เตรียม Release v3.77 — แก้ไขปัญหา GPU Crash, Grey Screen & Sleeping Tabs หลังเปิดทิ้งไว้นาน)
+- **สถานะ:** เตรียมความพร้อมสำหรับ Release v3.77
+- **การวิเคราะห์สาเหตุและวิธีแก้ไขปัญหาหน้าเทา (Grey Screen):**
+  1. **ปลดล็อก GPU Process Crash Limit & Watchdog**:
+     - สาเหตุ: เมื่อจอคอมดับ (Screen timeout) หรือเปิดเกม Fullscreen ไดรเวอร์ GPU รีเซ็ต DirectX Swapchain Chromium มีการจำกัดการแครชของ GPU Process ไว้ที่ 3 ครั้ง ถ้าเกินจะตัดการทำงานของ GPU Compositor ถาวร ส่งผลให้หน้าต่าง `--app` กลายเป็นแผ่นสีเทาและคลิกไม่ได้
+     - แก้ไขใน `launch_dev.py`: เพิ่ม `--disable-gpu-process-crash-limit` และ `--disable-gpu-watchdog` เพื่อให้ GPU คืนชีพได้ตลอดเวลา
+  2. **ปิดระบบ Sleeping Tabs & Tab Discarding ของ Edge และ Chrome แบบเบ็ดเสร็จ**:
+     - สาเหตุ: เมื่อไม่มีแชทเข้าและผู้ใช้ไม่ได้ขยับเมาส์ Microsoft Edge จะสั่ง Sleeping Tabs (`msSleepingTabs`) และ Chrome จะสั่ง `AutomaticTabDiscarding` พรากเรนเดอร์ออกจากหน่วยความจำ
+     - แก้ไขใน `launch_dev.py`: เพิ่มแฟล็ก `--disable-features` ให้ครอบคลุม `AutomaticTabDiscarding,ProactiveTabFreezeAndDiscard,FreezingOnBatterySaver,msSleepingTabs,msSleepingTabsBlockedForUrls,msPerformanceMode,msEdgeEfficiencyMode,FreezeHungWorkers`
+  3. **อัปเกรด `power_guard.py` เป็น Native Windows Process Management**:
+     - แก้ไขจุดบกพร่องที่ต้องพึ่งพา `psutil` ซึ่งทำให้ผู้ใช้รุ่น LITE ไม่มี Watchdog คอยดูแล
+     - ใช้ `register_browser_process(proc)` เชื่อมโยงกับ Browser Process โดยตรง และใช้ `taskkill /F /T /PID` ของ Windows 100%
+     - ปรับ Watchdog ตอนกู้คืนหน้าต่าง ให้เปิดกลับขึ้นมาแสดงตามปกติ ไม่เปิดแบบ `--start-minimized` ที่ทำให้หน้าต่างหายไปจากสายตาผู้ใช้
+  4. **เพิ่มตัวเลือก Disable GPU**:
+     - สามารถสั่งปิด Hardware Acceleration ได้หากการ์ดจอมีปัญหาผ่าน `data/power_settings.json` (`"disable_gpu": true`) หรือตั้งค่า Environment variable `BP3_DISABLE_GPU=1`
+  5. **สร้างสคริปต์ปล่อยเวอร์ชัน**: สร้าง `publish_release_v377.py`, ปรับปรุง `version.json`, `package.json`, `updater.py` และ `src/index.html` สู่ v3.77
+

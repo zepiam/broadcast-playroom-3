@@ -1,39 +1,39 @@
 {
-  "version": "3.76",
-  "latest_version": "3.76",
-  "release_date": "2026-11-12",
+  "version": "3.77",
+  "latest_version": "3.77",
+  "release_date": "2026-11-19",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.76\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.76:\n- **ทำให้โปรแกรมเปิดทิ้งไว้ได้นานๆ โดยไม่ค้างหรือพักการทำงาน**:\n  - กันไม่ให้ Windows เข้าสู่โหมดพักเครื่อง (Sleep) ระหว่างเปิดโปรแกรม (หน้าจอยังดับได้) และปิดโหมดประหยัดพลังงาน (Efficiency mode) ของตัวโปรแกรมกับหน้าต่างโปรแกรม\n  - หน้าโปรแกรมส่งสัญญาณชีพเป็นระยะ ถ้าหน้าต่างค้างหรือกลายเป็นสีเทานานเกิน 3 นาที โปรแกรมจะเปิดหน้าต่างใหม่ให้อัตโนมัติ (ย่อไว้ที่ Taskbar ไม่แย่งโฟกัสเกม)\n  - ปิดฟีเจอร์ประหยัดพลังงานของเบราว์เซอร์ที่อาจพักหน้าโปรแกรม และแก้ค่าเริ่มต้นเบราว์เซอร์ที่ซ้ำกัน\n  - บันทึกสุขภาพหน้าโปรแกรมลงไฟล์ ui_health.log ในโฟลเดอร์ data สำหรับตรวจสอบปัญหา\n  - ปิดฟีเจอร์เหล่านี้ได้ด้วยไฟล์ data/power_settings.json\n",
+  "changelog": "# Broadcast Playroom v3.77\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.77:\n- **แก้ปัญหาโปรแกรมค้าง / กลายเป็นหน้าต่างสีเทา (Grey Screen) หลังเปิดทิ้งไว้นานๆ**:\n  - **ปลดล็อก GPU Process Crash Limit & Watchdog**: ป้องกันไม่ให้ Chromium/Chrome ยอมแพ้และตัดระบบแสดงผลทิ้งเมื่อดับหน้าจอคอมหรือสลับเล่นเกมหนักๆ\n  - **ปิดระบบ Sleeping Tabs & Tab Discarding แบบเบ็ดเสร็จ**: ครอบคลุมทั้ง Microsoft Edge (msSleepingTabs) และ Google Chrome (AutomaticTabDiscarding) ไม่ให้หน้าต่างถูก Freeze หรือ Discard เมื่อไม่มีคนแชทนานเกินไป\n  - **อัปเกรด Watchdog เป็น Native Windows**: รองรับทั้งรุ่น Full และ LITE 100% โดยไม่ต้องพึ่งพาไลบรารีภายนอก สามารถตรวจจับอาการหน้าค้างและกู้คืนหน้าต่างกลับมาบนหน้าจอได้อย่างถูกต้อง\n  - **เพิ่มตัวเลือก Disable GPU**: สามารถปิด Hardware Acceleration ได้ผ่าน data/power_settings.json หากไดรเวอร์การ์ดจอมีปัญหา\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.76-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.76/patch-v3.76-lite.zip",
-      "sha256": "ea5dca19a5c981370581eb213d53f2886cd0c099dcd04e26fe75ab216f2101e7",
-      "size": 40890332,
+      "file": "patch-v3.77-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-lite.zip",
+      "sha256": "",
+      "size": 0,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.76-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.77-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.76-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.76/patch-v3.76-full.zip",
-      "sha256": "ea5dca19a5c981370581eb213d53f2886cd0c099dcd04e26fe75ab216f2101e7",
-      "size": 40890332,
+      "file": "patch-v3.77-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-full.zip",
+      "sha256": "",
+      "size": 0,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.76-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.77-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.76-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.76/patch-v3.76-lite.zip",
-    "sha256": "ea5dca19a5c981370581eb213d53f2886cd0c099dcd04e26fe75ab216f2101e7",
-    "size": 40890332
+    "file": "patch-v3.77-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-lite.zip",
+    "sha256": "",
+    "size": 0
   },
   "full": {
-    "file": "patch-v3.76-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.76/patch-v3.76-full.zip",
-    "sha256": "ea5dca19a5c981370581eb213d53f2886cd0c099dcd04e26fe75ab216f2101e7",
-    "size": 40890332
+    "file": "patch-v3.77-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-full.zip",
+    "sha256": "",
+    "size": 0
   }
 }

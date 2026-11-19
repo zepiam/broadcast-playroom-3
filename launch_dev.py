@@ -12262,10 +12262,12 @@ def open_app_window(main_url, minimized=False):
             f"--user-data-dir={app_profile_dir}",
             "--disable-popup-blocking",
             "--new-window",
+            "--disable-gpu-process-crash-limit",
+            "--disable-gpu-watchdog",
             "--disable-background-timer-throttling",
             "--disable-backgrounding-occluded-windows",
             "--disable-renderer-backgrounding",
-            "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading,WebAppWindowControlsOverlay,Translate,AutofillServerCommunication,AutofillEnableAccountWalletStorage,PasswordGeneration,HighEfficiencyModeAvailable,BatterySaverModeAvailable",
+            "--disable-features=CalculateNativeWinOcclusion,IntensiveWakeUpThrottling,QuickIntensiveWakeUpThrottlingAfterLoading,WebAppWindowControlsOverlay,Translate,AutofillServerCommunication,AutofillEnableAccountWalletStorage,PasswordGeneration,HighEfficiencyModeAvailable,BatterySaverModeAvailable,AutomaticTabDiscarding,ProactiveTabFreezeAndDiscard,FreezingOnBatterySaver,msSleepingTabs,msSleepingTabsBlockedForUrls,msPerformanceMode,msEdgeEfficiencyMode,FreezeHungWorkers",
             "--disable-http-cache",
             "--disable-application-cache",
             "--disk-cache-size=1",
@@ -12284,12 +12286,30 @@ def open_app_window(main_url, minimized=False):
             "--window-size=1600,950",
             "--window-position=100,50"
         ]
+        # Allow user to completely disable GPU acceleration via setting or env if graphics driver is buggy
+        _disable_gpu = os.environ.get('BP3_DISABLE_GPU') == '1'
+        try:
+            _ps_file = os.path.join(str(DATA_ROOT), 'power_settings.json')
+            if os.path.isfile(_ps_file):
+                with open(_ps_file, 'r', encoding='utf-8') as _f:
+                    _disable_gpu = bool(json.load(_f).get('disable_gpu', _disable_gpu))
+        except Exception:
+            pass
+        if _disable_gpu:
+            cmd.append('--disable-gpu')
+            print("[LAUNCH] Hardware acceleration disabled via settings (--disable-gpu)", flush=True)
+
         if minimized:
             cmd.append('--start-minimized')
         print(f"[LAUNCH] Opening Desktop App window via {os.path.basename(browser_bin)} (Popouts & Title Bar Native)...", flush=True)
         try:
             proc = subprocess.Popen(cmd)
             launched = True
+            try:
+                import power_guard
+                power_guard.register_browser_process(proc)
+            except Exception:
+                pass
             def _watch_app_window_icon():
                 start_t = time.time()
                 while time.time() - start_t < 35:
@@ -12315,10 +12335,10 @@ def open_app_window(main_url, minimized=False):
         print("[LAUNCH] Opening in default web browser...", flush=True)
         webbrowser.open(main_url)
 
-    # v3.76: keep the program running for hours (no system sleep / efficiency mode) + restart a hung app window
+    # v3.77: keep the program running for hours (no system sleep / efficiency mode) + restart a hung app window
     try:
         import power_guard
-        power_guard.start(app_profile_dir, str(DATA_ROOT), lambda: open_app_window(main_url, minimized=True))
+        power_guard.start(app_profile_dir, str(DATA_ROOT), lambda: open_app_window(main_url, minimized=False))
     except Exception as _pg_err:
         print(f"[WARN] power_guard unavailable: {_pg_err}", flush=True)
 
