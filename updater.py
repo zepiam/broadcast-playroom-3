@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.77"
+CURRENT_VERSION = "3.78"
 
 REPO_OWNER = "zepiam"
 
@@ -974,7 +974,7 @@ def apply_update_patch(patch_zip: str) -> bool:
                             shutil.rmtree(c_path, ignore_errors=True)
                 bp_dir = root_c / "browser_profile"
                 if bp_dir.is_dir():
-                    for sub in ["Default/Cache", "Default/Code Cache", "GrShaderCache", "ShaderCache"]:
+                    for sub in ["Default/Cache", "Default/Code Cache", "Default/GPUCache", "Default/DawnCache", "GrShaderCache", "ShaderCache"]:
                         c_path = bp_dir / sub
                         if c_path.is_dir():
                             shutil.rmtree(c_path, ignore_errors=True)

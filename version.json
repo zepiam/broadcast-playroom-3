@@ -1,39 +1,39 @@
 {
-  "version": "3.77",
-  "latest_version": "3.77",
-  "release_date": "2026-11-19",
+  "version": "3.78",
+  "latest_version": "3.78",
+  "release_date": "2026-11-20",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.77\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.77:\n- **แก้ปัญหาโปรแกรมค้าง / กลายเป็นหน้าต่างสีเทา (Grey Screen) หลังเปิดทิ้งไว้นานๆ**:\n  - **ปลดล็อก GPU Process Crash Limit & Watchdog**: ป้องกันไม่ให้ Chromium/Chrome ยอมแพ้และตัดระบบแสดงผลทิ้งเมื่อดับหน้าจอคอมหรือสลับเล่นเกมหนักๆ\n  - **ปิดระบบ Sleeping Tabs & Tab Discarding แบบเบ็ดเสร็จ**: ครอบคลุมทั้ง Microsoft Edge (msSleepingTabs) และ Google Chrome (AutomaticTabDiscarding) ไม่ให้หน้าต่างถูก Freeze หรือ Discard เมื่อไม่มีคนแชทนานเกินไป\n  - **อัปเกรด Watchdog เป็น Native Windows**: รองรับทั้งรุ่น Full และ LITE 100% โดยไม่ต้องพึ่งพาไลบรารีภายนอก สามารถตรวจจับอาการหน้าค้างและกู้คืนหน้าต่างกลับมาบนหน้าจอได้อย่างถูกต้อง\n  - **เพิ่มตัวเลือก Disable GPU**: สามารถปิด Hardware Acceleration ได้ผ่าน data/power_settings.json หากไดรเวอร์การ์ดจอมีปัญหา\n",
+  "changelog": "# Broadcast Playroom v3.78\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.78:\n- **ระบบ Auto Cache-Buster & Self-Healing อัตโนมัติ (แก้ปัญหาแคชค้างหลังอัปเดต 100%)**:\n  - **ตรวจจับเวอร์ชันหน้าเว็บอัตโนมัติ**: หากเบราว์เซอร์เปิดไฟล์หน้าเว็บเก่าจากแคชเครื่อง ระบบจะตรวจพบความไม่ตรงกันและสั่ง Hard Reload ล้างแคชตัวเองทันทีใน 0.1 วินาที โดยที่ผู้ใช้ไม่ต้องกด Ctrl+F5 เอง\n  - **ส่งไฟล์หน้าเว็บสดใหม่เสมอ (Zero 304 Caching)**: ปรับแต่งเซิร์ฟเวอร์ภายในให้ส่งไฟล์ index.html ตัวจริงจากดิสก์พร้อม Cache-Control no-store ป้องกันไม่ให้ Chrome/Edge จำหน้าเก่า\n  - **ล้าง V8 Code Cache อัตโนมัติ**: เคลียร์แคชไบต์โค้ดของ JavaScript ในโฟลเดอร์ browser_profile ตอนลงแพตช์เสร็จสมบูรณ์\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.77-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-lite.zip",
-      "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
-      "size": 40892211,
+      "file": "patch-v3.78-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-lite.zip",
+      "sha256": "",
+      "size": 0,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.77-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.78-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.77-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-full.zip",
-      "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
-      "size": 40892211,
+      "file": "patch-v3.78-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-full.zip",
+      "sha256": "",
+      "size": 0,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.77-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.78-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.77-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-lite.zip",
-    "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
-    "size": 40892211
+    "file": "patch-v3.78-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-lite.zip",
+    "sha256": "",
+    "size": 0
   },
   "full": {
-    "file": "patch-v3.77-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.77/patch-v3.77-full.zip",
-    "sha256": "7ba3fe8c14724bda3acd0cc80ccc1627965b0844ed831e7ea738bcca13f62ec9",
-    "size": 40892211
+    "file": "patch-v3.78-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-full.zip",
+    "sha256": "",
+    "size": 0
   }
 }

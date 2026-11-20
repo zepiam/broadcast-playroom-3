@@ -2587,3 +2587,13 @@ Verify after update on a real install: `data/ui_health.log` gets "power_guard st
      - สามารถสั่งปิด Hardware Acceleration ได้หากการ์ดจอมีปัญหาผ่าน `data/power_settings.json` (`"disable_gpu": true`) หรือตั้งค่า Environment variable `BP3_DISABLE_GPU=1`
   5. **สร้างสคริปต์ปล่อยเวอร์ชัน**: สร้าง `publish_release_v377.py`, ปรับปรุง `version.json`, `package.json`, `updater.py` และ `src/index.html` สู่ v3.77
 
+## 2026-11-20 — Antigravity (เตรียม Release v3.78 — ระบบ Auto Cache-Buster & Self-Healing ป้องกันแคชค้างหลังอัปเดต)
+- **สถานะ:** เตรียมความพร้อมสำหรับ Release v3.78
+- **สาเหตุของปัญหา:** ผู้ใช้บางรายหลังกดอัปเดตพบปัญหาตั้งค่าไม่ได้, ไม่ต่อช่อง, ไม่จำค่า, แชทไม่เข้า, ไม่อ่านเสียง แต่เมื่อกด `Ctrl + F5` แล้วหายเป็นปกติ เนื่องจาก Chromium (Chrome/Edge) ยังคงรันไส้ใน HTML/JS เก่าจาก Disk/Memory Cache ที่ขัดแย้งกับหลังบ้าน
+- **การแก้ไขแบบ Zero-Regression:**
+  1. **Frontend Self-Healing Auto Cache-Buster (`src/index.html`)**: ฝัง `BUNDLE_VERSION` ตรวจสอบกับ `/api/version` หากพบว่าหน้าเว็บที่กำลังรันเป็นเวอร์ชันเก่ากว่าเซิร์ฟเวอร์ จะสั่ง `window.location.replace` ล้างแคชตัวเองทันทีใน 0.1 วินาที โดยผู้ใช้ไม่ต้องกด Ctrl+F5 เอง พร้อมกัน reload loop ด้วย sessionStorage
+  2. **Backend No-Cache Delivery (`launch_dev.py`)**: ปรับ `QuietHandler.do_GET` สำหรับ `/` และ `/index.html` ให้ส่งรหัส 200 พร้อม `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` และไม่ส่ง 304 Not Modified เด็ดขาด
+  3. **Wipe V8 Code Cache (`updater.py`)**: เสริมการล้างไดเรกทอรี `Default/GPUCache` และ `Default/DawnCache` ใน `updater.py` ตอนแตกไฟล์แพตช์
+  4. สร้าง `publish_release_v378.py` และปรับปรุงเลขเวอร์ชัน 3.78 ใน `package.json`, `version.json`, `updater.py`
+
+

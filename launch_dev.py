@@ -2677,6 +2677,25 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+        # Layer 2: Guarantee immediate un-cached delivery of index.html so browser never runs stale cached UI
+        if path in ('/', '/index.html'):
+            idx_file = os.path.join(DIST_DIR, 'index.html')
+            if os.path.isfile(idx_file):
+                try:
+                    with open(idx_file, 'rb') as f:
+                        raw_html = f.read()
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'text/html; charset=utf-8')
+                    self.send_header('Content-Length', str(len(raw_html)))
+                    self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+                    self.send_header('Pragma', 'no-cache')
+                    self.send_header('Expires', '0')
+                    self.end_headers()
+                    self.wfile.write(raw_html)
+                    return
+                except Exception:
+                    pass
+
         if path == '/api/avatars/cache-info':
             import avatar_cache_service
             info = avatar_cache_service.get_cache_info(DATA_ROOT)
