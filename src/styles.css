@@ -2412,11 +2412,11 @@ select option {
 
 /* ปุ่มดาวน์โหลดอัปเดตใหม่ (แสดงบน Server Rail เหนือเฟือง Setting เมื่อมีเวอร์ชันใหม่) */
 .rail-icon-btn.update-glow {
-  background-color: rgba(35, 165, 90, 0.2) !important;
+  background-color: rgba(35, 165, 90, 0.16) !important;
   color: #23a55a !important;
-  border: 1.5px solid rgba(35, 165, 90, 0.6) !important;
+  border: 1.5px solid #23a55a !important;
   border-radius: 14px !important;
-  box-shadow: 0 0 16px rgba(35, 165, 90, 0.55), inset 0 0 8px rgba(35, 165, 90, 0.25) !important;
+  box-shadow: 0 0 12px rgba(35, 165, 90, 0.45) !important;
   cursor: pointer;
   margin-bottom: 8px;
   position: relative;
@@ -2426,29 +2426,33 @@ select option {
 
 .rail-icon-btn.update-glow.is-downloading {
   border-color: transparent !important;
-  box-shadow: 0 0 16px rgba(35, 165, 90, 0.4), inset 0 0 8px rgba(35, 165, 90, 0.2) !important;
+  box-shadow: 0 0 12px rgba(35, 165, 90, 0.3) !important;
+}
+
+.rail-icon-btn.update-glow:not(.is-downloading) .rail-update-progress-svg {
+  display: none !important;
 }
 
 .rail-icon-btn.update-glow .rail-update-progress-bar {
-  filter: drop-shadow(0 0 3px #23a55a);
+  filter: none;
 }
 
 .rail-icon-btn.update-glow:hover {
   background-color: #23a55a !important;
   color: #ffffff !important;
   border-color: #23a55a !important;
-  box-shadow: 0 0 24px rgba(35, 165, 90, 0.85), inset 0 0 10px rgba(255, 255, 255, 0.35) !important;
+  box-shadow: 0 0 18px rgba(35, 165, 90, 0.75) !important;
   transform: translateY(-2px);
 }
 
-.rail-icon-btn.update-glow svg {
+.rail-icon-btn.update-glow .rail-update-arrow-svg {
   display: block;
   stroke: currentColor;
   stroke-width: 2.5;
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.rail-icon-btn.update-glow:hover svg {
+.rail-icon-btn.update-glow:hover .rail-update-arrow-svg {
   transform: translateY(2px);
 }
 

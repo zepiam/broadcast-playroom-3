@@ -66223,9 +66223,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
             railBtn.classList.remove('is-downloading');
             if (railTrack) railTrack.style.display = 'none';
             if (railBar) {
-              railBar.style.display = 'block';
-              railBar.style.strokeDashoffset = '0';
-              railBar.style.stroke = '#23a55a';
+              railBar.style.display = 'none';
+              railBar.style.strokeDashoffset = '154';
             }
             railBtn.title = "⚡ ดาวน์โหลดไฟล์อัปเดต (v" + (data.version || "") + ") พร้อมติดตั้งแล้ว (คลิกเพื่อรีสตาร์ท)";
           }
@@ -66276,9 +66275,8 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
               railBtn.classList.remove('is-downloading');
               if (railTrack) railTrack.style.display = 'none';
               if (railBar) {
-                railBar.style.display = 'block';
-                railBar.style.strokeDashoffset = '0';
-                railBar.style.stroke = '#23a55a';
+                railBar.style.display = 'none';
+                railBar.style.strokeDashoffset = '154';
               }
               railBtn.title = "⚡ ดาวน์โหลดไฟล์อัปเดตเรียบร้อยแล้ว (คลิกเพื่อติดตั้ง)";
             }

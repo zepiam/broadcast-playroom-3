@@ -1,39 +1,39 @@
 {
-  "version": "3.78",
-  "latest_version": "3.78",
+  "version": "3.79",
+  "latest_version": "3.79",
   "release_date": "2026-11-20",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.78\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.78:\n- **ระบบ Auto Cache-Buster & Self-Healing อัตโนมัติ (แก้ปัญหาแคชค้างหลังอัปเดต 100%)**:\n  - **ตรวจจับเวอร์ชันหน้าเว็บอัตโนมัติ**: หากเบราว์เซอร์เปิดไฟล์หน้าเว็บเก่าจากแคชเครื่อง ระบบจะตรวจพบความไม่ตรงกันและสั่ง Hard Reload ล้างแคชตัวเองทันทีใน 0.1 วินาที โดยที่ผู้ใช้ไม่ต้องกด Ctrl+F5 เอง\n  - **ส่งไฟล์หน้าเว็บสดใหม่เสมอ (Zero 304 Caching)**: ปรับแต่งเซิร์ฟเวอร์ภายในให้ส่งไฟล์ index.html ตัวจริงจากดิสก์พร้อม Cache-Control no-store ป้องกันไม่ให้ Chrome/Edge จำหน้าเก่า\n  - **ล้าง V8 Code Cache อัตโนมัติ**: เคลียร์แคชไบต์โค้ดของ JavaScript ในโฟลเดอร์ browser_profile ตอนลงแพตช์เสร็จสมบูรณ์\n",
+  "changelog": "# Broadcast Playroom v3.79\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.79:\n- **ปรับปรุงการแสดงผลปุ่มอัปเดตบน Server Rail (#btnRailUpdate)**:\n  - **แก้ไขปัญหาเส้นกรอบซ้อนกัน (Double Border Overlap)**: แก้ไขกรณีที่เมื่อดาวน์โหลดไฟล์อัปเดตเสร็จสิ้น (100% หรือพร้อมติดตั้ง) มีเส้นขอบของแถบดาวน์โหลด SVG ซ้อนทับกับเส้นขอบปุ่ม CSS\n  - **ซ่อนแถบ SVG อัตโนมัติเมื่อดาวน์โหลดเสร็จ**: ปิดการแสดงผลวงกรอบ SVG เมื่อไม่ได้อยู่ในสถานะดาวน์โหลด เหลือเพียงกรอบปุ่มสีเขียวมนเดี่ยวที่คมชัดและสบายตา\n  - **ปรับแต่งเงาและแสงเรือง (Glow & Clean Borders)**: ลบเงา Inset ด้านในตัวปุ่มที่ทำให้เกิดภาพลวงตาเป็นขอบเบิ้ล และปรับแสง Outer Glow ให้สมูทสไตล์ Discord Server Rail\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.78-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-lite.zip",
-      "sha256": "493e9366881989f4895f7291a6eed61cfbddda7cc7a246107e771e6b02a02d47",
-      "size": 40892875,
+      "file": "patch-v3.79-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.79/patch-v3.79-lite.zip",
+      "sha256": "cc1f3a93e6ea11c71de2ce316b8434e9f0da1cb5b8d96e6571bbbf73ea289ddc",
+      "size": 40892878,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.78-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.79-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.78-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-full.zip",
-      "sha256": "493e9366881989f4895f7291a6eed61cfbddda7cc7a246107e771e6b02a02d47",
-      "size": 40892875,
+      "file": "patch-v3.79-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.79/patch-v3.79-full.zip",
+      "sha256": "cc1f3a93e6ea11c71de2ce316b8434e9f0da1cb5b8d96e6571bbbf73ea289ddc",
+      "size": 40892878,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.78-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.79-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.78-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-lite.zip",
-    "sha256": "493e9366881989f4895f7291a6eed61cfbddda7cc7a246107e771e6b02a02d47",
-    "size": 40892875
+    "file": "patch-v3.79-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.79/patch-v3.79-lite.zip",
+    "sha256": "cc1f3a93e6ea11c71de2ce316b8434e9f0da1cb5b8d96e6571bbbf73ea289ddc",
+    "size": 40892878
   },
   "full": {
-    "file": "patch-v3.78-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.78/patch-v3.78-full.zip",
-    "sha256": "493e9366881989f4895f7291a6eed61cfbddda7cc7a246107e771e6b02a02d47",
-    "size": 40892875
+    "file": "patch-v3.79-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.79/patch-v3.79-full.zip",
+    "sha256": "cc1f3a93e6ea11c71de2ce316b8434e9f0da1cb5b8d96e6571bbbf73ea289ddc",
+    "size": 40892878
   }
 }
