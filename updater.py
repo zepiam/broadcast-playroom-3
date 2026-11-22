@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.78"
+CURRENT_VERSION = "3.80"
 
 REPO_OWNER = "zepiam"
 
@@ -1431,21 +1431,20 @@ def restart_application_with_patch(patch_zip: Optional[str] = None):
 
 
     def _do_restart():
-
         time.sleep(1.0)
-
         try:
+            # Terminate active browser process before shutdown
+            try:
+                import power_guard
+                power_guard.terminate_browser()
+            except Exception:
+                pass
 
             install_dir = os.path.dirname(sys.executable) if getattr(sys, "frozen", False) else os.path.dirname(os.path.abspath(__file__))
-
             exe_path = sys.executable if getattr(sys, "frozen", False) else os.path.abspath(sys.argv[0])
 
-
-
             if patch_zip and os.path.isfile(patch_zip):
-
                 bat_script = rf"""@echo off
-
 set "BP3_WAIT_COUNT=0"
 :wait_for_exit
 tasklist /FI "PID eq {os.getpid()}" /NH | findstr /R /C:" {os.getpid()} " >nul
@@ -1458,6 +1457,11 @@ goto wait_for_exit
 :wait_extra
 rem Allow OS and Windows Defender 2 seconds to release file handles completely
 timeout /t 2 /nobreak >nul
+rem Terminate any lingering Broadcast Playroom browser windows so cache directories can be fully purged
+taskkill /F /IM chrome.exe /FI "WINDOWTITLE eq Broadcast Playroom*" >nul 2>&1
+taskkill /F /IM msedge.exe /FI "WINDOWTITLE eq Broadcast Playroom*" >nul 2>&1
+timeout /t 1 /nobreak >nul
+
 :apply_patch
 if not exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup" mkdir "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup"
 if exist "{install_dir}\..\data\platform_settings.json" copy /y "{install_dir}\..\data\platform_settings.json" "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\" >nul
@@ -1486,6 +1490,8 @@ if exist "{install_dir}\_internal" (
     if exist "{install_dir}\desktop_overlay_service.py" copy /y "{install_dir}\desktop_overlay_service.py" "{install_dir}\_internal\" >nul
     if exist "{install_dir}\desktop_overlay_qt.py" copy /y "{install_dir}\desktop_overlay_qt.py" "{install_dir}\_internal\" >nul
     if exist "{install_dir}\viewer_overlay_config.py" copy /y "{install_dir}\viewer_overlay_config.py" "{install_dir}\_internal\" >nul
+    if exist "{install_dir}\power_guard.py" copy /y "{install_dir}\power_guard.py" "{install_dir}\_internal\" >nul
+    if exist "{install_dir}\layout_migration.py" copy /y "{install_dir}\layout_migration.py" "{install_dir}\_internal\" >nul
 )
 
 if exist "%LOCALAPPDATA%\BroadcastPlayroom3\settings_backup\platform_settings.json" (
@@ -1512,7 +1518,10 @@ for %%D in ("{install_dir}\data\browser_profile" "{install_dir}\..\data\browser_
     if exist "%%~D\Default\Cache" rmdir /s /q "%%~D\Default\Cache" >nul 2>&1
     if exist "%%~D\Default\Code Cache" rmdir /s /q "%%~D\Default\Code Cache" >nul 2>&1
     if exist "%%~D\Default\GPUCache" rmdir /s /q "%%~D\Default\GPUCache" >nul 2>&1
+    if exist "%%~D\Default\DawnCache" rmdir /s /q "%%~D\Default\DawnCache" >nul 2>&1
     if exist "%%~D\ShaderCache" rmdir /s /q "%%~D\ShaderCache" >nul 2>&1
+    if exist "%%~D\GrShaderCache" rmdir /s /q "%%~D\GrShaderCache" >nul 2>&1
+)
 )
 
 if exist "{install_dir}\broadcast playroom dev" rmdir /s /q "{install_dir}\broadcast playroom dev" >nul 2>&1

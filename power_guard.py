@@ -46,6 +46,26 @@ def register_browser_process(proc) -> None:
     _active_browser_proc = proc
 
 
+def terminate_browser() -> None:
+    """Terminate registered browser process and any child processes cleanly."""
+    global _active_browser_proc
+    if _active_browser_proc is not None:
+        try:
+            _active_browser_proc.terminate()
+            _active_browser_proc.wait(timeout=2)
+        except Exception:
+            try:
+                _active_browser_proc.kill()
+            except Exception:
+                pass
+        _active_browser_proc = None
+    for p in _browser_processes():
+        try:
+            p.terminate()
+        except Exception:
+            pass
+
+
 def _data_dir() -> Path:
     return Path(_cfg['data_dir'] or os.environ.get('BP3_DATA_DIR') or '.')
 

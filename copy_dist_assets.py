@@ -1,5 +1,7 @@
 import os
 import shutil
+import json
+import re
 from pathlib import Path
 
 project_dir = Path(__file__).resolve().parent
@@ -72,8 +74,17 @@ if os.path.exists(src_assets):
 
 print("Dist assets synchronized successfully!")
 
+# Read package version
+pkg_json_path = os.path.join(project_dir, 'package.json')
+pkg_ver = "3.80"
+if os.path.exists(pkg_json_path):
+    try:
+        with open(pkg_json_path, 'r', encoding='utf-8') as f:
+            pkg_ver = json.load(f).get('version', '3.80')
+    except Exception:
+        pass
 
-# Ensure dist/index.html links to all required stylesheets
+# Ensure dist/index.html links to all required stylesheets and busts cache
 dist_index = os.path.join(dist_dir, 'index.html')
 if os.path.exists(dist_index):
     with open(dist_index, 'r', encoding='utf-8') as f:
@@ -83,25 +94,38 @@ if os.path.exists(dist_index):
     dhtml = dhtml.replace('<img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon"', '<img src="./assets/bp-full-icon.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;"')
     dhtml = dhtml.replace('<html lang="th" class="notranslate" translate="no">', '<html lang="th" class="notranslate" translate="no" style="background:#1e1f22!important;color:#f2f3f5!important;">')
 
-    required_links = [
-        '<link rel="stylesheet" href="./styles.css">',
-        '<link rel="stylesheet" href="./ui_readability.css">',
-        '<link rel="stylesheet" href="./modal.css">',
-        '<link rel="stylesheet" href="./widget_customizer.css">',
-        '<link rel="stylesheet" href="./composer_studio.css">',
-        '<link rel="stylesheet" href="./composer_widget_themes.css">'
+    # Update BUNDLE_VERSION
+    dhtml = re.sub(r'const\s+BUNDLE_VERSION\s*=\s*["\'][^"\']*["\'];', f'const BUNDLE_VERSION = "{pkg_ver}";', dhtml)
+
+    # Required stylesheets with query busting
+    required_css_files = [
+        'styles.css',
+        'ui_readability.css',
+        'modal.css',
+        'widget_customizer.css',
+        'composer_studio.css',
+        'composer_widget_themes.css'
     ]
+
+    for css in required_css_files:
+        dhtml = re.sub(rf'href=["\']\./?{re.escape(css)}(\?[^"\']*)?["\']', f'href="./{css}?v={pkg_ver}"', dhtml)
+
+    # Inject any missing required stylesheets
     links_to_insert = []
-    for link in required_links:
-        if link not in dhtml:
-            links_to_insert.append(link)
+    for css in required_css_files:
+        if f'{css}?v={pkg_ver}' not in dhtml and css not in dhtml:
+            links_to_insert.append(f'<link rel="stylesheet" href="./{css}?v={pkg_ver}">')
 
     if links_to_insert:
         inject_block = "\n  " + "\n  ".join(links_to_insert) + "\n</head>"
         dhtml = dhtml.replace('</head>', inject_block, 1)
-        with open(dist_index, 'w', encoding='utf-8') as f:
-            f.write(dhtml)
         print(f"Injected {len(links_to_insert)} missing stylesheet links into dist/index.html")
+
+    # Bust query string for local companion JS files
+    dhtml = re.sub(r'src=["\']\./([a-zA-Z0-9_\-]+\.js)(\?[^"\']*)?["\']', rf'src="./\1?v={pkg_ver}"', dhtml)
+
+    with open(dist_index, 'w', encoding='utf-8') as f:
+        f.write(dhtml)
 
 
 # ==============================================================
@@ -110,12 +134,12 @@ if os.path.exists(dist_index):
 with open(dist_index, 'r', encoding='utf-8') as f:
     final_html = f.read()
 
-for req in required_links:
-    if req not in final_html:
-        raise RuntimeError(f"CRITICAL BUILD FAILURE: {req} is missing from dist/index.html!")
+for css in required_css_files:
+    if css not in final_html:
+        raise RuntimeError(f"CRITICAL BUILD FAILURE: {css} is missing from dist/index.html!")
 
-if 'styles.css' not in final_html:
-    raise RuntimeError("CRITICAL BUILD FAILURE: styles.css is not linked in dist/index.html!")
+if 'styles.css' not in final_html or f'styles.css?v={pkg_ver}' not in final_html:
+    raise RuntimeError("CRITICAL BUILD FAILURE: styles.css with version query string is not linked in dist/index.html!")
 
 styles_path = os.path.join(dist_dir, 'styles.css')
 if not os.path.exists(styles_path) or os.path.getsize(styles_path) < 50000:
@@ -124,7 +148,7 @@ if not os.path.exists(styles_path) or os.path.getsize(styles_path) < 50000:
 if 'width:16px' not in final_html and 'max-width:16px' not in final_html:
     raise RuntimeError("CRITICAL BUILD FAILURE: .desktop-titlebar-icon lacks size constraints in dist/index.html!")
 
-print(">>> [SAFETY GATE PASSED] All assets, stylesheets, and fail-safe constraints verified 100% complete!")
+print(f">>> [SAFETY GATE PASSED] All assets, stylesheets (v{pkg_ver}), and fail-safe constraints verified 100% complete!")
 
 # -------------------------------------------------------------
 # Automated Smoke Test Gate (Static and Headless Browser Test)

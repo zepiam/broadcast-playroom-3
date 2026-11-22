@@ -914,7 +914,8 @@ def ensure_frontend_integrity():
 
         # 2. Guarantee styles.css is loaded
         if 'styles.css' not in content and '</head>' in content:
-            content = content.replace('</head>', '  <link rel="stylesheet" href="./styles.css">\n  <link rel="stylesheet" href="./modal.css">\n  <link rel="stylesheet" href="./ui_readability.css">\n</head>')
+            cur_ver = get_current_version()
+            content = content.replace('</head>', f'  <link rel="stylesheet" href="./styles.css?v={cur_ver}">\n  <link rel="stylesheet" href="./modal.css?v={cur_ver}">\n  <link rel="stylesheet" href="./ui_readability.css?v={cur_ver}">\n</head>')
             repaired = True
 
         # 3. Guarantee dark background on html tag
@@ -5817,117 +5818,32 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-        # If file is not in dist, check if it's in src
-
-
-
-
-
-
-
+        # 5. Direct Un-Cached Delivery for all frontend assets (CSS, JS, images, fonts, icons)
+        # Guarantees ZERO 304 Not Modified and immediate updates without browser cache lockups
+        target_file = None
         dist_candidate = os.path.join(DIST_DIR, clean_path)
-
-
-
-
-
-
-
-        if not os.path.exists(dist_candidate) and clean_path:
-
-
-
-
-
-
-
+        if os.path.exists(dist_candidate) and os.path.isfile(dist_candidate):
+            target_file = dist_candidate
+        elif clean_path:
             src_candidate = os.path.join(SRC_DIR, clean_path)
-
-
-
-
-
-
-
             if os.path.exists(src_candidate) and os.path.isfile(src_candidate):
-
-
-
-
-
-
-
-                mime = 'text/plain'
-
-
-
-
-
-
-
-                if clean_path.endswith('.js'): mime = 'application/javascript; charset=utf-8'
-
-
-
-
-
-
-
-                elif clean_path.endswith('.css'): mime = 'text/css; charset=utf-8'
-
-
-
-
-
-
-
-                elif clean_path.endswith('.png'): mime = 'image/png'
-
-
-
-
-
-
-
-                elif clean_path.endswith('.jpg') or clean_path.endswith('.jpeg'): mime = 'image/jpeg'
-
-
-
-
-
-
-
-                elif clean_path.endswith('.svg'): mime = 'image/svg+xml'
-
-
-
-
-
-
-
-                self.serve_custom_file(src_candidate, mime)
-
-
-
-
-
-
-
-                return
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                target_file = src_candidate
+
+        if target_file:
+            mime = 'application/octet-stream'
+            if clean_path.endswith('.js'): mime = 'application/javascript; charset=utf-8'
+            elif clean_path.endswith('.css'): mime = 'text/css; charset=utf-8'
+            elif clean_path.endswith('.png'): mime = 'image/png'
+            elif clean_path.endswith('.jpg') or clean_path.endswith('.jpeg'): mime = 'image/jpeg'
+            elif clean_path.endswith('.svg'): mime = 'image/svg+xml'
+            elif clean_path.endswith('.ico'): mime = 'image/x-icon'
+            elif clean_path.endswith('.json') or clean_path.endswith('.webmanifest'): mime = 'application/json; charset=utf-8'
+            elif clean_path.endswith('.html'): mime = 'text/html; charset=utf-8'
+            elif clean_path.endswith('.woff2'): mime = 'font/woff2'
+            elif clean_path.endswith('.woff'): mime = 'font/woff'
+            elif clean_path.endswith('.ttf'): mime = 'font/ttf'
+            self.serve_custom_file(target_file, mime)
+            return
 
         super().do_GET()
 
