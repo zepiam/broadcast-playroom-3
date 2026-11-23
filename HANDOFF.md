@@ -1,9 +1,17 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.80)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.81 — pending release)
 - **Current Version**: v3.80 (Released & Verified)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
+
+## ⏳ PENDING RELEASE v3.81 — แก้ watchdog heartbeat ที่ไม่เคยทำงาน (เตรียมโดย Claude 2026-11-23 — ยังไม่ build/commit/release)
+**รัน `release.bat` (→ `run_release.py` เลือก `publish_release_v381.py` อัตโนมัติ)** — เวอร์ชันถูก bump เป็น 3.81 แล้วใน `package.json`, `updater.py`, `copy_dist_assets.py`, `src/index.html` (`?v=` และ `BUNDLE_VERSION`)
+- **บั๊ก (ของ Claude ใน v3.76):** route `/api/ui/heartbeat` ถูกใส่ไว้ในบล็อก `if path.startswith('/api/rvc/')` ของ `do_GET` จึงไม่เคยถูกเรียก. หลักฐาน: `data/ui_health.log` บนเครื่องจริง (v3.76–v3.80) มีแต่บรรทัด `power_guard started` ไม่มี `ok: page heap` เลย → ตัวเฝ้าหน้าต่าง (watchdog รีสตาร์ตหน้าต่างเมื่อค้าง/สีเทา) ยังไม่เคยทำงานจริง. ส่วนกัน Sleep / ปิด Efficiency mode ไม่ได้รับผลกระทบ
+- **แก้:** ย้าย route ออกมาเป็น `if path == '/api/ui/heartbeat': ... return` ก่อนบล็อก `/api/rvc/` (แก้ที่ `launch_dev.py` ไฟล์เดียว)
+- **ความเสี่ยง:** นี่คือรุ่นแรกที่ watchdog ทำงานได้จริง (kill + เปิดหน้าต่างใหม่ถ้าไม่มี heartbeat >180 วิ, สูงสุด 3 ครั้ง/ชม.). ตรวจหลังอัปเดต: `ui_health.log` ต้องมี `ok: page heap X MB` ทุก 5 นาที; ถ้าเห็น `UI watchdog: ...` = มันทำงาน (ถ้าแอปปกติดีอยู่ = false positive). ปิดได้ด้วย `data/power_settings.json` → `{"watchdog": false}`
+- **ทดสอบ:** syntax + ตรวจตำแหน่งโค้ดเท่านั้น ยังไม่ได้ยิง HTTP จริง/ไม่ได้ทดสอบบน Windows. แนะนำให้ทดสอบ `http://127.0.0.1:8801/api/ui/heartbeat?mem=1` ต้องได้ `{"ok": true}` (ไม่ใช่ 404) แล้วดู log
+- หมายเหตุ: บล็อก v3.77 ด้านล่างเขียนว่า "ตรวจ `ok: page heap` ทุก 5 นาที" — ข้อนั้นไม่เคยเป็นจริงจนกว่าจะปล่อย v3.81
 
 ## 🚀 RELEASED v3.80 (ปล่อยอัปเดตเรียบร้อย)
 **แก้ไขถาวรปัญหาหน้าตาโปรแกรมเพี้ยน (Zero Unstyled UI / Missing CSS / Browser Cache Lockup)**

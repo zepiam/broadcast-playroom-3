@@ -4858,6 +4858,15 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+        if path == '/api/ui/heartbeat':   # v3.81: must live outside the /api/rvc/ block (v3.76 put it inside, so it never ran)
+            try:
+                import power_guard
+                _hb = urllib.parse.parse_qs(parsed.query).get('mem', ['-1'])[0]
+                power_guard.beat(int(_hb) if _hb.lstrip('-').isdigit() else None)
+            except Exception:
+                pass
+            self.send_json({'ok': True})
+            return
         if path.startswith('/api/rvc/'):
 
 
@@ -4883,14 +4892,6 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
                 elif path == '/api/rvc/catalog':self.send_json({'models':rvc_service.public_catalog()})
-                elif path == '/api/ui/heartbeat':
-                    try:
-                        import power_guard
-                        _hb = urllib.parse.parse_qs(parsed.query).get('mem', ['-1'])[0]
-                        power_guard.beat(int(_hb) if _hb.lstrip('-').isdigit() else None)
-                    except Exception:
-                        pass
-                    self.send_json({'ok': True})
 
 
 

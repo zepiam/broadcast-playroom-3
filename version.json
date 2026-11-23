@@ -1,39 +1,39 @@
 {
-  "version": "3.80",
-  "latest_version": "3.80",
+  "version": "3.81",
+  "latest_version": "3.81",
   "release_date": "2026-11-23",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.80\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.80:\n- **แก้ไขปัญหาหน้าตาโปรแกรมเพี้ยน / CSS ไม่โหลดหลังอัปเดต (Zero Unstyled UI / Cache Lockup)**:\n  - **4-Layer Asset Cache Busting**: เพิ่มพารามิเตอร์เวอร์ชัน (`?v=3.80`) ให้กับไฟล์ CSS (`styles.css`, `ui_readability.css`, `modal.css`, `widget_customizer.css`, `composer_studio.css`, `composer_widget_themes.css`) และไฟล์ JavaScript สหายทั้งหมด ทำให้เบราว์เซอร์ดาวน์โหลดไฟล์ตกแต่งใหม่ล่าสุดเสมอทันทีที่มีการอัปเดต\n  - **Zero 304 Not Modified Policy**: ปรับระบบเว็บเซิร์ฟเวอร์ภายในเครื่อง (QuietHandler) ให้ส่งไฟล์หน้าบ้านด้วยสถานะ 200 OK และระบุ `Cache-Control: no-store, no-cache, must-revalidate` เสมอ เพื่อตัดวงจรแคชค้างในหน่วยความจำของ Chromium\n  - **Clean Process & Browser Termination**: ในขั้นตอนรีสตาร์ทเพื่อลงแพตช์ ระบบจะสั่งปิดหน้าต่าง Chromium / Edge ของโปรแกรมอย่างสมบูรณ์ก่อนลบโฟลเดอร์แคช ทำให้ระบบสามารถล้างไฟล์แคช (`Default\\Cache`, `GPUCache`, `DawnCache`, `GrShaderCache`) ได้ 100% โดยไม่ติด Permission Lock (Access is denied)\n  - **Bundle Version Auto-Sync**: เชื่อมโยงเวอร์ชันในไฟล์หน้าบ้าน (`BUNDLE_VERSION`) ให้ตรงกับตัวโปรแกรมอัตโนมัติ ป้องกันการตรวจจับเวอร์ชันคลาดเคลื่อน\n  - **บรรจุ `layout_migration.py` ใน Core Files**: ป้องกันปัญหาการโหลดโมดูลเมื่อเปิดใช้งาน\n",
+  "changelog": "# Broadcast Playroom v3.81\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.81:\n- **แก้ไขระบบเฝ้าระวังหน้าต่างโปรแกรมค้าง (Watchdog) ให้ทำงานจริง**:\n  - แก้จุดรับสัญญาณชีพจากหน้าโปรแกรมที่เดิมไม่ทำงาน ทำให้ตัวเฝ้าระวังไม่เคยเริ่มทำงาน ตอนนี้ถ้าหน้าต่างค้างหรือเป็นสีเทานานเกิน 3 นาที โปรแกรมจะเปิดหน้าต่างใหม่ให้อัตโนมัติ\n  - ไฟล์ ui_health.log ในโฟลเดอร์ data จะบันทึกสถานะหน้าโปรแกรมทุก 5 นาทีเพื่อใช้ตรวจสอบปัญหา\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.80-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.80/patch-v3.80-lite.zip",
-      "sha256": "79a8d9a99c2946978873375da6d8719bffd016880943f7d5b1329742d3f7d1fd",
-      "size": 40926676,
+      "file": "patch-v3.81-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.81/patch-v3.81-lite.zip",
+      "sha256": "ff2ff79a47ad771b227806675af3e077f069caaa765941421072c3293910bb4c",
+      "size": 40926627,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.80-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.81-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.80-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.80/patch-v3.80-full.zip",
-      "sha256": "79a8d9a99c2946978873375da6d8719bffd016880943f7d5b1329742d3f7d1fd",
-      "size": 40926676,
+      "file": "patch-v3.81-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.81/patch-v3.81-full.zip",
+      "sha256": "ff2ff79a47ad771b227806675af3e077f069caaa765941421072c3293910bb4c",
+      "size": 40926627,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.80-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.81-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.80-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.80/patch-v3.80-lite.zip",
-    "sha256": "79a8d9a99c2946978873375da6d8719bffd016880943f7d5b1329742d3f7d1fd",
-    "size": 40926676
+    "file": "patch-v3.81-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.81/patch-v3.81-lite.zip",
+    "sha256": "ff2ff79a47ad771b227806675af3e077f069caaa765941421072c3293910bb4c",
+    "size": 40926627
   },
   "full": {
-    "file": "patch-v3.80-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.80/patch-v3.80-full.zip",
-    "sha256": "79a8d9a99c2946978873375da6d8719bffd016880943f7d5b1329742d3f7d1fd",
-    "size": 40926676
+    "file": "patch-v3.81-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.81/patch-v3.81-full.zip",
+    "sha256": "ff2ff79a47ad771b227806675af3e077f069caaa765941421072c3293910bb4c",
+    "size": 40926627
   }
 }
