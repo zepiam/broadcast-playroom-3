@@ -1,3 +1,17 @@
+## [2026-11-23] – Antigravity (ปล่อย Release v3.81 — แก้ไขเส้นทาง Heartbeat ของ Watchdog ให้เฝ้าระวังหน้าต่างค้างได้จริง 100%)
+
+- **สถานะ:** ปล่อย Release v3.81 สมบูรณ์ (Dual-Mirror: GitHub & Hugging Face)
+- **ปัญหา:** ตัวเฝ้าระวังหน้าต่างโปรแกรมค้าง/หน้าเทา (Watchdog UI Heartbeat) ที่เพิ่มมาใน v3.76 ไม่เคยทำงานจริง เนื่องจากเส้นทาง `/api/ui/heartbeat` ถูกนำไปวางไว้ข้างในบล็อก `/api/rvc/` ใน `launch_dev.py` ทำให้เซิร์ฟเวอร์ปัดตกคำขอส่งสัญญาณชีพจากหน้าต่าง UI และตัวเฝ้าระวังไม่เคยเริ่มทำงาน
+- **การแก้ไข:**
+  1. `launch_dev.py`: ย้ายเส้นทาง `/api/ui/heartbeat` ออกมาอยู่ก่อนบล็อก `/api/rvc/` อย่างถูกต้อง เพื่อให้รับสัญญาณชีพจากหน้าต่าง UI ได้อย่างต่อเนื่อง
+  2. อัปเดตเลขเวอร์ชัน 3.81 ใน `package.json`, `updater.py`, `copy_dist_assets.py`, `src/index.html` (`?v=3.81` และ `BUNDLE_VERSION`)
+  3. ปล่อยแพตช์ผ่าน `publish_release_v381.py` ขึ้น GitHub Release v3.81 และ Hugging Face
+- **การทดสอบและผลลัพธ์ (Verification):**
+  - Vite build & `copy_dist_assets.py` ผ่าน 100%
+  - Headless Browser Smoke Test Gate ผ่าน 100% (10 Tool Windows, 0 runtime crashes)
+  - Strict SHA-256 Gate ตรงกัน 100% ทั้งแพตช์ Lite และ Full
+  - อัปโหลดขึ้น Hugging Face และ GitHub สำเร็จ พร้อม Purge jsDelivr เรียบร้อย
+
 ## [2026-11-23] – Antigravity (ปล่อย Release v3.80 — แก้ไขถาวรปัญหาหน้าตาโปรแกรมเพี้ยน Unstyled UI / Cache Lockup หลังอัปเดต)
 
 - **สถานะ:** ปล่อย Release v3.80 สมบูรณ์ (Dual-Mirror: GitHub & Hugging Face)
