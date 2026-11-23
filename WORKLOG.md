@@ -2677,3 +2677,8 @@ Changes:
 - `tests/verify_compatibility.py`: catalog assertions updated to the new selectors (file not run as a whole).
 Tests: py/JS syntax; scratch Playwright harness against real RVCService with fixture engine/downloader — 10/10 PASS (list renders, Lumine/Raiden from files shown installed+first with no download button, downloaded filter, search, download→check appears, use→"กำลังใช้งาน", close, no page errors). `npm run build` → Safety Gate + Smoke Test Gate PASSED; `dist/rvc_controls.js` contains the new code.
 Not verified: inside the real app window with real models. Known limit: older downloads with generic file names (`model.pth`) won't be detected until re-downloaded.
+
+## 2026-11-23 — Claude: RELEASED v3.82 (RVC catalog list) — first release run by Claude locally
+Version bumped to 3.82 (package.json, updater.py, copy_dist_assets.py x2, src/index.html `?v=` x6 + BUNDLE_VERSION); `publish_release_v382.py` copied from v381 with new changelog + commit message (CORE_FILES unchanged; rvc_service.py already included). Pre-flight `npm run build` → Safety Gate + dist integrity + Smoke Test Gate PASSED, `dist/index.html` has BUNDLE_VERSION 3.82. Ran `git checkout composer_layout.json` + `python publish_release_v382.py` (same as run_release.py, without the interactive prompt): patches 40,929,105 bytes each, SHA-256 gate passed, HF upload OK, commit c111376 + tag v3.82 pushed, GitHub Release v3.82 created, jsDelivr purged (HTTP 200).
+Post-release check: downloaded lite+full from GitHub release URL and HF mirror — all 4 SHA-256 match version.json; version.json on both hosts = 3.82.
+Not verified: in-app update on a real install; the new catalog dialog inside the real Voice Settings window.

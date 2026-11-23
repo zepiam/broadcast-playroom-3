@@ -1,16 +1,18 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.81)
-- **Current Version**: v3.81 (Released & Verified)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.82)
+- **Current Version**: v3.82 (Released)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — หน้าต่างโมเดลเสียง RVC แบบรายการ (Claude, 2026-11-23)
+## 🚀 RELEASED v3.82 — หน้าต่างโมเดลเสียง RVC แบบรายการ (Claude, 2026-11-23)
+- **Release:** `publish_release_v382.py` รันบนเครื่องเจ้าของโดย Claude → build + Safety Gate + Smoke Test Gate ผ่าน, SHA-256 gate ผ่าน, อัปขึ้น Hugging Face + GitHub Release v3.82 + tag + purge jsDelivr สำเร็จ. ตรวจหลังปล่อย: ดาวน์โหลด patch lite/full จากทั้ง GitHub และ HF แล้ว SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` บนทั้งสองที่เป็น 3.82
+- **ยังไม่ยืนยันบนเครื่องจริง:** อัปเดตผ่านตัวอัปเดตในโปรแกรม และหน้าต่างโมเดลใหม่ในหน้าต่าง Voice Settings จริง
 - **สิ่งที่เปลี่ยน:** หน้าต่าง "ดาวน์โหลดโมเดลเสียงเพิ่ม..." (`openRvcDownloader()` ใน `src/rvc_controls.js`) เปลี่ยนจาก dropdown เป็นรายการการ์ด มีช่องค้นหาและชิปตัวกรอง ทั้งหมด/โหลดแล้ว/Genshin/VTuber/Anime. โมเดลที่โหลดแล้วมีไอคอนเช็คสีเขียว อยู่บนสุด ไม่มีปุ่มดาวน์โหลด มีปุ่ม "ใช้โมเดลนี้" แทน หรือขึ้น "กำลังใช้งาน" ถ้าเป็นโมเดลที่เปิดอยู่. แถวที่กำลังโหลดแสดง % และปุ่มยกเลิก
 - **Backend (`rvc_service.py`):** `public_catalog()` ส่ง `installed`, `model_id`, `tag` เพิ่ม. ตรวจว่าโหลดแล้วจาก (1) ไฟล์ `rvc_models/.catalog_downloads.json` ที่บันทึกตอนดาวน์โหลดสำเร็จ (2) จับชื่อไฟล์ `.pth` ในเครื่องกับชื่อใน catalog / ชื่อ zip (ไฟล์หนึ่งนับให้รายการที่ key ยาวที่สุดเท่านั้น กัน Gawr Gura กับ Gawr Gura Talking ชนกัน)
 - **ทดสอบแล้ว:** Playwright harness กับ RVCService จริง (fixture engine/downloader) ผ่าน 10/10; `npm run build` + Safety Gate + Smoke Test Gate ผ่าน; `dist/rvc_controls.js` มีโค้ดใหม่. แก้ `tests/verify_compatibility.py` ให้ใช้ selector ใหม่ (ยังไม่ได้รันไฟล์นี้ทั้งไฟล์)
 - **ยังไม่ทดสอบ:** ในโปรแกรมจริง (หน้าต่าง Voice Settings แบบ popout) และกับโมเดลจริงของเครื่องเจ้าของ. ข้อจำกัด: โมเดลที่โหลดก่อนมีระบบนี้และชื่อไฟล์ไม่ตรงชื่อตัวละคร (เช่น `model.pth` ของ Hatsune Miku/Vegeta) จะไม่ขึ้นว่าโหลดแล้ว
-- **Release ถัดไป:** ต้องปรับเลขเวอร์ชัน + สร้าง `publish_release_v382.py` (rvc_service.py อยู่ใน CORE_FILES แล้ว)
+- **เวอร์ชัน 3.82:** `package.json`, `updater.py`, `copy_dist_assets.py` x2, `src/index.html` (`?v=` x6 + `BUNDLE_VERSION`); `publish_release_v382.py` สร้างจาก v381 (เปลี่ยน changelog/commit message เท่านั้น)
 
 ## 🚀 RELEASED v3.81 (ปล่อยอัปเดตเรียบร้อย)
 **แก้ไขระบบเฝ้าระวังหน้าต่างโปรแกรมค้าง (Watchdog UI Heartbeat) ให้ทำงานจริง**
