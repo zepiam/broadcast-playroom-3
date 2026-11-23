@@ -1,18 +1,44 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.78)
-- **Current Version**: v3.78 (Ready for Release)
-- **Status**: Tested and Prepared for Universal Release Launcher.
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.80)
+- **Current Version**: v3.80 (Released & Verified)
+- **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## ⏳ PENDING RELEASE v3.78 — ระบบ Auto Cache-Buster & Self-Healing อัตโนมัติ (แก้ปัญหาแคชค้างหลังอัปเดต)
-**รัน `release.bat` หรือ `release_full.bat` เพื่อปล่อยอัปเดต v3.78 ขึ้น GitHub และ Hugging Face ทันที**
+## 🚀 RELEASED v3.80 (ปล่อยอัปเดตเรียบร้อย)
+**แก้ไขถาวรปัญหาหน้าตาโปรแกรมเพี้ยน (Zero Unstyled UI / Missing CSS / Browser Cache Lockup)**
+- **ปัญหา:** ผู้ใช้บางรายหลังกดอัปเดตพบปัญหาหน้าตาโปรแกรมเพี้ยน ไม่มี CSS สไตล์ ตัวอักษรตกไปกองรวมกันทางซ้าย (Unstyled Raw HTML) ซึ่งเดิมต้องบอกให้ผู้ใช้กด `Ctrl + F5` ด้วยตนเอง
+- **สาเหตุที่แท้จริง (Root Cause):**
+  1. ไฟล์ตกแต่ง CSS และ Companion JS ใน `index.html` เป็นชื่อไฟล์แบบคงที่ ไม่มีเวอร์ชันกำกับ ทำให้ Chromium ดึงข้อมูลแคชเก่า/เสียหายจากหน่วยความจำมาแสดงผล
+  2. เซิร์ฟเวอร์ภายในเครื่อง (`QuietHandler.do_GET` ใน `launch_dev.py`) ตอบกลับรหัส `304 Not Modified` เมื่อเบราว์เซอร์ส่ง `If-Modified-Since` ทำให้เบราว์เซอร์ล็อกติดกับแคชเดิม
+  3. สคริปต์อัปเดต (`bp3_finish_update.bat`) สั่งรอปิดเฉพาะแบ็กเอนด์ Python แต่ไม่ได้ปิดหน้าต่าง Chromium/Edge ของโปรแกรม ทำให้คำสั่งลบแคชล้มเหลวด้วย Permission Error (Access is denied) เนื่องจากไฟล์แคชยังถูกเปิดค้างอยู่
+  4. ไฟล์ `layout_migration.py` ตกหล่นจาก `CORE_FILES` ของแพ็กเกจ Patch
+- **การแก้ไขใน v3.80:**
+  1. **4-Layer Asset Cache Busting (`copy_dist_assets.py` & `src/index.html`)**: เติมพารามิเตอร์ `?v=3.80` ให้กับไฟล์ CSS (`styles.css`, `ui_readability.css`, `modal.css`, `widget_customizer.css`, `composer_studio.css`, `composer_widget_themes.css`) และ companion JS ทั้งหมดโดยอัตโนมัติในขั้นตอน build
+  2. **Auto Sync BUNDLE_VERSION (`copy_dist_assets.py`)**: ซิงค์ `const BUNDLE_VERSION = "{pkg_ver}";` ใน `dist/index.html` ให้ตรงกับ `package.json` อัตโนมัติ ป้องกันปัญหาเวอร์ชัน mismatch
+  3. **Zero 304 / Always Fresh 200 OK (`launch_dev.py`)**: ใน `QuietHandler.do_GET` ส่งไฟล์หน้าบ้าน (CSS, JS, HTML, Assets) ด้วยสถานะ `200 OK` เสมอ พร้อมส่ง Header `Cache-Control: no-store, no-cache, must-revalidate` ตัดวงจรแคชค้าง 100%
+  4. **Clean Process & Browser Termination (`power_guard.py` & `updater.py`)**: เพิ่มฟังก์ชัน `terminate_browser()` และคำสั่ง `taskkill` หน้าต่างเบราว์เซอร์ของโปรแกรมก่อนเริ่มขั้นตอนลงแพตช์และลบแคช เพื่อให้ล้างไดเรกทอรีแคช (`Default\Cache`, `Default\Code Cache`, `Default\GPUCache`, `Default\DawnCache`, `ShaderCache`, `GrShaderCache`) ได้สะอาดหมดจด 100%
+  5. **เพิ่ม `layout_migration.py` ใน `CORE_FILES`**: ป้องกันปัญหา `ModuleNotFoundError: No module named 'layout_migration'` ในรุ่น Full
+- **ผลการทดสอบ (Verification):**
+  - Vite build & `copy_dist_assets.py` ผ่าน 100%
+  - Automated Headless Browser Smoke Test Gate (`smoke_test_gate.py`) ผ่าน 100% (ตรวจ interactive 10 Tool Windows, 0 runtime errors)
+  - Strict Post-Pack SHA-256 Gate ผ่าน 100% ตรงกันทั้ง `patch-v3.80-lite.zip` และ `patch-v3.80-full.zip`
+  - GitHub Release, Hugging Face Mirror, และ Purge jsDelivr สำเร็จสมบูรณ์
+
+## 🚀 RELEASED v3.79 (ปล่อยอัปเดตเรียบร้อย)
+**ปรับปรุงการแสดงผลปุ่มอัปเดตบน Server Rail (#btnRailUpdate)**
+- **ปัญหา:** เมื่อดาวน์โหลดไฟล์อัปเดตเสร็จสิ้น (100% หรือพร้อมติดตั้ง) มีเส้นขอบของแถบดาวน์โหลด SVG ซ้อนทับกับเส้นขอบปุ่ม CSS เกิดเป็นเส้นกรอบเบิ้ลสองชั้น (Double Border Overlap) และแสงเรืองซ้อนทับดูไม่สวยงาม
+- **การแก้ไขใน v3.79:**
+  1. `src/styles.css` & `src/user_controls.js`: ปิดการแสดงผลวงกรอบ SVG อัตโนมัติเมื่อดาวน์โหลดเสร็จสิ้น เหลือเพียงกรอบปุ่มสีเขียวมนเดี่ยวที่คมชัดและสบายตาสไตล์ Discord Server Rail
+  2. ลบเงา Inset ด้านในตัวปุ่มที่ทำให้เกิดภาพลวงตาเป็นขอบเบิ้ล และปรับแสง Outer Glow ให้สมูทสวยงาม
+
+## 🚀 RELEASED v3.78 (ปล่อยอัปเดตเรียบร้อย)
+**ระบบ Auto Cache-Buster & Self-Healing อัตโนมัติ (แก้ปัญหาแคชค้างหลังอัปเดต)**
 - **ปัญหา:** ผู้ใช้บางรายหลังกดอัปเดตพบปัญหาตั้งค่าไม่ได้, ไม่เชื่อมต่อกับช่อง, ไม่จำการตั้งค่า, แชทไม่เข้า, ไม่อ่านเสียง แต่เมื่อกด `Ctrl + F5` จะหายเป็นปกติทันที เกิดจากเบราว์เซอร์เปิดไฟล์หน้าเว็บเก่าจากแคชเครื่อง
 - **การแก้ไขใน v3.78:**
   1. **Frontend Auto Cache-Buster (`src/index.html`)**: ฝัง `BUNDLE_VERSION` เช็คกับ `/api/version` หากพบว่าหน้าเว็บที่กำลังรันเป็นเวอร์ชันเก่ากว่าเซิร์ฟเวอร์ จะสั่ง `window.location.replace` ล้างแคชตัวเองทันทีใน 0.1 วินาที โดยผู้ใช้ไม่ต้องกด Ctrl+F5 เอง
   2. **Backend No-Cache Delivery (`launch_dev.py`)**: ปรับ `QuietHandler.do_GET` สำหรับ `/` และ `/index.html` ให้ส่งรหัส 200 พร้อม `Cache-Control: no-store, no-cache, must-revalidate, max-age=0` และไม่ส่ง 304 Not Modified
   3. **Wipe V8 Code Cache (`updater.py`)**: ล้างไดเรกทอรี `Default/GPUCache` และ `Default/DawnCache` ใน `updater.py` ตอนแตกไฟล์แพตช์
-  4. สร้าง `publish_release_v378.py` และอัปเดตเลขเวอร์ชัน 3.78 ใน `package.json`, `version.json`, `updater.py` เรียบร้อย
 
 ## 🚀 RELEASED v3.77 (ปล่อยอัปเดตเรียบร้อย)
 **แก้ปัญหาหน้าเทาล้วน (Grey Screen) & GPU Crash Limit & Sleeping Tabs หลังเปิดทิ้งไว้นาน**

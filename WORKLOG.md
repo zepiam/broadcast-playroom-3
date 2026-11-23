@@ -1,3 +1,50 @@
+## [2026-11-23] – Antigravity (ปล่อย Release v3.80 — แก้ไขถาวรปัญหาหน้าตาโปรแกรมเพี้ยน Unstyled UI / Cache Lockup หลังอัปเดต)
+
+- **สถานะ:** ปล่อย Release v3.80 สมบูรณ์ (Dual-Mirror: GitHub & Hugging Face)
+- **ปัญหา:** ผู้ใช้บางรายพบปัญหาเมื่ออัปเดตเวอร์ชันใหม่แล้วเปิดโปรแกรมขึ้นมา หน้าตาโปรแกรมเพี้ยน กลายเป็นหน้าเว็บดิบไม่มี CSS สไตล์ ตัวอักษรตกมาเรียงเดี่ยวทางซ้าย ซึ่งก่อนหน้านี้ผู้ใช้ต้องกด `Ctrl + F5` เพื่อบังคับโหลดใหม่
+- **สาเหตุที่แท้จริง (Root Cause):**
+  1. ไฟล์ตกแต่ง CSS และ Companion JS ใน `index.html` เป็นลิงก์ชื่อเดิมไม่มีเวอร์ชันกำกับ ทำให้ Chromium ดึงข้อมูลแคชเก่า/เสียหายจากหน่วยความจำมาแสดงผล
+  2. เซิร์ฟเวอร์ภายในเครื่อง (`QuietHandler.do_GET`) ตอบกลับรหัส `304 Not Modified` เมื่อเบราว์เซอร์ส่ง `If-Modified-Since` ทำให้เบราว์เซอร์ล็อกติดกับแคชเดิม
+  3. สคริปต์อัปเดต (`bp3_finish_update.bat`) สั่งรอปิดเฉพาะแบ็กเอนด์ Python แต่ไม่ได้ปิดหน้าต่าง Chromium/Edge ของโปรแกรม ทำให้คำสั่งลบแคชล้มเหลวด้วย Permission Error (Access is denied) เนื่องจากไฟล์แคชยังถูกเปิดค้างอยู่
+  4. ไฟล์ `layout_migration.py` ตกหล่นจาก `CORE_FILES` ของแพ็กเกจ Patch
+- **การแก้ไขใน v3.80:**
+  1. `copy_dist_assets.py` & `src/index.html`: เพิ่มระบบ 4-Layer Asset Cache Busting เติมพารามิเตอร์ `?v={pkg_ver}` ให้กับไฟล์ CSS (`styles.css`, `ui_readability.css`, `modal.css`, `widget_customizer.css`, `composer_studio.css`, `composer_widget_themes.css`) และ companion JS ทั้งหมดโดยอัตโนมัติในขั้นตอน build
+  2. `copy_dist_assets.py`: ซิงค์ `const BUNDLE_VERSION = "{pkg_ver}";` ใน `dist/index.html` ให้ตรงกับ `package.json` อัตโนมัติ ป้องกันปัญหาเวอร์ชัน mismatch
+  3. `launch_dev.py`: ใน `QuietHandler.do_GET` ส่งไฟล์หน้าบ้าน (CSS, JS, HTML, Assets) ด้วยสถานะ `200 OK` เสมอ พร้อมส่ง Header `Cache-Control: no-store, no-cache, must-revalidate` ตัดวงจรแคชค้าง 100%
+  4. `power_guard.py` & `updater.py`: เพิ่มฟังก์ชัน `terminate_browser()` และคำสั่ง `taskkill` หน้าต่างเบราว์เซอร์ของโปรแกรมก่อนเริ่มขั้นตอนลงแพตช์และลบแคช เพื่อให้ล้างไดเรกทอรีแคช (`Default\Cache`, `Default\Code Cache`, `Default\GPUCache`, `Default\DawnCache`, `ShaderCache`, `GrShaderCache`) ได้สะอาดหมดจด 100%
+  5. `publish_release_v380.py`: เพิ่ม `layout_migration.py` ลงใน `CORE_FILES` (ทั้ง root และ `_internal/`)
+- **การทดสอบและผลลัพธ์ (Verification):**
+  - Vite build & `copy_dist_assets.py` ผ่าน 100%
+  - `dist_integrity.py` และ Strict Safety Gate ตรวจสอบไฟล์ CSS ทุกไฟล์และขนาดเกิน 50KB ผ่าน 100%
+  - Automated Headless Browser Smoke Test Gate (`smoke_test_gate.py`) ผ่าน 100% (ตรวจ interactive 10 Tool Windows, 0 runtime errors)
+  - Strict Post-Pack SHA-256 Gate ผ่าน 100% ตรงกันทั้ง `patch-v3.80-lite.zip` และ `patch-v3.80-full.zip`
+  - GitHub Release, Hugging Face Mirror, และ Purge jsDelivr สำเร็จสมบูรณ์
+
+## [2026-11-20] – Antigravity (ปล่อย Release v3.79 — ปรับปรุงการแสดงผลปุ่มอัปเดตบน Server Rail)
+
+- **สถานะ:** ปล่อย Release v3.79 สมบูรณ์ (Dual-Mirror: GitHub & Hugging Face)
+- **ปัญหา:** ปุ่มอัปเดตบน Server Rail (`#btnRailUpdate`) เมื่อดาวน์โหลดไฟล์อัปเดตเสร็จแล้วและรอให้ผู้ใช้กดรีสตาร์ท มีการแสดงผลเส้นกรอบซ้อนกันสองชั้น (Double Border Overlap) และแสงเรืองซ้อนทับดูไม่สวยงาม
+- **การแก้ไขใน v3.79:**
+  1. `src/styles.css` & `src/user_controls.js`: ปรับแต่งปุ่มอัปเดต `#btnRailUpdate` ซ่อนวงกรอบ SVG อัตโนมัติเมื่อดาวน์โหลดเสร็จสิ้น
+  2. ปรับแต่งเงาและแสงเรือง (Glow & Clean Borders): ลบ Inset Shadow ด้านในที่ทำให้ดูเป็นขอบเบิ้ล และปรับ Outer Glow เป็นสีเขียวมนเดี่ยวคมชัดสไตล์ Discord Server Rail
+- **การทดสอบและผลลัพธ์:** ตรวจสอบผ่าน Smoke Test Gate, SHA-256 Gate, และเผยแพร่อัปเดตเรียบร้อย
+
+## [2026-11-20] – Antigravity (ปล่อย Release v3.78 — ระบบ Auto Cache-Buster เบื้องต้น)
+
+- **สถานะ:** ปล่อย Release v3.78 เรียบร้อย
+- **การแก้ไขใน v3.78:**
+  1. เพิ่มสคริปต์ `BUNDLE_VERSION` ตรวจสอบกับ `/api/version` หากพบว่าไม่ตรงกันจะสั่ง hard-reload เพื่อแก้ปัญหาแคชค้าง
+  2. ปรับ `launch_dev.py` สำหรับ `/` และ `/index.html` ให้ส่ง `Cache-Control: no-store`
+
+## [2026-11-19] – Antigravity (ปล่อย Release v3.77 — ป้องกันปัญหาหน้าเทาล้วน Grey Screen & Watchdog)
+
+- **สถานะ:** ปล่อย Release v3.77 เรียบร้อย
+- **ปัญหา:** ผู้ใช้บางรายเปิดโปรแกรมนานประมาณ 2 ชั่วโมง แล้วหน้าจอค้างกลายเป็นสีเทาล้วน กดอะไรไม่ได้ เกิดจาก GPU driver crash หรือระบบประหยัดพลังงานของ Windows สั่ง Sleep แถบเบราว์เซอร์
+- **การแก้ไขใน v3.77:**
+  1. สร้าง `power_guard.py` เพื่อป้องกัน Windows เข้าสู่ Sleep Mode ระหว่างเปิดโปรแกรม
+  2. เพิ่ม Watchdog ตรวจจับ Heartbeat จากหน้า UI หากหน้าจอค้างไม่ส่ง Heartbeat เกิน 180 วินาที จะสั่งกู้คืนหน้าต่างเบราว์เซอร์ใหม่อัตโนมัติ
+  3. ปรับแฟล็ก Chromium ปิดระบบ Sleeping Tabs และ Efficiency Mode
+
 ## [2026-11-13] – Antigravity (ปล่อย Release v3.75 สำเร็จ)
 
 - **สถานะ:** ปล่อย Release v3.75 เรียบร้อย
