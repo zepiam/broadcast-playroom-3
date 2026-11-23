@@ -10059,6 +10059,11 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
                 elif path == '/api/rvc/cancel':result=rvc_service.cancel()
 
+                elif path == '/api/rvc/delete':
+                    result=rvc_service.delete_model(body.get('id'))
+                    with _TTS_CACHE_LOCK:
+                        _TTS_AUDIO_CACHE.clear()
+
 
 
 

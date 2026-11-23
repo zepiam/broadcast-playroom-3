@@ -156,6 +156,9 @@
 #rvcDownloadDialog .rvc-cat-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 #rvcDownloadDialog .rvc-cat-meta{font-size:12px;color:#949ba4;margin-top:2px;}
 #rvcDownloadDialog .rvc-cat-action{flex:0 0 auto;display:flex;align-items:center;gap:8px;font-size:12px;}
+#rvcDownloadDialog .rvc-cat-delete{display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;background:transparent;color:#949ba4;border:1px solid #3f4147;border-radius:6px;cursor:pointer;}
+#rvcDownloadDialog .rvc-cat-delete:hover:not(:disabled){color:#f23f43;border-color:#f23f43;background:rgba(242,63,67,.1);}
+#rvcDownloadDialog .rvc-cat-delete:disabled{opacity:.4;cursor:default;}
 #rvcDownloadDialog .rvc-cat-using{color:#23a55a;font-weight:600;}
 #rvcDownloadDialog .rvc-cat-pct{color:#b5bac1;min-width:36px;text-align:right;}
 #rvcDownloadDialog .rvc-cat-empty{padding:24px;text-align:center;color:#949ba4;font-size:13px;}
@@ -164,6 +167,7 @@
 #rvcDownloadDialog #rvcDownloadProgress{width:100%;margin-top:10px;}
 `;
  const ICON_INSTALLED='<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#23a55a"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+ const ICON_TRASH='<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
  const ICON_REMOTE='<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#80848e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>';
  window.openRvcDownloader=async()=>{
   if(!capability?.rvc)return;
@@ -198,6 +202,16 @@
      if(isActive(item)){const s=d.createElement('span');s.className='rvc-cat-using';s.textContent='กำลังใช้งาน';box.append(s);}
      else if(isLoading(item)){const s=d.createElement('span');s.className='rvc-cat-pct';s.textContent='กำลังโหลด...';box.append(s);}
      else if(item.model_id){const b=d.createElement('button');b.type='button';b.className='btn-topbar-action rvc-cat-use';b.textContent='ใช้โมเดลนี้';b.disabled=busy;b.onclick=()=>window.changeRvcModel(item.model_id);box.append(b);}
+     if(item.model_id && !isLoading(item)){
+      const del=d.createElement('button');del.type='button';del.className='rvc-cat-delete';del.title='ลบโมเดล';del.setAttribute('aria-label','ลบโมเดล '+item.name);del.innerHTML=ICON_TRASH;del.disabled=busy;
+      del.onclick=async()=>{
+       const warn=isActive(item)?'\nโมเดลนี้กำลังใช้งานอยู่ จะถูกปิดก่อนลบ':'';
+       if(!(d.defaultView || window).confirm(`ลบโมเดล "${item.name}" ใช่ไหม?${warn}\nไฟล์จะถูกย้ายไปถังขยะของ Windows กู้คืนได้`))return;
+       try{const st=await api('/api/rvc/delete',{id:item.model_id});note='ลบโมเดล '+item.name+' แล้ว';pendingRefresh=true;showStatus(st);await refresh();await reloadCatalog();}
+       catch(error){statusLine.textContent=note=error.message;}
+      };
+      box.append(del);
+     }
     }else if(latest?.state==='downloading' && downloadingId===item.id){
      const pct=d.createElement('span');pct.className='rvc-cat-pct';pct.dataset.pct='1';pct.textContent=(latest.progress || 0)+'%';
      const c=d.createElement('button');c.type='button';c.className='btn-topbar-action';c.id='btnRvcCancel';c.textContent='ยกเลิก';

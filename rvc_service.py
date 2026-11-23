@@ -259,6 +259,65 @@ class RVCService:
                 if staging and staging.is_dir() and staging.resolve().parent==self.model_dir.resolve() and staging.name.startswith('.download-'):shutil.rmtree(staging)
         self._start(perform);return self.status()
 
+    def _model_files(self,model):
+        """The .pth plus its .index files (same rule as load(); an index that better matches
+        another .pth in the folder, e.g. raiden-jp vs raiden, is left alone)."""
+        pth=model['path'];stem=pth.stem.lower()
+        others=[p.stem.lower() for p in pth.parent.glob('*.pth') if p!=pth]
+        files=[pth]
+        for index in pth.parent.glob('*.index'):
+            low=index.stem.lower()
+            if stem not in low:continue
+            if any(other!=stem and stem in other and other in low for other in others):continue
+            files.append(index)
+        return files
+
+    @staticmethod
+    def _recycle(paths):
+        """Move files to the Windows Recycle Bin (recoverable); plain delete elsewhere."""
+        paths=[str(Path(p)) for p in paths if Path(p).exists()]
+        if not paths:return
+        if os.name=='nt':
+            import ctypes
+            from ctypes import wintypes
+            class SHFILEOPSTRUCTW(ctypes.Structure):
+                _fields_=[('hwnd',wintypes.HWND),('wFunc',wintypes.UINT),('pFrom',wintypes.LPCWSTR),('pTo',wintypes.LPCWSTR),
+                          ('fFlags',ctypes.c_ushort),('fAnyOperationsAborted',wintypes.BOOL),('hNameMappings',ctypes.c_void_p),('lpszProgressTitle',wintypes.LPCWSTR)]
+            buffer=ctypes.create_unicode_buffer('\0'.join(paths)+'\0\0')
+            op=SHFILEOPSTRUCTW(None,3,ctypes.cast(buffer,wintypes.LPCWSTR),None,0x0040|0x0010|0x0004|0x0400,False,None,None)
+            code=ctypes.windll.shell32.SHFileOperationW(ctypes.byref(op))
+            if code!=0 or op.fAnyOperationsAborted or any(Path(p).exists() for p in paths):
+                raise OSError('ลบไฟล์โมเดลไม่สำเร็จ (รหัส %s) ไฟล์อาจถูกใช้งานอยู่' % code)
+        else:
+            for p in paths:os.remove(p)
+
+    def delete_model(self,model_id):
+        """Remove a local model (.pth + its .index) to the Recycle Bin. Unloads it first if active."""
+        self.require_full()
+        model=self.models().get(model_id)
+        if not model:raise ValueError('ไม่พบไฟล์โมเดลนี้ กรุณาเปิดหน้าต่างใหม่อีกครั้ง')
+        with self.lock:
+            if self.worker and self.worker.is_alive():raise ValueError('กรุณารอให้การโหลดหรือดาวน์โหลดโมเดลเสร็จก่อน')
+            was_selected=self.data.get('selected')==model_id
+        if was_selected:
+            with self.model_lock:
+                if self.engine:self.engine.unload()
+                self.engine=None
+            with self.lock:self.data.update(enabled=False,loaded=False,state='idle',error='',selected=None)
+            self._save()
+        files=self._model_files(model)
+        _rvc_diag('delete model: %s' % [str(p) for p in files])
+        self._recycle(files)
+        try:
+            data=self._read_catalog_manifest();name=model['filename'].lower()
+            kept={k:v for k,v in data.items() if name not in [x.lower() for x in v]}
+            if kept!=data:
+                target=self._catalog_manifest_file();temporary=target.with_suffix('.tmp')
+                temporary.write_text(json.dumps(kept,ensure_ascii=False),encoding='utf-8');os.replace(temporary,target)
+        except Exception:
+            _rvc_diag('could not update catalog manifest after delete', exc=True)
+        return self.status()
+
     def cancel(self):
         self.require_full();self.cancel_event.set();return self.status()
 
