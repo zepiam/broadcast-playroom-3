@@ -321,6 +321,59 @@ class RVCService:
     def cancel(self):
         self.require_full();self.cancel_event.set();return self.status()
 
+    def preview(self,model_id,audio_bytes):
+        """Convert audio with one specific model for the catalog's test-listen button.
+        Uses the active engine if it is that model; otherwise loads a temporary engine
+        (HuBERT is shared/cached) and unloads it afterwards. One preview at a time."""
+        self.require_full()
+        model=self.models().get(model_id)
+        if not model:raise ValueError('ไม่พบไฟล์โมเดลนี้ กรุณาเปิดหน้าต่างใหม่อีกครั้ง')
+        with self.lock:
+            if self.worker and self.worker.is_alive():raise ValueError('กรุณารอให้การโหลดหรือดาวน์โหลดโมเดลเสร็จก่อน')
+            use_active=self.data.get('selected')==model_id and self.data.get('loaded') and self.engine is not None
+        if not hasattr(self,'_preview_lock'):self._preview_lock=threading.Lock();self._preview_cache={}
+        if not self._preview_lock.acquire(blocking=False):raise ValueError('กำลังทดสอบเสียงโมเดลอื่นอยู่ กรุณารอให้จบก่อน')
+        try:
+            key=(model_id,hashlib.sha256(audio_bytes).hexdigest())
+            if key in self._preview_cache:return self._preview_cache[key]
+            import numpy as np
+            import soundfile as sf
+            audio,sample_rate=sf.read(io.BytesIO(audio_bytes),dtype='float32')
+            if getattr(audio,'ndim',1)>1:audio=audio.mean(axis=1)
+            index_files=[str(p) for p in self._model_files(model) if p.suffix.lower()=='.index']
+            def run(engine,index_path):
+                if self.engine_factory:return engine.convert_array(audio,sample_rate)
+                from rvc_engine import RVCParams
+                return engine.convert_array(audio,sample_rate,RVCParams(index_path=index_path))
+            if use_active:
+                with self.model_lock:
+                    if not self.engine:raise ValueError('โมเดลถูกปิดไปแล้ว กรุณาลองใหม่')
+                    result,rate=run(self.engine,getattr(self,'index_path',''))
+            else:
+                if self.engine_factory:engine=self.engine_factory(str(model['path']))
+                else:
+                    from rvc_engine import RVCEngine
+                    engine=RVCEngine(model_path=str(model['path']))
+                try:
+                    engine.load()
+                    if not engine.is_loaded:raise RuntimeError('Model did not load')
+                    result,rate=run(engine,index_files[0] if index_files else '')
+                finally:
+                    try:engine.unload()
+                    except Exception:pass
+            out=io.BytesIO();sf.write(out,np.asarray(result),int(rate),format='WAV',subtype='PCM_16')
+            data=out.getvalue()
+            if len(self._preview_cache)>=8:self._preview_cache.pop(next(iter(self._preview_cache)))
+            self._preview_cache[key]=data
+            return data
+        except ValueError:
+            raise
+        except Exception as error:
+            _rvc_diag('preview failed for %s: %s' % (model.get('filename'),error), exc=True)
+            raise ValueError('ทดสอบเสียงไม่สำเร็จ: %s' % error)
+        finally:
+            self._preview_lock.release()
+
     def convert(self,audio_bytes):
         default_mime = 'audio/wav' if (audio_bytes and audio_bytes[:4] == b'RIFF') else 'audio/mpeg'
         if self.edition!='full':return audio_bytes, default_mime

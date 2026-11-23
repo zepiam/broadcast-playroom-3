@@ -1,39 +1,39 @@
 {
-  "version": "3.83",
-  "latest_version": "3.83",
+  "version": "3.84",
+  "latest_version": "3.84",
   "release_date": "2026-11-23",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.83\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.83:\n- **ลบโมเดลเสียง RVC ที่โหลดแล้วได้จากในโปรแกรม**:\n  - ในหน้าต่างโมเดลเสียง RVC แถวที่ดาวน์โหลดแล้วมีปุ่มถังขยะสำหรับลบโมเดล\n  - ถามยืนยันก่อนลบทุกครั้ง และไฟล์โมเดลจะถูกย้ายไปถังขยะของ Windows สามารถกู้คืนได้\n  - ถ้าลบโมเดลที่กำลังใช้งานอยู่ โปรแกรมจะปิด RVC ให้ก่อนลบ\n",
+  "changelog": "# Broadcast Playroom v3.84\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.84:\n- **ทดสอบฟังเสียงโมเดล RVC ก่อนเลือกใช้**:\n  - ในหน้าต่างโมเดลเสียง RVC แถวที่ดาวน์โหลดแล้วมีปุ่มเล่นสำหรับฟังข้อความทดสอบเสียงด้วยโมเดลนั้น โดยไม่เปลี่ยนโมเดลที่ใช้อ่านแชทอยู่\n  - ระหว่างเล่นปุ่มจะเป็นปุ่มหยุด และมีเส้นวนรอบปุ่มบอกความคืบหน้า เส้นวนครบรอบเมื่อเสียงจบ\n  - ทดสอบได้ทีละโมเดล ป้องกันการกดซ้ำรัวๆ\n  - การทดสอบครั้งแรกหลังเปิดโปรแกรมอาจใช้เวลาประมาณ 10 วินาทีเพื่อเตรียมระบบเสียง\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.83-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.83/patch-v3.83-lite.zip",
-      "sha256": "e391c202e2b05616fbd01d0b47ec736acbaf8f240cc23f24b0b66053e65e25f7",
-      "size": 40932725,
+      "file": "patch-v3.84-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.84/patch-v3.84-lite.zip",
+      "sha256": "c3f010733cf5369179b4d1ebc02c54ee45717cf50b5c53e209fd3ad4e79bc858",
+      "size": 40936399,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.83-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.84-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.83-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.83/patch-v3.83-full.zip",
-      "sha256": "e391c202e2b05616fbd01d0b47ec736acbaf8f240cc23f24b0b66053e65e25f7",
-      "size": 40932725,
+      "file": "patch-v3.84-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.84/patch-v3.84-full.zip",
+      "sha256": "c3f010733cf5369179b4d1ebc02c54ee45717cf50b5c53e209fd3ad4e79bc858",
+      "size": 40936399,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.83-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.84-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.83-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.83/patch-v3.83-lite.zip",
-    "sha256": "e391c202e2b05616fbd01d0b47ec736acbaf8f240cc23f24b0b66053e65e25f7",
-    "size": 40932725
+    "file": "patch-v3.84-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.84/patch-v3.84-lite.zip",
+    "sha256": "c3f010733cf5369179b4d1ebc02c54ee45717cf50b5c53e209fd3ad4e79bc858",
+    "size": 40936399
   },
   "full": {
-    "file": "patch-v3.83-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.83/patch-v3.83-full.zip",
-    "sha256": "e391c202e2b05616fbd01d0b47ec736acbaf8f240cc23f24b0b66053e65e25f7",
-    "size": 40932725
+    "file": "patch-v3.84-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.84/patch-v3.84-full.zip",
+    "sha256": "c3f010733cf5369179b4d1ebc02c54ee45717cf50b5c53e209fd3ad4e79bc858",
+    "size": 40936399
   }
 }

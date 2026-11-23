@@ -4900,6 +4900,21 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
                 elif path == '/api/rvc/status':self.send_json(rvc_service.status())
+                elif path == '/api/rvc/preview':
+                    # Read a test message with one specific model (catalog "test listen" button);
+                    # does not change the active model. Edge-TTS first, then that model.
+                    _q=urllib.parse.parse_qs(parsed.query)
+                    _model_id=_q.get('id',[''])[0]
+                    _text=(_q.get('text',[''])[0] or 'สวัสดีครับ ยินดีต้อนรับทุกคนเข้าสู่ห้องแชทไลฟ์สตรีม!')[:200]
+                    _gender=_q.get('gender',['female'])[0];_rate=_q.get('rate',['+0%'])[0];_pitch=_q.get('pitch',['+0Hz'])[0]
+                    try:
+                        _base=tts_service.generate_audio_bytes(_text,_gender,_rate,_pitch,'+0%')
+                        if not _base:raise ValueError('สร้างเสียงอ่านไม่สำเร็จ กรุณาตรวจการเชื่อมต่ออินเทอร์เน็ต')
+                        _audio=rvc_service.preview(_model_id,_base)
+                    except ValueError as error:
+                        self.send_json({'error':str(error)},400);return
+                    self.send_response(200);self.send_header('Content-Type','audio/wav');self.send_header('Content-Length',str(len(_audio)))
+                    self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(_audio)
 
 
 

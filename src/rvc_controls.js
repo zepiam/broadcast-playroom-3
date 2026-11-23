@@ -159,6 +159,14 @@
 #rvcDownloadDialog .rvc-cat-delete{display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;background:transparent;color:#949ba4;border:1px solid #3f4147;border-radius:6px;cursor:pointer;}
 #rvcDownloadDialog .rvc-cat-delete:hover:not(:disabled){color:#f23f43;border-color:#f23f43;background:rgba(242,63,67,.1);}
 #rvcDownloadDialog .rvc-cat-delete:disabled{opacity:.4;cursor:default;}
+#rvcDownloadDialog .rvc-cat-play{position:relative;display:flex;align-items:center;justify-content:center;width:32px;height:32px;padding:0;background:transparent;color:#dbdee1;border:1px solid #3f4147;border-radius:50%;cursor:pointer;}
+#rvcDownloadDialog .rvc-cat-play:hover:not(:disabled){color:#fff;border-color:#5865f2;background:rgba(88,101,242,.12);}
+#rvcDownloadDialog .rvc-cat-play:disabled{opacity:.35;cursor:default;}
+#rvcDownloadDialog .rvc-cat-play.previewing{border-color:transparent;color:#fff;background:rgba(88,101,242,.18);}
+#rvcDownloadDialog .rvc-cat-play .rvc-ring{position:absolute;inset:-2px;width:36px;height:36px;transform:rotate(-90deg);pointer-events:none;}
+#rvcDownloadDialog .rvc-cat-play .rvc-ring circle{fill:none;stroke-width:2.5;}
+#rvcDownloadDialog .rvc-cat-play .rvc-ring .track{stroke:rgba(255,255,255,.1);}
+#rvcDownloadDialog .rvc-cat-play .rvc-ring .bar{stroke:#5865f2;stroke-linecap:round;}
 #rvcDownloadDialog .rvc-cat-using{color:#23a55a;font-weight:600;}
 #rvcDownloadDialog .rvc-cat-pct{color:#b5bac1;min-width:36px;text-align:right;}
 #rvcDownloadDialog .rvc-cat-empty{padding:24px;text-align:center;color:#949ba4;font-size:13px;}
@@ -168,6 +176,10 @@
 `;
  const ICON_INSTALLED='<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#23a55a"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
  const ICON_TRASH='<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>';
+ const ICON_PLAY='<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>';
+ const ICON_PAUSE='<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="6" y="4.5" width="4" height="15" rx="1"/><rect x="14" y="4.5" width="4" height="15" rx="1"/></svg>';
+ const RING_LEN=2*Math.PI*16;
+ const ICON_RING=`<svg class="rvc-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="track" cx="18" cy="18" r="16"/><circle class="bar" cx="18" cy="18" r="16" stroke-dasharray="${RING_LEN}" stroke-dashoffset="${RING_LEN}"/></svg>`;
  const ICON_REMOTE='<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#80848e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>';
  window.openRvcDownloader=async()=>{
   if(!capability?.rvc)return;
@@ -195,10 +207,69 @@
    let downloadingId=null,lastSig='',lastState=latest?.state || '',note='';
    const isActive=item=>item.model_id && latest && latest.selected===item.model_id && latest.state==='ready' && latest.enabled && latest.loaded;
    const isLoading=item=>item.model_id && latest && latest.selected===item.model_id && latest.state==='loading';
+   // Test-listen: one preview at a time. The ring around the pause icon fills with the audio's
+   // progress and completes exactly when playback ends.
+   let preview=null; // {id, name, phase:'prep'|'play', audio, raf, controller}
+   function previewText(){
+    let text='';
+    try{text=localStorage.getItem('bp3_tts_test_message') || '';}catch(_){}
+    if(!text)text=(d.getElementById('txtVoiceTestMessage') || document.getElementById('txtVoiceTestMessage') || document.getElementById('secTxtVoiceTestMessage'))?.value || '';
+    return text.trim() || 'สวัสดีครับ ยินดีต้อนรับทุกคนเข้าสู่ห้องแชทไลฟ์สตรีม!';
+   }
+   function setRing(fraction){
+    const bar=list.querySelector('.rvc-cat-play.previewing .rvc-ring .bar');
+    if(bar)bar.setAttribute('stroke-dashoffset',String(RING_LEN*(1-Math.max(0,Math.min(1,fraction)))));
+   }
+   function stopPreview(text){
+    if(!preview)return;
+    const p=preview;preview=null;
+    if(p.raf)cancelAnimationFrame(p.raf);
+    if(p.controller)try{p.controller.abort();}catch(_){}
+    if(p.audio){try{p.audio.pause();}catch(_){}p.audio.src='';}
+    if(text!==undefined){note=text;statusLine.textContent=text;}
+    if(panel.isConnected)render(true);
+   }
+   async function startPreview(item){
+    if(preview)return;
+    const controller=new AbortController();
+    preview={id:item.id,name:item.name,phase:'prep',audio:null,raf:0,controller};
+    note='กำลังเตรียมเสียง '+item.name+'...';statusLine.textContent=note;render(true);
+    try{
+     const pr=(window.getTtsProsodyForPreview && window.getTtsProsodyForPreview()) || {rate:'+0%',pitch:'+0Hz',volume:.8};
+     const url='/api/rvc/preview?id='+encodeURIComponent(item.model_id)+'&text='+encodeURIComponent(previewText())+'&gender='+encodeURIComponent(window._currentVoiceGender || 'female')+'&rate='+encodeURIComponent(pr.rate)+'&pitch='+encodeURIComponent(pr.pitch);
+     const response=await fetch(url,{cache:'no-store',signal:controller.signal});
+     if(!response.ok){let msg='ทดสอบเสียงไม่สำเร็จ';try{msg=(await response.json()).error || msg;}catch(_){}throw new Error(msg);}
+     const blob=await response.blob();
+     if(!preview || preview.controller!==controller)return;
+     const audio=new Audio(URL.createObjectURL(blob));audio.volume=Math.max(0,Math.min(1,pr.volume ?? .8));
+     preview.audio=audio;preview.phase='play';
+     audio.onended=()=>{setRing(1);URL.revokeObjectURL(audio.src);stopPreview('ทดสอบเสียง '+item.name+' จบแล้ว');};
+     audio.onerror=()=>stopPreview('เล่นเสียงทดสอบไม่สำเร็จ');
+     await audio.play();
+     note='กำลังเล่นเสียง '+item.name;statusLine.textContent=note;render(true);
+     const tick=()=>{if(!preview || preview.audio!==audio)return;if(audio.duration>0)setRing(audio.currentTime/audio.duration);preview.raf=requestAnimationFrame(tick);};
+     preview.raf=requestAnimationFrame(tick);
+    }catch(error){
+     if(error && error.name==='AbortError')return;
+     stopPreview(error.message || 'ทดสอบเสียงไม่สำเร็จ');
+    }
+   }
+   function previewButton(item,busy){
+    const mine=preview && preview.id===item.id;
+    const b=d.createElement('button');b.type='button';b.className='rvc-cat-play'+(mine?' previewing':'');b.dataset.previewId=item.id;
+    b.title=mine?(preview.phase==='prep'?'กำลังเตรียมเสียง กดเพื่อหยุด':'หยุดเสียงทดสอบ'):'ทดสอบฟังเสียง';
+    b.setAttribute('aria-label',(mine?'หยุดเสียงทดสอบ ':'ทดสอบฟังเสียง ')+item.name);
+    b.innerHTML=(mine?ICON_RING+ICON_PAUSE:ICON_PLAY);
+    b.disabled=busy || Boolean(preview && !mine);
+    b.onclick=()=>{if(mine)stopPreview('หยุดเสียงทดสอบแล้ว');else startPreview(item);};
+    if(mine && preview.audio && preview.audio.duration>0){const bar=b.querySelector('.bar');if(bar)bar.setAttribute('stroke-dashoffset',String(RING_LEN*(1-preview.audio.currentTime/preview.audio.duration)));}
+    return b;
+   }
    async function reloadCatalog(){try{catalog=(await api('/api/rvc/catalog')).models || [];render(true);}catch(error){statusLine.textContent=note=error.message;}}
    function actionFor(item,busy){
     const box=d.createElement('div');box.className='rvc-cat-action';
     if(item.installed){
+     if(item.model_id)box.append(previewButton(item,busy));
      if(isActive(item)){const s=d.createElement('span');s.className='rvc-cat-using';s.textContent='กำลังใช้งาน';box.append(s);}
      else if(isLoading(item)){const s=d.createElement('span');s.className='rvc-cat-pct';s.textContent='กำลังโหลด...';box.append(s);}
      else if(item.model_id){const b=d.createElement('button');b.type='button';b.className='btn-topbar-action rvc-cat-use';b.textContent='ใช้โมเดลนี้';b.disabled=busy;b.onclick=()=>window.changeRvcModel(item.model_id);box.append(b);}
@@ -226,7 +297,7 @@
    }
    function render(force){
     const busy=['loading','downloading'].includes(latest?.state);
-    const sig=[activeFilter,search.value,latest?.state,latest?.selected,latest?.enabled,latest?.loaded,downloadingId,catalog.map(i=>i.installed?1:0).join('')].join('|');
+    const sig=[activeFilter,search.value,latest?.state,latest?.selected,latest?.enabled,latest?.loaded,downloadingId,preview?preview.id+preview.phase:'',catalog.map(i=>i.installed?1:0).join('')].join('|');
     if(!force && sig===lastSig)return;lastSig=sig;
     const q=search.value.trim().toLowerCase();
     const items=catalog.filter(item=>(!q || item.name.toLowerCase().includes(q)) && (activeFilter==='all' || (activeFilter==='installed'?item.installed:item.category===activeFilter)))
@@ -263,7 +334,7 @@
     const pct=list.querySelector('[data-pct]');if(pct)pct.textContent=(status.progress || 0)+'%';
    };
    search.oninput=()=>render(true);
-   panel.addEventListener('close',()=>{panel.remove();catalogView=null;});
+   panel.addEventListener('close',()=>{stopPreview();panel.remove();catalogView=null;});
    render(true);panel.showModal();if(latest)showStatus(latest);
   }catch(error){message(error.message);}
  };

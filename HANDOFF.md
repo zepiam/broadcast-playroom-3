@@ -5,6 +5,12 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ปุ่มทดสอบฟังเสียงโมเดล RVC (Claude, 2026-11-23)
+- **สิ่งที่เปลี่ยน:** แถวโมเดลที่โหลดแล้วมีปุ่มกลม play (`.rvc-cat-play`) หน้าปุ่ม "ใช้โมเดลนี้" → อ่านข้อความทดสอบเสียงด้วยโมเดลนั้น. ระหว่างทำงานปุ่มเป็น pause + วงแหวน SVG ที่เติมตาม `audio.currentTime/duration` (rAF เฉพาะตอนเล่น) ครบรอบพอดีตอนเสียงจบ. ระหว่างทดสอบ ปุ่ม play แถวอื่นกดไม่ได้; กด pause = หยุดทันที; ปิดหน้าต่าง = หยุด. ข้อความ = `localStorage.bp3_tts_test_message` หรือช่องข้อความทดสอบในหน้าตั้งค่าเสียง; เพศ = `window._currentVoiceGender`; speed/pitch/volume จาก `getTtsProsodyForPreview()`
+- **Backend:** GET `/api/rvc/preview?id&text&gender&rate&pitch` ใน `launch_dev.py` (Edge-TTS แล้ว `rvc_service.preview()`), คืน `audio/wav`. `preview()` ไม่เปลี่ยนโมเดลที่ใช้อยู่: ถ้าเป็นโมเดลที่โหลดอยู่ใช้ engine เดิม, ไม่งั้นโหลด engine ชั่วคราวแล้ว unload (HuBERT แชร์ cache). ล็อกให้ทดสอบได้ทีละอัน (คำขอซ้อนได้ 400 "กำลังทดสอบเสียงโมเดลอื่นอยู่"), แคชผลล่าสุด 8 รายการ
+- **ทดสอบแล้ว:** Playwright harness 13/13 (ปุ่มเฉพาะแถวที่โหลดแล้ว, pause+ring, ปุ่มอื่น disabled, ring เพิ่มแบบ monotonic จนเกือบครบ, จบพร้อมเสียง ~2 วิ, pause หยุดทันที, ใช้ข้อความ/เพศของผู้ใช้, server lock, ไม่แตะโมเดลที่ใช้อยู่); `launch_dev.QuietHandler` จริง: 200 audio/wav, id ผิด 400, Lite 403; **engine RVC จริงบนเครื่องนี้ (GPU) กับ lumine-jp/paimon-jp:** ครั้งแรก ~11 วิ (โหลด HuBERT/rmvpe), โมเดลถัดไป ~1.5 วิ, ซ้ำจากแคชทันที, Edge-TTS ~6.5 วิตอน cold; harness ชุดเดิม (catalog/ลบ) ยังผ่าน; build + gates ผ่าน
+- **ยังไม่ทดสอบ:** ในหน้าต่างโปรแกรมจริง. ช่วงเตรียมเสียงครั้งแรกอาจนาน 10–17 วิ มีแค่ปุ่ม pause + ข้อความ "กำลังเตรียมเสียง..." ที่ footer (ไม่ได้ใส่แอนิเมชันโหลด ตามกฎห้ามเพิ่มแอนิเมชันเอง — เสนอผู้ใช้แล้ว). กด pause ระหว่างเตรียมเสียง ฝั่ง server ยังทำต่อจนเสร็จ คลิกโมเดลอื่นทันทีอาจได้ข้อความให้รอ
+
 ## 🚀 RELEASED v3.83 — ปุ่มลบโมเดล RVC (Claude, 2026-11-23)
 - **Release:** `publish_release_v383.py` (คัดจาก v382 เปลี่ยน changelog/commit message) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.83 + tag + purge jsDelivr สำเร็จ. ตรวจหลังปล่อย: patch lite/full จากทั้ง GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.83. เลขเวอร์ชัน 3.83 ใน `package.json`, `updater.py`, `copy_dist_assets.py` x2, `src/index.html`
 - **ยังไม่ยืนยันบนเครื่องจริง:** อัปเดตผ่านโปรแกรม และการลบโมเดลจริงในหน้าต่าง Voice Settings
