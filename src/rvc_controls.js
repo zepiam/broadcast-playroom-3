@@ -1,6 +1,6 @@
 (() => {
  'use strict';
- let capability=null,latest=null,models=[],lastState='',polling=false,pendingRefresh=false;
+ let capability=null,latest=null,models=[],lastState='',polling=false,pendingRefresh=false,catalogView=null;
  const doc=()=>getToolDocument('voice-settings');
  const allDocs=()=>Array.from(new Set([document,doc(),getToolDocument('settings')]));
  async function api(path,body){
@@ -56,6 +56,7 @@
    const progress=d.getElementById('rvcDownloadProgress');if(progress)progress.value=status.progress || 0;
    const download=d.getElementById('btnRvcDownload');if(download)download.disabled=busy;
   }
+  if(catalogView)catalogView(status);
   if(window.updateVoiceSummary)window.updateVoiceSummary();
  
   updateTopbarBadge(status);
@@ -135,26 +136,121 @@
   };
   input.click();
  };
+ // Model catalog: searchable list with category chips. Downloaded models show a green check and
+ // a "use" action instead of a download button.
+ const CATALOG_CSS=`
+#rvcDownloadDialog{width:min(640px,92vw);margin:auto;padding:20px;background:#232428;color:#f2f3f5;border:1px solid #475569;border-radius:12px;}
+#rvcDownloadDialog::backdrop{background:rgba(0,0,0,.55);}
+#rvcDownloadDialog h3{margin:0 0 12px;font-size:16px;}
+#rvcDownloadDialog .rvc-cat-tools{display:flex;flex-direction:column;gap:8px;margin-bottom:10px;}
+#rvcDownloadDialog .rvc-cat-chips{display:flex;flex-wrap:wrap;gap:6px;}
+#rvcDownloadDialog .rvc-cat-chip{background:#2b2d31;color:#b5bac1;border:1px solid #3f4147;border-radius:999px;padding:4px 12px;font-size:12px;cursor:pointer;}
+#rvcDownloadDialog .rvc-cat-chip:hover{color:#f2f3f5;border-color:#5c5f66;}
+#rvcDownloadDialog .rvc-cat-chip.active{background:#5865f2;border-color:#5865f2;color:#fff;}
+#rvcDownloadDialog .rvc-cat-list{display:flex;flex-direction:column;gap:6px;max-height:min(52vh,460px);overflow-y:auto;padding-right:4px;contain:content;}
+#rvcDownloadDialog .rvc-cat-row{display:flex;align-items:center;gap:12px;padding:10px 12px;background:#2b2d31;border:1px solid #3a3c42;border-radius:8px;}
+#rvcDownloadDialog .rvc-cat-row.installed{border-color:rgba(35,165,90,.45);}
+#rvcDownloadDialog .rvc-cat-row.active{background:rgba(35,165,90,.12);}
+#rvcDownloadDialog .rvc-cat-icon{flex:0 0 24px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
+#rvcDownloadDialog .rvc-cat-info{flex:1;min-width:0;}
+#rvcDownloadDialog .rvc-cat-name{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+#rvcDownloadDialog .rvc-cat-meta{font-size:12px;color:#949ba4;margin-top:2px;}
+#rvcDownloadDialog .rvc-cat-action{flex:0 0 auto;display:flex;align-items:center;gap:8px;font-size:12px;}
+#rvcDownloadDialog .rvc-cat-using{color:#23a55a;font-weight:600;}
+#rvcDownloadDialog .rvc-cat-pct{color:#b5bac1;min-width:36px;text-align:right;}
+#rvcDownloadDialog .rvc-cat-empty{padding:24px;text-align:center;color:#949ba4;font-size:13px;}
+#rvcDownloadDialog .rvc-cat-footer{display:flex;align-items:center;gap:12px;margin-top:12px;}
+#rvcDownloadDialog #rvcCatalogStatus{flex:1;font-size:12px;color:#b5bac1;}
+#rvcDownloadDialog #rvcDownloadProgress{width:100%;margin-top:10px;}
+`;
+ const ICON_INSTALLED='<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#23a55a"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+ const ICON_REMOTE='<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="#80848e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>';
  window.openRvcDownloader=async()=>{
   if(!capability?.rvc)return;
   try{
-   const result=await api('/api/rvc/catalog');const d=doc();
+   let catalog=(await api('/api/rvc/catalog')).models || [];const d=doc();
    d.getElementById('rvcDownloadDialog')?.remove();
    const panel=d.createElement('dialog');panel.id='rvcDownloadDialog';
-   panel.style.cssText='width:min(620px,90vw);margin:auto;padding:22px;background:#232428;color:#f2f3f5;border:1px solid #475569;border-radius:12px;';
-   const title=d.createElement('h3');title.textContent='ดาวน์โหลดโมเดล RVC';
+   const style=d.createElement('style');style.textContent=CATALOG_CSS;
+   const title=d.createElement('h3');title.textContent='โมเดลเสียง RVC';
+   const tools=d.createElement('div');tools.className='rvc-cat-tools';
    const search=d.createElement('input');search.className='modal-input';search.placeholder='ค้นหาโมเดล';search.id='rvcModelSearch';search.style.width='100%';
-   const select=d.createElement('select');select.id='rvcCatalogSelect';select.className='voice-select-box';select.style.cssText='width:100%;margin:12px 0;';
-   function filter(){select.replaceChildren();(result.models || []).filter(model=>model.name.toLowerCase().includes(search.value.toLowerCase())).forEach(model=>select.add(new Option(`${model.name} • ${model.category} • ประมาณ ${Math.round(model.size/1048576)} MB`,model.id)));}
-   search.oninput=filter;filter();
-   const progress=d.createElement('progress');progress.id='rvcDownloadProgress';progress.max=100;progress.value=0;progress.style.width='100%';
-   const status=d.createElement('div');status.id='rvcDownloadStatus';status.style.margin='10px 0';
-   const buttons=d.createElement('div');buttons.style.cssText='display:flex;gap:8px;justify-content:flex-end;';
-   const download=d.createElement('button');download.id='btnRvcDownload';download.className='btn-topbar-action primary';download.textContent='ดาวน์โหลด';
-   download.onclick=async()=>{try{pendingRefresh=true;showStatus(await api('/api/rvc/download',{id:select.value}));}catch(error){status.textContent=error.message;}};
-   const cancel=d.createElement('button');cancel.id='btnRvcCancel';cancel.className='btn-topbar-action';cancel.textContent='ยกเลิกดาวน์โหลด';cancel.onclick=()=>api('/api/rvc/cancel',{}).then(showStatus).catch(error=>status.textContent=error.message);
+   const chips=d.createElement('div');chips.className='rvc-cat-chips';
+   const CATEGORY_LABELS={genshin:'Genshin',vtuber:'VTuber',anime:'Anime'};
+   const filters=[['all','ทั้งหมด'],['installed','โหลดแล้ว'],...Object.entries(CATEGORY_LABELS)];
+   let activeFilter='all';
+   filters.forEach(([key,label])=>{const chip=d.createElement('button');chip.type='button';chip.className='rvc-cat-chip'+(key===activeFilter?' active':'');chip.dataset.filter=key;chip.textContent=label;chip.onclick=()=>{activeFilter=key;chips.querySelectorAll('.rvc-cat-chip').forEach(c=>c.classList.toggle('active',c===chip));render(true);};chips.append(chip);});
+   tools.append(search,chips);
+   const list=d.createElement('div');list.className='rvc-cat-list';list.id='rvcCatalogList';
+   const progress=d.createElement('progress');progress.id='rvcDownloadProgress';progress.max=100;progress.value=0;progress.hidden=true;
+   const footer=d.createElement('div');footer.className='rvc-cat-footer';
+   const statusLine=d.createElement('div');statusLine.id='rvcCatalogStatus';
    const close=d.createElement('button');close.className='btn-topbar-action';close.textContent='ปิด';close.onclick=()=>panel.close();
-   buttons.append(download,cancel,close);panel.append(title,search,select,progress,status,buttons);d.body.append(panel);panel.showModal();if(latest)showStatus(latest);
+   footer.append(statusLine,close);
+   panel.append(style,title,tools,list,progress,footer);d.body.append(panel);
+   let downloadingId=null,lastSig='',lastState=latest?.state || '',note='';
+   const isActive=item=>item.model_id && latest && latest.selected===item.model_id && latest.state==='ready' && latest.enabled && latest.loaded;
+   const isLoading=item=>item.model_id && latest && latest.selected===item.model_id && latest.state==='loading';
+   async function reloadCatalog(){try{catalog=(await api('/api/rvc/catalog')).models || [];render(true);}catch(error){statusLine.textContent=note=error.message;}}
+   function actionFor(item,busy){
+    const box=d.createElement('div');box.className='rvc-cat-action';
+    if(item.installed){
+     if(isActive(item)){const s=d.createElement('span');s.className='rvc-cat-using';s.textContent='กำลังใช้งาน';box.append(s);}
+     else if(isLoading(item)){const s=d.createElement('span');s.className='rvc-cat-pct';s.textContent='กำลังโหลด...';box.append(s);}
+     else if(item.model_id){const b=d.createElement('button');b.type='button';b.className='btn-topbar-action rvc-cat-use';b.textContent='ใช้โมเดลนี้';b.disabled=busy;b.onclick=()=>window.changeRvcModel(item.model_id);box.append(b);}
+    }else if(latest?.state==='downloading' && downloadingId===item.id){
+     const pct=d.createElement('span');pct.className='rvc-cat-pct';pct.dataset.pct='1';pct.textContent=(latest.progress || 0)+'%';
+     const c=d.createElement('button');c.type='button';c.className='btn-topbar-action';c.id='btnRvcCancel';c.textContent='ยกเลิก';
+     c.onclick=()=>api('/api/rvc/cancel',{}).then(showStatus).catch(error=>statusLine.textContent=note=error.message);
+     box.append(pct,c);
+    }else{
+     const b=d.createElement('button');b.type='button';b.className='btn-topbar-action primary rvc-cat-download';b.textContent='ดาวน์โหลด';b.disabled=busy;
+     b.onclick=async()=>{try{downloadingId=item.id;pendingRefresh=true;showStatus(await api('/api/rvc/download',{id:item.id}));}catch(error){downloadingId=null;statusLine.textContent=note=error.message;render(true);}};
+     box.append(b);
+    }
+    return box;
+   }
+   function render(force){
+    const busy=['loading','downloading'].includes(latest?.state);
+    const sig=[activeFilter,search.value,latest?.state,latest?.selected,latest?.enabled,latest?.loaded,downloadingId,catalog.map(i=>i.installed?1:0).join('')].join('|');
+    if(!force && sig===lastSig)return;lastSig=sig;
+    const q=search.value.trim().toLowerCase();
+    const items=catalog.filter(item=>(!q || item.name.toLowerCase().includes(q)) && (activeFilter==='all' || (activeFilter==='installed'?item.installed:item.category===activeFilter)))
+     .sort((a,b)=>(b.installed?1:0)-(a.installed?1:0));
+    list.replaceChildren();
+    if(!items.length){const empty=d.createElement('div');empty.className='rvc-cat-empty';empty.textContent=activeFilter==='installed'?'ยังไม่มีโมเดลที่ดาวน์โหลดไว้':'ไม่พบโมเดลที่ค้นหา';list.append(empty);return;}
+    for(const item of items){
+     const row=d.createElement('div');row.className='rvc-cat-row'+(item.installed?' installed':'')+(isActive(item)?' active':'');row.dataset.id=item.id;
+     const icon=d.createElement('div');icon.className='rvc-cat-icon';icon.innerHTML=item.installed?ICON_INSTALLED:ICON_REMOTE;icon.title=item.installed?'ดาวน์โหลดแล้ว':'ยังไม่ได้ดาวน์โหลด';
+     const info=d.createElement('div');info.className='rvc-cat-info';
+     const name=d.createElement('div');name.className='rvc-cat-name';name.textContent=item.name;
+     const meta=d.createElement('div');meta.className='rvc-cat-meta';
+     meta.textContent=[CATEGORY_LABELS[item.category] || item.category,item.tag?('เสียง'+item.tag):'',item.installed?'ดาวน์โหลดแล้ว':`ประมาณ ${Math.round(item.size/1048576)} MB`].filter(Boolean).join(' • ');
+     info.append(name,meta);row.append(icon,info,actionFor(item,busy));list.append(row);
+    }
+   }
+   catalogView=status=>{
+    if(!panel.isConnected){catalogView=null;return;}
+    if(lastState==='downloading' && status.state!=='downloading'){
+     if(status.state==='error')note='ดาวน์โหลดไม่สำเร็จ: '+(status.error || '');
+     else if(status.error==='Download cancelled')note='ยกเลิกการดาวน์โหลดแล้ว';
+     else note='ดาวน์โหลดเสร็จแล้ว กด "ใช้โมเดลนี้" เพื่อเริ่มใช้งาน';
+     downloadingId=null;reloadCatalog();
+    }else if(status.state!==lastState && status.state!=='idle'){note='';}
+    let text=note;
+    if(status.state==='downloading')text='กำลังดาวน์โหลด... '+(status.progress || 0)+'%';
+    else if(status.state==='loading')text='กำลังโหลดโมเดลเข้าหน่วยความจำ...';
+    else if(status.state==='error' && status.error)text='ไม่สำเร็จ: '+status.error;
+    else if(!text && status.state==='ready' && status.enabled && status.loaded){const cur=models.find(m=>m.id===status.selected);text='กำลังใช้งาน: '+(cur?cur.name:'โมเดลที่เลือก');}
+    if(statusLine.textContent!==text)statusLine.textContent=text;
+    lastState=status.state;
+    progress.hidden=status.state!=='downloading';
+    render(false);
+    const pct=list.querySelector('[data-pct]');if(pct)pct.textContent=(status.progress || 0)+'%';
+   };
+   search.oninput=()=>render(true);
+   panel.addEventListener('close',()=>{panel.remove();catalogView=null;});
+   render(true);panel.showModal();if(latest)showStatus(latest);
   }catch(error){message(error.message);}
  };
  async function init(){

@@ -154,8 +154,74 @@ class RVCService:
         from voice_downloader import get_catalog_voices
         return get_catalog_voices()
 
+    def _catalog_manifest_file(self):
+        return self.model_dir/'.catalog_downloads.json'
+
+    def _read_catalog_manifest(self):
+        try:
+            data=json.loads(self._catalog_manifest_file().read_text(encoding='utf-8'))
+            return data if isinstance(data,dict) else {}
+        except (OSError,ValueError):
+            return {}
+
+    def _record_catalog_download(self,voice_name,filenames):
+        """Remember which .pth files came from which catalog entry (exact 'downloaded' check later)."""
+        try:
+            data=self._read_catalog_manifest()
+            data[voice_name]=sorted(set(filenames))
+            target=self._catalog_manifest_file();temporary=target.with_suffix('.tmp')
+            temporary.write_text(json.dumps(data,ensure_ascii=False),encoding='utf-8')
+            os.replace(temporary,target)
+        except Exception:
+            _rvc_diag('could not record catalog download for %s' % voice_name, exc=True)
+
+    @staticmethod
+    def _norm_key(text):
+        return ''.join(ch for ch in str(text).lower() if ch.isalnum())
+
+    @classmethod
+    def _catalog_keys(cls,voice):
+        keys={cls._norm_key(voice.name)}
+        zip_path=getattr(voice,'zip_path','') or ''
+        if zip_path:
+            import re
+            base=os.path.basename(zip_path).rsplit('.',1)[0]
+            keys.add(cls._norm_key(re.sub(r'\s+\d+k?\s+epochs.*$','',base,flags=re.I)))
+        return {key for key in keys if len(key)>=3}
+
+    def _catalog_installed(self,voices):
+        """Map catalog index -> installed model id. Manifest first, then filename matching
+        (a local file is credited to the catalog entry with the longest matching key only)."""
+        models=list(self.models().values())
+        model_dir=self.model_dir.resolve() if self.model_dir.exists() else None
+        result={};used=set()
+        manifest=self._read_catalog_manifest()
+        for index,voice in enumerate(voices):
+            wanted={name.lower() for name in manifest.get(voice.name,[])}
+            if not wanted:continue
+            for model in models:
+                if model['id'] in used or model['filename'].lower() not in wanted:continue
+                if model_dir is not None and model['path'].parent!=model_dir:continue
+                result[index]=model['id'];used.add(model['id']);break
+        keys=[self._catalog_keys(voice) for voice in voices]
+        for model in models:
+            if model['id'] in used:continue
+            stem=self._norm_key(Path(model['filename']).stem)
+            best=None;best_len=0
+            for index,voice_keys in enumerate(keys):
+                for key in voice_keys:
+                    if key in stem and len(key)>best_len:best,best_len=index,len(key)
+            if best is not None and best not in result:
+                result[best]=model['id'];used.add(model['id'])
+        return result
+
     def public_catalog(self):
-        return [{'id':str(index),'name':voice.name,'category':voice.category,'size':voice.size} for index,voice in enumerate(self.catalog())]
+        voices=self.catalog()
+        try:installed=self._catalog_installed(voices)
+        except Exception:
+            _rvc_diag('catalog installed check failed', exc=True);installed={}
+        return [{'id':str(index),'name':voice.name,'category':voice.category,'size':voice.size,'tag':getattr(voice,'tag',''),
+                 'installed':index in installed,'model_id':installed.get(index)} for index,voice in enumerate(voices)]
 
     def download(self,catalog_id):
         self.require_full()
@@ -183,6 +249,7 @@ class RVCService:
                     destination=self.model_dir/path.name
                     if destination.exists():raise FileExistsError('A model with this filename already exists')
                 for path in files:os.replace(path,self.model_dir/path.name)
+                self._record_catalog_download(voice.name,[p.name for p in files if p.suffix.lower()=='.pth'])
                 with self.lock:self.data.update(state='ready' if self.engine else 'idle',progress=100,error='')
             except InterruptedError:
                 with self.lock:self.data.update(state='ready' if self.engine else 'idle',progress=0,error='Download cancelled')

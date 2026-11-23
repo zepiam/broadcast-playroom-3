@@ -5,6 +5,13 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — หน้าต่างโมเดลเสียง RVC แบบรายการ (Claude, 2026-11-23)
+- **สิ่งที่เปลี่ยน:** หน้าต่าง "ดาวน์โหลดโมเดลเสียงเพิ่ม..." (`openRvcDownloader()` ใน `src/rvc_controls.js`) เปลี่ยนจาก dropdown เป็นรายการการ์ด มีช่องค้นหาและชิปตัวกรอง ทั้งหมด/โหลดแล้ว/Genshin/VTuber/Anime. โมเดลที่โหลดแล้วมีไอคอนเช็คสีเขียว อยู่บนสุด ไม่มีปุ่มดาวน์โหลด มีปุ่ม "ใช้โมเดลนี้" แทน หรือขึ้น "กำลังใช้งาน" ถ้าเป็นโมเดลที่เปิดอยู่. แถวที่กำลังโหลดแสดง % และปุ่มยกเลิก
+- **Backend (`rvc_service.py`):** `public_catalog()` ส่ง `installed`, `model_id`, `tag` เพิ่ม. ตรวจว่าโหลดแล้วจาก (1) ไฟล์ `rvc_models/.catalog_downloads.json` ที่บันทึกตอนดาวน์โหลดสำเร็จ (2) จับชื่อไฟล์ `.pth` ในเครื่องกับชื่อใน catalog / ชื่อ zip (ไฟล์หนึ่งนับให้รายการที่ key ยาวที่สุดเท่านั้น กัน Gawr Gura กับ Gawr Gura Talking ชนกัน)
+- **ทดสอบแล้ว:** Playwright harness กับ RVCService จริง (fixture engine/downloader) ผ่าน 10/10; `npm run build` + Safety Gate + Smoke Test Gate ผ่าน; `dist/rvc_controls.js` มีโค้ดใหม่. แก้ `tests/verify_compatibility.py` ให้ใช้ selector ใหม่ (ยังไม่ได้รันไฟล์นี้ทั้งไฟล์)
+- **ยังไม่ทดสอบ:** ในโปรแกรมจริง (หน้าต่าง Voice Settings แบบ popout) และกับโมเดลจริงของเครื่องเจ้าของ. ข้อจำกัด: โมเดลที่โหลดก่อนมีระบบนี้และชื่อไฟล์ไม่ตรงชื่อตัวละคร (เช่น `model.pth` ของ Hatsune Miku/Vegeta) จะไม่ขึ้นว่าโหลดแล้ว
+- **Release ถัดไป:** ต้องปรับเลขเวอร์ชัน + สร้าง `publish_release_v382.py` (rvc_service.py อยู่ใน CORE_FILES แล้ว)
+
 ## 🚀 RELEASED v3.81 (ปล่อยอัปเดตเรียบร้อย)
 **แก้ไขระบบเฝ้าระวังหน้าต่างโปรแกรมค้าง (Watchdog UI Heartbeat) ให้ทำงานจริง**
 - **ปัญหาเดิม (ตั้งแต่ v3.76):** route `/api/ui/heartbeat` ถูกใส่ไว้ในบล็อก `if path.startswith('/api/rvc/')` ของ `QuietHandler.do_GET` ใน `launch_dev.py` ทำให้เซิร์ฟเวอร์ปัดตกคำขอส่งสัญญาณชีพจากหน้าต่าง UI และ Watchdog เฝ้าระวังหน้าจอค้างไม่เคยเริ่มทำงานจริง (ใน `data/ui_health.log` จึงไม่พบบันทึก `ok: page heap`)
@@ -17,6 +24,7 @@
   - Automated Headless Browser Smoke Test Gate (`smoke_test_gate.py`) ผ่าน 100% (ตรวจ interactive 10 Tool Windows, 0 runtime crashes)
   - Strict Post-Pack SHA-256 Gate ผ่าน 100% ตรงกันทั้ง `patch-v3.81-lite.zip` และ `patch-v3.81-full.zip`
   - เผยแพร่ Dual-Mirror GitHub และ Hugging Face สมบูรณ์, Purge jsDelivr ผ่าน 100%
+- **ยืนยันบนเครื่องจริง (Claude, 2026-11-23):** หลังติดตั้ง v3.81 `data/ui_health.log` มี `ok: page heap 5 MB, heartbeats 2` เป็นครั้งแรก → route รับ heartbeat ทำงาน watchdog เริ่มเฝ้าแล้ว. **ยังไม่ยืนยัน:** บรรทัด `ok:` ถัดไปทุก 5 นาที (log หยุดหลังบรรทัดแรก น่าจะปิดแอป), การเปิดทิ้งหลายชั่วโมงโดยไม่มี `UI watchdog:`, และการกู้หน้าต่างที่ค้างจริง (ยังไม่เคยทำงาน ทดสอบแค่ mock). ยังไม่รู้สาเหตุจริงของอาการค้าง/หน้าเทา — ถ้าผู้ใช้ยังเจอ ให้ขอ `ui_health.log` และลองตัวเลือก `disable_gpu` ใน `data/power_settings.json`
 
 ## 🚀 RELEASED v3.80 (ปล่อยอัปเดตเรียบร้อย)
 **แก้ไขถาวรปัญหาหน้าตาโปรแกรมเพี้ยน (Zero Unstyled UI / Missing CSS / Browser Cache Lockup)**
