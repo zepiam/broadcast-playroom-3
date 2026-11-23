@@ -1,11 +1,14 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.82)
-- **Current Version**: v3.82 (Released)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.83)
+- **Current Version**: v3.83 (Released)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ปุ่มลบโมเดล RVC (Claude, 2026-11-23)
+## 🚀 RELEASED v3.83 — ปุ่มลบโมเดล RVC (Claude, 2026-11-23)
+- **Release:** `publish_release_v383.py` (คัดจาก v382 เปลี่ยน changelog/commit message) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.83 + tag + purge jsDelivr สำเร็จ. ตรวจหลังปล่อย: patch lite/full จากทั้ง GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.83. เลขเวอร์ชัน 3.83 ใน `package.json`, `updater.py`, `copy_dist_assets.py` x2, `src/index.html`
+- **ยังไม่ยืนยันบนเครื่องจริง:** อัปเดตผ่านโปรแกรม และการลบโมเดลจริงในหน้าต่าง Voice Settings
+- **ไอเดียที่เสนอผู้ใช้ (ยังไม่ทำ):** เปลี่ยนกล่องยืนยันลบจาก `confirm()` ของเบราว์เซอร์เป็นกล่องในธีมโปรแกรม
 - **สิ่งที่เปลี่ยน:** ในหน้าต่างโมเดลเสียง RVC แถวที่โหลดแล้วมีปุ่มถังขยะ (`.rvc-cat-delete`) ข้างปุ่ม "ใช้โมเดลนี้"/"กำลังใช้งาน" → ถามยืนยันก่อน (ถ้าเป็นโมเดลที่ใช้อยู่จะบอกว่าจะถูกปิดก่อนลบ) → ลบแล้วแถวกลับเป็นปุ่ม "ดาวน์โหลด"
 - **Backend:** `rvc_service.delete_model(id)` + POST `/api/rvc/delete` ใน `launch_dev.py` (ล้าง `_TTS_AUDIO_CACHE` ด้วย). ไฟล์ `.pth` + `.index` ที่คู่กันถูกย้ายไป **Recycle Bin ของ Windows** (`SHFileOperationW` + `FOF_ALLOWUNDO`, กู้คืนได้) ไม่ใช่ลบถาวร. ถ้าเป็นโมเดลที่เลือกอยู่: unload + `selected=None` + บันทึก `rvc_settings.json` ก่อน. ห้ามลบระหว่างโหลด/ดาวน์โหลด. ลบ entry ใน `.catalog_downloads.json` ด้วย. `.index` ที่ตรงกับ `.pth` ตัวอื่นที่ชื่อยาวกว่า (raiden vs raiden-jp) ไม่ถูกลบ
 - **ทดสอบแล้ว:** Playwright harness 18/18 (ปุ่มมีเฉพาะแถวที่โหลดแล้ว, กดยกเลิกไม่ลบ, ลบ Lumine ลบ .pth+.index แต่ Raiden อยู่, ลบโมเดลที่ใช้อยู่แล้ว unload, manifest อัปเดต); เรียก Recycle Bin จริงบน Windows สำเร็จ; `npm run build` + gates ผ่าน
