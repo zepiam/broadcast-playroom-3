@@ -5,6 +5,13 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — "อ่านชื่อคนดูก่อนพูดข้อความแชท" ไม่ทำงาน (Claude, 2026-11-27)
+- **อาการ (ผู้ใช้แจ้ง):** ติ๊กในหน้าต่าง Voice Settings แล้ว เสียงอ่านแชทยังไม่อ่านชื่อ (ควรเป็น "{ชื่อ} พูดว่า {ข้อความ}")
+- **สาเหตุ:** `playChatMessageSpeech()` (เล่นเฉพาะหน้าต่างหลัก) อ่านค่าจาก checkbox `#chkReadAuthorName` ของ**หน้าต่างหลักเอง**; ผู้ใช้ติ๊กใน popout Voice Settings ซึ่งเป็นหน้าต่าง Edge อีกบาน → `toggleReadAuthorPref` อัปเดต checkbox ใน popout + `localStorage.bp3_tts_read_author` แต่ checkbox ของหน้าต่างหลักยังไม่ติ๊ก → อ่านเฉพาะข้อความ. ตอนเปิดโปรแกรมก็คืนค่าแค่ `#chkReadAuthorName` ไม่คืน `#winChkReadAuthorName`
+- **แก้ (`src/index.html`):** (1) `playChatMessageSpeech` ใช้ `localStorage.bp3_tts_read_author` เป็นหลัก (ไม่มีค่า → ใช้ checkbox เดิม) (2) ตอนเริ่มคืนค่าให้ทั้ง `#chkReadAuthorName` และ `#winChkReadAuthorName` (3) storage listener sync checkbox ทุกหน้าต่างเมื่อค่าเปลี่ยน
+- **ทดสอบ:** Playwright 2 หน้าต่างบนหน้าจริง (Edge, จับข้อความที่ส่งไป `/api/tts`): control บน build เดิม — ติ๊กใน popout แล้วหน้าหลักยังพูด "สวัสดีครับ" (FAIL ตามอาการ); หลังแก้ 8/8: ปิด → ข้อความเฉย, ติ๊กใน popout → "Somchai พูดว่า สวัสดีครับ", checkbox หน้าหลักตาม, เอาติ๊กออก → ข้อความเฉย, รีโหลดแล้วค่ายังอยู่ทั้งสองช่อง, "@NightBot_99" → "NightBot_99 พูดว่า ทดสอบ", ไม่มี error. build + gates ผ่าน
+- **ยังไม่ทดสอบ:** exe จริง + แชทจริง
+
 ## 🚀 RELEASED v3.88 — ตำแหน่งเสียงอ่าน 3 มิติ (Claude, 2026-11-27)
 - **Release:** `publish_release_v388.py` (คัดจาก v387 เปลี่ยน changelog/commit message/release_date) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.88 + tag + purge jsDelivr สำเร็จ (commit 3acfaca). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.88, zip มี `dist/tts_spatial.js` และ `dist/index.html` อ้าง `tts_spatial.js?v=3.88`
 - **ยังไม่ยืนยันบนเครื่องจริง:** อัปเดตผ่านโปรแกรม, ฟังด้วยหูฟังจริง, คนดูได้ยินผ่าน OBS (ต้องเป็น stereo)

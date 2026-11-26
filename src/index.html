@@ -634,19 +634,11 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./styles.css?v=3.88">
+  <link rel="stylesheet" href="./styles.css?v=3.89">
 
 
 
-  <link rel="stylesheet" href="./ui_readability.css?v=3.88">
-
-
-
-
-
-
-
-  <link rel="stylesheet" href="./modal.css?v=3.88">
+  <link rel="stylesheet" href="./ui_readability.css?v=3.89">
 
 
 
@@ -654,7 +646,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./widget_customizer.css?v=3.88">
+  <link rel="stylesheet" href="./modal.css?v=3.89">
 
 
 
@@ -662,7 +654,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_studio.css?v=3.88">
+  <link rel="stylesheet" href="./widget_customizer.css?v=3.89">
 
 
 
@@ -670,7 +662,15 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.88">
+  <link rel="stylesheet" href="./composer_studio.css?v=3.89">
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.89">
 
 
 
@@ -1010,7 +1010,7 @@ button.plat-edit-link:hover {
 
 <script id="bp3-version-check">
 (function(){
-  const BUNDLE_VERSION = "3.88";
+  const BUNDLE_VERSION = "3.89";
   async function checkVersion(){
     try {
       const response = await fetch('/api/version', { cache: 'no-store' });
@@ -60372,15 +60372,9 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      const chk = document.getElementById('chkReadAuthorName');
-
-
-
-
-
-
-
-      const readAuthor = chk ? chk.checked : (localStorage.getItem('bp3_tts_read_author') === 'true');
+      // Saved setting is the source of truth: the checkbox may be ticked in the Voice Settings popout (another window).
+      let readAuthor = false;
+      try { const _ra = localStorage.getItem('bp3_tts_read_author'); readAuthor = _ra === null ? !!document.getElementById('chkReadAuthorName')?.checked : _ra === 'true'; } catch (_) { readAuthor = !!document.getElementById('chkReadAuthorName')?.checked; }
 
 
 
@@ -64035,6 +64029,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
     // Settings can live in a popout window: apply changes made there to this window too.
     window.addEventListener('storage', (e) => {
       if (e.key && _TTS_PREF_KEYS.indexOf(e.key) !== -1) restoreTtsAudioPrefs();
+      if (e.key === 'bp3_tts_read_author') document.querySelectorAll('#chkReadAuthorName, #winChkReadAuthorName').forEach(el => { el.checked = (e.newValue === 'true'); });
     });
     function initTtsPreferences() {
 
@@ -64110,31 +64105,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      const chkReadAuthor = document.getElementById('chkReadAuthorName');
-
-
-
-
-
-
-
-      if (chkReadAuthor) {
-
-
-
-
-
-
-
-        chkReadAuthor.checked = (savedReadAuthor === 'true');
-
-
-
-
-
-
-
-      }
+      document.querySelectorAll('#chkReadAuthorName, #winChkReadAuthorName').forEach(el => { el.checked = (savedReadAuthor === 'true'); });
 
 
 
