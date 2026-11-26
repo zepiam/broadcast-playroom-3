@@ -241,7 +241,7 @@
      if(!response.ok){let msg='ทดสอบเสียงไม่สำเร็จ';try{msg=(await response.json()).error || msg;}catch(_){}throw new Error(msg);}
      const blob=await response.blob();
      if(!preview || preview.controller!==controller)return;
-     const audio=new Audio(URL.createObjectURL(blob));audio.volume=Math.max(0,Math.min(1,pr.volume ?? .8));
+     const audio=new Audio(URL.createObjectURL(blob));audio.volume=Math.max(0,Math.min(1,pr.volume ?? .8));window.bp3SpatialAudio?.attach(audio);
      preview.audio=audio;preview.phase='play';
      audio.onended=()=>{setRing(1);URL.revokeObjectURL(audio.src);stopPreview('ทดสอบเสียง '+item.name+' จบแล้ว');};
      audio.onerror=()=>stopPreview('เล่นเสียงทดสอบไม่สำเร็จ');

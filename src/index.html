@@ -634,19 +634,11 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./styles.css?v=3.87">
+  <link rel="stylesheet" href="./styles.css?v=3.88">
 
 
 
-  <link rel="stylesheet" href="./ui_readability.css?v=3.87">
-
-
-
-
-
-
-
-  <link rel="stylesheet" href="./modal.css?v=3.87">
+  <link rel="stylesheet" href="./ui_readability.css?v=3.88">
 
 
 
@@ -654,7 +646,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./widget_customizer.css?v=3.87">
+  <link rel="stylesheet" href="./modal.css?v=3.88">
 
 
 
@@ -662,7 +654,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_studio.css?v=3.87">
+  <link rel="stylesheet" href="./widget_customizer.css?v=3.88">
 
 
 
@@ -670,7 +662,15 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.87">
+  <link rel="stylesheet" href="./composer_studio.css?v=3.88">
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.88">
 
 
 
@@ -1010,7 +1010,7 @@ button.plat-edit-link:hover {
 
 <script id="bp3-version-check">
 (function(){
-  const BUNDLE_VERSION = "3.87";
+  const BUNDLE_VERSION = "3.88";
   async function checkVersion(){
     try {
       const response = await fetch('/api/version', { cache: 'no-store' });
@@ -36765,7 +36765,7 @@ try {
 
 
 
-        const audio = new Audio(url);
+        const audio = new Audio(url); window.bp3SpatialAudio?.attach(audio);
 
 
 
@@ -60913,7 +60913,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-      if(item.kind!=='secret')window.bindTtsAvatarAudio?.(audio);
+      if(item.kind!=='secret'){window.bindTtsAvatarAudio?.(audio);window.bp3SpatialAudio?.attach(audio);}
 
 
 
@@ -61492,7 +61492,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
 
-        window.bindTtsAvatarAudio?.(audio);
+        window.bindTtsAvatarAudio?.(audio); window.bp3SpatialAudio?.attach(audio);
 
 
 
@@ -62245,7 +62245,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
         if (!blob.size) throw new Error('ได้ไฟล์เสียงว่าง');
         const objUrl = URL.createObjectURL(blob);
         const audio = new Audio(objUrl);
-        audio.volume = pr.volume;
+        audio.volume = pr.volume; window.bp3SpatialAudio?.attach(audio);
         audio.onended = () => { try { URL.revokeObjectURL(objUrl); } catch (_) {} };
         dictionaryPreviewAudio = audio;
         await audio.play();
@@ -67108,6 +67108,7 @@ window.setLiveChatFontSize = function(val, showToastMsg = false) {
 
 
   <script src="./tts_avatar.js"></script>
+  <script src="./tts_spatial.js"></script>
 
 
 

@@ -30,7 +30,7 @@ files_to_copy = [
     'legacy_goal.js',
     'legacy_goal.css',
     'legacy_avatar.css',
-    'tts_avatar.js', 'keyboard_controls.js', 'ui_readability.js', 'ui_readability.css', 'viewer_preview.js', 'now_playing_renderer.js',
+    'tts_avatar.js', 'tts_spatial.js', 'keyboard_controls.js', 'ui_readability.js', 'ui_readability.css', 'viewer_preview.js', 'now_playing_renderer.js',
     'legacy_text.css',
     'legacy_image.css',
     'cwc_themes_data.js',
@@ -76,11 +76,11 @@ print("Dist assets synchronized successfully!")
 
 # Read package version
 pkg_json_path = os.path.join(project_dir, 'package.json')
-pkg_ver = "3.87"
+pkg_ver = "3.88"
 if os.path.exists(pkg_json_path):
     try:
         with open(pkg_json_path, 'r', encoding='utf-8') as f:
-            pkg_ver = json.load(f).get('version', '3.87')
+            pkg_ver = json.load(f).get('version', '3.88')
     except Exception:
         pass
 

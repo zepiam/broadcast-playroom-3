@@ -1,39 +1,39 @@
 {
-  "version": "3.87",
-  "latest_version": "3.87",
-  "release_date": "2026-11-26",
+  "version": "3.88",
+  "latest_version": "3.88",
+  "release_date": "2026-11-27",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.87\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.87:\n- **กู้หน้าต่างโปรแกรมอัตโนมัติเมื่อหน้าจอเป็นสีเทาหรือค้าง**:\n  - เดิมเมื่อหน้าโปรแกรมค้างหรือเป็นสีเทา ระบบเบื้องหลังจะปิดตัวไปด้วย ทำให้หน้าต่างค้างเทาตลอด\n  - ตอนนี้โปรแกรมจะเปิดหน้าต่างใหม่ให้เองภายในประมาณ 1 นาที และบันทึกเหตุการณ์ลงไฟล์ ui_health.log ในโฟลเดอร์ data\n- **ใช้ Microsoft Edge เปิดหน้าต่างโปรแกรมเป็นค่าเริ่มต้น**:\n  - Edge มีติดมากับ Windows ทุกเครื่อง ถ้าไม่มี Edge จะใช้ Google Chrome แทน\n  - ค่าที่ตั้งไว้ในโปรแกรมจะถูกคัดลอกไปให้อัตโนมัติ ไม่ต้องตั้งใหม่\n",
+  "changelog": "# Broadcast Playroom v3.88\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.88:\n- **เสียงอ่านแชท 3 มิติ**:\n  - ตั้งตำแหน่งเสียงอ่านรอบตัวได้ ทั้งซ้าย ขวา หน้า หลัง และใกล้ไกล ในการ์ดตำแหน่งเสียงอ่านของหน้าตั้งค่าเสียง ลากจุดรอบรูปคนตรงกลางหรือเลือกตำแหน่งสำเร็จรูป พร้อมปุ่มทดสอบฟัง\n  - ปุ่ม 3D บนแถบด้านบน กดสลับระหว่างเสียง 3 มิติกับเสียงอ่านปกติได้ทันที และจำตำแหน่งล่าสุดไว้ คลิกขวาเพื่อตั้งตำแหน่ง\n  - ด้านหน้าและด้านหลังต้องใส่หูฟังจึงจะรู้สึกได้ชัด ค่าเริ่มต้นเป็นเสียงอ่านปกติเหมือนเดิม\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.87-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.87/patch-v3.87-lite.zip",
-      "sha256": "d763ad325ccd89eaa40992db56167db470c9df54934870313dace0ee7630ef20",
-      "size": 40942442,
+      "file": "patch-v3.88-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.88/patch-v3.88-lite.zip",
+      "sha256": "db30ddeb99c3fb83e5c697432d09d782235287a8d0396857f0d5d25a69ba539b",
+      "size": 40949587,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.87-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.88-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.87-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.87/patch-v3.87-full.zip",
-      "sha256": "d763ad325ccd89eaa40992db56167db470c9df54934870313dace0ee7630ef20",
-      "size": 40942442,
+      "file": "patch-v3.88-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.88/patch-v3.88-full.zip",
+      "sha256": "db30ddeb99c3fb83e5c697432d09d782235287a8d0396857f0d5d25a69ba539b",
+      "size": 40949587,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.87-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.88-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.87-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.87/patch-v3.87-lite.zip",
-    "sha256": "d763ad325ccd89eaa40992db56167db470c9df54934870313dace0ee7630ef20",
-    "size": 40942442
+    "file": "patch-v3.88-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.88/patch-v3.88-lite.zip",
+    "sha256": "db30ddeb99c3fb83e5c697432d09d782235287a8d0396857f0d5d25a69ba539b",
+    "size": 40949587
   },
   "full": {
-    "file": "patch-v3.87-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.87/patch-v3.87-full.zip",
-    "sha256": "d763ad325ccd89eaa40992db56167db470c9df54934870313dace0ee7630ef20",
-    "size": 40942442
+    "file": "patch-v3.88-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.88/patch-v3.88-full.zip",
+    "sha256": "db30ddeb99c3fb83e5c697432d09d782235287a8d0396857f0d5d25a69ba539b",
+    "size": 40949587
   }
 }
