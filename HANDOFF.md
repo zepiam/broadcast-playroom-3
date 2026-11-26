@@ -1,11 +1,14 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.87)
-- **Current Version**: v3.87 (Released — grey/crashed window auto-recovery + Microsoft Edge as default browser)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.88)
+- **Current Version**: v3.88 (Released — 3D spatial TTS position + top-bar 3D toggle)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ตำแหน่งเสียงอ่าน 3 มิติ (Claude, 2026-11-27)
+## 🚀 RELEASED v3.88 — ตำแหน่งเสียงอ่าน 3 มิติ (Claude, 2026-11-27)
+- **Release:** `publish_release_v388.py` (คัดจาก v387 เปลี่ยน changelog/commit message/release_date) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.88 + tag + purge jsDelivr สำเร็จ (commit 3acfaca). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.88, zip มี `dist/tts_spatial.js` และ `dist/index.html` อ้าง `tts_spatial.js?v=3.88`
+- **ยังไม่ยืนยันบนเครื่องจริง:** อัปเดตผ่านโปรแกรม, ฟังด้วยหูฟังจริง, คนดูได้ยินผ่าน OBS (ต้องเป็น stereo)
+- **ไอเดียที่คุยไว้ (ยังไม่ทำ):** ส่งเสียงอ่านแบบปกติให้คนดูแยกจากเสียง 3 มิติของสตรีมเมอร์ ผ่านหน้า Browser Source ใน OBS (Control audio via OBS) — ต้องให้ OBS ไม่จับเสียงหน้าต่างโปรแกรม; ทดสอบกับ OBS จริงเท่านั้น
 - **ผู้ใช้ขอ:** ปรับตำแหน่งเสียง TTS รอบตัวแบบ ASMR (หน้า/หลัง/ซ้าย/ขวา/ใกล้/ไกล) มีรูปคนตรงกลางให้ลากจุดเสียง + ปุ่มทดสอบฟัง
 - **ไฟล์ใหม่ `src/tts_spatial.js`** (เพิ่มใน `copy_dist_assets.py` และ `<script>` ถัดจาก `tts_avatar.js` ใน `src/index.html`): `window.bp3SpatialAudio.attach(audio)` ต่อ `<audio>` → `MediaElementSource` → `PannerNode` (HRTF, inverse distance, rolloff 0.45) → limiter (`DynamicsCompressor` -2 dB, ratio 20 กัน HRTF ทำเสียงหูใกล้ดังจนแตก) → ลำโพง. **ตำแหน่งตรงกลาง (ค่าเริ่มต้น) = ไม่ต่อผ่าน Web Audio เลย เสียงเหมือนเดิม 100%**; ถ้า AudioContext ไม่ running ก็เล่นปกติ (ไม่เสี่ยงเงียบ). ค่าตั้ง `localStorage.bp3_tts_spatial = {x,y}` (x ขวา+, y หน้า+, ระยะ = รัศมี → 0.35–3.55 ม.), sync ข้ามหน้าต่างด้วย storage event, ขยับระหว่างเล่นเปลี่ยนตำแหน่งทันที
 - **UI:** การ์ด "🎧 ตำแหน่งเสียงอ่าน" แทรกต่อจากการ์ด "ปรับแต่งเสียง (Volume, Speed & Pitch)" ทั้งใน Voice Settings และ Settings > TTS (inject ด้วย JS ไม่แก้ markup): วงกลมมองจากด้านบน หัวคนตรงกลาง (จมูกชี้หน้า) ลากจุด/คลิก/ลูกศร (Shift = ก้าวใหญ่, Home = ตรงกลาง; **ไม่ใช้ Escape เพราะเป็นปุ่มปิดหน้าต่างของแอป**), ป้ายหน้า/หลัง/ซ้าย/ขวาอยู่นอกวง, ข้อความบอกทิศ+ระยะ, preset 7 แบบ (ตรงกลาง, ข้างหน้า, ข้างหูซ้าย, ข้างหูขวา, ด้านหลัง, กระซิบข้างหู, ไกลออกไป), ปุ่ม "▶ ทดสอบฟังตำแหน่งนี้"/"⏹ หยุดทดสอบ" อ่านข้อความทดสอบเสียงเดิม (`bp3_tts_test_message`) ด้วยเพศ/speed/pitch/volume ปัจจุบัน
