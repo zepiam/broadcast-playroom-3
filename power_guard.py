@@ -27,6 +27,7 @@ from pathlib import Path
 
 HANG_SECONDS = 180          # page silent this long (heartbeat is 10 s) => treat as hung
 STARTUP_GRACE = 240         # seconds after (re)launch before the watchdog may act
+PAGE_LOST_SECONDS = 35      # page disconnected + browser alive this long (and no heartbeat 45 s) => restart sooner
 MAX_RECOVERIES_PER_HOUR = 3
 LOOP_SECONDS = 15
 
@@ -99,6 +100,7 @@ def beat(heap_mb=None) -> None:
     with _lock:
         _state['last_beat'] = time.time()
         _state['beats'] += 1
+        _state['page_lost_at'] = 0.0
         if heap_mb is not None and heap_mb >= 0:
             _state['heap_mb'] = heap_mb
 
@@ -162,6 +164,23 @@ def _main_browser_alive(procs=None) -> bool:
     return False
 
 
+def page_lost() -> None:
+    """The app page dropped its connection while the browser is still running (grey/crashed page).
+    Lets the watchdog restart the window after PAGE_LOST_SECONDS instead of the full HANG_SECONDS."""
+    with _lock:
+        if not _state.get('page_lost_at'):
+            _state['page_lost_at'] = time.time()
+
+
+def browser_alive() -> bool:
+    """Public: the app window's browser main process is still running (or the watchdog is
+    in the middle of restarting it, so the program must not quit during that gap)."""
+    with _lock:
+        if _state.get('recovering_until', 0) > time.time():
+            return True
+    return _main_browser_alive(None if _active_browser_proc is not None else _browser_processes())
+
+
 def _disable_efficiency_mode(pids) -> None:
     if os.name != 'nt':
         return
@@ -201,6 +220,7 @@ def _recover() -> None:
         if len(_state['recoveries']) >= MAX_RECOVERIES_PER_HOUR:
             return
         _state['recoveries'].append(now)
+        _state['recovering_until'] = now + 60
         heap = _state['heap_mb']
         silent = int(now - _state['last_beat'])
     _log('UI watchdog: no heartbeat for %ss while browser is alive (last page heap %s MB) -> restarting app window' % (silent, heap))
@@ -229,7 +249,11 @@ def _recover() -> None:
             _state['launched_at'] = time.time()
             _state['last_beat'] = 0.0
             _state['beats'] = 0
+            _state['page_lost_at'] = 0.0
+            _state['recovering_until'] = 0.0   # new window launched: normal close may exit again
     except Exception as error:
+        with _lock:
+            _state['recovering_until'] = 0.0
         _log('UI watchdog: restart failed: %s' % error)
 
 
@@ -253,11 +277,14 @@ def _loop() -> None:
                 last_beat, beats, launched = _state['last_beat'], _state['beats'], _state['launched_at']
                 heap = _state['heap_mb']
                 last_mem = _state['last_mem_log']
+                lost_at = _state.get('page_lost_at') or 0.0
             if beats and now - last_mem > 300:
                 with _lock:
                     _state['last_mem_log'] = now
                 _log('ok: page heap %s MB, heartbeats %s' % (heap, beats))
-            if cfg['watchdog'] and beats and now - last_beat > HANG_SECONDS and now - launched > STARTUP_GRACE:
+            hung = now - last_beat > HANG_SECONDS and now - launched > STARTUP_GRACE
+            lost = bool(lost_at) and now - lost_at >= PAGE_LOST_SECONDS and now - last_beat >= 45
+            if cfg['watchdog'] and beats and (hung or lost):
                 if procs is None:
                     procs = _browser_processes()
                 if _main_browser_alive(procs):

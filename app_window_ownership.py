@@ -23,12 +23,13 @@ def set_tool_owner(name, timeout=3.0):
     if name not in TITLES:return {'ok':False,'error':'unknown window'}
     try:
         import psutil,win32con,win32gui,win32process
-        profile=os.path.normcase(os.path.realpath(str(Path(os.environ.get('LOCALAPPDATA') or Path.home())/'BroadcastPlayroom3'/'browser_profile')))
+        _base=Path(os.environ.get('LOCALAPPDATA') or Path.home())/'BroadcastPlayroom3'
+        profiles={os.path.normcase(os.path.realpath(str(_base/name))) for name in ('browser_profile','browser_profile_edge')}
         def app_process(pid):
             try:
                 process=psutil.Process(pid)
                 if process.name().lower() not in ('chrome.exe','msedge.exe'):return False
-                return any(arg.lower().startswith('--user-data-dir=') and os.path.normcase(os.path.realpath(arg.split('=',1)[1].strip('"')))==profile for arg in process.cmdline())
+                return any(arg.lower().startswith('--user-data-dir=') and os.path.normcase(os.path.realpath(arg.split('=',1)[1].strip('"'))) in profiles for arg in process.cmdline())
             except (psutil.Error,OSError):return False
         title=TITLES[name]+' - Broadcast Playroom 3'
         deadline=time.monotonic()+timeout

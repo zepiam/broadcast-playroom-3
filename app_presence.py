@@ -13,6 +13,8 @@ class AppPresence:
         self.launch_reserved_until=0
         self.closing=False
         self.closed=deque(maxlen=256)
+        self.hold_since=None
+        self.hold_notified=False
 
     def open(self,client):
         with self.lock:
@@ -52,19 +54,40 @@ class AppPresence:
             self.launch_reserved_until=time.monotonic()+seconds
             return True
 
-    def should_exit(self,grace=3):
+    def should_exit(self,grace=3,browser_alive=None,hold_max=600,on_hold=None):
+        """True once no app window has been connected for `grace` seconds.
+        browser_alive(): if the app's browser process is still running, the page lost its connection
+        without the user closing the window (crashed/grey/frozen page). Stay up (at most hold_max s)
+        so the UI watchdog can restart the window instead of the whole program silently quitting."""
         active=self.status()['active']
         with self.lock:
             now=time.monotonic()
             if active:
                 self.inactive_since=None
+                self.hold_since=None
                 return False
             if not self.ever_connected or now<self.launch_reserved_until:return False
             if self.inactive_since is None:self.inactive_since=now
-            if now-self.inactive_since>=grace:
-                self.closing=True
-                return True
-            return False
+            if now-self.inactive_since<grace:return False
+        if browser_alive is not None:
+            try:alive=bool(browser_alive())
+            except Exception:alive=False
+            if alive:
+                notify=False
+                with self.lock:
+                    if getattr(self,'hold_since',None) is None:
+                        self.hold_since=now;self.hold_notified=False
+                    # a normal close ends the browser within a second or two; only report real holds
+                    if not self.hold_notified and now-self.hold_since>=10:
+                        self.hold_notified=True;notify=True
+                    held=now-self.hold_since
+                if notify and on_hold:
+                    try:on_hold()
+                    except Exception:pass
+                if held<hold_max:return False
+        with self.lock:
+            self.closing=True
+            return True
 
     def begin_shutdown(self):
         with self.lock:self.closing=True

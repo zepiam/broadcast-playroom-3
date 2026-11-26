@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.86"
+CURRENT_VERSION = "3.87"
 
 REPO_OWNER = "zepiam"
 
@@ -972,12 +972,12 @@ def apply_update_patch(patch_zip: str) -> bool:
                         c_path = wv_dir / sub
                         if c_path.is_dir():
                             shutil.rmtree(c_path, ignore_errors=True)
-                bp_dir = root_c / "browser_profile"
-                if bp_dir.is_dir():
-                    for sub in ["Default/Cache", "Default/Code Cache", "Default/GPUCache", "Default/DawnCache", "GrShaderCache", "ShaderCache"]:
-                        c_path = bp_dir / sub
-                        if c_path.is_dir():
-                            shutil.rmtree(c_path, ignore_errors=True)
+                for bp_dir in (root_c / "browser_profile", root_c / "browser_profile_edge"):
+                    if bp_dir.is_dir():
+                        for sub in ["Default/Cache", "Default/Code Cache", "Default/GPUCache", "Default/DawnCache", "GrShaderCache", "ShaderCache"]:
+                            c_path = bp_dir / sub
+                            if c_path.is_dir():
+                                shutil.rmtree(c_path, ignore_errors=True)
         except Exception:
             pass
         return True

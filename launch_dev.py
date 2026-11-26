@@ -2388,7 +2388,7 @@ def handle_tool_popout(tool_name, main_url, section=None):
     # 1. Try launching via browser_bin (Chrome/Edge App Mode)
     browser_bin = find_browser()
     if browser_bin:
-        app_profile_dir = os.path.join(str(DATA_ROOT), 'browser_profile')
+        app_profile_dir = app_browser_profile_dir(browser_bin)
         cmd = [
             browser_bin,
             f"--app={url}",
@@ -12177,19 +12177,60 @@ def start_server():
 
 
 
+_EDGE_CANDIDATES = [
+    r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+    r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+    os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"),
+]
+_CHROME_CANDIDATES = [
+    r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
+]
+def _browser_preference():
+    """'edge' (default — ships with every Windows 10/11) or 'chrome'.
+    Override: env BP3_BROWSER, or {"browser": "chrome"} in <data>/power_settings.json."""
+    pref = (os.environ.get('BP3_BROWSER') or '').strip().lower()
+    if not pref:
+        try:
+            _ps_file = os.path.join(str(DATA_ROOT), 'power_settings.json')
+            if os.path.isfile(_ps_file):
+                with open(_ps_file, 'r', encoding='utf-8') as _f:
+                    pref = str(json.load(_f).get('browser', '') or '').strip().lower()
+        except Exception:
+            pref = ''
+    return 'chrome' if pref == 'chrome' else 'edge'
 def find_browser():
-    candidates = [
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-        os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-        os.path.expandvars(r"%LOCALAPPDATA%\Microsoft\Edge\Application\msedge.exe"),
-    ]
-    for c in candidates:
+    order = (_CHROME_CANDIDATES + _EDGE_CANDIDATES) if _browser_preference() == 'chrome' else (_EDGE_CANDIDATES + _CHROME_CANDIDATES)
+    for c in order:
         if os.path.isfile(c):
             return c
     return None
+def _seed_profile_storage(source, target):
+    """First switch to a new browser profile: carry over the app's saved settings
+    (localStorage / IndexedDB of http://127.0.0.1:8801) from the previous profile."""
+    try:
+        import shutil
+        os.makedirs(os.path.join(target, 'Default'), exist_ok=True)
+        for sub in ('Local Storage', 'IndexedDB'):
+            src = os.path.join(source, 'Default', sub)
+            dst = os.path.join(target, 'Default', sub)
+            if os.path.isdir(src) and not os.path.exists(dst):
+                shutil.copytree(src, dst, ignore=shutil.ignore_patterns('LOCK'))
+        print(f"[LAUNCH] Copied app settings from {source} to {target}", flush=True)
+    except Exception as error:
+        print(f"[WARN] Could not copy app settings into the new browser profile: {error}", flush=True)
+def app_browser_profile_dir(browser_bin=None):
+    """Edge and Chrome must not share one --user-data-dir: Edge gets browser_profile_edge
+    (seeded once from browser_profile so users keep their settings); Chrome keeps browser_profile."""
+    base = str(DATA_ROOT)
+    legacy = os.path.join(base, 'browser_profile')
+    if browser_bin and os.path.basename(browser_bin).lower() == 'msedge.exe':
+        edge = os.path.join(base, 'browser_profile_edge')
+        if not os.path.isdir(edge) and os.path.isdir(legacy):
+            _seed_profile_storage(legacy, edge)
+        return edge
+    return legacy
 
 
 
@@ -12210,7 +12251,7 @@ def open_app_window(main_url, minimized=False):
     browser_bin = find_browser()
     launched = False
 
-    app_profile_dir = os.path.join(str(DATA_ROOT), 'browser_profile')
+    app_profile_dir = app_browser_profile_dir(browser_bin)
     os.makedirs(app_profile_dir, exist_ok=True)
     # Purge stale browser cache to guarantee immediate UI update without requiring Ctrl+Shift+R
     for cache_sub in ['Default/Cache', 'Default/Code Cache', 'Default/GPUCache', 'ShaderCache', 'GrShaderCache']:
@@ -12334,6 +12375,29 @@ def open_app_window(main_url, minimized=False):
 
 
 
+def _app_browser_alive():
+    """Is the app's own browser (the --app window process) still running?"""
+    try:
+        import power_guard
+        return power_guard.browser_alive()
+    except Exception:
+        return False
+def _log_presence_hold():
+    try:
+        import power_guard
+        power_guard._log('presence: app page disconnected but its browser is still running (grey/crashed/frozen page?) '
+                         '-> staying up so the UI watchdog can restart the window')
+        power_guard.page_lost()
+    except Exception:
+        pass
+def _log_app_exit():
+    try:
+        import power_guard
+        held=getattr(app_presence,'hold_since',None)
+        power_guard._log('app exit: no app window connected%s' % (
+            ' (browser still running after the hold limit)' if held is not None and _app_browser_alive() else ' and browser closed'))
+    except Exception:
+        pass
 class ExistingInstanceClosing(Exception):
 
 
@@ -13184,7 +13248,8 @@ def main():
 
 
 
-            if app_presence.should_exit():
+            if app_presence.should_exit(browser_alive=_app_browser_alive,on_hold=_log_presence_hold):
+                _log_app_exit()
 
 
 
