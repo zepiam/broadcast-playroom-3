@@ -1,18 +1,19 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.86)
-- **Current Version**: v3.86 (Released — app no longer stays alive after closing; reopen opens a window)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.87)
+- **Current Version**: v3.87 (Released — grey/crashed window auto-recovery + Microsoft Edge as default browser)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ใช้ Microsoft Edge เป็นค่าเริ่มต้น (Claude, 2026-11-26)
+## 🚀 RELEASED v3.87 — ใช้ Microsoft Edge เป็นค่าเริ่มต้น (Claude, 2026-11-26)
+- **Release v3.87 (รวมสองหัวข้อนี้):** `publish_release_v387.py` (คัดจาก v386 + เพิ่ม `app_window_ownership.py` ใน CORE_FILES) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.87 + tag + purge jsDelivr สำเร็จ (commit 9029b97). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.87, zip มี `app_window_ownership.py`/`app_presence.py`/`power_guard.py` ทั้ง root และ `_internal/`
 - **ผู้ใช้สั่ง:** ให้โปรแกรมเปิดหน้าต่างด้วย Edge เป็น default (มีทุกเครื่อง Windows 10/11)
 - **แก้ (`launch_dev.py`):** `find_browser()` ลำดับใหม่ Edge → Chrome (`_EDGE_CANDIDATES`/`_CHROME_CANDIDATES`); override ได้ด้วย env `BP3_BROWSER=chrome` หรือ `{"browser": "chrome"}` ใน `data/power_settings.json` (`_browser_preference()`). โปรไฟล์แยกตาม browser: Edge ใช้ `data/browser_profile_edge`, Chrome ใช้ `data/browser_profile` เดิม (`app_browser_profile_dir()`) — ห้ามให้ Edge กับ Chrome ใช้ `--user-data-dir` เดียวกัน. ครั้งแรกที่สร้างโปรไฟล์ Edge จะคัดลอก `Default/Local Storage` + `Default/IndexedDB` จากโปรไฟล์เดิม (`_seed_profile_storage`, log `[LAUNCH] Copied app settings`) → ค่าตั้งใน localStorage ไม่หาย. หน้าต่างหลักและ popout ใช้ helper เดียวกัน. `updater.py` ล้าง cache ทั้งสองโปรไฟล์. `app_window_ownership.py` ยอมรับทั้งสองโปรไฟล์
 - **⚠️ ต้องทำตอน release:** เพิ่ม `app_window_ownership.py` ใน `CORE_FILES` (ตอนนี้ไม่มีในแพตช์ ใช้ตัวที่คอมไพล์ใน exe; เครื่องติดตั้งไม่มีไฟล์นี้บนดิสก์). `BP3_PatchInstaller.exe` (คอมไพล์แล้ว) ยังล้าง cache แค่ `browser_profile` — ไม่กระทบเพราะ `open_app_window` ล้าง cache ของโปรไฟล์ที่ใช้ทุกครั้งที่เปิดอยู่แล้ว
 - **ทดสอบแล้ว (dev app + Edge 158 จริง):** เปิดด้วย msedge.exe + คัดลอกค่าตั้งสำเร็จ; เทียบ localStorage ของ origin 127.0.0.1:8801 ระหว่างโปรไฟล์ Chrome เดิมกับ Edge ใหม่: **66/66 key ตรงกันทั้งขนาด**; ปิดปกติออก 5.5 วิ (Edge ไม่ค้าง background); ฆ่า renderer → กู้หน้าต่างใน 52 วิ, ปิดหลังกู้ 6.5 วิ; หน้า OBS เก่า 6.0 วิ; reopen ไม่มีหน้าต่าง → เปิดใหม่ 1.0 วิ (ผ่าน msedge). **การแสดงผล:** หน้าต่างหลัก + popout 5 ตัว (voice-settings, settings, composer, giveaway, user-manager) เปิดใน msedge.exe + `browser_profile_edge` ทุกตัว, จับภาพด้วย PrintWindow เทียบกับ Chrome (`BP3_BROWSER=chrome` ซึ่งยืนยันว่า override ใช้ได้) ต่างกัน ≤0.09% พิกเซล (anti-aliasing); Overlay `/?p=1`, `/?p=1&test=1`, `/chat-widget` ใน Edge และ Chromium: widgets ครบ (10/10/2), พื้นหลังโปร่งใส, ไม่มี UI โปรแกรม, ไม่มี page error. Overlay ใน OBS ใช้ CEF ของ OBS เอง ไม่ขึ้นกับการเปลี่ยน browser. build + gates ผ่าน
 - **ยังไม่ทดสอบ:** exe จริง; ผู้ใช้ที่ไม่มี Edge (ตกไป Chrome ตามเดิม); เครื่องที่ไม่มีทั้งคู่ (เปิดใน default browser — ไม่มี watchdog/กู้หน้าต่าง)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — หน้าเทาหลังเปิดทิ้งไว้ + โปรแกรมหายเอง (Claude, 2026-11-26)
+## 🚀 RELEASED v3.87 — หน้าเทาหลังเปิดทิ้งไว้ + โปรแกรมหายเอง (Claude, 2026-11-26)
 - **อาการ (ผู้ใช้แจ้ง, v3.86):** เปิดทิ้งไว้ ไม่ได้ปิด กลับมาเจอหน้าต่างสีเทาเปล่า (title ยังเป็น Broadcast Playroom v3.86)
 - **หลักฐานบนเครื่องเจ้าของ:** `ui_health.log` มี `ok:` ทุก 5 นาทีถึง 22:39:04 แล้วหยุด; ตอน 23:11 ไม่มี `BroadcastPlayroom3-Full.exe` แล้ว แต่ Chrome ของโปรแกรม (เริ่ม 19:13) ยังอยู่; ไม่มี Application Error/WER → backend **ออกเองแบบ clean** ทางเดียวคือ `app_presence.should_exit()`; ไม่มี crash dump ใน Crashpad. 22:40:03 Windows sync เวลา (ถอย 3.3 วิ) — ยังไม่รู้ว่าเกี่ยวไหม
 - **สาเหตุ (ยืนยันด้วย control test):** เมื่อหน้า app ตาย/หลุด (renderer crash, GPU/compositor ล้ม ฯลฯ) SSE `/api/app-presence/stream` ขาด → presence ว่าง 3 วิ → backend ปิดตัวเองทั้งที่หน้าต่าง Chrome ยังเปิด → watchdog ของ power_guard (อยู่ใน backend) ตายตามไปด้วย จึงไม่เคยกู้หน้าเทาได้. Control (โค้ดเดิม, ฆ่า renderer ของหน้าต่าง): backend ออกใน 4 วิ ขณะ Chrome ยังอยู่. **ยังไม่รู้ต้นเหตุที่ทำให้หน้าตาย** (ฝั่ง Chrome) — ตอนนี้แค่ทำให้กู้คืนได้ + มี log
