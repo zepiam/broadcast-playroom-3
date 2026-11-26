@@ -236,9 +236,29 @@ class TTSService:
                         return audio
             except Exception as error:
                 logger.warning('TTS voice %s attempt %d failed: %s', voice, attempt + 1, error)
+                # Deterministic content refusal (the same text fails every time): retrying the same voice
+                # only adds ~2.5 s of delay before the caller can fall back.
+                if 'No audio was received' in str(error):
+                    break
             if attempt == 0:
                 await asyncio.sleep(0.2)
         return b''
+
+    async def _synthesize_with_fallback(self, text: str, voice: str, rate: str = '', pitch: str = '', volume: str = '') -> bytes:
+        """Edge's Thai female voice (Premwadee) returns no audio for some texts (e.g. 'เม้ง', 'MeN9CH',
+        'สวัสดี เป็นไง') while the Thai male voice (Niwat) reads them fine. Instead of the browser's robotic
+        backup voice, retry once with Niwat pitched up so it stays close to a female voice
+        (RVC, if enabled, converts it to the chosen model voice afterwards anyway)."""
+        audio = await self._synthesize_single(text, voice, rate, pitch, volume)
+        if audio or voice != VOICES.get('female_th'):
+            return audio
+        try:
+            base = int((clean_prosody(pitch, 'Hz') or '+0Hz')[:-2])
+        except ValueError:
+            base = 0
+        alt_pitch = '%+dHz' % (base + 50)
+        logger.warning('TTS female Thai voice returned no audio; retrying with %s (pitch %s): %r', VOICES['male_th'], alt_pitch, text[:60])
+        return await self._synthesize_single(text, VOICES['male_th'], rate, alt_pitch, volume)
 
     async def synthesize(self, text: str, gender: str = 'female', rate: str = '', pitch: str = '', volume: str = '') -> bytes:
         text = sanitize_text(text)
@@ -252,13 +272,13 @@ class TTSService:
         if len(segments) == 1:
             seg_text, seg_lang = segments[0]
             voice = resolve_voice_for_lang(seg_lang, gender)
-            return await self._synthesize_single(seg_text, voice, rate, pitch, volume)
+            return await self._synthesize_with_fallback(seg_text, voice, rate, pitch, volume)
 
         # Multilingual: synthesize each segment concurrently with its native language voice
         tasks = []
         for seg_text, seg_lang in segments:
             voice = resolve_voice_for_lang(seg_lang, gender)
-            tasks.append(self._synthesize_single(seg_text, voice, rate, pitch, volume))
+            tasks.append(self._synthesize_with_fallback(seg_text, voice, rate, pitch, volume))
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
         audio_parts = []

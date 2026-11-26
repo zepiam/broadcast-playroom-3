@@ -602,7 +602,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.90</title>
+  <title>Broadcast Playroom v3.91</title>
 
 
 
@@ -634,19 +634,11 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./styles.css?v=3.90">
+  <link rel="stylesheet" href="./styles.css?v=3.91">
 
 
 
-  <link rel="stylesheet" href="./ui_readability.css?v=3.90">
-
-
-
-
-
-
-
-  <link rel="stylesheet" href="./modal.css?v=3.90">
+  <link rel="stylesheet" href="./ui_readability.css?v=3.91">
 
 
 
@@ -654,7 +646,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./widget_customizer.css?v=3.90">
+  <link rel="stylesheet" href="./modal.css?v=3.91">
 
 
 
@@ -662,7 +654,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_studio.css?v=3.90">
+  <link rel="stylesheet" href="./widget_customizer.css?v=3.91">
 
 
 
@@ -670,7 +662,15 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.90">
+  <link rel="stylesheet" href="./composer_studio.css?v=3.91">
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.91">
 
 
 
@@ -1010,7 +1010,7 @@ button.plat-edit-link:hover {
 
 <script id="bp3-version-check">
 (function(){
-  const BUNDLE_VERSION = "3.90";
+  const BUNDLE_VERSION = "3.91";
   async function checkVersion(attempt){
     attempt = attempt || 0;
     try {
@@ -1318,7 +1318,7 @@ SOFTWARE.
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-icon-64.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.onerror=null;this.src='./assets/bp-full-icon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.90</span>
+      <span class="desktop-titlebar-tag">v3.91</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">
@@ -32771,6 +32771,29 @@ try {
 
 
     window._customUserNicknames = _customUserNicknames;
+    // Nicknames are usually edited in the viewer-profile popout (another window). Keep this window's map,
+    // its live-chat names and therefore TTS ("{nickname} พูดว่า ...") in sync with the saved list.
+    function refreshChatAuthorNames(doc) {
+      try {
+        (doc || document).querySelectorAll('.chat-row').forEach(row => {
+          const span = row.querySelector('.chat-username');
+          if (!span) return;
+          const orig = row.dataset.username || span.getAttribute('data-original-user') || '';
+          if (!orig) return;
+          const shown = getEffectiveAuthorName(orig) || orig;
+          if (span.textContent !== shown) span.textContent = shown;
+        });
+      } catch (_) {}
+    }
+    window.refreshChatAuthorNames = refreshChatAuthorNames;
+    window.addEventListener('storage', e => {
+      if (e.key !== 'bp3_custom_nicknames') return;
+      let next = {};
+      try { next = JSON.parse(e.newValue || '{}') || {}; } catch (_) { return; }
+      Object.keys(_customUserNicknames).forEach(k => { if (!(k in next)) delete _customUserNicknames[k]; });
+      Object.assign(_customUserNicknames, next);   // same object: window._customUserNicknames stays valid
+      refreshChatAuthorNames(document);
+    });
 
 
 
