@@ -1,11 +1,13 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.84)
-- **Current Version**: v3.84 (Released)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.85)
+- **Current Version**: v3.85 (Released — hotfix OBS overlay)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ HOTFIX v3.85 (เตรียมพร้อม รอ release) — Overlay OBS กลายเป็นหน้าโปรแกรม (Claude, 2026-11-26)
+## 🚀 RELEASED HOTFIX v3.85 — Overlay OBS กลายเป็นหน้าโปรแกรม (Claude, 2026-11-26)
+- **Release:** `publish_release_v385.py` ล้มที่ STEP 4 (commit message มี `"/"` ใน f-string เครื่องหมายคำพูดซ้อน → TypeError) หลังอัปโหลด HF สำเร็จแล้ว. ทำ STEP 4–6 ต่อด้วยมือ: ตรวจ SHA zip ในเครื่องตรง version.json → commit 4cbede6 + tag v3.85 + push → `gh release create v3.85` (zip x2 + version.json + changelog) → purge jsDelivr 200. แก้ข้อความ commit ในสคริปต์แล้ว (ระวัง: ห้ามใส่ `"` ใน commit message ของสคริปต์ publish)
+- **ตรวจหลังปล่อย:** patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.85, release notes ถูกต้อง
 - **อาการ (ผู้ใช้แจ้ง):** Browser Source ใน OBS ที่ชี้ `http://127.0.0.1:8801/?p=1` (ลิงก์ที่ Composer Studio สร้าง `${host}/?p=N`) แสดงหน้าโปรแกรมหลักแทน Overlay
 - **สาเหตุ:** v3.78 (Antigravity, commit f750730) เพิ่มบล็อก "Layer 2" ต้น `QuietHandler.do_GET` ที่จับ `path in ('/', '/index.html')` แล้วส่ง `dist/index.html` ทำให้ `/` ไม่ไปถึงตาราง `views` (`'/': self.legacy_view` = composer overlay) อีกเลย. พังตั้งแต่ v3.78–v3.84. หน้าต่างโปรแกรมเปิดที่ `/index.html?v=...` จึงไม่ต้องใช้ `/`
 - **แก้ (`launch_dev.py` บรรทัดเดียว):** บล็อกนั้นจับเฉพาะ `path == '/index.html'` (ยังได้ no-cache เหมือนเดิม) + คอมเมนต์เตือนห้ามจับ `/`

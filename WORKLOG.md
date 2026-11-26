@@ -2717,3 +2717,9 @@ Root cause: v3.78 (commit f750730, "Layer 2" no-cache block at the top of `Quiet
 Fix: `launch_dev.py` — that block now matches only `path == '/index.html'` (no-cache kept) + comment warning not to catch "/".
 Tests: real `launch_dev.QuietHandler` on a random port: `/?p=1`, `/?p=1&test=1`, `/`, `/overlay.html?p=1`, `/composer.html?p=1` → overlay (Cache-Control no-store); `/index.html`, `/index.html?v=3.84` → main app (no-cache). Playwright on `/?p=1&test=1`: 10 `.widget`, transparent body, no app rail, no page errors. Version 3.85 bumped (package.json, updater.py, copy_dist_assets.py x2, src/index.html); `publish_release_v385.py` from v384 (changelog/commit message/release_date). `npm run build` → Safety Gate + Smoke Test Gate PASSED.
 Not verified: real OBS (may need Refresh on the Browser Source after updating).
+
+## 2026-11-26 — Claude: RELEASED v3.85 hotfix (OBS overlay)
+`python publish_release_v385.py` built, packaged (SHA-256 gate passed) and uploaded lite/full/version.json to HF, then crashed at STEP 4: the commit message contained `"/"` inside a double-quoted f-string → `TypeError: unsupported operand type(s) for /`. Nothing was committed or tagged at that point (HF already had v3.85 whose GitHub URL did not exist yet; updater mirror fallback would have covered it for a few minutes).
+Recovery (manual, same commands as the script): verified local zips' SHA-256 == version.json; `git add -A` (composer_layout.json reset) → commit 4cbede6 + tag v3.85 → push master --tags; `gh release create v3.85` with both zips + version.json + changelog; purged jsDelivr master + v3.85 (HTTP 200). Fixed the commit message in `publish_release_v385.py` (no inner quotes).
+Post-release check: lite+full from GitHub and HF — all 4 SHA-256 match version.json; version.json on both hosts = 3.85; GitHub release notes correct.
+Not verified: real OBS Browser Source after updating.
