@@ -2797,3 +2797,8 @@ Fix: `loopback_server.py` request_queue_size = 128 for the IPv4 and IPv6 servers
 IMPORTANT for the next release: add `loopback_server.py` to CORE_FILES (installs only have the exe-bundled copy; v389 script does not ship it).
 Tests: backlog measurement above; after the fix (file default) 8 loads → 0 broken images, no REFUSED; /api/version aborted 3 times → 4th attempt sets title + tag to v3.89 (9.6 s), no page errors; build regex checked with version 9.12; dist title = v3.89. `npm run build` → gates PASSED.
 Not verified: installed exe.
+
+## 2026-11-27 — Claude: RELEASED v3.90 (server backlog 128 + correct title version)
+Version 3.90 (package.json, updater.py, copy_dist_assets.py x2, src/index.html `?v=` x6 + BUNDLE_VERSION + `<title>` + titlebar tag); `publish_release_v390.py` copied from v389 with new changelog/commit message and `loopback_server.py` added to CORE_FILES (briefly also added legacy_compat.py — removed before running; not needed and not changed). Pre-flight `npm run build` → gates PASSED; dist title/tag/BUNDLE_VERSION = 3.90. Ran `git checkout composer_layout.json` + `python publish_release_v390.py`: patches 40,950,625 bytes each, SHA-256 gate passed, HF upload OK, commit bcc3b53 + tag v3.90 pushed, GitHub Release v3.90 created, jsDelivr purged (HTTP 200).
+Post-release check: lite+full from GitHub and HF — all 4 SHA-256 match version.json; version.json on both hosts = 3.90; full zip has loopback_server.py at root and _internal/ with `_BACKLOG=128`, and dist/index.html title v3.90.
+Not verified: installed exe after updating.

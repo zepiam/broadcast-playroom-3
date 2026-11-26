@@ -1,11 +1,12 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.89)
-- **Current Version**: v3.89 (Released — read viewer name before chat message fixed)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.90)
+- **Current Version**: v3.90 (Released — server accept backlog 128: no more broken icons/missing CSS when busy; correct title version)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ไอคอนแพลตฟอร์มเป็นรูปแตก + หัวหน้าต่างขึ้น v3.78 (Claude, 2026-11-27)
+## 🚀 RELEASED v3.90 — ไอคอนแพลตฟอร์มเป็นรูปแตก + หัวหน้าต่างขึ้น v3.78 (Claude, 2026-11-27)
+- **Release:** `publish_release_v390.py` (คัดจาก v389 + เพิ่ม `loopback_server.py` ใน CORE_FILES) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.90 + tag + purge jsDelivr สำเร็จ (commit bcc3b53). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.90, zip มี `loopback_server.py` (root + `_internal/`, มี `_BACKLOG=128`) และ `dist/index.html` title v3.90. เลขเวอร์ชันตอนนี้มี 9 จุดใน `src/index.html` (6 CSS + BUNDLE_VERSION + title + titlebar tag) — build sync ให้อัตโนมัติแล้ว
 - **อาการ (ผู้ใช้แจ้ง):** (1) ไอคอนแพลตฟอร์มบางครั้งเป็นรูปภาพแตก ต้องกด Ctrl+R (เจอมา 2-3 เวอร์ชัน) (2) หลังอัปเดต v3.89 หัวหน้าต่างขึ้น "Broadcast Playroom v3.78" ปิดเปิดใหม่หาย
 - **สาเหตุ (1) — ยืนยันด้วยการวัด:** `LoopbackServer` (ThreadingHTTPServer) ใช้ accept backlog ค่าเริ่มต้นของ socketserver = **5**; หน้าโปรแกรมโหลด ~60 ไฟล์พร้อมกัน (ไม่มี cache) + stream ค้าง → ตอน Python ยุ่ง (เปิดโปรแกรม/โหลด RVC) คิวเต็ม Windows **ปฏิเสธการเชื่อมต่อ** (`ERR_CONNECTION_REFUSED`) → รูป/CSS หาย. วัดบน `launch_dev.QuietHandler` จริง + Edge + โหลด CPU: backlog 5 → 74/1893 request ล้ม, ไอคอนแตก 6 รูปใน 5 รอบ (youtube/mylive/soop) + CSS หลายไฟล์ถูกปฏิเสธ (น่าจะเป็นต้นเหตุจริงของ "UI ไม่มีสไตล์หลังอัปเดต" ใน v3.78–v3.80 ด้วย); backlog 128 → ไม่มีการปฏิเสธ, ไอคอนแตก 0 (เหลือแค่ `/api/app-presence` ERR_ABORTED ตอนปิดหน้า ซึ่งปกติ)
 - **สาเหตุ (2):** `<title>` และ `.desktop-titlebar-tag` ใน `src/index.html` ฝัง "v3.78" ตายตัว (ไม่มีใครอัปเดตตั้งแต่ 3.78); สคริปต์ `bp3-version-check` เรียก `/api/version` ครั้งเดียวแล้วเงียบถ้าล้ม (ซึ่งเกิดได้จากสาเหตุ (1)) → ค้างที่ v3.78
