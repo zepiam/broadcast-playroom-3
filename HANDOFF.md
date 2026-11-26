@@ -1,11 +1,12 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.88)
-- **Current Version**: v3.88 (Released — 3D spatial TTS position + top-bar 3D toggle)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.89)
+- **Current Version**: v3.89 (Released — read viewer name before chat message fixed)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — "อ่านชื่อคนดูก่อนพูดข้อความแชท" ไม่ทำงาน (Claude, 2026-11-27)
+## 🚀 RELEASED v3.89 — "อ่านชื่อคนดูก่อนพูดข้อความแชท" ไม่ทำงาน (Claude, 2026-11-27)
+- **Release:** `publish_release_v389.py` (คัดจาก v388) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.89 + tag + purge jsDelivr สำเร็จ (commit 7cac921). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.89, `dist/index.html` ในแพตช์มีโค้ดที่แก้
 - **อาการ (ผู้ใช้แจ้ง):** ติ๊กในหน้าต่าง Voice Settings แล้ว เสียงอ่านแชทยังไม่อ่านชื่อ (ควรเป็น "{ชื่อ} พูดว่า {ข้อความ}")
 - **สาเหตุ:** `playChatMessageSpeech()` (เล่นเฉพาะหน้าต่างหลัก) อ่านค่าจาก checkbox `#chkReadAuthorName` ของ**หน้าต่างหลักเอง**; ผู้ใช้ติ๊กใน popout Voice Settings ซึ่งเป็นหน้าต่าง Edge อีกบาน → `toggleReadAuthorPref` อัปเดต checkbox ใน popout + `localStorage.bp3_tts_read_author` แต่ checkbox ของหน้าต่างหลักยังไม่ติ๊ก → อ่านเฉพาะข้อความ. ตอนเปิดโปรแกรมก็คืนค่าแค่ `#chkReadAuthorName` ไม่คืน `#winChkReadAuthorName`
 - **แก้ (`src/index.html`):** (1) `playChatMessageSpeech` ใช้ `localStorage.bp3_tts_read_author` เป็นหลัก (ไม่มีค่า → ใช้ checkbox เดิม) (2) ตอนเริ่มคืนค่าให้ทั้ง `#chkReadAuthorName` และ `#winChkReadAuthorName` (3) storage listener sync checkbox ทุกหน้าต่างเมื่อค่าเปลี่ยน

@@ -2783,3 +2783,8 @@ Root cause: `playChatMessageSpeech()` runs only in the main window and read the 
 Fix (`src/index.html`): speech uses `localStorage.bp3_tts_read_author` as the source of truth (falls back to the checkbox if never saved); startup restores both checkboxes; the storage listener syncs both checkboxes in every window when the setting changes.
 Tests (Playwright, real pages from launch_dev.QuietHandler in Edge, `/api/tts` text captured): CONTROL on the previous build — after ticking in the popout the main window still spoke "สวัสดีครับ" (reproduces the bug); after the fix 8/8 PASS: off → message only; ticked in popout → "Somchai พูดว่า สวัสดีครับ"; main checkboxes follow; unticked → message only; survives reload (both boxes ticked); "@NightBot_99" → "NightBot_99 พูดว่า ทดสอบ"; no page errors. `npm run build` → gates PASSED.
 Not verified: installed exe with real chat.
+
+## 2026-11-27 — Claude: RELEASED v3.89 (read viewer name before chat message)
+Version 3.89 (package.json, updater.py, copy_dist_assets.py x2, src/index.html `?v=` x6 + BUNDLE_VERSION; the 8th "3.89" grep hit in index.html is unrelated existing footer text); `publish_release_v389.py` copied from v388 with new changelog + commit message. Pre-flight `npm run build` → gates PASSED, dist contains the fix. Ran `git checkout composer_layout.json` + `python publish_release_v389.py`: patches 40,948,748 bytes each, SHA-256 gate passed, HF upload OK, commit 7cac921 + tag v3.89 pushed, GitHub Release v3.89 created, jsDelivr purged (HTTP 200).
+Post-release check: lite+full from GitHub and HF — all 4 SHA-256 match version.json; version.json on both hosts = 3.89; dist/index.html inside the full patch contains the fix.
+Not verified: installed exe with real chat.
