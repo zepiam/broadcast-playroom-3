@@ -2679,7 +2679,9 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
         # Layer 2: Guarantee immediate un-cached delivery of index.html so browser never runs stale cached UI
-        if path in ('/', '/index.html'):
+        # NOTE: only /index.html — "/" is the OBS overlay URL (/?p=N from Composer Studio) and must
+        # keep falling through to the views table below (v3.78–v3.84 broke OBS overlays by catching "/").
+        if path == '/index.html':
             idx_file = os.path.join(DIST_DIR, 'index.html')
             if os.path.isfile(idx_file):
                 try:
