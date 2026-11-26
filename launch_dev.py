@@ -3999,6 +3999,12 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+            # Only real app windows (/index.html...) keep the program alive. v3.78-v3.84 served the
+            # main page at "/" so OBS Browser Sources (/?p=N) registered as app windows and the
+            # process never exited after the user closed the window. Ignore any other page path.
+            _ref=self.headers.get('Referer') or ''
+            if _ref and urllib.parse.urlparse(_ref).path!='/index.html':
+                self.send_json({'error':'Not an app window'},403);return
             token=app_presence.open(client)
 
 
@@ -8996,11 +9002,17 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
+                _brought=False
                 try:
                     from app_window_frame import bring_main_window_to_front
-                    bring_main_window_to_front()
+                    _brought=bool(bring_main_window_to_front())
                 except Exception as e:
                     print(f"[REOPEN] Could not bring window to front: {e}", flush=True)
+                if not _brought:
+                    # No app window left (e.g. the user closed it): open a new one instead of doing nothing.
+                    print('[REOPEN] No app window found; opening a new one', flush=True)
+                    _reopen_url=f"http://127.0.0.1:{PORT}/index.html?v={get_current_version()}"
+                    threading.Thread(target=open_app_window,args=(_reopen_url,),daemon=True).start()
                 self.send_json({'ok':True})
 
 

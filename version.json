@@ -1,39 +1,39 @@
 {
-  "version": "3.85",
-  "latest_version": "3.85",
+  "version": "3.86",
+  "latest_version": "3.86",
   "release_date": "2026-11-26",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.85\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.85:\n- **แก้ด่วน: Overlay ใน OBS แสดงเป็นหน้าโปรแกรมแทน Overlay**:\n  - ลิงก์ Overlay ที่ใส่ใน OBS Browser Source กลับมาแสดง Overlay ตามปกติแล้ว\n  - หลังอัปเดต ถ้า OBS ยังแสดงหน้าเดิม ให้กด Refresh ที่ Browser Source หนึ่งครั้ง\n",
+  "changelog": "# Broadcast Playroom v3.86\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.86:\n- **แก้ปัญหากดปิดโปรแกรมแล้วยังค้างอยู่ใน Task Manager**:\n  - Overlay ที่เปิดค้างใน OBS จะไม่ทำให้โปรแกรมค้างหลังปิดหน้าต่างอีกต่อไป\n  - ถ้ากดเปิดโปรแกรมตอนที่ยังค้างอยู่แต่ไม่มีหน้าต่าง โปรแกรมจะเปิดหน้าต่างใหม่ให้ทันที\n  - แนะนำให้กด Refresh ที่ Browser Source ใน OBS หนึ่งครั้งหลังอัปเดต\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.85-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.85/patch-v3.85-lite.zip",
-      "sha256": "9f55363c78372a08713cb4149ec983f70cc470788fc2511b6030780c59e99554",
-      "size": 40936538,
+      "file": "patch-v3.86-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.86/patch-v3.86-lite.zip",
+      "sha256": "e099a5e999b5aa59d10650d850a682d888ebab9c76fc10d32b6960e2978db63a",
+      "size": 40937093,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.85-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.86-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.85-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.85/patch-v3.85-full.zip",
-      "sha256": "9f55363c78372a08713cb4149ec983f70cc470788fc2511b6030780c59e99554",
-      "size": 40936538,
+      "file": "patch-v3.86-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.86/patch-v3.86-full.zip",
+      "sha256": "e099a5e999b5aa59d10650d850a682d888ebab9c76fc10d32b6960e2978db63a",
+      "size": 40937093,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.85-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.86-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.85-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.85/patch-v3.85-lite.zip",
-    "sha256": "9f55363c78372a08713cb4149ec983f70cc470788fc2511b6030780c59e99554",
-    "size": 40936538
+    "file": "patch-v3.86-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.86/patch-v3.86-lite.zip",
+    "sha256": "e099a5e999b5aa59d10650d850a682d888ebab9c76fc10d32b6960e2978db63a",
+    "size": 40937093
   },
   "full": {
-    "file": "patch-v3.85-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.85/patch-v3.85-full.zip",
-    "sha256": "9f55363c78372a08713cb4149ec983f70cc470788fc2511b6030780c59e99554",
-    "size": 40936538
+    "file": "patch-v3.86-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.86/patch-v3.86-full.zip",
+    "sha256": "e099a5e999b5aa59d10650d850a682d888ebab9c76fc10d32b6960e2978db63a",
+    "size": 40937093
   }
 }

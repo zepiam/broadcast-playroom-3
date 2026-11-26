@@ -5,6 +5,14 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ปิดโปรแกรมแล้วยังค้างใน Task Manager (Claude, 2026-11-26)
+- **อาการ (ผู้ใช้แจ้ง):** กดปิดหน้าต่างแล้ว process ยังค้าง; กดเปิดโปรแกรมใหม่ก็ไม่มีหน้าต่างขึ้น
+- **หลักฐานบนเครื่องเจ้าของ (v3.84):** `rvc_debug.log` มี init 18:44 แล้ว init อีก 3 ครั้ง 18:53:41/48/58 แต่ `ui_health.log` มี `power_guard started` แค่ 18:44 → 3 ครั้งหลังเจอ process เก่ายังรันอยู่บนพอร์ต 8801 แล้วแค่สั่ง reopen
+- **สาเหตุ:** โปรแกรมปิดตัวเมื่อ `app_presence` ไม่มีหน้าต่าง role=app ต่อ `/api/app-presence/stream`. v3.78–v3.84 เสิร์ฟ `index.html` (มี `app_presence.js data-role="app"`) ที่ `/` ทำให้ Browser Source ของ OBS (`/?p=N`) นับเป็นหน้าต่างโปรแกรม → ปิดหน้าต่างจริงแล้ว process ไม่ออกตราบที่ OBS เปิดอยู่. v3.85 แก้ `/` แล้ว แต่ OBS ที่ยังไม่ refresh ยังรันหน้าเก่าอยู่. บั๊กรอง: `/api/app-instance/reopen` แค่ `bring_main_window_to_front()` — ถ้าไม่มีหน้าต่างก็ไม่ทำอะไร
+- **แก้ (`launch_dev.py`):** (1) `/api/app-presence/stream` ปฏิเสธ (403) ถ้า Referer path ไม่ใช่ `/index.html` (ไม่มี Referer = ยอมรับเหมือนเดิม) → หน้า OBS เก่าค้างไม่ทำให้โปรแกรมค้างอีก (2) reopen: ถ้า bring-to-front หาหน้าต่างไม่เจอ → `open_app_window()` ใหม่ใน thread (log `[REOPEN] No app window found`)
+- **ทดสอบแล้ว (E2E บนเครื่องนี้ด้วย dev app + หน้าต่าง Chrome จริง + WM_CLOSE):** ปิดธรรมดาออกใน 5.8 วิ; มี RVC โหลดบน GPU ออกใน 7.1 วิ; **กรณีหน้า OBS เก่า** (Playwright เสิร์ฟ index.html ที่ `/?p=1`): หลังแก้ออกใน 6–7 วิ, **control ก่อนแก้ยังค้างเกิน 25 วิ** (ยืนยันสาเหตุ); reopen ตอนไม่มีหน้าต่าง → เปิดหน้าต่างใหม่ใน 0.5 วิ และปิดอีกทีก็ออกปกติ. build + gates ผ่าน
+- **ยังไม่ทดสอบ:** exe จริง (frozen) กับ OBS จริง. ตัดออก: thread ที่ไม่ใช่ daemon (ตรวจแล้ว chat threads เป็น daemon ทั้งหมด)
+
 ## 🚀 RELEASED HOTFIX v3.85 — Overlay OBS กลายเป็นหน้าโปรแกรม (Claude, 2026-11-26)
 - **Release:** `publish_release_v385.py` ล้มที่ STEP 4 (commit message มี `"/"` ใน f-string เครื่องหมายคำพูดซ้อน → TypeError) หลังอัปโหลด HF สำเร็จแล้ว. ทำ STEP 4–6 ต่อด้วยมือ: ตรวจ SHA zip ในเครื่องตรง version.json → commit 4cbede6 + tag v3.85 + push → `gh release create v3.85` (zip x2 + version.json + changelog) → purge jsDelivr 200. แก้ข้อความ commit ในสคริปต์แล้ว (ระวัง: ห้ามใส่ `"` ใน commit message ของสคริปต์ publish)
 - **ตรวจหลังปล่อย:** patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.85, release notes ถูกต้อง

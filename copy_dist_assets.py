@@ -76,11 +76,11 @@ print("Dist assets synchronized successfully!")
 
 # Read package version
 pkg_json_path = os.path.join(project_dir, 'package.json')
-pkg_ver = "3.85"
+pkg_ver = "3.86"
 if os.path.exists(pkg_json_path):
     try:
         with open(pkg_json_path, 'r', encoding='utf-8') as f:
-            pkg_ver = json.load(f).get('version', '3.85')
+            pkg_ver = json.load(f).get('version', '3.86')
     except Exception:
         pass
 
