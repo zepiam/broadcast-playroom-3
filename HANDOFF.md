@@ -1,11 +1,13 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.85)
-- **Current Version**: v3.85 (Released — hotfix OBS overlay)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.86)
+- **Current Version**: v3.86 (Released — app no longer stays alive after closing; reopen opens a window)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ปิดโปรแกรมแล้วยังค้างใน Task Manager (Claude, 2026-11-26)
+## 🚀 RELEASED v3.86 — ปิดโปรแกรมแล้วยังค้างใน Task Manager (Claude, 2026-11-26)
+- **Release:** `publish_release_v386.py` (คัดจาก v385) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.86 + tag + purge jsDelivr สำเร็จ (commit 73cf4ec). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.86
+- **ยังไม่ยืนยันบนเครื่องจริง:** exe ที่ติดตั้ง + OBS จริง (ปิดหน้าต่างแล้ว process หายใน ~5–7 วิ แม้ OBS เปิดอยู่)
 - **อาการ (ผู้ใช้แจ้ง):** กดปิดหน้าต่างแล้ว process ยังค้าง; กดเปิดโปรแกรมใหม่ก็ไม่มีหน้าต่างขึ้น
 - **หลักฐานบนเครื่องเจ้าของ (v3.84):** `rvc_debug.log` มี init 18:44 แล้ว init อีก 3 ครั้ง 18:53:41/48/58 แต่ `ui_health.log` มี `power_guard started` แค่ 18:44 → 3 ครั้งหลังเจอ process เก่ายังรันอยู่บนพอร์ต 8801 แล้วแค่สั่ง reopen
 - **สาเหตุ:** โปรแกรมปิดตัวเมื่อ `app_presence` ไม่มีหน้าต่าง role=app ต่อ `/api/app-presence/stream`. v3.78–v3.84 เสิร์ฟ `index.html` (มี `app_presence.js data-role="app"`) ที่ `/` ทำให้ Browser Source ของ OBS (`/?p=N`) นับเป็นหน้าต่างโปรแกรม → ปิดหน้าต่างจริงแล้ว process ไม่ออกตราบที่ OBS เปิดอยู่. v3.85 แก้ `/` แล้ว แต่ OBS ที่ยังไม่ refresh ยังรันหน้าเก่าอยู่. บั๊กรอง: `/api/app-instance/reopen` แค่ `bring_main_window_to_front()` — ถ้าไม่มีหน้าต่างก็ไม่ทำอะไร
