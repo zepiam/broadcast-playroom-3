@@ -1,11 +1,13 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.90)
-- **Current Version**: v3.90 (Released — server accept backlog 128: no more broken icons/missing CSS when busy; correct title version)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.91)
+- **Current Version**: v3.91 (Released — nicknames in live chat/TTS + Thai female voice fallback)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ชื่อเรียกไม่แสดงในแชทสด/TTS + เปิดอ่านชื่อแล้วกลายเป็นเสียงสำรอง (Claude, 2026-11-27)
+## 🚀 RELEASED v3.91 — ชื่อเรียกไม่แสดงในแชทสด/TTS + เปิดอ่านชื่อแล้วกลายเป็นเสียงสำรอง (Claude, 2026-11-27)
+- **Release:** `publish_release_v391.py` (คัดจาก v390) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.91 + tag + purge jsDelivr สำเร็จ (commit 1a7aaea). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.91, zip มี `tts_service.py` ที่มี fallback (root + `_internal/`) และ `dist/index.html` มี `refreshChatAuthorNames`. ผู้ใช้จะตรวจงานต่อเอง
+- **เรื่อง "สวัสดี" ที่ผู้ใช้อีกคนได้ยิน:** เจ้าของบอกพักไว้ก่อน (ข้อมูลไม่พอ). ข้อสันนิษฐานหลัก: เขาเปิดดูไลฟ์ของเจ้าของอยู่ (เสียง TTS ที่เจ้าของเทสต์ออกไปในสตรีม) หรือใส่ชื่อช่องเจ้าของไว้ในโปรแกรมของเขาเอง
 - **รายงาน (ผู้ใช้ ผ่าน session men9ch.com):** (1) ตั้งชื่อเรียก (เช่น MeN9CH → "เม้ง") แล้วแชทสดยังแสดงชื่อเดิม (2) TTS อ่านชื่อต้องเป็นชื่อเรียก (3) เปิด "อ่านชื่อผู้แชท" แล้ว TTS เป็นเสียงสำรองตลอด ปิดแล้วกลับเป็น RVC. ผู้ใช้ยืนยันดีไซน์: เปลี่ยนชื่อแล้วแชทสดต้องแสดงชื่อใหม่ และ TTS อ่านชื่อใหม่
 - **สาเหตุ (1)(2):** ชื่อเรียกถูกแก้ในหน้าต่างโปรไฟล์ผู้ชม (popout) → บันทึก `localStorage.bp3_custom_nicknames` + อัปเดต map/แถวแชทเฉพาะหน้าต่างนั้น (ส่งต่อด้วย `window.opener` ซึ่ง popout แบบ native ไม่มี) → หน้าต่างหลัก (แชทสด + TTS) ใช้ map เก่าในหน่วยความจำ
 - **สาเหตุ (3) — ไม่ใช่ RVC:** Edge-TTS เสียงหญิงไทย `th-TH-PremwadeeNeural` ฝั่ง Microsoft **ไม่คืนเสียง** ("No audio was received") สำหรับข้อความบางแบบเสมอ เช่น "เม้ง", "MeN9CH", "สวัสดี เป็นไง", "สวัสดี พูดว่า", "สวัสดีคับ ทดสอบเสียงโมเดล" (ทดสอบซ้ำ 4 ครั้งล้มทุกครั้ง; ปรับ rate/pitch/volume ไม่ช่วย) ขณะที่ `th-TH-NiwatNeural` อ่านได้ทุกข้อความ; Edge มีเสียงไทยแค่ 2 ตัวนี้. เปิดอ่านชื่อ → ข้อความมีชื่อ → ล้มบ่อย → `/api/tts` 500 → หน้าเว็บใช้เสียงสำรองของเบราว์เซอร์
