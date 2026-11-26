@@ -602,7 +602,7 @@ button.plat-edit-link:hover {
 
 
 
-  <title>Broadcast Playroom v3.78</title>
+  <title>Broadcast Playroom v3.90</title>
 
 
 
@@ -634,19 +634,11 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./styles.css?v=3.89">
+  <link rel="stylesheet" href="./styles.css?v=3.90">
 
 
 
-  <link rel="stylesheet" href="./ui_readability.css?v=3.89">
-
-
-
-
-
-
-
-  <link rel="stylesheet" href="./modal.css?v=3.89">
+  <link rel="stylesheet" href="./ui_readability.css?v=3.90">
 
 
 
@@ -654,7 +646,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./widget_customizer.css?v=3.89">
+  <link rel="stylesheet" href="./modal.css?v=3.90">
 
 
 
@@ -662,7 +654,7 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_studio.css?v=3.89">
+  <link rel="stylesheet" href="./widget_customizer.css?v=3.90">
 
 
 
@@ -670,7 +662,15 @@ button.plat-edit-link:hover {
 
 
 
-  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.89">
+  <link rel="stylesheet" href="./composer_studio.css?v=3.90">
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="./composer_widget_themes.css?v=3.90">
 
 
 
@@ -1010,12 +1010,13 @@ button.plat-edit-link:hover {
 
 <script id="bp3-version-check">
 (function(){
-  const BUNDLE_VERSION = "3.89";
-  async function checkVersion(){
+  const BUNDLE_VERSION = "3.90";
+  async function checkVersion(attempt){
+    attempt = attempt || 0;
     try {
       const response = await fetch('/api/version', { cache: 'no-store' });
       const info = await response.json();
-      if (!response.ok || !info || !info.version) return;
+      if (!response.ok || !info || !info.version) throw new Error('no version');
 
       // 1. Update UI titlebar and badges (existing behavior preserved 100%)
       document.title = 'Broadcast Playroom v' + info.version;
@@ -1035,12 +1036,15 @@ button.plat-edit-link:hover {
           window.location.replace(currentUrl.toString());
         }
       }
-    } catch (_) {}
+    } catch (_) {
+      // Server can be busy right after an update/start: retry a few times instead of keeping a stale label.
+      if (attempt < 5) setTimeout(() => checkVersion(attempt + 1), 1500 * (attempt + 1));
+    }
   }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkVersion);
+    document.addEventListener('DOMContentLoaded', () => checkVersion(0));
   } else {
-    checkVersion();
+    checkVersion(0);
   }
 })();
 </script>
@@ -1314,7 +1318,7 @@ SOFTWARE.
     <div class="desktop-titlebar-left">
       <img src="./assets/bp-icon-64.png" class="desktop-titlebar-icon" style="width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain;flex-shrink:0;display:inline-block;" alt="BP3" onerror="this.onerror=null;this.src='./assets/bp-full-icon.png'">
       <span class="desktop-titlebar-title">Broadcast Playroom</span>
-      <span class="desktop-titlebar-tag">v3.78</span>
+      <span class="desktop-titlebar-tag">v3.90</span>
     </div>
     <div class="desktop-titlebar-controls" id="appWindowControls">
       <button type="button" class="app-win-btn win-min" title="ย่อหน้าต่าง" onclick="windowFrameAction('minimize')">

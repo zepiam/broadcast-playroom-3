@@ -76,11 +76,11 @@ print("Dist assets synchronized successfully!")
 
 # Read package version
 pkg_json_path = os.path.join(project_dir, 'package.json')
-pkg_ver = "3.89"
+pkg_ver = "3.90"
 if os.path.exists(pkg_json_path):
     try:
         with open(pkg_json_path, 'r', encoding='utf-8') as f:
-            pkg_ver = json.load(f).get('version', '3.89')
+            pkg_ver = json.load(f).get('version', '3.90')
     except Exception:
         pass
 
@@ -96,6 +96,10 @@ if os.path.exists(dist_index):
 
     # Update BUNDLE_VERSION
     dhtml = re.sub(r'const\s+BUNDLE_VERSION\s*=\s*["\'][^"\']*["\'];', f'const BUNDLE_VERSION = "{pkg_ver}";', dhtml)
+    # Static window title + titlebar tag: the runtime version check replaces them, but if that check fails
+    # (e.g. first launch right after an update) the baked-in text is what users see — keep it current.
+    dhtml = re.sub(r'<title>Broadcast Playroom v[^<]*</title>', f'<title>Broadcast Playroom v{pkg_ver}</title>', dhtml, count=1)
+    dhtml = re.sub(r'(<span class="desktop-titlebar-tag">)v[^<]*(</span>)', rf'\g<1>v{pkg_ver}\g<2>', dhtml)
 
     # Required stylesheets with query busting
     required_css_files = [

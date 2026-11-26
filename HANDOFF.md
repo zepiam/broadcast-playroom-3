@@ -5,6 +5,15 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ ยังไม่ปล่อย (รอ release ถัดไป) — ไอคอนแพลตฟอร์มเป็นรูปแตก + หัวหน้าต่างขึ้น v3.78 (Claude, 2026-11-27)
+- **อาการ (ผู้ใช้แจ้ง):** (1) ไอคอนแพลตฟอร์มบางครั้งเป็นรูปภาพแตก ต้องกด Ctrl+R (เจอมา 2-3 เวอร์ชัน) (2) หลังอัปเดต v3.89 หัวหน้าต่างขึ้น "Broadcast Playroom v3.78" ปิดเปิดใหม่หาย
+- **สาเหตุ (1) — ยืนยันด้วยการวัด:** `LoopbackServer` (ThreadingHTTPServer) ใช้ accept backlog ค่าเริ่มต้นของ socketserver = **5**; หน้าโปรแกรมโหลด ~60 ไฟล์พร้อมกัน (ไม่มี cache) + stream ค้าง → ตอน Python ยุ่ง (เปิดโปรแกรม/โหลด RVC) คิวเต็ม Windows **ปฏิเสธการเชื่อมต่อ** (`ERR_CONNECTION_REFUSED`) → รูป/CSS หาย. วัดบน `launch_dev.QuietHandler` จริง + Edge + โหลด CPU: backlog 5 → 74/1893 request ล้ม, ไอคอนแตก 6 รูปใน 5 รอบ (youtube/mylive/soop) + CSS หลายไฟล์ถูกปฏิเสธ (น่าจะเป็นต้นเหตุจริงของ "UI ไม่มีสไตล์หลังอัปเดต" ใน v3.78–v3.80 ด้วย); backlog 128 → ไม่มีการปฏิเสธ, ไอคอนแตก 0 (เหลือแค่ `/api/app-presence` ERR_ABORTED ตอนปิดหน้า ซึ่งปกติ)
+- **สาเหตุ (2):** `<title>` และ `.desktop-titlebar-tag` ใน `src/index.html` ฝัง "v3.78" ตายตัว (ไม่มีใครอัปเดตตั้งแต่ 3.78); สคริปต์ `bp3-version-check` เรียก `/api/version` ครั้งเดียวแล้วเงียบถ้าล้ม (ซึ่งเกิดได้จากสาเหตุ (1)) → ค้างที่ v3.78
+- **แก้:** `loopback_server.py`: `request_queue_size = 128` ทั้ง IPv4/IPv6 (legacy OBS servers ใช้คลาสเดียวกัน). `copy_dist_assets.py`: ตอน build เขียนเวอร์ชันจาก package.json ลง `<title>` และ `.desktop-titlebar-tag` ด้วย (เหมือน BUNDLE_VERSION). `src/index.html`: แก้ค่าตายตัวเป็น 3.89 + `checkVersion` retry สูงสุด 5 ครั้ง (1.5, 3, 4.5, 6, 7.5 วิ)
+- **⚠️ ต้องทำตอน release:** เพิ่ม `loopback_server.py` ใน `CORE_FILES` (เครื่องติดตั้งไม่มีไฟล์นี้บนดิสก์ ใช้ตัวใน exe; สคริปต์ v389 ไม่มี)
+- **ทดสอบ:** วัด backlog ตามด้านบน + หลังแก้ (ค่าเริ่มของไฟล์) 8 รอบ: ไอคอนแตก 0, ไม่มี REFUSED; `/api/version` ล้ม 3 ครั้งแรก → ครั้งที่ 4 title + tag เป็น v3.89 (9.6 วิ); regex build ทดลองกับเวอร์ชัน 9.12 ได้ถูก; dist มี `<title>Broadcast Playroom v3.89</title>`. build + gates ผ่าน
+- **ยังไม่ทดสอบ:** exe จริง
+
 ## 🚀 RELEASED v3.89 — "อ่านชื่อคนดูก่อนพูดข้อความแชท" ไม่ทำงาน (Claude, 2026-11-27)
 - **Release:** `publish_release_v389.py` (คัดจาก v388) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.89 + tag + purge jsDelivr สำเร็จ (commit 7cac921). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.89, `dist/index.html` ในแพตช์มีโค้ดที่แก้
 - **อาการ (ผู้ใช้แจ้ง):** ติ๊กในหน้าต่าง Voice Settings แล้ว เสียงอ่านแชทยังไม่อ่านชื่อ (ควรเป็น "{ชื่อ} พูดว่า {ข้อความ}")

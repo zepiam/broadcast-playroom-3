@@ -2,13 +2,20 @@
 import errno, socket, threading
 from http.server import ThreadingHTTPServer
 
+# The app window opens ~60 scripts/styles/images at once (no browser cache) plus long-lived streams.
+# socketserver's default accept backlog of 5 overflows while Python is busy (startup, RVC loading) and
+# Windows then REFUSES the extra connections -> broken platform icons / missing CSS until Ctrl+R.
+_BACKLOG=128
+
 class _IPv6LoopbackServer(ThreadingHTTPServer):
+    request_queue_size=_BACKLOG
     address_family=socket.AF_INET6
     def server_bind(self):
         self.socket.setsockopt(socket.IPPROTO_IPV6,socket.IPV6_V6ONLY,1)
         super().server_bind()
 
 class LoopbackServer(ThreadingHTTPServer):
+    request_queue_size=_BACKLOG
     def __init__(self,address,handler):
         super().__init__(address,handler)
         self.ipv6_server=None
