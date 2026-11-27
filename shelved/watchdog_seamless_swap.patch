@@ -1,0 +1,302 @@
+diff --git a/launch_dev.py b/launch_dev.py
+index 07971a8..0a373ba 100644
+--- a/launch_dev.py
++++ b/launch_dev.py
+@@ -4880,7 +4880,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
+                     _geo = None
+                 _hid = _hq.get('hid', [''])[0]
+                 power_guard.beat(int(_hb) if _hb.lstrip('-').isdigit() else None, _geo,
+-                                 (_hid == '1') if _hid in ('0', '1') else None)
++                                 (_hid == '1') if _hid in ('0', '1') else None,
++                                 (_hq.get('pid', [''])[0] or '')[:64] or None)
+             except Exception:
+                 pass
+             self.send_json({'ok': True})
+@@ -11611,8 +11612,9 @@ class QuietHandler(SimpleHTTPRequestHandler):
+ 
+ 
+ 
+-            _msgs, _delivered = chat_bridge.poll_for_app(last_id)
+-            response_data = {'messages': _msgs, 'delivered_upto': _delivered}
++            _pid = (qs.get('pid', [''])[0] or '')[:64]
++            _msgs, _delivered, _superseded = chat_bridge.poll_for_app(last_id, _pid)
++            response_data = {'messages': _msgs, 'delivered_upto': _delivered, 'superseded': _superseded}
+ 
+ 
+ 
+@@ -12296,7 +12298,9 @@ def _minimize_app_window_when_shown(proc, timeout=25.0, settle=6.0):
+         pass
+ 
+ 
+-def open_app_window(main_url, minimized=False, geometry=None):
++def open_app_window(main_url, minimized=False, geometry=None, swap=False):
++    """swap=True: watchdog seamless swap - the browser is still running; open one more app window in it and
++    return the launcher process (no cache purge, no registration, power_guard hides/places the window)."""
+     curr_ver = get_current_version()
+     browser_bin = find_browser()
+     launched = False
+@@ -12304,7 +12308,7 @@ def open_app_window(main_url, minimized=False, geometry=None):
+     app_profile_dir = app_browser_profile_dir(browser_bin)
+     os.makedirs(app_profile_dir, exist_ok=True)
+     # Purge stale browser cache to guarantee immediate UI update without requiring Ctrl+Shift+R
+-    for cache_sub in ['Default/Cache', 'Default/Code Cache', 'Default/GPUCache', 'ShaderCache', 'GrShaderCache']:
++    for cache_sub in ([] if swap else ['Default/Cache', 'Default/Code Cache', 'Default/GPUCache', 'ShaderCache', 'GrShaderCache']):
+         cp = os.path.join(app_profile_dir, *cache_sub.split('/'))
+         if os.path.isdir(cp):
+             try:
+@@ -12367,6 +12371,8 @@ def open_app_window(main_url, minimized=False, geometry=None):
+         try:
+             proc = subprocess.Popen(cmd)
+             launched = True
++            if swap:
++                return proc   # power_guard hides, places and verifies the new window
+             try:
+                 import power_guard
+                 power_guard.register_browser_process(proc)
+@@ -12408,7 +12414,7 @@ def open_app_window(main_url, minimized=False, geometry=None):
+             # reopen at the last reported place/size, and stay minimized if the user had it minimized
+             geo, was_hidden = power_guard.last_window()
+             open_app_window(main_url, minimized=was_hidden, geometry=geo)
+-        power_guard.start(app_profile_dir, str(DATA_ROOT), _watchdog_relaunch)
++        power_guard.start(app_profile_dir, str(DATA_ROOT), _watchdog_relaunch, lambda: open_app_window(main_url, swap=True))
+     except Exception as _pg_err:
+         print(f"[WARN] power_guard unavailable: {_pg_err}", flush=True)
+ 
+diff --git a/power_guard.py b/power_guard.py
+index 1359e4b..979ca3a 100644
+--- a/power_guard.py
++++ b/power_guard.py
+@@ -37,7 +37,8 @@ _state = {
+     'launched_at': 0.0, 'recoveries': [], 'started': False,
+     'last_mem_log': 0.0,
+ }
+-_cfg = {'profile_dir': '', 'data_dir': '', 'relaunch': None}
++_cfg = {'profile_dir': '', 'data_dir': '', 'relaunch': None, 'swap_launch': None}
++SWAP_WAIT_SECONDS = 30      # seamless swap: how long the new (hidden) window may take to load
+ _active_browser_proc = None
+ 
+ 
+@@ -95,7 +96,7 @@ def _settings() -> dict:
+     return values
+ 
+ 
+-def beat(heap_mb=None, geometry=None, hidden=None) -> None:
++def beat(heap_mb=None, geometry=None, hidden=None, page_id=None) -> None:
+     """Called by the /api/ui/heartbeat endpoint.
+     geometry = (x, y, w, h) of the app window while it was visible; hidden = window minimized/hidden."""
+     with _lock:
+@@ -108,6 +109,12 @@ def beat(heap_mb=None, geometry=None, hidden=None) -> None:
+             _state['window_geometry'] = tuple(int(v) for v in geometry)
+         if hidden is not None:
+             _state['window_hidden'] = bool(hidden)
++        if page_id:
++            pages = _state.setdefault('pages', {})
++            pages[page_id] = time.time()
++            if len(pages) > 64:
++                for stale in sorted(pages, key=pages.get)[:len(pages) - 64]:
++                    pages.pop(stale, None)
+ 
+ 
+ def last_window():
+@@ -225,6 +232,168 @@ def _disable_efficiency_mode(pids) -> None:
+         pass
+ 
+ 
++# ---- seamless swap ---------------------------------------------------------------------------
++class _WINDOWPLACEMENT_DEF:
++    cls = None
++
++
++def _wp_class():
++    if _WINDOWPLACEMENT_DEF.cls is None:
++        import ctypes
++        from ctypes import wintypes
++
++        class WINDOWPLACEMENT(ctypes.Structure):
++            _fields_ = [('length', wintypes.UINT), ('flags', wintypes.UINT), ('showCmd', wintypes.UINT),
++                        ('ptMinPosition', wintypes.POINT), ('ptMaxPosition', wintypes.POINT),
++                        ('rcNormalPosition', wintypes.RECT)]
++        _WINDOWPLACEMENT_DEF.cls = WINDOWPLACEMENT
++    return _WINDOWPLACEMENT_DEF.cls
++
++
++def _app_windows():
++    """Visible titled top-level windows of this app's browser: {hwnd: (title, showCmd, normal_rect)}."""
++    out = {}
++    if os.name != 'nt':
++        return out
++    try:
++        import ctypes
++        from ctypes import wintypes
++        u32 = ctypes.windll.user32
++        pids = {p.pid for p in _browser_processes()}
++        if not pids:
++            return out
++        WP = _wp_class()
++
++        @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
++        def cb(hwnd, _l):
++            pid = wintypes.DWORD()
++            u32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
++            if pid.value in pids and u32.IsWindowVisible(hwnd) and u32.GetWindowTextLengthW(hwnd) > 0:
++                buf = ctypes.create_unicode_buffer(256)
++                u32.GetWindowTextW(hwnd, buf, 256)
++                wp = WP()
++                wp.length = ctypes.sizeof(WP)
++                u32.GetWindowPlacement(hwnd, ctypes.byref(wp))
++                r = wp.rcNormalPosition
++                out[int(hwnd)] = (buf.value, int(wp.showCmd), (r.left, r.top, r.right, r.bottom))
++            return True
++        u32.EnumWindows(cb, 0)
++    except Exception:
++        pass
++    return out
++
++
++def _main_window_of(windows):
++    """Pick the main app window among the browser's windows (popouts are separate windows): the one whose
++    normal rect matches the placement the main page reported, else the only one, else the largest."""
++    if not windows:
++        return None
++    if len(windows) == 1:
++        return next(iter(windows))
++    geo = _state.get('window_geometry')
++    if geo:
++        x, y, w, h = geo
++        for hwnd, (_t, _c, (l, t, r, b)) in windows.items():
++            if abs(l - x) <= 12 and abs(t - y) <= 12 and abs((r - l) - w) <= 24 and abs((b - t) - h) <= 24:
++                return hwnd
++    return max(windows, key=lambda h: (windows[h][2][2] - windows[h][2][0]) * (windows[h][2][3] - windows[h][2][1]))
++
++
++def _swap_window() -> bool:
++    """Replace a hung app window without a visible gap and without double chat/TTS:
++    open a new window in the running browser (kept minimized while it loads), wait until ITS page sends a
++    heartbeat, give it the old window's exact placement (minimized stays minimized), then close the old one.
++    The server lets only the newest page read chat, so the old page goes silent as soon as the new one polls.
++    Returns False (caller falls back to kill + relaunch) if the browser cannot open a working page in time."""
++    launch = _cfg.get('swap_launch')
++    if os.name != 'nt' or not callable(launch):
++        return False
++    import ctypes
++    from ctypes import wintypes
++    u32 = ctypes.windll.user32
++    old = _app_windows()
++    main_old = _main_window_of(old)
++    if not main_old:
++        return False
++    with _lock:
++        known_pages = set((_state.get('pages') or {}).keys())
++    t0 = time.time()
++    _log('UI watchdog: seamless swap - opening a replacement window in the background')
++    try:
++        proc = launch()
++    except Exception as error:
++        _log('UI watchdog: swap launch failed: %s' % error)
++        return False
++    SW_SHOWMINNOACTIVE, SW_SHOWNOACTIVATE, SW_SHOWMAXIMIZED, SW_SHOWMINIMIZED = 7, 4, 3, 2
++    new_hwnd = None
++    ready = False
++    while time.time() - t0 < SWAP_WAIT_SECONDS:
++        for hwnd in _app_windows():
++            if hwnd not in old:
++                if not u32.IsIconic(hwnd):
++                    u32.ShowWindow(hwnd, SW_SHOWMINNOACTIVE)     # keep it out of sight while it loads
++        with _lock:
++            fresh = [pid for pid, ts in (_state.get('pages') or {}).items() if pid not in known_pages and ts >= t0]
++        if fresh:
++            # the replacement is the new window titled like the app (not e.g. a "page unresponsive" dialog)
++            titled = [h for h, v in _app_windows().items() if h not in old and 'Broadcast Playroom' in v[0]]
++            if titled:
++                new_hwnd = titled[0]
++                ready = True
++                break
++        time.sleep(0.25)
++    if not ready:
++        _log('UI watchdog: swap - replacement window did not load in %ss; falling back to a full restart' % SWAP_WAIT_SECONDS)
++        return False
++    WP = _wp_class()
++    try:
++        _t, show_cmd, (l, t, r, b) = old[main_old]
++        wp = WP()
++        wp.length = ctypes.sizeof(WP)
++        u32.GetWindowPlacement(new_hwnd, ctypes.byref(wp))
++        wp.rcNormalPosition = wintypes.RECT(l, t, r, b)
++        if show_cmd == SW_SHOWMINIMIZED or u32.IsIconic(main_old):
++            wp.showCmd = SW_SHOWMINNOACTIVE                    # user had it minimized: stays minimized
++        elif show_cmd == SW_SHOWMAXIMIZED:
++            wp.showCmd = SW_SHOWMAXIMIZED
++        else:
++            wp.showCmd = SW_SHOWNOACTIVATE                     # appears exactly where the old one is
++        u32.SetWindowPlacement(new_hwnd, ctypes.byref(wp))
++    except Exception as error:
++        _log('UI watchdog: swap placement failed: %s' % error)
++    # close the old main window (a hung page may block closing: then end its old renderers and retry)
++    WM_CLOSE = 0x0010
++    u32.PostMessageW(main_old, WM_CLOSE, 0, 0)
++    for _ in range(12):
++        time.sleep(0.25)
++        if not u32.IsWindow(main_old):
++            break
++    if u32.IsWindow(main_old):
++        try:
++            for p in _browser_processes():
++                try:
++                    if '--type=renderer' in ' '.join(p.cmdline()) and p.create_time() < t0:
++                        p.kill()
++                except Exception:
++                    pass
++        except Exception:
++            pass
++        time.sleep(0.5)
++        u32.PostMessageW(main_old, WM_CLOSE, 0, 0)
++        for _ in range(12):
++            time.sleep(0.25)
++            if not u32.IsWindow(main_old):
++                break
++    # if the browser could not take the request and the launcher became the new browser, track it
++    try:
++        if proc is not None and proc.poll() is None:
++            register_browser_process(proc)
++    except Exception:
++        pass
++    _log('UI watchdog: swap done in %.1fs (old window %s)' % (time.time() - t0, 'closed' if not u32.IsWindow(main_old) else 'STILL OPEN'))
++    return True
++
++
+ def _recover() -> None:
+     now = time.time()
+     with _lock:
+@@ -236,6 +405,15 @@ def _recover() -> None:
+         heap = _state['heap_mb']
+         silent = int(now - _state['last_beat'])
+     _log('UI watchdog: no heartbeat for %ss while browser is alive (last page heap %s MB) -> restarting app window' % (silent, heap))
++    try:
++        if _swap_window():
++            with _lock:
++                _state['launched_at'] = time.time()
++                _state['page_lost_at'] = 0.0
++                _state['recovering_until'] = 0.0
++            return
++    except Exception as error:
++        _log('UI watchdog: swap error %s; falling back to a full restart' % error)
+     try:
+         global _active_browser_proc
+         # 1. Native Windows tree-kill of the main browser process and all its sub-processes
+@@ -311,13 +489,15 @@ def _loop() -> None:
+         time.sleep(LOOP_SECONDS)
+ 
+ 
+-def start(profile_dir: str, data_dir: str = '', relaunch=None) -> None:
++def start(profile_dir: str, data_dir: str = '', relaunch=None, swap_launch=None) -> None:
+     """Idempotent. profile_dir = the app browser's --user-data-dir; relaunch() reopens the window."""
+     _cfg['profile_dir'] = str(profile_dir or '')
+     if data_dir:
+         _cfg['data_dir'] = str(data_dir)
+     if relaunch is not None:
+         _cfg['relaunch'] = relaunch
++    if swap_launch is not None:
++        _cfg['swap_launch'] = swap_launch
+     with _lock:
+         _state['launched_at'] = time.time()
+         if _state['started']:

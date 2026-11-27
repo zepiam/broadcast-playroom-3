@@ -572,7 +572,11 @@ class TikTokChat:
 
                     segments.append({"type": "emote", "url": url, "name": ""})
 
+            _common = getattr(event, "common", None)
+            _mid = getattr(_common, "msg_id", 0) if _common is not None else 0
             extra = {
+
+                "source_id": ("c%s" % _mid) if _mid else None,   # TikTok message id: central read-once rule
 
                 "tiktok_user_id": getattr(event.user, "id", None) if event.user else None,
 
@@ -843,7 +847,7 @@ class TikTokChat:
 
                 self._client.start(
 
-                    process_connect_events=True,
+                    process_connect_events=True,  # unchanged first-connect behaviour; replays on RE-connect are dropped by msg_id (chat_bridge read-once rule)
 
                     fetch_room_info=False,  # ป้องกัน AgeRestrictedError ในไลฟ์ 18+ (ยอดคนดูส่งผ่าน RoomUserSeqEvent อยู่แล้ว)
 

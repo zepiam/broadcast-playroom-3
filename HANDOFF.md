@@ -5,13 +5,39 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## ⚠️ TODO — ตัวอ่านแชท TikTok / MyLive ยังส่งแชทเก่าซ้ำได้เอง (ตรวจ 2026-11-27, ยังไม่แก้)
-- ตรวจ reconnect ทุกแพลตฟอร์ม (chat_bridge.connect สร้าง client ใหม่ทุกครั้ง state dedupe หายหมด):
-  - Twitch (IRC) / Kick (Pusher): SAFE — ไม่มี history ตอน JOIN/subscribe. เคส Twitch ที่ผู้ใช้แจ้ง = หน้าโปรแกรมโหลดใหม่ (แก้แล้วใน v3.94)
-  - SOOP: น่าจะ SAFE (ยืนยันจากโค้ดไม่ได้ 100%); ข้อสังเกต `_handle_raw` ไม่เช็ค service code ของ packet
-  - **TikTok: RISK สูง** — `chat_tiktok.py` `start(process_connect_events=True)`; TikTokLive 7.0.1 `ws_client.py` ล้าง initial messages เฉพาะเมื่อ False → ทุก connect/reconnect คอมเมนต์ล่าสุดของห้อง (และของขวัญ/ไลก์/ติดตามใน initial fetch) ถูกส่งเป็นข้อความใหม่; `on_comment` ไม่มี dedupe/เช็คเวลา
-  - **MyLive: RISK ปานกลาง** — ใช้ตำแหน่งใน DOM เป็น id; prime สูงสุด 5 รอบแล้วหยุด → history ที่ render ช้า/ทีละส่วนหลุดเป็นของใหม่; list หด/แทรกด้านบน/re-render ทำให้ส่งซ้ำ
-- ทางแก้ที่เสนอ: TikTok ทิ้ง event ใน initial fetch (หรือ create_time ก่อน connect) โดยยังเก็บยอดคนดู; MyLive dedupe ด้วยเนื้อหา+ผู้ส่ง (ordered) แทนตำแหน่ง + ไม่ส่งของที่ render อยู่แล้วตอนเปิดหน้า
+## 🚀 RELEASED v3.95 (ส่วนที่ 1) — ต้นเหตุหน่วยความจำหน้าโปรแกรมบวมจนค้าง/จอเทา (Claude, 2026-11-28)
+- เจ้าของ: ให้หาต้นเหตุแทนการแก้ที่อาการ (watchdog/สลับหน้าต่าง → พับเก็บที่ `shelved/watchdog_seamless_swap.patch`), อนุญาตให้แก้ต่อเองจนจบ โดยทุกระบบต้องทำงานเหมือนเดิม
+- วิธีวัดที่เชื่อถือได้: เปิดหน้าต่างแบบโปรแกรมจริง (`launch_dev.open_app_window`, โปรไฟล์ชั่วคราว, ไม่มี CDP/Playwright) วัด private bytes ของ renderer ด้วย psutil; ปิดส่วนต่างๆ ด้วยสคริปต์ที่เซิร์ฟเวอร์ทดสอบแทรกลง index.html (ผลจาก Playwright บิดเยอะ อย่าใช้วัดหน่วยความจำ)
+- ต้นเหตุ 1 (ตามแชท, เดิม 1.93 MB/ข้อความ): `src/user_controls.js`
+  - ตารางผู้ชมถูก render ใหม่ทุกข้อความแม้หน้าจัดการผู้ชมปิด (`getActiveManagerRoots()` คืน `tool()` เสมอ) → สร้างแถว+รูป SVG ของผู้ชมทุกคนที่เคยเห็น (1,101 คน = เรียก getEffectiveAuthorName ~2,200 ครั้ง/ข้อความ)
+  - save ส่งรายชื่อทั้งก้อน (~0.75 MB) ไป POST `/api/user-roster` + BroadcastChannel ถี่ๆ และ setItem localStorage ทั้งก้อนทุกข้อความ
+  - หมายเหตุ: `window.registerUserToRoster = window.BP3RegisterUserToRoster` (บรรทัด ~450) ทำให้การ stub `BP3RegisterUserToRoster` ไม่มีผล — ต้องระวังตอนทดลอง
+- ต้นเหตุ 2 (ตอนเปิดทิ้งไว้, เดิม ~3 MB/นาที): `src/dock_controls.js` `snapshot()` POST สถานะ Dock ทั้งก้อน (รวม giveaway participants, replie commands) ทุก 1 วินาทีแม้ไม่เปลี่ยน
+- แก้:
+  - user_controls: render ตารางเฉพาะเมื่อหน้าจัดการผู้ชมแสดงอยู่จริง (`getClientRects().length>0`; เปิดหน้าต่างแล้ว index.html สั่ง render เอง); ไม่ stringify ทั้งก้อนต่อข้อความ; `schedule()` throttle 2 วิ → `saveDelta()` ส่งเฉพาะผู้ชมที่เปลี่ยน (`dirtyKeys`) ไป backend/popout (ทั้งสองฝั่ง merge รายคน) และเขียน localStorage ทั้งก้อนทุก 10 วิ; `save()` ทั้งก้อนยังใช้ตอน pagehide/VIP/sync; events ต่อคนเก็บ 100 ล่าสุด; ไม่ลบผู้ชม
+  - dock_controls: POST เฉพาะเมื่อสถานะเปลี่ยน + ส่งซ้ำทุก 10 วิ (`DOCK_RESEND_MS`)
+  - power_guard: บรรทัด "ok" ใน `ui_health.log` เพิ่ม `app renderer N MB, browser total M MB` (หน่วยความจำจริง; JS heap อย่างเดียวมองไม่เห็นปัญหานี้)
+- **Completed & Verified**: วัดแบบไม่มี instrumentation — แชท 1.93 → 0.26 MB/ข้อความ (2 รอบ); idle: ปิด dock_controls แล้ว 3.2 → 1.1 MB/นาที; roster_func_test 12/12, dock_func_test 9/9, read_once 10/10, single_reader, reload_backlog, nickname, yt_replay ผ่านทั้งหมด; `npm run build` gates PASSED
+- **วัดยืนยันบิลด์สุดท้าย (ไม่มี instrumentation)**: idle 3.0 → 1.25 MB/นาที (2 รอบ: 1.3, 1.2), แชท 1.93 → 0.25 MB/ข้อความ
+- ที่เหลือ/ข้อสังเกต: การรั่วตามแชทที่เหลือ ~0.26 MB/ข้อความ ส่วนหนึ่งจากรูปโปรไฟล์ dicebear SVG (แต่ละรูปเป็น document) — PNG ของ dicebear ใช้ได้ (ทดสอบ 200) แต่ยังไม่เปลี่ยนเพราะกลัว rate limit ตอน raid; `window._activeChattersSet` โตตามผู้ชมไม่ซ้ำ (เล็ก); ชื่อผู้ชมถูกใส่ลงใน `onclick="openAuthorModal('...')"` ตรงๆ (ชื่อมี `'` จะพัง/เสี่ยง) — งานแยก
+- ข้อมูล dev: `E:\DOCS\Documents\AI TOOLS\data\user_roster.json` มีผู้ชมทดสอบปนจากเทสต์ 1,072 คน → ลบออกแล้ว เหลือ 29 คนจริง (สำรองไว้ใน scratchpad `dev_user_roster_before_cleanup.json`)
+
+## 🚀 RELEASED v3.95 (ส่วนที่ 2) — กฎกลาง "แชทที่ผ่านไปแล้วอ่านครั้งเดียว" ทุกแพลตฟอร์ม + SOOP แชทปลอม (Claude, 2026-11-27/28)
+- เจ้าของ: กฎนี้ไม่ควรขึ้นกับแพลตฟอร์ม (เคสที่แจ้งเจอทั้ง YouTube และ Twitch)
+- ตรวจ reconnect ของแต่ละตัวอ่าน (chat_bridge.connect สร้าง client ใหม่ทุกครั้ง): Twitch/Kick ไม่มี history ตอนต่อ; SOOP น่าจะไม่มี; TikTok ส่งคอมเมนต์ล่าสุดของห้องซ้ำทุกครั้งที่ต่อ (`process_connect_events=True`); MyLive ส่งซ้ำได้เมื่อ history โหลดช้า/list หด/แทรก/re-render
+- แก้ (กลาง) `chat_bridge.py` `_already_passed()` ใน `_on_message`: ข้อความที่มีรหัสจากแพลตฟอร์ม (`extra['source_id']`) ห้ามผ่านซ้ำ (OrderedDict 20000/แพลตฟอร์ม อยู่ข้าม reconnect); แพลตฟอร์มไม่มีรหัส (MyLive/SOOP) ทุกครั้งที่ connect เปิด replay guard 120 วิ: ข้อความ (ผู้ส่ง+ข้อความ) ที่ตรงกับ 300 ข้อความก่อนต่อ = ของเก่าที่ส่งซ้ำ (หนึ่งต่อหนึ่ง) นอกช่วงนี้ไม่ตัดอะไร (555 ซ้ำยังอ่าน); event ไม่มีรหัส (ของขวัญ ฯลฯ) ไม่ตัด
+- ตัวอ่านใส่ source_id: Twitch (tag `id`), Kick (`data.id`), TikTok (`common.msg_id` ของคอมเมนต์), YouTube (item `id` จริง)
+- แก้ต้นทาง: TikTok `process_connect_events=False` (ไม่ประมวลผล history ชุดแรกตอนต่อ); MyLive prime รอจนจำนวนนิ่ง 2 รอบ (สูงสุด 10 วิ) + list หดไม่ส่งรายการสุดท้ายซ้ำ
+- **Completed & Verified**: `read_once_test.py` 10/10 (4 แพลตฟอร์มมีรหัส: ซ้ำตัด/ใหม่ผ่าน/คำเดิมแต่รหัสใหม่ผ่าน; MyLive: 555 ซ้ำปกติอ่าน, history ซ้ำหลัง reconnect ตัด, ข้อความใหม่หลังนั้นอ่าน, หมด guard อ่านปกติ; ของขวัญไม่ตัด; MyLive list หดไม่ส่งซ้ำ); yt_replay_test PASS; reload_backlog_test ALL PASS; nickname_test 7/7; `npm run build` gates PASSED
+- **Unverified**: TikTok/MyLive/SOOP/Kick ต่อห้องจริง (ไม่มีไลฟ์ให้ทดสอบ); ยอดคนดู TikTok ตอนเพิ่งต่ออาจขึ้นช้ากว่าเดิมเล็กน้อย (ไม่รับ event ชุดแรก); ยังไม่ release
+- **แก้เพิ่มก่อน release (2026-11-28)**:
+  - SOOP: ตัวแปลงเดิมเอา frame ที่ไม่ใช่แชท (service 0002/0109/0127 — อัปเดตสถานะผู้ใช้ `fw=-1&afw=-1`, ข้อมูลเข้าห้อง) มาเป็นแชท → ขึ้นแชทสดและ TTS อ่านไอดีผู้ใช้ (วัดได้ 246 แชทปลอม/40 วิ เทียบแชทจริง 42) → `chat_soop.py` รับเฉพาะ service `0005`
+  - TikTok: คืน `process_connect_events=True` (การเชื่อมต่อครั้งแรกเหมือนเดิมทุกอย่าง); การส่งซ้ำตอนเชื่อมต่อใหม่ถูกตัดด้วย msg_id ใน chat_bridge อยู่แล้ว
+  - MyLive: คืน prime loop เดิม (5 รอบ) — แบบ 10 รอบเสี่ยงทำข้อความช่วงแรกของห้องว่างหาย; เก็บเฉพาะการกันส่งซ้ำตอน list หด
+  - chat_bridge: ที่เก็บของกฎกลางสร้างเองถ้ายังไม่มี (เทสต์ที่สร้าง ChatBridge ด้วย `__new__` เคยพัง)
+- **ทดสอบห้องไลฟ์จริง (อ่านอย่างเดียว, ปิด send_message ทุกตัว, ส่งออก 0 ครั้ง)**: Twitch zackrawrr, Kick sxb, YouTube @LofiGirl/live, TikTok @tv_asahi_news, SOOP lshooooo — เชื่อมต่อ 75 วิ → เชื่อมต่อใหม่ → 75 วิ: ทุกแพลตฟอร์มแชทเข้าทั้งก่อน/หลัง, รหัสซ้ำที่หลุดผ่าน 0; TikTok ตัดคอมเมนต์เก่าที่ส่งซ้ำตอนเชื่อมต่อใหม่ 12 และคอมเมนต์ซ้ำระหว่างไลฟ์ 6 (ปกติจะ TTS เบิ้ล); SOOP แชทปลอม 0 หลังแก้; ยอดผู้ชมขึ้นทุกแพลตฟอร์มยกเว้น SOOP (ไม่เคยมีโค้ดดึงยอด SOOP มาตั้งแต่เดิม — งานแยก); MyLive ข้าม (ไม่มีห้องทดสอบ ตามที่เจ้าของบอก)
+- **tests/ ทั้งโฟลเดอร์ (104 ไฟล์)**: บิลด์นี้ผ่าน 44 / ไม่ผ่าน 60; รันตัวที่ไม่ผ่านกับ v3.94 (git stash) → 58 ไม่ผ่านอยู่แล้วตั้งแต่ v3.94 (เทสต์เก่า/ต้องใช้ installed/OBS/RVC จริง); regression 2 ตัว: verify_blacklist_backend (แก้แล้ว ผ่าน) และ verify_dns_ui (flaky: แคชมี `speech.platform.bing.com` จากการเช็คเซิร์ฟเวอร์เสียงตอนเปิดหน้าแทรกเข้ามา — ไม่เกี่ยวกับการแก้; 3/5 ผ่าน)
+- เรื่อง watchdog ไม่ให้กระพริบ: เสนอ "สลับหน้าต่างแบบเนียน" (เปิดหน้าต่างใหม่แบบซ่อน รอโหลดเสร็จ แล้วค่อยปิดอันเก่าและวางแทนที่เดิม) — ยังไม่ทำ รอเจ้าของตัดสิน
 
 ## 🚀 RELEASED v3.94 — สตรีมไป 3-4 ชม. แล้วโปรแกรม "รีเฟรชตัวเอง" เด้งกลับจอหลัก แล้วอ่านแชทเก่าใหม่หมด (Claude, 2026-11-27)
 - รายงานจากผู้ใช้: สตรีม 3-4 ชม. โปรแกรมเหมือนรีเฟรช/รีเซ็ตตัวเอง หน้าต่างที่ย่อไว้บนจออื่นเด้งกลับมาจอหลัก แล้วอ่านแชทเก่าตั้งแต่แรกใหม่หมด (อาจเป็นบัคเดียวกับ "อ่านข้อความที่ไม่ได้ขึ้นใน live")

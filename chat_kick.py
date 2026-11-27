@@ -627,6 +627,7 @@ class KickChat:
                     "kick_user_id": author_data.get("id"),
                     "avatar_url": kick_avatar,
                     "segments": segments if segments else None,
+                    "source_id": data.get("id") or None,   # KICK message id: central read-once rule
                 },
             )
         )

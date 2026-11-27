@@ -75,7 +75,9 @@ function getActiveManagerRoots() {
  } catch (_) {}
  try {
   const t = (typeof tool === 'function') ? tool() : null;
-  if (t && !roots.includes(t)) roots.push(t);
+  // Only a manager that is actually on screen: rendering the hidden table on every chat message rebuilt a row
+  // (with an avatar image) for every viewer ever seen. Opening the manager renders it (index.html openToolWindow).
+  if (t && !roots.includes(t) && t.isConnected && t.getClientRects().length > 0) roots.push(t);
  } catch (_) {}
  return roots;
 }
@@ -102,12 +104,35 @@ if (typeof BroadcastChannel !== 'undefined' && !window._userRosterChannel) {
  };
 }
 
-const save=()=>{
- const rosterList = [...people.values()];
- if (!rosterList.length) return;
+function writeRosterLocal(rosterList){
  try{localStorage.setItem('bp3_user_roster',JSON.stringify(rosterList));}catch{
   try{localStorage.setItem('bp3_user_roster',JSON.stringify(rosterList.map(person=>({...person,history:(person.history || []).slice(-1)}))));}catch{}
  }
+}
+// Viewers changed since the last delta save (chat messages, giveaway check-ins).
+const dirtyKeys=new Set();
+let localWriteTimer=null;
+const ROSTER_LOCAL_MS=10000;
+// Frequent save during chat: send ONLY the changed viewers to the backend and popouts (both merge per viewer),
+// and rewrite the full localStorage copy at most every ROSTER_LOCAL_MS. Posting/cloning the whole roster (often
+// MBs) every few seconds was the main reason the page's memory kept growing during a stream.
+function saveDelta(){
+ const delta=[...dirtyKeys].map(key=>people.get(key)).filter(Boolean);
+ dirtyKeys.clear();
+ if(!localWriteTimer)localWriteTimer=setTimeout(()=>{localWriteTimer=null;writeRosterLocal([...people.values()]);},ROSTER_LOCAL_MS);
+ if(!delta.length)return;
+ if(typeof fetch==='function'){
+  fetch('/api/user-roster',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({roster:delta})}).catch(()=>{});
+ }
+ if(window._userRosterChannel){
+  try{window._userRosterChannel.postMessage({action:'roster_updated',roster:delta});}catch(_){}
+ }
+}
+const save=()=>{
+ const rosterList = [...people.values()];
+ if (!rosterList.length) return;
+ dirtyKeys.clear();
+ writeRosterLocal(rosterList);
  if(typeof fetch==='function'){
   fetch('/api/user-roster',{
    method:'POST',
@@ -293,9 +318,11 @@ function render(){
  }
 }
 
+// Roster persistence is throttled: the whole roster is serialised (localStorage + backend + popouts) at most once
+// per ROSTER_SAVE_MS. A busy chat used to postpone it forever and paid a full serialisation per message instead.
+const ROSTER_SAVE_MS=2000;
 function schedule(){
- clearTimeout(saveTimer);
- saveTimer=setTimeout(save,300);
+ if(!saveTimer)saveTimer=setTimeout(()=>{saveTimer=null;saveDelta();},ROSTER_SAVE_MS);
  if(renderTimer)return;
  renderTimer=setTimeout(()=>{
   renderTimer=null;
@@ -360,6 +387,7 @@ window.BP3RegisterUserToRoster = function(msg){
     };
 
     eventsList.push(evRecord);
+    if (eventsList.length > 100) eventsList = eventsList.slice(-100);
 
   }
 
@@ -377,6 +405,7 @@ window.BP3RegisterUserToRoster = function(msg){
 
 
 
+  dirtyKeys.add(key);
   people.set(key,{
 
     username:msg.username,
@@ -399,10 +428,7 @@ window.BP3RegisterUserToRoster = function(msg){
 
   });
 
-  try {
-    localStorage.setItem('bp3_user_roster', JSON.stringify([...people.values()]));
-  } catch(_) {}
-
+  // Saved by schedule() (at most every ROSTER_SAVE_MS) instead of serialising the whole roster on every message.
   schedule();
 
 };
@@ -1020,7 +1046,7 @@ const entry=window.checkRealGwEntry;window.checkRealGwEntry=function(msg,name){
 
  const previous=find();const before=previous?(previous.checkins || [1]).length:0;entry(msg,name);const after=find();
 
- if(after && (after.checkins || [1]).length>before){const person=people.get(String(msg.platform || 'Twitch').toLowerCase()+':'+String(msg.username || name).toLowerCase());if(person){person.joinCount=(person.joinCount || 0)+1;schedule();}}
+ if(after && (after.checkins || [1]).length>before){const person=people.get(String(msg.platform || 'Twitch').toLowerCase()+':'+String(msg.username || name).toLowerCase());if(person){person.joinCount=(person.joinCount || 0)+1;dirtyKeys.add(String(person.platform || 'Twitch').toLowerCase()+':'+String(person.username || '').toLowerCase());schedule();}}
 
 };
 

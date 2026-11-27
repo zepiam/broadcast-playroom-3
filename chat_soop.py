@@ -347,6 +347,11 @@ class SoopChat:
             return
         if len(messages) <= 5:
             return
+        # Only service 0005 (SVC_CHATMESG) is a chat line. Join/user-list/flag frames (0002, 0004, 0109, 0127 ...)
+        # have the same field layout and used to show up (and be read aloud) as fake chat such as user ids.
+        header = messages[0]
+        if len(header) >= 6 and header[2:6] != "0005":
+            return
         if messages[1] in ("-1", "1") or "|" in messages[1]:
             return  # system/control message ไม่ใช่แชทปกติ
         comment = messages[1]

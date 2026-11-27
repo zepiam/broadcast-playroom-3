@@ -277,6 +277,14 @@ _READ_CHAT_JS = r"""
 """
 
 
+
+def _entry_sig(entry: dict):
+    """Content signature of a chat item read from the page (author + kind + segments)."""
+    try:
+        segs = tuple((x.get("type"), x.get("content") or x.get("unicode") or x.get("url") or "") for x in (entry.get("segments") or []))
+    except Exception:
+        segs = ()
+    return (entry.get("name", ""), entry.get("kind", ""), segs, entry.get("stickerUrl") or "")
 class MyLiveChat:
     """MyLive.in.th live chat reader — Playwright headless browser DOM polling"""
 
@@ -303,6 +311,7 @@ class MyLiveChat:
 
         # จำ index ล่าสุดที่ emit แล้ว เพื่อ diff (DOM สะสมตลอด → อ่านเฉพาะที่เพิ่ม)
         self._last_seen_idx: int = -1
+        self._last_emitted_sig = None
 
         self.messages_read = 0
 
@@ -505,6 +514,7 @@ class MyLiveChat:
                     if primed:
                         current_max = max(e.get("idx", -1) for e in primed)
                         self._last_seen_idx = current_max
+                        self._last_emitted_sig = _entry_sig(max(primed, key=lambda e: e.get("idx", -1)))
                         # ถ้า idx สูงสุดไม่เพิ่มจากรอบก่อน → Vue โหลดครบแล้ว → หยุด prime
                         if current_max == last_prime_idx:
                             break
@@ -601,6 +611,10 @@ class MyLiveChat:
         if max_idx < self._last_seen_idx:
             # DOM ถูก prune แล้ว → ถือว่าทุกอย่างที่เห็นเป็นของใหม่เทียบกับเก่า
             self._last_seen_idx = max_idx - 1
+            # ...but the last item is usually the one already emitted: never send it twice (read-once rule)
+            last_entry = max(entries, key=lambda e: e.get("idx", -1))
+            if _entry_sig(last_entry) == self._last_emitted_sig:
+                self._last_seen_idx = max_idx
 
         new_entries = [
             e for e in entries if e.get("idx", -1) > self._last_seen_idx
@@ -612,6 +626,7 @@ class MyLiveChat:
 
         for entry in new_entries:
             self._last_seen_idx = max(self._last_seen_idx, entry.get("idx", -1))
+            self._last_emitted_sig = _entry_sig(entry)
             msg = self._entry_to_message(entry)
             if msg is not None:
                 self.messages_read += 1

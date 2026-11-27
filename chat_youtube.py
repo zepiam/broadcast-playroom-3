@@ -107,7 +107,19 @@ class YouTubeChat:
         oauth_token: str = "",
         bot_username: str = "",
     ) -> None:
-        self.on_message = on_message
+        self._current_source_id = None
+        def _emit(msg, _cb=on_message):
+            # YouTube item id -> extra['source_id'] (central read-once rule in chat_bridge)
+            sid = self._current_source_id
+            if sid:
+                try:
+                    if getattr(msg, 'extra', None) is None:
+                        msg.extra = {}
+                    msg.extra.setdefault('source_id', sid)
+                except Exception:
+                    pass
+            return _cb(msg)
+        self.on_message = _emit
         self.on_status = on_status or (lambda msg: None)
         self.on_error = on_error or (lambda msg: None)
         self.on_viewer_count = on_viewer_count or (lambda plat, cnt: None)
@@ -1034,7 +1046,12 @@ class YouTubeChat:
                 ts = _usec(renderer)
                 if ts and self._history_max_usec and ts <= self._history_max_usec:
                     return False  # older than the history primed at connect: never replay backlog
-                handler(renderer)
+                _rid = renderer.get("id")   # real item id only (msg_id may fall back to the channel id)
+                self._current_source_id = ("yt:" + _rid) if _rid else None
+                try:
+                    handler(renderer)
+                finally:
+                    self._current_source_id = None
                 return True
         return False
 

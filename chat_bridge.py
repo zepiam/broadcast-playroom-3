@@ -288,6 +288,17 @@ class ChatBridge:
 
         self._msg_id_counter = 0
         self._delivered_upto = 0   # highest message id already delivered to an app page (see poll_for_app)
+        # Central read-once rule (all platforms): a chat message that already passed is never emitted again,
+        # whatever a platform reader does on (re)connect. Readers with real message ids put them in
+        # extra['source_id']; for readers without ids, see _replay_guard.
+        self._seen_source_ids = {}      # platform -> OrderedDict(source_id -> None), oldest evicted first
+        self._recent_plain = {}         # platform -> deque of (author, text) delivered (id-less platforms)
+        self._replay_guard = {}         # platform -> (until_monotonic, Counter of (author, text) seen before connect)
+        # Only ONE app page reads chat (and speaks it): the newest page that polls takes over; older pages
+        # (e.g. the window being replaced by the watchdog, or a duplicate main window) get nothing and stop.
+        self._chat_owner = None
+        from collections import deque as _dq
+        self._retired_pages = _dq(maxlen=64)
 
         self._last_viewer_state = None
 
@@ -322,8 +333,51 @@ class ChatBridge:
 
 
 
+    SOURCE_ID_LIMIT = 20000
+    REPLAY_GUARD_SECONDS = 120
+    REPLAY_HISTORY = 300
+
+    def _arm_replay_guard(self, platform: str):
+        """Called on every (re)connect: for REPLAY_GUARD_SECONDS, an id-less message identical (author + text)
+        to one delivered before this connect is treated as replayed history (each old message absorbs one)."""
+        from collections import Counter
+        with self._lock:
+            recent = self.__dict__.setdefault('_recent_plain', {}).get(platform) or ()
+            self.__dict__.setdefault('_replay_guard', {})[platform] = (time.monotonic() + self.REPLAY_GUARD_SECONDS, Counter(recent))
+
+    def _already_passed(self, platform: str, msg) -> bool:
+        """Read-once rule. Must be called with self._lock held. Records the message when it is new."""
+        extra = getattr(msg, 'extra', None) or {}
+        sid = extra.get('source_id')
+        if sid:
+            from collections import OrderedDict
+            seen = self.__dict__.setdefault('_seen_source_ids', {}).setdefault(platform, OrderedDict())
+            sid = str(sid)
+            if sid in seen:
+                return True
+            seen[sid] = None
+            while len(seen) > self.SOURCE_ID_LIMIT:
+                seen.popitem(last=False)
+            return False
+        if (getattr(msg, 'event', 'message') or 'message') != 'message':
+            return False   # id-less events (gifts, subs...) are not deduped by content
+        key = (str(getattr(msg, 'author', '') or '').strip().lower(), str(getattr(msg, 'text', '') or '').strip())
+        guard = self.__dict__.setdefault('_replay_guard', {}).get(platform)
+        if guard and time.monotonic() < guard[0] and guard[1].get(key, 0) > 0:
+            guard[1][key] -= 1
+            return True
+        from collections import deque
+        self.__dict__.setdefault('_recent_plain', {}).setdefault(platform, deque(maxlen=self.REPLAY_HISTORY)).append(key)
+        return False
+
     def _on_message(self, platform_name: str, msg: ChatMessage):
         if getattr(msg, 'event', '') == 'join':
+            return
+        _plat = str(platform_name or '').lower()
+        with self._lock:
+            _dup = self._already_passed(_plat, msg)
+        if _dup:
+            print(f"[{platform_name}] skip replayed chat (already passed): {getattr(msg, 'author', '')}: {str(getattr(msg, 'text', ''))[:40]}", flush=True)
             return
         author = getattr(msg, 'author', '') or getattr(msg, 'username', 'ผู้ชม')
         text = getattr(msg, 'text', '')
@@ -688,6 +742,7 @@ class ChatBridge:
     def connect(self, platform: str, target: str, _reconnect_token=None) -> dict:
 
         platform = platform.lower()
+        self._arm_replay_guard(platform)
 
         target = target.strip()
 
@@ -1085,16 +1140,22 @@ class ChatBridge:
 
             return [m for m in self._messages if m['id'] > last_id]
 
-    def poll_for_app(self, last_id: int = 0):
+    def poll_for_app(self, last_id: int = 0, page_id: str = ''):
         """Main-window poll. Returns (messages, delivered_upto): delivered_upto = highest message id this
         server had already handed to an app page BEFORE this call. A page that (re)loads - watchdog window
         restart, Ctrl+R - must never read or run anything at or below it again: those messages already passed."""
         with self._lock:
             before = self._delivered_upto
+            if page_id and page_id != self._chat_owner:
+                if page_id in self._retired_pages:
+                    return [], before, True           # superseded: a newer page reads chat now
+                if self._chat_owner:
+                    self._retired_pages.append(self._chat_owner)
+                self._chat_owner = page_id
             msgs = self._messages[-50:] if last_id == 0 else [m for m in self._messages if m['id'] > last_id]
             if msgs:
                 self._delivered_upto = max(self._delivered_upto, msgs[-1]['id'])
-            return list(msgs), before
+            return list(msgs), before, False
 
 
 

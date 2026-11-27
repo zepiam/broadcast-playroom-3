@@ -848,6 +848,7 @@ class TwitchChat:
         # ถ้าข้อความเป็น emote ล้วน (ว่างหลัง strip) → ไม่ส่ง TTS
         # แต่ยังส่งให้ GUI แสดงภาพ emote (text="" แต่มี emote_list)
         extra_base = {
+            "source_id": tags.get("id") or None,   # Twitch message id: central read-once rule (chat_bridge)
             "color": tags.get("color", ""),
             "badges": tags.get("badges", ""),
             "emotes": emote_list,    # list of {id, name, start, end} (offset ใน raw_text)
@@ -1000,7 +1001,7 @@ class TwitchChat:
                 amount=amount,
                 tier=tier,
                 system_text=system_text,
-                extra={"msg-id": msg_id, "detail": detail},
+                extra={"msg-id": msg_id, "detail": detail, "source_id": tags.get("id") or None},
             )
         )
 

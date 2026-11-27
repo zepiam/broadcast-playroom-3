@@ -50,7 +50,7 @@ logger = logging.getLogger("updater")
 
 
 
-CURRENT_VERSION = "3.94"
+CURRENT_VERSION = "3.95"
 
 REPO_OWNER = "zepiam"
 

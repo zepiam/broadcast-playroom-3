@@ -225,6 +225,27 @@ def _disable_efficiency_mode(pids) -> None:
         pass
 
 
+def _renderer_memory_note() -> str:
+    """Real memory of the app window (JS heap alone hides native growth: images, DOM, network buffers).
+    ', app renderer N MB, browser total M MB' or '' when unavailable."""
+    try:
+        import psutil  # noqa: F401
+        biggest, total = 0.0, 0.0
+        for proc in _browser_processes():
+            try:
+                mb = proc.memory_info().private / 1048576 if hasattr(proc.memory_info(), 'private') else proc.memory_info().rss / 1048576
+                total += mb
+                if '--type=renderer' in ' '.join(proc.cmdline()):
+                    biggest = max(biggest, mb)
+            except Exception:
+                continue
+        if total <= 0:
+            return ''
+        return ', app renderer %d MB, browser total %d MB' % (round(biggest), round(total))
+    except Exception:
+        return ''
+
+
 def _recover() -> None:
     now = time.time()
     with _lock:
@@ -293,7 +314,7 @@ def _loop() -> None:
             if beats and now - last_mem > 300:
                 with _lock:
                     _state['last_mem_log'] = now
-                _log('ok: page heap %s MB, heartbeats %s' % (heap, beats))
+                _log('ok: page heap %s MB, heartbeats %s%s' % (heap, beats, _renderer_memory_note()))
             hung = now - last_beat > HANG_SECONDS and now - launched > STARTUP_GRACE
             lost = bool(lost_at) and now - lost_at >= PAGE_LOST_SECONDS and now - last_beat >= 45
             if cfg['watchdog'] and beats and (hung or lost):

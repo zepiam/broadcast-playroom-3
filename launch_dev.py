@@ -11611,8 +11611,9 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-            _msgs, _delivered = chat_bridge.poll_for_app(last_id)
-            response_data = {'messages': _msgs, 'delivered_upto': _delivered}
+            _pid = (qs.get('pid', [''])[0] or '')[:64]
+            _msgs, _delivered, _superseded = chat_bridge.poll_for_app(last_id, _pid)
+            response_data = {'messages': _msgs, 'delivered_upto': _delivered, 'superseded': _superseded}
 
 
 
