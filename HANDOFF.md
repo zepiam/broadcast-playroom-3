@@ -5,6 +5,18 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ NOT RELEASED — สตรีมไป 3-4 ชม. แล้วโปรแกรม "รีเฟรชตัวเอง" เด้งกลับจอหลัก แล้วอ่านแชทเก่าใหม่หมด (Claude, 2026-11-27)
+- รายงานจากผู้ใช้: สตรีม 3-4 ชม. โปรแกรมเหมือนรีเฟรช/รีเซ็ตตัวเอง หน้าต่างที่ย่อไว้บนจออื่นเด้งกลับมาจอหลัก แล้วอ่านแชทเก่าตั้งแต่แรกใหม่หมด (อาจเป็นบัคเดียวกับ "อ่านข้อความที่ไม่ได้ขึ้นใน live")
+- "เด้งกลับจอหลัก" = หน้าต่างถูกปิดแล้วเปิดใหม่ = UI watchdog ของ power_guard restart (relaunch เดิมเปิดที่ 100,50 บนจอหลัก ไม่ย่อ) — เหตุที่ heartbeat หยุดของเครื่องผู้ใช้ยังไม่รู้ ต้องขอ `data\ui_health.log` ของผู้ใช้ (บรรทัด "UI watchdog: ...")
+- สาเหตุอ่านซ้ำ 1: หน้าโหลดใหม่ poll แรก `last_id=0` ได้ 50 ข้อความล่าสุด แล้ว `injectIncomingChat` ทำซ้ำทุกอย่าง (TTS, คำสั่ง, overlay, roster)
+- สาเหตุอ่านซ้ำ 2 (YouTube): `chat_youtube.py` ตัด seen-ID set ด้วย `set(list(set)[-1000:])` เมื่อเกิน 2000 = ทิ้งแบบสุ่ม → ID ที่ยังอยู่ในหน้าต่างแชทที่ re-poll ถูกลืม → ส่งข้อความเก่าซ้ำ
+- กฎ (ตามเจ้าของ): ข้อความที่ผ่านไปแล้วห้ามอ่าน/รันซ้ำเด็ดขาด — server (`chat_bridge.poll_for_app`) จำ id สูงสุดที่เคยส่งให้หน้าโปรแกรมแล้ว (`delivered_upto` ใน `/api/messages`); หน้าใหม่ (watchdog/Ctrl+R) ไม่อ่าน/ไม่รันอะไรที่ id ≤ ค่านี้ ส่วนข้อความที่เข้ามาตอนหน้าต่างกำลังเปิดใหม่ (ยังไม่เคยส่ง) อ่านเฉพาะถ้าใหม่กว่า 20 วิ
+- แก้: `chat_youtube.py` `_RecentIds` (ordered 5000) + ไม่ส่งข้อความที่ timestampUsec ≤ history ตอนเชื่อมต่อ; `chat_bridge.py` payload `ts`; `src/index.html` backlog หลังโหลดหน้า = แสดงอย่างเดียว ("ไม่อ่านเสียง") + heartbeat ใช้ worker tick และส่งตำแหน่งหน้าต่าง (x,y,w,h ตอนมองเห็น) + hid; `power_guard.py` เก็บตำแหน่ง/สถานะย่อ (`last_window()`); `launch_dev.py` watchdog relaunch เปิดที่ตำแหน่งเดิมและย่อไว้ถ้าเดิมย่อ (`_minimize_app_window_when_shown` เพราะ Edge ไม่สน --start-minimized ในโหมด --app)
+- พบด้วย: `app_window_frame._remember_window` (จำตำแหน่งหน้าต่างหลักใน main_window.json) ไม่ถูกเรียกแล้ว (เรียกเฉพาะคำสั่ง restore-frame ที่ไม่มีใครส่ง; ไฟล์ค้างตั้งแต่ 2026-10-29) — ไม่ได้แตะ
+- **Completed & Verified**: YouTube unit test (เดิมซ้ำ 159 / หลังแก้ 0); Playwright reload (เดิมอ่าน 5 ข้อความเก่าซ้ำ / หลังแก้ 6/6 PASS); Edge จริง: เปิดบนจอ 2 และตำแหน่งที่หน้าเว็บรายงานตรงกับ Win32, relaunch แบบย่อยังย่อ (3/3); e2e watchdog `_recover()` กับหน้าต่างบนจอ 2 ที่ย่อไว้ → หน้าต่างใหม่ยังย่อและตำแหน่งคืนอยู่จอ 2 (4/4); nickname_test 7/7; `npm run build` gates PASSED
+- reload_backlog_test 10/10 PASS 5 รอบ (รวม: อ่านแล้ว 1 วิก่อน reload → ไม่อ่านซ้ำ, เข้ามาตอนหน้าต่างปิด → อ่าน 1 ครั้ง, ค้าง 60 วิ → ไม่อ่านย้อน). หมายเหตุ: error `BP3Blacklist`/`botNames` ที่เคยจดว่า race ใน user_controls.js เกิดจาก test server ที่ backlog 5 (โหลด script ไม่ขึ้น) — ตั้ง 128 แล้วหาย; server จริงใช้ 128 ตั้งแต่ v3.90
+- **Unverified**: สาเหตุที่ watchdog restart ในเครื่องผู้ใช้; แพลตฟอร์มอื่นตอน reconnect; จอ DPI ต่างกัน; ยังไม่ release
+
 ## 🚀 RELEASED v3.93 — Overlay Composer เปิดมาซูมลึก (ป้ายบอก 45%) + ปุ่มบันทึกไม่มีอะไรบอก (Claude, 2026-11-27)
 - สาเหตุซูม: Composer เปิดเป็นหน้าต่างแยก (`?popout=composer`) ซึ่งไม่เคยเรียก autoFitCanvas ตอนเปิด ป้าย "45%" กับ state.zoom 0.45 เป็นค่าเริ่มต้น แต่ canvas ไม่ได้ถูก scale (แสดง 100% = 1920x1080) จะ fit ก็ต่อเมื่อย่อขยายหน้าต่าง
 - สาเหตุปุ่มบันทึก: `addEventListener('click', saveState)` ส่ง click event เข้าเป็นพารามิเตอร์ `silent` → ไม่ขึ้น toast เลย

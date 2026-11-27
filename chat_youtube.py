@@ -28,6 +28,7 @@ from __future__ import annotations
 import json
 import re
 import threading
+from collections import OrderedDict
 import time
 import logging
 import urllib.request as urllib_request
@@ -56,6 +57,40 @@ USER_AGENT = (
     "Chrome/126.0.0.0 Safari/537.36"
 )
 
+
+
+
+def _usec(renderer: dict) -> int:
+    """YouTube's server timestamp of a chat item in microseconds (0 if missing)."""
+    try:
+        return int(renderer.get("timestampUsec") or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+class _RecentIds:
+    """Set-like store of recently seen message ids that forgets the oldest first."""
+
+    def __init__(self, limit: int = 5000):
+        self._ids: "OrderedDict[str, None]" = OrderedDict()
+        self._limit = limit
+
+    def add(self, mid: str) -> None:
+        if mid in self._ids:
+            self._ids.move_to_end(mid)
+            return
+        self._ids[mid] = None
+        while len(self._ids) > self._limit:
+            self._ids.popitem(last=False)
+
+    def __contains__(self, mid) -> bool:
+        return mid in self._ids
+
+    def __len__(self) -> int:
+        return len(self._ids)
+
+    def clear(self) -> None:
+        self._ids.clear()
 
 class YouTubeChat:
     """YouTube live chat reader — direct InnerTube API polling
@@ -94,7 +129,10 @@ class YouTubeChat:
         self._last_viewer_poll: float = 0.0
 
         self.messages_read = 0
-        self._seen_ids: set[str] = set()
+        self._seen_ids = _RecentIds()
+        # newest YouTube timestamp (usec) among the history primed at session start; anything at or
+        # before it is old chat and must never be dispatched (guards against re-reading the backlog)
+        self._history_max_usec: int = 0
 
         # ★ OAuth (ส่งแชท) — ถ้ามี → ส่งได้ ถ้าไม่มี → อ่านอย่างเดียว
         self._oauth_token = (oauth_token or "").strip()
@@ -523,6 +561,7 @@ class YouTubeChat:
         self._reload_token_ts = time.time()
         self._empty_streak = 0   # ★ นับรอบเงียบติดกัน (trigger รีเฟรช token)
         self._had_any = False    # ★ เคยเห็นข้อความไหลใน session นี้
+        self._history_max_usec = 0
         try:
             self._fetch_chat(skip_dispatch=True)  # skip ไม่ dispatch + จด seen IDs
         except Exception:  # noqa: BLE001
@@ -926,9 +965,13 @@ class YouTubeChat:
                 try:
                     item = (action.get("addChatItemAction") or {}).get("item", {})
                     for rn in item:
-                        mid = (item.get(rn) or {}).get("id")
+                        r = item.get(rn) or {}
+                        mid = r.get("id")
                         if mid:
                             self._seen_ids.add(mid)
+                            ts = _usec(r)
+                            if ts > self._history_max_usec:
+                                self._history_max_usec = ts
                             break
                 except Exception:  # noqa: BLE001
                     pass
@@ -984,10 +1027,13 @@ class YouTubeChat:
                 if msg_id and msg_id in self._seen_ids:
                     return False
                 if msg_id:
+                    # bounded, insertion-ordered: evicts only the OLDEST ids. (The old cap rebuilt a set from
+                    # list(set)[-1000:], which keeps a random half, so after ~2000 messages ids still inside
+                    # YouTube's re-polled window were forgotten and old chat was read again.)
                     self._seen_ids.add(msg_id)
-                    # cap dedupe set (กัน memory bloat)
-                    if len(self._seen_ids) > 2000:
-                        self._seen_ids = set(list(self._seen_ids)[-1000:])
+                ts = _usec(renderer)
+                if ts and self._history_max_usec and ts <= self._history_max_usec:
+                    return False  # older than the history primed at connect: never replay backlog
                 handler(renderer)
                 return True
         return False

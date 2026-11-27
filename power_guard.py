@@ -95,14 +95,26 @@ def _settings() -> dict:
     return values
 
 
-def beat(heap_mb=None) -> None:
-    """Called by the /api/ui/heartbeat endpoint."""
+def beat(heap_mb=None, geometry=None, hidden=None) -> None:
+    """Called by the /api/ui/heartbeat endpoint.
+    geometry = (x, y, w, h) of the app window while it was visible; hidden = window minimized/hidden."""
     with _lock:
         _state['last_beat'] = time.time()
         _state['beats'] += 1
         _state['page_lost_at'] = 0.0
         if heap_mb is not None and heap_mb >= 0:
             _state['heap_mb'] = heap_mb
+        if geometry:
+            _state['window_geometry'] = tuple(int(v) for v in geometry)
+        if hidden is not None:
+            _state['window_hidden'] = bool(hidden)
+
+
+def last_window():
+    """(geometry or None, was_hidden) last reported by the app page: a watchdog restart reopens the
+    window where the user had it (e.g. on a second monitor) and keeps it minimized if it was."""
+    with _lock:
+        return _state.get('window_geometry'), bool(_state.get('window_hidden'))
 
 
 def _keep_awake() -> None:

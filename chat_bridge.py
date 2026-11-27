@@ -287,6 +287,7 @@ class ChatBridge:
         self._messages = []
 
         self._msg_id_counter = 0
+        self._delivered_upto = 0   # highest message id already delivered to an app page (see poll_for_app)
 
         self._last_viewer_state = None
 
@@ -437,7 +438,8 @@ class ChatBridge:
 
                 'suppress_tts': bool(extra.get('suppress_tts')),
 
-                'time': time.strftime('%H:%M', time.localtime())
+                'time': time.strftime('%H:%M', time.localtime()),
+                'ts': int(time.time() * 1000),
 
             }
 
@@ -1082,6 +1084,17 @@ class ChatBridge:
                 return self._messages[-50:]
 
             return [m for m in self._messages if m['id'] > last_id]
+
+    def poll_for_app(self, last_id: int = 0):
+        """Main-window poll. Returns (messages, delivered_upto): delivered_upto = highest message id this
+        server had already handed to an app page BEFORE this call. A page that (re)loads - watchdog window
+        restart, Ctrl+R - must never read or run anything at or below it again: those messages already passed."""
+        with self._lock:
+            before = self._delivered_upto
+            msgs = self._messages[-50:] if last_id == 0 else [m for m in self._messages if m['id'] > last_id]
+            if msgs:
+                self._delivered_upto = max(self._delivered_upto, msgs[-1]['id'])
+            return list(msgs), before
 
 
 

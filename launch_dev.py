@@ -4869,8 +4869,18 @@ class QuietHandler(SimpleHTTPRequestHandler):
         if path == '/api/ui/heartbeat':   # v3.81: must live outside the /api/rvc/ block (v3.76 put it inside, so it never ran)
             try:
                 import power_guard
-                _hb = urllib.parse.parse_qs(parsed.query).get('mem', ['-1'])[0]
-                power_guard.beat(int(_hb) if _hb.lstrip('-').isdigit() else None)
+                _hq = urllib.parse.parse_qs(parsed.query)
+                _hb = _hq.get('mem', ['-1'])[0]
+                _geo = None
+                try:
+                    _vals = [int(float(_hq[k][0])) for k in ('x', 'y', 'w', 'h')]
+                    if _vals[2] >= 300 and _vals[3] >= 200 and all(-20000 < v < 20000 for v in _vals):
+                        _geo = tuple(_vals)
+                except Exception:
+                    _geo = None
+                _hid = _hq.get('hid', [''])[0]
+                power_guard.beat(int(_hb) if _hb.lstrip('-').isdigit() else None, _geo,
+                                 (_hid == '1') if _hid in ('0', '1') else None)
             except Exception:
                 pass
             self.send_json({'ok': True})
@@ -11601,7 +11611,8 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-            response_data = {'messages': chat_bridge.get_messages(last_id)}
+            _msgs, _delivered = chat_bridge.poll_for_app(last_id)
+            response_data = {'messages': _msgs, 'delivered_upto': _delivered}
 
 
 
@@ -12246,7 +12257,46 @@ def app_browser_profile_dir(browser_bin=None):
 
 
 
-def open_app_window(main_url, minimized=False):
+def _minimize_app_window_when_shown(proc, timeout=25.0, settle=6.0):
+    """Minimize (without activating) the app window of `proc` once it appears; keep it minimized while
+    the page finishes loading, then leave it to the user."""
+    try:
+        import ctypes
+        from ctypes import wintypes
+        import psutil
+        u32 = ctypes.windll.user32
+        SW_SHOWMINNOACTIVE = 7
+        def windows():
+            try:
+                pids = {proc.pid} | {c.pid for c in psutil.Process(proc.pid).children(recursive=True)}
+            except Exception:
+                return []
+            found = []
+            @ctypes.WINFUNCTYPE(wintypes.BOOL, wintypes.HWND, wintypes.LPARAM)
+            def cb(hwnd, _l):
+                pid = wintypes.DWORD()
+                u32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
+                if pid.value in pids and u32.IsWindowVisible(hwnd) and u32.GetWindowTextLengthW(hwnd) > 0:
+                    found.append(hwnd)
+                return True
+            u32.EnumWindows(cb, 0)
+            return found
+        start = time.time()
+        first = None
+        while time.time() - start < timeout and proc.poll() is None:
+            for hwnd in windows():
+                if not u32.IsIconic(hwnd):
+                    u32.ShowWindow(hwnd, SW_SHOWMINNOACTIVE)
+                if first is None:
+                    first = time.time()
+            if first is not None and time.time() - first > settle:
+                return
+            time.sleep(0.25)
+    except Exception:
+        pass
+
+
+def open_app_window(main_url, minimized=False, geometry=None):
     curr_ver = get_current_version()
     browser_bin = find_browser()
     launched = False
@@ -12294,8 +12344,9 @@ def open_app_window(main_url, minimized=False):
             "--password-store=basic",
             "--no-default-browser-check",
             "--no-first-run",
-            "--window-size=1600,950",
-            "--window-position=100,50"
+            # watchdog restart: reopen where the user had the window (e.g. on a second monitor)
+            "--window-size=%d,%d" % ((geometry[2], geometry[3]) if geometry else (1600, 950)),
+            "--window-position=%d,%d" % ((geometry[0], geometry[1]) if geometry else (100, 50))
         ]
         # Allow user to completely disable GPU acceleration via setting or env if graphics driver is buggy
         _disable_gpu = os.environ.get('BP3_DISABLE_GPU') == '1'
@@ -12321,6 +12372,10 @@ def open_app_window(main_url, minimized=False):
                 power_guard.register_browser_process(proc)
             except Exception:
                 pass
+            if minimized and os.name == 'nt':
+                # Edge/Chrome ignore --start-minimized for --app windows: minimize it ourselves (no focus steal),
+                # e.g. after a watchdog restart of a window the user had minimized on another screen.
+                threading.Thread(target=_minimize_app_window_when_shown, args=(proc,), daemon=True).start()
             def _watch_app_window_icon():
                 start_t = time.time()
                 while time.time() - start_t < 35:
@@ -12349,7 +12404,11 @@ def open_app_window(main_url, minimized=False):
     # v3.77: keep the program running for hours (no system sleep / efficiency mode) + restart a hung app window
     try:
         import power_guard
-        power_guard.start(app_profile_dir, str(DATA_ROOT), lambda: open_app_window(main_url, minimized=False))
+        def _watchdog_relaunch():
+            # reopen at the last reported place/size, and stay minimized if the user had it minimized
+            geo, was_hidden = power_guard.last_window()
+            open_app_window(main_url, minimized=was_hidden, geometry=geo)
+        power_guard.start(app_profile_dir, str(DATA_ROOT), _watchdog_relaunch)
     except Exception as _pg_err:
         print(f"[WARN] power_guard unavailable: {_pg_err}", flush=True)
 
