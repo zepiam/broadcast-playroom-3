@@ -1,11 +1,19 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.93)
-- **Current Version**: v3.93 (Released — Overlay Composer fits the canvas on open; save button feedback)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.94)
+- **Current Version**: v3.94 (Released — chat that already passed is never read again; watchdog restart keeps the window on its screen)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ NOT RELEASED — สตรีมไป 3-4 ชม. แล้วโปรแกรม "รีเฟรชตัวเอง" เด้งกลับจอหลัก แล้วอ่านแชทเก่าใหม่หมด (Claude, 2026-11-27)
+## ⚠️ TODO — ตัวอ่านแชท TikTok / MyLive ยังส่งแชทเก่าซ้ำได้เอง (ตรวจ 2026-11-27, ยังไม่แก้)
+- ตรวจ reconnect ทุกแพลตฟอร์ม (chat_bridge.connect สร้าง client ใหม่ทุกครั้ง state dedupe หายหมด):
+  - Twitch (IRC) / Kick (Pusher): SAFE — ไม่มี history ตอน JOIN/subscribe. เคส Twitch ที่ผู้ใช้แจ้ง = หน้าโปรแกรมโหลดใหม่ (แก้แล้วใน v3.94)
+  - SOOP: น่าจะ SAFE (ยืนยันจากโค้ดไม่ได้ 100%); ข้อสังเกต `_handle_raw` ไม่เช็ค service code ของ packet
+  - **TikTok: RISK สูง** — `chat_tiktok.py` `start(process_connect_events=True)`; TikTokLive 7.0.1 `ws_client.py` ล้าง initial messages เฉพาะเมื่อ False → ทุก connect/reconnect คอมเมนต์ล่าสุดของห้อง (และของขวัญ/ไลก์/ติดตามใน initial fetch) ถูกส่งเป็นข้อความใหม่; `on_comment` ไม่มี dedupe/เช็คเวลา
+  - **MyLive: RISK ปานกลาง** — ใช้ตำแหน่งใน DOM เป็น id; prime สูงสุด 5 รอบแล้วหยุด → history ที่ render ช้า/ทีละส่วนหลุดเป็นของใหม่; list หด/แทรกด้านบน/re-render ทำให้ส่งซ้ำ
+- ทางแก้ที่เสนอ: TikTok ทิ้ง event ใน initial fetch (หรือ create_time ก่อน connect) โดยยังเก็บยอดคนดู; MyLive dedupe ด้วยเนื้อหา+ผู้ส่ง (ordered) แทนตำแหน่ง + ไม่ส่งของที่ render อยู่แล้วตอนเปิดหน้า
+
+## 🚀 RELEASED v3.94 — สตรีมไป 3-4 ชม. แล้วโปรแกรม "รีเฟรชตัวเอง" เด้งกลับจอหลัก แล้วอ่านแชทเก่าใหม่หมด (Claude, 2026-11-27)
 - รายงานจากผู้ใช้: สตรีม 3-4 ชม. โปรแกรมเหมือนรีเฟรช/รีเซ็ตตัวเอง หน้าต่างที่ย่อไว้บนจออื่นเด้งกลับมาจอหลัก แล้วอ่านแชทเก่าตั้งแต่แรกใหม่หมด (อาจเป็นบัคเดียวกับ "อ่านข้อความที่ไม่ได้ขึ้นใน live")
 - "เด้งกลับจอหลัก" = หน้าต่างถูกปิดแล้วเปิดใหม่ = UI watchdog ของ power_guard restart (relaunch เดิมเปิดที่ 100,50 บนจอหลัก ไม่ย่อ) — เหตุที่ heartbeat หยุดของเครื่องผู้ใช้ยังไม่รู้ ต้องขอ `data\ui_health.log` ของผู้ใช้ (บรรทัด "UI watchdog: ...")
 - สาเหตุอ่านซ้ำ 1: หน้าโหลดใหม่ poll แรก `last_id=0` ได้ 50 ข้อความล่าสุด แล้ว `injectIncomingChat` ทำซ้ำทุกอย่าง (TTS, คำสั่ง, overlay, roster)
@@ -15,7 +23,8 @@
 - พบด้วย: `app_window_frame._remember_window` (จำตำแหน่งหน้าต่างหลักใน main_window.json) ไม่ถูกเรียกแล้ว (เรียกเฉพาะคำสั่ง restore-frame ที่ไม่มีใครส่ง; ไฟล์ค้างตั้งแต่ 2026-10-29) — ไม่ได้แตะ
 - **Completed & Verified**: YouTube unit test (เดิมซ้ำ 159 / หลังแก้ 0); Playwright reload (เดิมอ่าน 5 ข้อความเก่าซ้ำ / หลังแก้ 6/6 PASS); Edge จริง: เปิดบนจอ 2 และตำแหน่งที่หน้าเว็บรายงานตรงกับ Win32, relaunch แบบย่อยังย่อ (3/3); e2e watchdog `_recover()` กับหน้าต่างบนจอ 2 ที่ย่อไว้ → หน้าต่างใหม่ยังย่อและตำแหน่งคืนอยู่จอ 2 (4/4); nickname_test 7/7; `npm run build` gates PASSED
 - reload_backlog_test 10/10 PASS 5 รอบ (รวม: อ่านแล้ว 1 วิก่อน reload → ไม่อ่านซ้ำ, เข้ามาตอนหน้าต่างปิด → อ่าน 1 ครั้ง, ค้าง 60 วิ → ไม่อ่านย้อน). หมายเหตุ: error `BP3Blacklist`/`botNames` ที่เคยจดว่า race ใน user_controls.js เกิดจาก test server ที่ backlog 5 (โหลด script ไม่ขึ้น) — ตั้ง 128 แล้วหาย; server จริงใช้ 128 ตั้งแต่ v3.90
-- **Unverified**: สาเหตุที่ watchdog restart ในเครื่องผู้ใช้; แพลตฟอร์มอื่นตอน reconnect; จอ DPI ต่างกัน; ยังไม่ release
+- ปล่อยแล้ว: commit 9c46a4c + tag v3.94; SHA-256 ของแพตช์บน GitHub และ HF ตรงกับ version.json ครบ, version.json ทั้งสองที่ = 3.94
+- **Unverified**: สาเหตุที่ watchdog restart ในเครื่องผู้ใช้; จอ DPI ต่างกัน; โปรแกรมที่ติดตั้งจริง
 
 ## 🚀 RELEASED v3.93 — Overlay Composer เปิดมาซูมลึก (ป้ายบอก 45%) + ปุ่มบันทึกไม่มีอะไรบอก (Claude, 2026-11-27)
 - สาเหตุซูม: Composer เปิดเป็นหน้าต่างแยก (`?popout=composer`) ซึ่งไม่เคยเรียก autoFitCanvas ตอนเปิด ป้าย "45%" กับ state.zoom 0.45 เป็นค่าเริ่มต้น แต่ canvas ไม่ได้ถูก scale (แสดง 100% = 1920x1080) จะ fit ก็ต่อเมื่อย่อขยายหน้าต่าง
