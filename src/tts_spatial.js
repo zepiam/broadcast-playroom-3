@@ -163,26 +163,59 @@
     if (!t) t = document.getElementById('txtVoiceTestMessage')?.value || document.getElementById('secTxtVoiceTestMessage')?.value || '';
     return (t || 'สวัสดีครับ ยินดีต้อนรับทุกคนเข้าสู่ห้องแชทไลฟ์สตรีม!').trim();
   }
-  let testAudio = null;
+  // test = null | { phase: 'load' | 'play', controller, audio, objUrl }
+  // The voice is fetched in full first: with RVC and a new speed/pitch it takes several seconds to generate,
+  // so the button shows "preparing" until it is really audible (instead of a silent "stop" state).
+  let test = null;
   function stopTest() {
-    if (testAudio) { try { testAudio.pause(); } catch (_) {} testAudio = null; }
+    const t = test; test = null;
+    if (t) {
+      try { t.controller.abort(); } catch (_) {}
+      if (t.audio) { try { t.audio.pause(); } catch (_) {} }
+      if (t.objUrl) { try { URL.revokeObjectURL(t.objUrl); } catch (_) {} }
+    }
     renderAll();
   }
+  async function ensureRunning() {
+    if (isCenter()) return;
+    const c = getCtx();
+    if (c && c.state !== 'running') { try { await c.resume(); } catch (_) {} }
+  }
   async function playTest() {
-    if (testAudio) { stopTest(); return; }
+    if (test) { stopTest(); return; }
     const pr = (window.getTtsProsodyForPreview && window.getTtsProsodyForPreview()) || { query: '', volume: 0.8 };
     const gender = window._currentVoiceGender || 'female';
     const url = '/api/tts?text=' + encodeURIComponent(testText()) + '&gender=' + encodeURIComponent(gender) + (pr.query || '');
-    const audio = new Audio(url);
+    const mine = { phase: 'load', controller: new AbortController(), audio: null, objUrl: '' };
+    test = mine; renderAll();
+    const fail = msg => { if (test === mine) { stopTest(); if (window.showToast) window.showToast(msg); } };
+    // A click is a user gesture: start the context now (popouts lack the autoplay flag).
+    ensureRunning();
+    const timer = setTimeout(() => fail('การสร้างเสียงทดสอบใช้เวลานานเกินไป'), 45000);
+    let blob;
+    try {
+      const res = await fetch(url, { cache: 'no-store', signal: mine.controller.signal });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      blob = await res.blob();
+      if (!blob.size) throw new Error('empty');
+    } catch (err) {
+      clearTimeout(timer);
+      if (!(err && err.name === 'AbortError')) fail('ทดสอบเสียงไม่สำเร็จ');
+      return;
+    }
+    clearTimeout(timer);
+    if (test !== mine) return;
+    mine.objUrl = URL.createObjectURL(blob);
+    const audio = new Audio(mine.objUrl);
     audio.volume = Math.max(0, Math.min(1, pr.volume ?? 0.8));
-    // A click is a user gesture: make sure the context is running before routing (popouts lack the autoplay flag).
-    if (!isCenter()) { const c = getCtx(); if (c && c.state !== 'running') { try { await c.resume(); } catch (_) {} } }
-    attach(audio);
-    testAudio = audio;
-    audio.addEventListener('ended', () => { if (testAudio === audio) { testAudio = null; renderAll(); } });
-    audio.addEventListener('error', () => { if (testAudio === audio) { testAudio = null; renderAll(); if (window.showToast) window.showToast('ทดสอบเสียงไม่สำเร็จ'); } });
+    await ensureRunning();        // sticky activation from the click allows resuming after the wait
+    if (test !== mine) return;
+    attach(audio);                // plays unrouted if the context still is not running: never silent
+    mine.audio = audio; mine.phase = 'play';
+    audio.addEventListener('ended', () => { if (test === mine) stopTest(); });
+    audio.addEventListener('error', () => fail('เล่นเสียงทดสอบไม่สำเร็จ'));
     renderAll();
-    try { await audio.play(); } catch (_) { if (testAudio === audio) { testAudio = null; renderAll(); } }
+    try { await audio.play(); } catch (_) { fail('เล่นเสียงทดสอบไม่สำเร็จ'); }
   }
 
   function buildCard(doc) {
@@ -233,7 +266,7 @@
     cards.add({ doc, card });
     return card;
   }
-  const testing = () => !!testAudio;
+  const testPhase = () => (test ? test.phase : '');
   function renderAll() {
     renderTopbar();
     for (const { card } of cards) {
@@ -249,8 +282,8 @@
         b.classList.toggle('active', !!p && (p.id === 'center' ? isCenter() : (!isCenter() && Math.abs(p.x - state.x) < 0.02 && Math.abs(p.y - state.y) < 0.02)));
       });
       const t = card.querySelector('.sp-test');
-      const on = testing();
-      t.textContent = on ? '⏹ หยุดทดสอบ' : '▶ ทดสอบฟังตำแหน่งนี้';
+      const ph = testPhase();
+      t.textContent = ph === 'load' ? '⏳ กำลังเตรียมเสียง...' : ph === 'play' ? '⏹ หยุดทดสอบ' : '▶ ทดสอบฟังตำแหน่งนี้';
     }
   }
   // ---- Top bar: 3D on/off toggle ---------------------------------------------------------------

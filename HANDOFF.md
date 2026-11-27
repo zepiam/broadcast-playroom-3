@@ -5,6 +5,13 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ NOT RELEASED — ปุ่ม "ทดสอบฟังตำแหน่งนี้" เงียบเมื่อใช้ RVC + ปรับความเร็ว/pitch (Claude, 2026-11-27)
+- รายงาน: ตั้ง RVC แล้วปรับความเร็ว/pitch แล้วกดทดสอบตำแหน่งเสียง → เงียบ
+- ทำซ้ำแบบ headless ไม่ได้ (backend จริง + RVC ก็มีเสียง) สาเหตุที่น่าจะเป็น: ค่าความเร็ว/pitch ใหม่ไม่มีใน cache → RVC ต้องสร้างใหม่ 4–10 วิ แต่ปุ่มเปลี่ยนเป็น "⏹ หยุดทดสอบ" ทันทีโดยยังไม่มีเสียง (ดูเหมือนเงียบ และกดซ้ำ = ยกเลิก)
+- แก้ `src/tts_spatial.js` playTest: fetch เสียงให้ครบก่อน (แสดง "⏳ กำลังเตรียมเสียง..." กดซ้ำ = ยกเลิก), resume AudioContext อีกครั้งก่อนเล่น, timeout 45 วิ, ล้มเหลวมี toast
+- **Completed & Verified**: Playwright (Edge, ไม่มี autoplay flag, /api/tts ปลอมหน่วง 5 วิ, วัดเสียงจริงที่ PannerNode) 7/7 PASS สองรอบ; `npm run build` gates PASSED
+- **Unverified**: ในโปรแกรมจริงของเจ้าของ (รอเจ้าของลอง), ยังไม่ release
+
 ## 🚀 RELEASED v3.91 — ชื่อเรียกไม่แสดงในแชทสด/TTS + เปิดอ่านชื่อแล้วกลายเป็นเสียงสำรอง (Claude, 2026-11-27)
 - **Release:** `publish_release_v391.py` (คัดจาก v390) → build + gates ผ่าน, SHA-256 gate ผ่าน, HF + GitHub Release v3.91 + tag + purge jsDelivr สำเร็จ (commit 1a7aaea). ตรวจหลังปล่อย: patch lite/full จาก GitHub และ HF SHA-256 ตรง `version.json` ทั้ง 4 ไฟล์, `version.json` ทั้งสองที่เป็น 3.91, zip มี `tts_service.py` ที่มี fallback (root + `_internal/`) และ `dist/index.html` มี `refreshChatAuthorNames`. ผู้ใช้จะตรวจงานต่อเอง
 - **เรื่อง "สวัสดี" ที่ผู้ใช้อีกคนได้ยิน:** เจ้าของบอกพักไว้ก่อน (ข้อมูลไม่พอ). ข้อสันนิษฐานหลัก: เขาเปิดดูไลฟ์ของเจ้าของอยู่ (เสียง TTS ที่เจ้าของเทสต์ออกไปในสตรีม) หรือใส่ชื่อช่องเจ้าของไว้ในโปรแกรมของเขาเอง
