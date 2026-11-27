@@ -1,9 +1,11 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.94)
-- **Current Version**: v3.94 (Released — chat that already passed is never read again; watchdog restart keeps the window on its screen)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.95)
+- **Current Version**: v3.95 (Released — page memory growth fixed (viewer roster + Dock), read-once chat on every platform, SOOP fake chat lines)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
+
+> v3.95 ปล่อยแล้ว: commit 63eb347 + tag v3.95; SHA-256 ของแพตช์ lite/full บน GitHub และ HF ตรงกับ version.json ครบ, version.json ทั้งสองที่ = 3.95; ในแพตช์มี chat_bridge/chat_soop/power_guard/chat_youtube/chat_tiktok ทั้ง root และ _internal และ dist (user_controls saveDelta, dock lastDockBody, title v3.95). ยังไม่ได้ลองตัวติดตั้งจริง
 
 ## 🚀 RELEASED v3.95 (ส่วนที่ 1) — ต้นเหตุหน่วยความจำหน้าโปรแกรมบวมจนค้าง/จอเทา (Claude, 2026-11-28)
 - เจ้าของ: ให้หาต้นเหตุแทนการแก้ที่อาการ (watchdog/สลับหน้าต่าง → พับเก็บที่ `shelved/watchdog_seamless_swap.patch`), อนุญาตให้แก้ต่อเองจนจบ โดยทุกระบบต้องทำงานเหมือนเดิม
