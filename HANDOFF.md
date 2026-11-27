@@ -5,6 +5,13 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+## 🛠️ NOT RELEASED — Overlay Composer เปิดมาซูมลึก (ป้ายบอก 45%) + ปุ่มบันทึกไม่มีอะไรบอก (Claude, 2026-11-27)
+- สาเหตุซูม: Composer เปิดเป็นหน้าต่างแยก (`?popout=composer`) ซึ่งไม่เคยเรียก autoFitCanvas ตอนเปิด ป้าย "45%" กับ state.zoom 0.45 เป็นค่าเริ่มต้น แต่ canvas ไม่ได้ถูก scale (แสดง 100% = 1920x1080) จะ fit ก็ต่อเมื่อย่อขยายหน้าต่าง
+- สาเหตุปุ่มบันทึก: `addEventListener('click', saveState)` ส่ง click event เข้าเป็นพารามิเตอร์ `silent` → ไม่ขึ้น toast เลย
+- แก้ `src/composer_studio.js`: fit ครั้งแรกด้วย requestAnimationFrame + ResizeObserver บน `#composerViewport` (fit ใหม่เมื่อขนาดพื้นที่ canvas เปลี่ยน); ปุ่มบันทึกใช้ `saveFromButton()` แสดง "⏳ กำลังบันทึก..." → "✅ บันทึกแล้ว" 2 วิ (ล้มเหลว "⚠️ บันทึกไม่สำเร็จ" 3 วิ) + toast
+- **Completed & Verified**: Playwright popout 1280x860 และ 1920x1040 — build เดิม FAIL (canvas 1920x1080 ทั้งที่ป้าย 45%, กดบันทึกไม่มีอะไรขึ้น), หลังแก้ 10/10 PASS (canvas พอดีพื้นที่และตรงกับป้าย, refit เมื่อย่อหน้าต่าง, ปุ่ม/ toast บันทึกสำเร็จและล้มเหลว, ไม่มี page error); `npm run build` gates PASSED
+- **Unverified**: ในโปรแกรมจริงของเจ้าของ, ยังไม่ release
+
 ## 🚀 RELEASED v3.92 — ปุ่ม "ทดสอบฟังตำแหน่งนี้" เงียบเมื่อใช้ RVC + ปรับความเร็ว/pitch (Claude, 2026-11-27)
 - รายงาน: ตั้ง RVC แล้วปรับความเร็ว/pitch แล้วกดทดสอบตำแหน่งเสียง → เงียบ
 - ทำซ้ำแบบ headless ไม่ได้ (backend จริง + RVC ก็มีเสียง) สาเหตุที่น่าจะเป็น: ค่าความเร็ว/pitch ใหม่ไม่มีใน cache → RVC ต้องสร้างใหม่ 4–10 วิ แต่ปุ่มเปลี่ยนเป็น "⏹ หยุดทดสอบ" ทันทีโดยยังไม่มีเสียง (ดูเหมือนเงียบ และกดซ้ำ = ยกเลิก)

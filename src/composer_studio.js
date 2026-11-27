@@ -894,6 +894,25 @@
     }
   }
 
+  // Save button: visible "saving → saved" feedback on the button itself plus the toast.
+  let saveBtnTimer = 0;
+  async function saveFromButton() {
+    const btn = document.getElementById('btnCompSave');
+    if (!btn) return saveState(false);
+    if (btn.dataset.saving === '1') return;
+    if (!btn.dataset.origHtml) btn.dataset.origHtml = btn.innerHTML;
+    clearTimeout(saveBtnTimer);
+    btn.dataset.saving = '1';
+    btn.disabled = true;
+    btn.innerHTML = '⏳ กำลังบันทึก...';
+    const ok = await saveState(false);
+    btn.dataset.saving = '';
+    btn.disabled = false;
+    btn.innerHTML = ok ? '✅ บันทึกแล้ว' : '⚠️ บันทึกไม่สำเร็จ';
+    saveBtnTimer = setTimeout(() => { btn.innerHTML = btn.dataset.origHtml; }, ok ? 2000 : 3000);
+    return ok;
+  }
+
   // Get active page
   function getActivePage() {
     let p = state.pages.find(p => p.id === state.activePageId);
@@ -949,6 +968,22 @@
 
     // Auto-fit zoom when window is opened
     window.addEventListener('resize', autoFitCanvas);
+    // Popout windows (?popout=composer) never got an initial fit: the label showed the default 45% while the
+    // canvas rendered at 100%. Fit as soon as the viewport has a real size, and again when it changes size.
+    try{
+      const vpEl = document.getElementById('composerViewport');
+      if (vpEl && window.ResizeObserver) {
+        let fitRaf = 0, lastW = 0, lastH = 0;
+        new ResizeObserver(() => {
+          const w = vpEl.clientWidth, h = vpEl.clientHeight;
+          if (w === lastW && h === lastH) return;
+          lastW = w; lastH = h;
+          cancelAnimationFrame(fitRaf);
+          fitRaf = requestAnimationFrame(autoFitCanvas);
+        }).observe(vpEl);
+      }
+    }catch(_){}
+    requestAnimationFrame(autoFitCanvas);
 
     // Live clock updater
     if (!clockInterval) {
@@ -5514,7 +5549,8 @@
     }
 
     // Save Button
-    document.getElementById('btnCompSave')?.addEventListener('click', saveState);
+    // Passing saveState directly made the click event its `silent` argument, so no confirmation ever showed.
+    document.getElementById('btnCompSave')?.addEventListener('click', saveFromButton);
 
     // Copy OBS URL Button
     document.getElementById('btnCompCopyObs')?.addEventListener('click', copyComposerObsUrl);
