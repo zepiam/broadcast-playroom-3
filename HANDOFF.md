@@ -1,16 +1,17 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.92)
-- **Current Version**: v3.92 (Released — voice position test button waits for the voice to be ready)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.93)
+- **Current Version**: v3.93 (Released — Overlay Composer fits the canvas on open; save button feedback)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
-## 🛠️ NOT RELEASED — Overlay Composer เปิดมาซูมลึก (ป้ายบอก 45%) + ปุ่มบันทึกไม่มีอะไรบอก (Claude, 2026-11-27)
+## 🚀 RELEASED v3.93 — Overlay Composer เปิดมาซูมลึก (ป้ายบอก 45%) + ปุ่มบันทึกไม่มีอะไรบอก (Claude, 2026-11-27)
 - สาเหตุซูม: Composer เปิดเป็นหน้าต่างแยก (`?popout=composer`) ซึ่งไม่เคยเรียก autoFitCanvas ตอนเปิด ป้าย "45%" กับ state.zoom 0.45 เป็นค่าเริ่มต้น แต่ canvas ไม่ได้ถูก scale (แสดง 100% = 1920x1080) จะ fit ก็ต่อเมื่อย่อขยายหน้าต่าง
 - สาเหตุปุ่มบันทึก: `addEventListener('click', saveState)` ส่ง click event เข้าเป็นพารามิเตอร์ `silent` → ไม่ขึ้น toast เลย
 - แก้ `src/composer_studio.js`: fit ครั้งแรกด้วย requestAnimationFrame + ResizeObserver บน `#composerViewport` (fit ใหม่เมื่อขนาดพื้นที่ canvas เปลี่ยน); ปุ่มบันทึกใช้ `saveFromButton()` แสดง "⏳ กำลังบันทึก..." → "✅ บันทึกแล้ว" 2 วิ (ล้มเหลว "⚠️ บันทึกไม่สำเร็จ" 3 วิ) + toast
 - **Completed & Verified**: Playwright popout 1280x860 และ 1920x1040 — build เดิม FAIL (canvas 1920x1080 ทั้งที่ป้าย 45%, กดบันทึกไม่มีอะไรขึ้น), หลังแก้ 10/10 PASS (canvas พอดีพื้นที่และตรงกับป้าย, refit เมื่อย่อหน้าต่าง, ปุ่ม/ toast บันทึกสำเร็จและล้มเหลว, ไม่มี page error); `npm run build` gates PASSED
-- **Unverified**: ในโปรแกรมจริงของเจ้าของ, ยังไม่ release
+- ปล่อยแล้ว: commit 58588b2 + tag v3.93; SHA-256 ของแพตช์บน GitHub และ HF ตรงกับ version.json ครบ, version.json ทั้งสองที่ = 3.93
+- **Unverified**: ในโปรแกรมจริงของเจ้าของ (รอเจ้าของลอง)
 
 ## 🚀 RELEASED v3.92 — ปุ่ม "ทดสอบฟังตำแหน่งนี้" เงียบเมื่อใช้ RVC + ปรับความเร็ว/pitch (Claude, 2026-11-27)
 - รายงาน: ตั้ง RVC แล้วปรับความเร็ว/pitch แล้วกดทดสอบตำแหน่งเสียง → เงียบ
