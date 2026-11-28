@@ -1,39 +1,39 @@
 {
-  "version": "3.95",
-  "latest_version": "3.95",
+  "version": "3.96",
+  "latest_version": "3.96",
   "release_date": "2026-11-27",
   "mandatory": false,
-  "changelog": "# Broadcast Playroom v3.95\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.95:\n- **แก้ต้นเหตุโปรแกรมค้าง/จอเทาเมื่อเปิดนานหลายชั่วโมง**:\n  - หน่วยความจำของหน้าโปรแกรมไม่บวมขึ้นเรื่อยๆ อีกต่อไป ทั้งตอนมีแชทเยอะและตอนเปิดทิ้งไว้เฉยๆ\n  - รายชื่อผู้ชมบันทึกแบบเบาลง และตารางผู้ชมแสดงเฉพาะตอนเปิดหน้าจัดการผู้ชม ข้อมูลผู้ชมยังอยู่ครบเหมือนเดิม\n- **แชทที่ผ่านไปแล้วอ่านครั้งเดียวทุกแพลตฟอร์ม**:\n  - Twitch, Kick, YouTube, TikTok, SOOP และ MyLive ไม่อ่านแชทเก่าซ้ำเมื่อการเชื่อมต่อหลุดแล้วต่อใหม่\n  - TikTok ไม่อ่านคอมเมนต์เดิมเบิ้ลซ้ำ\n  - เปิดโปรแกรมสองหน้าต่างพร้อมกัน แชทจะถูกอ่านแค่ครั้งเดียว\n- **แก้ SOOP อ่านข้อความแปลกๆ ที่ไม่ใช่แชท**:\n  - ไม่แสดงและไม่อ่านไอดีผู้ใช้ที่หลุดมาเป็นแชทอีกแล้ว\n",
+  "changelog": "# Broadcast Playroom v3.96\n\n### การเปลี่ยนแปลงในเวอร์ชัน 3.96:\n- **OBS Dock ใช้งานง่ายขึ้น**:\n  - ASK, Replie และ Giveaway กดใช้งานได้ทันที ไม่ต้องใส่ Widget บนจอแล้ว\n  - ฟอนต์บางลงอ่านง่ายขึ้น กรอบแต่ละรายการเป็นมุมฉาก\n  - หัว Dock เรียบร้อยขึ้น สถานะการเชื่อมต่อเหลือเป็นจุดสี เอาเมาส์ชี้เพื่อดูสถานะ\n- **หน่วยความจำนิ่งขึ้นอีกเมื่อเปิดทิ้งไว้**:\n  - ลดงานเบื้องหลังที่ไม่จำเป็นของหน้าโปรแกรม ทำให้เปิดทิ้งไว้นานๆ ได้เสถียรขึ้น\n",
   "patches": {
     "lite": {
-      "file": "patch-v3.95-lite.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.95/patch-v3.95-lite.zip",
-      "sha256": "f9de6bbc64a81ef5c1b27cbd61ecfbfbc115986ab92580beb4695b6cfd3eae92",
-      "size": 40967328,
+      "file": "patch-v3.96-lite.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.96/patch-v3.96-lite.zip",
+      "sha256": "dc455ceb90b4cd352ca65886242d1bc26b93890bedaa3a546b1105bf2677b334",
+      "size": 41028102,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.95-lite.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.96-lite.zip"
       ]
     },
     "full": {
-      "file": "patch-v3.95-full.zip",
-      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.95/patch-v3.95-full.zip",
-      "sha256": "f9de6bbc64a81ef5c1b27cbd61ecfbfbc115986ab92580beb4695b6cfd3eae92",
-      "size": 40967328,
+      "file": "patch-v3.96-full.zip",
+      "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.96/patch-v3.96-full.zip",
+      "sha256": "dc455ceb90b4cd352ca65886242d1bc26b93890bedaa3a546b1105bf2677b334",
+      "size": 41028102,
       "mirrors": [
-        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.95-full.zip"
+        "https://huggingface.co/men9ch/broadcast-playroom-3/resolve/main/patches/patch-v3.96-full.zip"
       ]
     }
   },
   "lite": {
-    "file": "patch-v3.95-lite.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.95/patch-v3.95-lite.zip",
-    "sha256": "f9de6bbc64a81ef5c1b27cbd61ecfbfbc115986ab92580beb4695b6cfd3eae92",
-    "size": 40967328
+    "file": "patch-v3.96-lite.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.96/patch-v3.96-lite.zip",
+    "sha256": "dc455ceb90b4cd352ca65886242d1bc26b93890bedaa3a546b1105bf2677b334",
+    "size": 41028102
   },
   "full": {
-    "file": "patch-v3.95-full.zip",
-    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.95/patch-v3.95-full.zip",
-    "sha256": "f9de6bbc64a81ef5c1b27cbd61ecfbfbc115986ab92580beb4695b6cfd3eae92",
-    "size": 40967328
+    "file": "patch-v3.96-full.zip",
+    "url": "https://github.com/zepiam/broadcast-playroom-3/releases/download/v3.96/patch-v3.96-full.zip",
+    "sha256": "dc455ceb90b4cd352ca65886242d1bc26b93890bedaa3a546b1105bf2677b334",
+    "size": 41028102
   }
 }

@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-select=no">
 <title>Broadcast Playroom - OBS Quick Control Dock</title>
 <style>
+  /* Bundled Noto Sans Thai (no internet needed): lighter and easier to read than the bold system fallback */
+  @font-face { font-family: 'BP3 Dock Thai'; src: url('/assets/fonts/NotoSansThai-Regular.ttf') format('truetype'); font-weight: 400; font-display: swap; }
+  @font-face { font-family: 'BP3 Dock Thai'; src: url('/assets/fonts/NotoSansThai-Medium.ttf') format('truetype'); font-weight: 500; font-display: swap; }
+  @font-face { font-family: 'BP3 Dock Thai'; src: url('/assets/fonts/NotoSansThai-Bold.ttf') format('truetype'); font-weight: 600 800; font-display: swap; }
+
   :root {
     --bg-main: #080d1a;
     --bg-card: #111a2e;
@@ -19,7 +24,7 @@
     --primary-purple: #c084fc;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
-    --font: -apple-system, BlinkMacSystemFont, "Kanit", "Segoe UI", Roboto, sans-serif;
+    --font: "BP3 Dock Thai", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,7 +66,7 @@
     align-items: center;
     gap: 8px;
     font-size: 13.5px;
-    font-weight: 800;
+    font-weight: 700;
     color: #e2e8f0;
   }
   .dock-brand-icon { font-size: 17px; }
@@ -77,7 +82,7 @@
     padding: 3px 8px;
     border-radius: 999px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     background: rgba(16, 185, 129, 0.15);
     color: var(--primary-green);
     border: 1px solid rgba(16, 185, 129, 0.3);
@@ -99,7 +104,7 @@
     border-radius: 6px;
     padding: 3px 8px;
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -125,7 +130,7 @@
   .settings-drawer.open { display: block; }
   .settings-title {
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
     color: #38bdf8;
     margin-bottom: 4px;
     display: flex;
@@ -156,7 +161,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
   }
   .module-setting-reorder {
@@ -171,7 +176,7 @@
     width: 24px;
     height: 24px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -220,7 +225,7 @@
   }
   .cover-title {
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
     color: #fbbf24;
     margin-bottom: 3px;
   }
@@ -242,7 +247,7 @@
     border-radius: 6px;
     padding: 6px 13px;
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
     transition: transform 0.1s ease, filter 0.15s ease;
@@ -296,7 +301,7 @@
   }
   .section-title {
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.4px;
     color: var(--primary-blue);
@@ -336,7 +341,7 @@
   }
   .section-badge {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     color: #94a3b8;
     background: rgba(148, 163, 184, 0.1);
     padding: 2px 7px;
@@ -352,7 +357,7 @@
     border: 1px solid rgba(167, 139, 250, 0.35);
     color: #c4b5fd;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     padding: 3px 8px;
     border-radius: 5px;
     cursor: pointer;
@@ -386,7 +391,7 @@
     border-radius: 6px;
     padding: 5px 8px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     color: #94a3b8;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -411,7 +416,7 @@
     font-size: 9px;
     padding: 1px 4px;
     border-radius: 3px;
-    font-weight: 700;
+    font-weight: 500;
   }
   .overlay-source-tab .tab-badge.dynamic {
     background: rgba(56, 189, 248, 0.2);
@@ -455,14 +460,14 @@
     background: #7c3aed;
     color: #ffffff;
     font-size: 10px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 1px 6px;
     border-radius: 4px;
     white-space: nowrap;
   }
   .overlay-pinned-box .pinned-name {
     color: #f1f5f9;
-    font-weight: 600;
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -492,7 +497,7 @@
   }
   .overlay-page-label {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 500;
     color: #94a3b8;
     white-space: nowrap;
     display: flex;
@@ -507,7 +512,7 @@
     border-radius: 6px;
     padding: 6px 10px;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     font-family: inherit;
     outline: none;
     cursor: pointer;
@@ -532,7 +537,7 @@
     color: #f1f5f9;
     cursor: pointer;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 500;
     transition: background 0.15s ease, border-color 0.15s ease;
   }
   .btn-hide-all-overlay:hover {
@@ -554,7 +559,7 @@
   }
   .hide-all-title {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 500;
   }
   .btn-hide-all-overlay.active-hidden .hide-all-title {
     color: #ef4444;
@@ -570,13 +575,13 @@
     font-size: 11.5px;
   }
   .layer-head-title {
-    font-weight: 700;
+    font-weight: 500;
     color: #94a3b8;
   }
   .layer-head-count {
     color: #64748b;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
   }
   .overlay-widget-list {
     display: flex;
@@ -621,7 +626,7 @@
   }
   .widget-item-name {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 500;
     color: #f1f5f9;
     white-space: nowrap;
     overflow: hidden;
@@ -643,7 +648,7 @@
     padding: 3px 8px;
     border-radius: 5px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     border: 1px solid transparent;
     transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
@@ -704,7 +709,7 @@
     border-radius: 6px;
     padding: 2px 7px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     white-space: nowrap;
   }
 
@@ -731,7 +736,7 @@
   }
   .live-chat-title {
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 500;
     color: #38bdf8;
     display: flex;
     align-items: center;
@@ -798,7 +803,7 @@
     background: rgba(30, 41, 59, 0.7);
   }
   .live-chat-row .chat-author {
-    font-weight: 700;
+    font-weight: 500;
     color: #38bdf8;
     flex-shrink: 0;
     cursor: pointer;
@@ -869,7 +874,7 @@
     color: #f8fafc;
     border-radius: 3px;
     font-size: 10.5px;
-    font-weight: 700;
+    font-weight: 500;
     padding: 2px 6px;
     cursor: pointer;
   }
@@ -919,7 +924,7 @@
     border: none;
     color: #f1f5f9;
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 6px 10px;
     border-radius: 4px;
     cursor: pointer;
@@ -948,7 +953,7 @@
     background: #182337;
     color: #e2e8f0;
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     gap: 3px;
@@ -993,7 +998,7 @@
     background: #131d2e;
     color: #94a3b8;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     transition: all 0.15s ease;
@@ -1003,7 +1008,7 @@
     background: rgba(249, 115, 22, 0.18);
     color: #fb923c;
     border-color: rgba(249, 115, 22, 0.4);
-    font-weight: 700;
+    font-weight: 500;
   }
   .tts-mini-btn.active-orange:hover {
     background: rgba(249, 115, 22, 0.28);
@@ -1060,7 +1065,7 @@
     background: #111a2c;
     color: #94a3b8;
     font-size: 11.5px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 7px 0;
     cursor: pointer;
     text-align: center;
@@ -1085,7 +1090,7 @@
   .replie-card-btn.is-looping {
     background: #7e22ce;
     color: #ffffff;
-    font-weight: 700;
+    font-weight: 500;
   }
   .replie-card-btn.is-looping:hover {
     background: #6b21a8;
@@ -1093,7 +1098,7 @@
   .replie-card-btn.is-active-launch {
     background: #dc2626 !important;
     color: #ffffff !important;
-    font-weight: 800 !important;
+    font-weight: 700 !important;
   }
   .replie-card-btn.is-active-launch:hover {
     background: #ef4444 !important;
@@ -1101,7 +1106,7 @@
   .replie-card-btn.is-scheduled {
     background: #c2410c !important;
     color: #ffffff !important;
-    font-weight: 700 !important;
+    font-weight: 500 !important;
     border-color: #ea580c !important;
     display: inline-flex !important;
     align-items: center !important;
@@ -1165,7 +1170,7 @@
     border-radius: 4px;
     padding: 2px 7px;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
@@ -1223,7 +1228,7 @@
     background: #131d2e;
     color: #94a3b8;
     font-size: 10.5px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 5px 6px;
     cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
@@ -1240,7 +1245,7 @@
   .replie-demo-btn.is-loop-all {
     background: #7e22ce;
     color: #fff;
-    font-weight: 700;
+    font-weight: 500;
   }
 
   /* MODULE 2: STATUS & TTS HEALTH (EXPLICIT TEXT, NO HOVER) */
@@ -1256,7 +1261,7 @@
     align-items: center;
     gap: 8px;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 500;
   }
   .tts-health-badge.green { color: #34d399; }
   .tts-health-badge.yellow { color: #fbbf24; }
@@ -1289,7 +1294,7 @@
     display: flex;
     gap: 5px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     flex-wrap: wrap;
     align-items: center;
   }
@@ -1325,7 +1330,7 @@
   }
   .poll-title {
     font-size: 12.5px;
-    font-weight: 700;
+    font-weight: 500;
     margin-bottom: 6px;
     color: #f1f5f9;
   }
@@ -1334,7 +1339,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     margin-bottom: 2px;
   }
   .poll-track {
@@ -1365,7 +1370,7 @@
     background: rgba(245, 158, 11, 0.2);
     color: #fde047;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     transition: all 0.15s ease;
@@ -1382,7 +1387,7 @@
     background: rgba(239, 68, 68, 0.2);
     color: #fca5a5;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     transition: all 0.15s ease;
@@ -1400,7 +1405,7 @@
     background: #6d28d9;
     color: #fff;
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1462,7 +1467,7 @@
   }
   .ask-presets-title {
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     color: #cbd5e1;
     display: flex;
     align-items: center;
@@ -1474,7 +1479,7 @@
     background: rgba(192, 132, 252, 0.15);
     padding: 1px 6px;
     border-radius: 10px;
-    font-weight: 600;
+    font-weight: 500;
   }
   .ask-presets-grid {
     display: flex;
@@ -1512,7 +1517,7 @@
   }
   .ask-preset-name {
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 500;
     color: #f1f5f9;
     white-space: nowrap;
     overflow: hidden;
@@ -1526,7 +1531,7 @@
   }
   .ask-preset-tag {
     font-size: 9.5px;
-    font-weight: 600;
+    font-weight: 500;
     color: #94a3b8;
     background: #0b1120;
     border: 1px solid #1e293b;
@@ -1603,7 +1608,7 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 500;
     color: #f8fafc;
     margin-bottom: 8px;
   }
@@ -1616,7 +1621,7 @@
   }
   .ask-confirm-pname {
     font-size: 12px;
-    font-weight: 700;
+    font-weight: 500;
     color: #c084fc;
     margin-bottom: 3px;
     display: flex;
@@ -1637,7 +1642,7 @@
   }
   .ask-confirm-tag {
     font-size: 9.5px;
-    font-weight: 600;
+    font-weight: 500;
     color: #94a3b8;
     background: #0b1120;
     border: 1px solid #1e293b;
@@ -1662,7 +1667,7 @@
     border-radius: 6px;
     padding: 7px 10px;
     font-size: 11.5px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.12s ease;
   }
@@ -1678,7 +1683,7 @@
     border-radius: 6px;
     padding: 7px 10px;
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.12s ease;
   }
@@ -1703,7 +1708,7 @@
     color: #94a3b8;
     padding: 5px 6px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -1731,7 +1736,7 @@
     background: #25334c;
     border: 1px solid #3b4d6e;
     color: #c084fc;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 11.5px;
     display: flex;
     align-items: center;
@@ -1779,7 +1784,7 @@
     padding: 6px 8px;
     border-radius: 6px;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     margin-bottom: 8px;
     display: flex;
@@ -1809,7 +1814,7 @@
     background: #182337;
     color: #fde047;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -1835,7 +1840,7 @@
   }
   .gw-active-title {
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 700;
     color: #34d399;
     margin-bottom: 4px;
     display: flex;
@@ -1862,7 +1867,7 @@
   }
   .winner-mini-info {
     font-size: 12.5px;
-    font-weight: 800;
+    font-weight: 700;
     color: #34d399;
   }
   .winner-mini-actions {
@@ -1874,7 +1879,7 @@
     border-radius: 4px;
     border: none;
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
   }
   .btn-confirm { background: #10b981; color: #fff; }
@@ -1889,7 +1894,7 @@
     background: #1e293b;
     border: 1px solid #334155;
     font-size: 11.5px;
-    font-weight: 600;
+    font-weight: 500;
     color: #94a3b8;
     text-align: center;
     opacity: 0;
@@ -1957,7 +1962,7 @@
     padding: 3px 12px;
     border-radius: 999px;
     font-size: 11.5px;
-    font-weight: 700;
+    font-weight: 500;
   }
   .offline-card .status-dot {
     width: 7px;
@@ -1967,7 +1972,7 @@
   }
   .offline-card .title {
     font-size: 16.5px;
-    font-weight: 800;
+    font-weight: 700;
     color: #f8fafc;
     line-height: 1.35;
     letter-spacing: 0.2px;
@@ -1981,7 +1986,7 @@
   .offline-card .link-retry {
     color: #38bdf8;
     text-decoration: underline;
-    font-weight: 700;
+    font-weight: 500;
     cursor: pointer;
     transition: color 0.15s ease;
   }
@@ -1999,7 +2004,7 @@
     border-radius: 10px;
     padding: 10px 16px;
     font-size: 13.5px;
-    font-weight: 700;
+    font-weight: 500;
     font-family: inherit;
     cursor: pointer;
     box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
@@ -2029,6 +2034,77 @@
     to { transform: rotate(360deg); }
   }
 
+
+  /* Owner request: square frames for every item/panel; only buttons keep rounded corners */
+  .settings-drawer,
+  .module-setting-item,
+  .section-card,
+  .dock-module-cover,
+  .section-head,
+  .section-badge,
+  .overlay-source-tabs,
+  .overlay-source-tab .tab-badge,
+  .overlay-pinned-box,
+  .overlay-pinned-box .pinned-tag,
+  .overlay-dynamic-badge,
+  .overlay-page-select,
+  .overlay-widget-item,
+  .overlay-widget-empty,
+  .collapsed-viewers-badge,
+  .dock-live-chat-wrap,
+  .live-chat-row,
+  .live-chat-row .chat-row-actions,
+  .dock-context-menu,
+  .dock-menu-item,
+  .replie-card,
+  .replie-status-pill,
+  .replie-demo-group,
+  .status-banner-box,
+  .audience-row,
+  .plat-pill,
+  .ask-live-box,
+  .ask-prompt-drawer,
+  .ask-input,
+  .ask-quick-presets-section,
+  .ask-presets-count,
+  .ask-preset-card,
+  .ask-preset-tag,
+  .ask-presets-empty,
+  .ask-confirm-dialog,
+  .ask-confirm-box-content,
+  .ask-confirm-tag,
+  .ask-mode-toggle,
+  .ask-choice-badge,
+  .ask-choice-input,
+  .gw-status-box,
+  .gw-active-banner,
+  .winner-mini-card,
+  .dock-toast,
+  .offline-card,
+  .status-pill,
+  .offline-card .status-badge,
+  #selPresetDropdown, #selAskDuration, #selAskResultDuration, #inpSchedMinutes, #replieLiveStatus, #txtReplieCountdown { border-radius: 0 !important; }
+
+  /* Header: one tidy row at any Dock width (no wrapped title/buttons) */
+  .dock-header { gap: 10px; padding: 2px 0 10px; min-height: 34px; }
+  .dock-brand { flex: 1 1 auto; min-width: 0; gap: 7px; font-size: 13px; font-weight: 700; white-space: nowrap; letter-spacing: 0.2px; }
+  .dock-brand-icon { flex: 0 0 auto; font-size: 16px; line-height: 1; }
+  .dock-brand-name { overflow: hidden; text-overflow: ellipsis; }
+  .header-actions { flex: 0 0 auto; gap: 6px; }
+  .status-pill { white-space: nowrap; height: 24px; padding: 0 9px; box-sizing: border-box; }
+  .btn-settings-toggle { white-space: nowrap; height: 26px; min-width: 28px; padding: 0 8px; box-sizing: border-box; justify-content: center; gap: 5px; line-height: 1; }
+  .btn-settings-toggle .btn-icon { font-size: 13px; line-height: 1; }
+  @media (max-width: 439px) {
+    .btn-settings-toggle { width: 28px; padding: 0; }
+    .btn-settings-toggle .btn-label { display: none; }
+  }
+
+  /* Connection status: just the coloured dot; hover shows what it means (title) */
+  .status-pill.status-dot-only { background: transparent; border: 0; padding: 0; width: 22px; height: 22px; justify-content: center; cursor: help; }
+  .status-pill.status-dot-only .status-dot { width: 9px; height: 9px; box-shadow: 0 0 0 3px rgba(255,255,255,0.06); }
+  .status-pill.status-dot-only #connText { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+  .dock-brand .status-pill.status-dot-only { flex: 0 0 auto; width: 14px; height: 14px; }
 </style>
 </head>
 <body>
@@ -2061,19 +2137,18 @@
   <!-- HEADER -->
   <div class="dock-header">
     <div class="dock-brand">
-      <span class="dock-brand-icon">🎮</span>
-      <span>Broadcast Playroom</span>
-    </div>
-    <div class="header-actions">
-      <div class="status-pill" id="connStatus">
+      <div class="status-pill status-dot-only" id="connStatus" title="สถานะ: กำลังเชื่อมต่อกับโปรแกรม" role="status" aria-label="สถานะการเชื่อมต่อ">
         <span class="status-dot green" id="connDot"></span>
         <span id="connText">Online</span>
       </div>
-      <button class="btn-settings-toggle" onclick="hardReloadDock()" title="ล้างแคชและโหลดข้อมูลล่าสุดทันที">
-        <span>🔄</span> รีโหลด
+      <span class="dock-brand-name">Broadcast Playroom</span>
+    </div>
+    <div class="header-actions">
+      <button class="btn-settings-toggle" onclick="hardReloadDock()" title="รีโหลด: ล้างแคชและโหลดข้อมูลล่าสุดทันที" aria-label="รีโหลด">
+        <span class="btn-icon">🔄</span><span class="btn-label">รีโหลด</span>
       </button>
-      <button class="btn-settings-toggle" onclick="toggleSettingsDrawer()">
-        <span>⚙️</span> จัดการ
+      <button class="btn-settings-toggle" onclick="toggleSettingsDrawer()" title="จัดการ: เลือกเปิด/ปิดและเรียงลำดับหัวข้อ" aria-label="จัดการ">
+        <span class="btn-icon">⚙️</span><span class="btn-label">จัดการ</span>
       </button>
     </div>
   </div>
@@ -2154,7 +2229,7 @@
           </button>
         </div>
         <div class="tts-mini-tools">
-          <button class="tts-mini-btn active-pink" id="btnVoiceGender" onclick="toggleVoiceGender()" style="font-weight:700; color:#f472b6; border-color:rgba(244,114,182,0.3); background:rgba(244,114,182,0.08);">
+          <button class="tts-mini-btn active-pink" id="btnVoiceGender" onclick="toggleVoiceGender()" style="font-weight:500; color:#f472b6; border-color:rgba(244,114,182,0.3); background:rgba(244,114,182,0.08);">
             <span id="iconVoiceGender">👧</span> <span id="txtVoiceGender">เสียงอ่านแชท : หญิง</span>
           </button>
         </div>
@@ -2176,7 +2251,7 @@
             </div>
             <div class="live-chat-footer">
               <div class="chat-font-tools">
-                <span style="font-size: 11px; color: #64748b; font-weight: 600;">ฟอนต์:</span>
+                <span style="font-size: 11px; color: #64748b; font-weight: 500;">ฟอนต์:</span>
                 <button class="btn-chat-font" type="button" onclick="changeChatFontSize(-1)" title="ลดขนาดฟอนต์">A-</button>
                 <span class="chat-font-val" id="chatFontVal">12px</span>
                 <button class="btn-chat-font" type="button" onclick="changeChatFontSize(1)" title="เพิ่มขนาดฟอนต์">A+</button>
@@ -2279,7 +2354,7 @@
         <div class="ask-live-box" id="askLiveBox" style="display:none;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <div class="poll-title" id="pollTitle" style="margin-bottom:0;">กำลังรอตั้งคำถาม...</div>
-          <span style="font-size:11px; font-weight:700; color:#38bdf8;" id="pollVotersCount">👥 0 โหวต</span>
+          <span style="font-size:11px; font-weight:500; color:#38bdf8;" id="pollVotersCount">👥 0 โหวต</span>
         </div>
         <div id="pollOptionsContainer">
           <!-- Dynamically populated options -->
@@ -2313,7 +2388,7 @@
       <!-- QUICK ASK PROMPT DRAWER -->
       <div class="ask-prompt-drawer" id="askPromptDrawer">
         <!-- Load preset dropdown -->
-        <div style="font-size:11px; font-weight:700; color:#cbd5e1; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:11px; font-weight:500; color:#cbd5e1; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
           <span>📂 โหลดจากพรีเซ็ต:</span>
           <span style="font-size:10px; color:#94a3b8;">เลือกเพื่อแก้ไข</span>
         </div>
@@ -2321,7 +2396,7 @@
           <option value="">-- เลือกพรีเซ็ตเพื่อนำมาแก้ไข --</option>
         </select>
 
-        <div style="font-size:11px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">💬 หัวข้อคำถาม:</div>
+        <div style="font-size:11px; font-weight:500; color:#cbd5e1; margin-bottom:4px;">💬 หัวข้อคำถาม:</div>
         <input type="text" class="ask-input" id="inpAskQuestion" placeholder="พิมพ์คำถาม เช่น แผนที่ไหนดี? หรือ เล่นต่อไหม?" />
 
         <div class="ask-presets-row">
@@ -2331,7 +2406,7 @@
           <button class="ask-preset-btn" onclick="setAskPreset('continue')">เล่นต่อ / พักก่อน</button>
         </div>
 
-        <div style="font-size:11px; font-weight:700; color:#cbd5e1; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="font-size:11px; font-weight:500; color:#cbd5e1; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
           <span>📝 ตัวเลือกคำตอบ:</span>
           <span style="font-size:10px; color:#94a3b8;">โหมดคำตอบ</span>
         </div>
@@ -2354,7 +2429,7 @@
         <!-- Timers row: voting duration & results hide duration -->
         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:8px;">
           <div>
-            <div style="font-size:10px; font-weight:600; color:#94a3b8; margin-bottom:3px;">⏱️ เวลาเปิดโหวต:</div>
+            <div style="font-size:10px; font-weight:500; color:#94a3b8; margin-bottom:3px;">⏱️ เวลาเปิดโหวต:</div>
             <select id="selAskDuration" style="width:100%; background:#162032; border:1px solid #283548; color:#cbd5e1; border-radius:6px; padding:6px; font-size:11px;">
               <option value="15">15 วินาที</option>
               <option value="30">30 วินาที</option>
@@ -2365,7 +2440,7 @@
             </select>
           </div>
           <div>
-            <div style="font-size:10px; font-weight:600; color:#94a3b8; margin-bottom:3px;">👁️ สรุปผลแล้วหาย:</div>
+            <div style="font-size:10px; font-weight:500; color:#94a3b8; margin-bottom:3px;">👁️ สรุปผลแล้วหาย:</div>
             <select id="selAskResultDuration" style="width:100%; background:#162032; border:1px solid #283548; color:#cbd5e1; border-radius:6px; padding:6px; font-size:11px;">
               <option value="5">5 วินาที</option>
               <option value="10">10 วินาที</option>
@@ -2425,11 +2500,11 @@
           <div style="display:flex; align-items:center; justify-content:space-between;">
             <div style="display:flex; align-items:center; gap:8px; min-width:0;">
               <span style="display:inline-block; width:8px; height:8px; min-width:8px; border-radius:50%; background:#ef4444; box-shadow:0 0 8px #ef4444;"></span>
-              <span style="color:#f87171; font-weight:700; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="txtReplieLive">กำลังแสดง: !donate</span>
+              <span style="color:#f87171; font-weight:500; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="txtReplieLive">กำลังแสดง: !donate</span>
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-              <span style="color:#fca5a5; font-size:11.5px; font-weight:800; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;" id="txtReplieCountdown">0.0s</span>
-              <button type="button" onclick="sendAction('replie_dismiss')" style="background:#ef4444; color:#fff; border:none; border-radius:5px; padding:4px 10px; font-weight:700; font-size:11.5px; cursor:pointer;" title="สั่งซ่อนออกจากจอ OBS ทันทีโดยไม่ต้องรอหมดเวลา">✕ ซ่อนทันที</button>
+              <span style="color:#fca5a5; font-size:11.5px; font-weight:700; font-family:monospace; background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;" id="txtReplieCountdown">0.0s</span>
+              <button type="button" onclick="sendAction('replie_dismiss')" style="background:#ef4444; color:#fff; border:none; border-radius:5px; padding:4px 10px; font-weight:500; font-size:11.5px; cursor:pointer;" title="สั่งซ่อนออกจากจอ OBS ทันทีโดยไม่ต้องรอหมดเวลา">✕ ซ่อนทันที</button>
             </div>
           </div>
           <!-- Live Countdown Progress Bar -->
@@ -2679,7 +2754,7 @@
 
   let _dockPollTimer=null;
   function connectWs(){
-    async function poll(){try{const response=await fetch('/api/dock/status',{cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();updateAllDockStatus(data.status);document.getElementById('connText').textContent='Online';document.getElementById('connDot').className='status-dot green';hideOfflineOverlay();}catch{document.getElementById('connText').textContent='Offline';document.getElementById('connDot').className='status-dot red';scheduleOfflineOverlay();}}
+    async function poll(){try{const response=await fetch('/api/dock/status',{cache:'no-store'});if(!response.ok)throw Error();const data=await response.json();updateAllDockStatus(data.status);document.getElementById('connText').textContent='Online';document.getElementById('connStatus').title='สถานะ: เชื่อมต่อกับโปรแกรมแล้ว';document.getElementById('connDot').className='status-dot green';hideOfflineOverlay();}catch{document.getElementById('connText').textContent='Offline';document.getElementById('connStatus').title='สถานะ: ขาดการเชื่อมต่อกับโปรแกรม';document.getElementById('connDot').className='status-dot red';scheduleOfflineOverlay();}}
     clearInterval(_dockPollTimer);_dockPollTimer=setInterval(poll,700);poll();
   }
   function sendAction(action,payload={}){
@@ -3086,7 +3161,7 @@
       item.innerHTML = `
         <div class="poll-bar-label">
           <span>${k}: ${c}</span>
-          <span style="font-weight:700;">${pct}% (${cnt})</span>
+          <span style="font-weight:500;">${pct}% (${cnt})</span>
         </div>
         <div class="poll-track">
           <div class="poll-fill ${colorClass}" style="width: ${pct}%;"></div>
@@ -4605,9 +4680,9 @@
 
 <!-- MODAL: SET REPLIE SCHEDULE -->
 <div id="modalReplieSchedule" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2, 6, 23, 0.88); z-index:99999; align-items:center; justify-content:center; contain:strict; isolation:isolate;">
-  <div style="background:#0b1120; border:1px solid #334155; border-radius:10px; width:340px; max-width:92vw; padding:18px; box-shadow:0 12px 35px rgba(0,0,0,0.85); display:flex; flex-direction:column; gap:14px;">
+  <div style="background:#0b1120; border:1px solid #334155; border-radius:0; width:340px; max-width:92vw; padding:18px; box-shadow:0 12px 35px rgba(0,0,0,0.85); display:flex; flex-direction:column; gap:14px;">
     <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #1e293b; padding-bottom:8px;">
-      <span style="font-weight:700; font-size:13.5px; color:#f8fafc;" id="lblSchedCmdName">⏱️ ตั้งเวลาขึ้นจออัตโนมัติ</span>
+      <span style="font-weight:500; font-size:13.5px; color:#f8fafc;" id="lblSchedCmdName">⏱️ ตั้งเวลาขึ้นจออัตโนมัติ</span>
       <button type="button" onclick="closeReplieScheduleDialog()" style="background:none; border:none; color:#94a3b8; font-size:16px; cursor:pointer;">✕</button>
     </div>
     <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
@@ -4615,36 +4690,36 @@
     </div>
     <!-- Quick Preset Buttons -->
     <div style="display:flex; gap:6px; flex-wrap:wrap;">
-      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(3)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:600; cursor:pointer;">3 นาที</button>
-      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(5)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:600; cursor:pointer;">5 นาที</button>
-      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(10)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:600; cursor:pointer;">10 นาที</button>
-      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(15)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:600; cursor:pointer;">15 นาที</button>
-      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(30)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:600; cursor:pointer;">30 นาที</button>
+      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(3)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:500; cursor:pointer;">3 นาที</button>
+      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(5)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:500; cursor:pointer;">5 นาที</button>
+      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(10)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:500; cursor:pointer;">10 นาที</button>
+      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(15)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:500; cursor:pointer;">15 นาที</button>
+      <button type="button" class="btn-sched-preset" onclick="setSchedPreset(30)" style="background:#1e293b; color:#f8fafc; border:1px solid #334155; border-radius:4px; padding:5px 9px; font-size:11.5px; font-weight:500; cursor:pointer;">30 นาที</button>
     </div>
     <!-- Custom Number Input -->
     <div style="display:flex; align-items:center; gap:8px;">
       <span style="font-size:11.5px; color:#94a3b8;">หรือระบุ:</span>
-      <input type="number" id="inpSchedMinutes" value="5" min="1" max="180" style="width:70px; background:#1e293b; border:1px solid #38bdf8; border-radius:4px; color:#fff; padding:5px 8px; font-size:13px; font-weight:700; text-align:center;">
+      <input type="number" id="inpSchedMinutes" value="5" min="1" max="180" style="width:70px; background:#1e293b; border:1px solid #38bdf8; border-radius:4px; color:#fff; padding:5px 8px; font-size:13px; font-weight:500; text-align:center;">
       <span style="font-size:12px; color:#e2e8f0;">นาที</span>
     </div>
     <!-- Action Buttons -->
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
       <button type="button" onclick="closeReplieScheduleDialog()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:4px; padding:6px 14px; font-size:12px; cursor:pointer;">ยกเลิก</button>
-      <button type="button" onclick="confirmStartSchedule()" style="background:#ea580c; color:#fff; border:none; border-radius:4px; padding:6px 16px; font-size:12px; font-weight:700; cursor:pointer;">🚀 เริ่มรันอัตโนมัติ</button>
+      <button type="button" onclick="confirmStartSchedule()" style="background:#ea580c; color:#fff; border:none; border-radius:4px; padding:6px 16px; font-size:12px; font-weight:500; cursor:pointer;">🚀 เริ่มรันอัตโนมัติ</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: CONFIRM STOP REPLIE SCHEDULE -->
 <div id="modalReplieStopSchedule" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(2, 6, 23, 0.88); z-index:99999; align-items:center; justify-content:center; contain:strict; isolation:isolate;">
-  <div style="background:#0b1120; border:1px solid #334155; border-radius:10px; width:330px; max-width:92vw; padding:18px; box-shadow:0 12px 35px rgba(0,0,0,0.85); display:flex; flex-direction:column; gap:14px;">
-    <div style="font-weight:700; font-size:14px; color:#f8fafc;" id="lblStopSchedTitle">⏹️ หยุดการรันอัตโนมัติ?</div>
+  <div style="background:#0b1120; border:1px solid #334155; border-radius:0; width:330px; max-width:92vw; padding:18px; box-shadow:0 12px 35px rgba(0,0,0,0.85); display:flex; flex-direction:column; gap:14px;">
+    <div style="font-weight:500; font-size:14px; color:#f8fafc;" id="lblStopSchedTitle">⏹️ หยุดการรันอัตโนมัติ?</div>
     <div style="font-size:12.5px; color:#cbd5e1; line-height:1.5;" id="lblStopSchedMsg">
       จะหยุดการรันคำสั่งอัตโนมัติตามเวลาหรือไม่?
     </div>
     <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
       <button type="button" onclick="closeStopScheduleDialog()" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:4px; padding:6px 14px; font-size:12px; cursor:pointer;">ยกเลิก</button>
-      <button type="button" onclick="confirmStopSchedule()" style="background:#dc2626; color:#fff; border:none; border-radius:4px; padding:6px 16px; font-size:12px; font-weight:700; cursor:pointer;">⏹️ หยุดรันอัตโนมัติ</button>
+      <button type="button" onclick="confirmStopSchedule()" style="background:#dc2626; color:#fff; border:none; border-radius:4px; padding:6px 16px; font-size:12px; font-weight:500; cursor:pointer;">⏹️ หยุดรันอัตโนมัติ</button>
     </div>
   </div>
 </div>

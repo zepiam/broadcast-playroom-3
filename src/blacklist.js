@@ -6,12 +6,17 @@
  let state={names:Array.isArray(saved?.names)?saved.names:defaults,hideOverlay:typeof saved?.hideOverlay==='boolean'?saved.hideOverlay:true,botName:typeof saved?.botName==='string'?saved.botName:'Baitoei-Bot'};
  const clean=value=>String(value || '').trim().toLowerCase();
  const persist=()=>{localStorage.setItem(key,JSON.stringify(state));syncBotBlocklist();window.BP3PruneBlockedSpeech?.();};
- let syncTimer;
+ let syncTimer,lastSyncBody='',lastSyncAt=0;
  function syncBotBlocklist(){
   clearTimeout(syncTimer);syncTimer=setTimeout(()=>{
    const blocked=Object.entries(window._blockedUsers || {}).filter(([,value])=>flags(value).all).map(([name])=>name);
    const names=[...new Set([...state.names,state.botName,...blocked].map(clean).filter(Boolean))];
-   fetch('/api/chatbot/blocklist',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({names,banned_words:window.BP3BannedWords?.words() || []})}).catch(()=>{});
+   // POST only when the list changed (plus a resend every 60 s for a restarted backend). Posting the same
+   // list every 5 s made the page's memory grow while idle.
+   const body=JSON.stringify({names,banned_words:window.BP3BannedWords?.words() || []});
+   if(body===lastSyncBody && Date.now()-lastSyncAt<60000)return;
+   lastSyncBody=body;lastSyncAt=Date.now();
+   fetch('/api/chatbot/blocklist',{method:'POST',headers:{'Content-Type':'application/json'},body}).catch(()=>{lastSyncBody='';});
   },50);
  }
  window.BP3SyncBotBlocklist=syncBotBlocklist;

@@ -979,7 +979,7 @@
           if (w === lastW && h === lastH) return;
           lastW = w; lastH = h;
           cancelAnimationFrame(fitRaf);
-          fitRaf = requestAnimationFrame(autoFitCanvas);
+          fitRaf = requestAnimationFrame(() => { autoFitCanvas(); activateWaitingLegacyChats(); });
         }).observe(vpEl);
       }
     }catch(_){}
@@ -1662,10 +1662,31 @@
     `;
   }
 
+  // Hidden in-page Composer (main app window): preview chat iframes wait until it is shown.
+  function legacyChatShouldWait() {
+    const win = document.getElementById('win-composer');
+    const stage = document.getElementById('composerCanvasStage');
+    return !!win && !!stage && stage.getClientRects().length === 0;
+  }
+  function activateWaitingLegacyChats() {
+    if (legacyChatShouldWait()) return;
+    document.querySelectorAll('iframe[data-legacy-chat][data-src]').forEach(frame => {
+      const wid = String(frame.id || '').replace(/^legacyChat_/, '');
+      const widget = (getActivePage()?.widgets || []).find(x => String(x.id) === wid);
+      if (widget) frame.addEventListener('load', () => frame.contentWindow?.postMessage({type:'bp3-chat-widget', widget}, location.origin), {once:true});
+      frame.src = frame.dataset.src;
+      frame.removeAttribute('data-src');
+    });
+  }
+
   // Render Inner HTML according to Widget Type
   function renderWidgetInnerHtml(w) {
     if (w.type === 'chat') {
-      return `<iframe data-legacy-chat="true" id="legacyChat_${w.id}" src="/legacy-chat.html?id=${encodeURIComponent(w.id)}&p=${encodeURIComponent(getActivePage()?.id || '')}" style="border:0;width:100%;height:100%;background:transparent;pointer-events:none"></iframe>`;
+      const chatSrc = `/legacy-chat.html?id=${encodeURIComponent(w.id)}&p=${encodeURIComponent(getActivePage()?.id || '')}`;
+      // In the main app window the in-page Composer is usually hidden (it opens as its own window): do not run a
+      // full chat overlay page in a hidden iframe until the Composer is actually shown (it kept polling and grew memory).
+      const srcAttr = legacyChatShouldWait() ? `data-src="${chatSrc}"` : `src="${chatSrc}"`;
+      return `<iframe data-legacy-chat="true" id="legacyChat_${w.id}" ${srcAttr} style="border:0;width:100%;height:100%;background:transparent;pointer-events:none"></iframe>`;
       const mode = w.chatMode || 'default';
       const theme = w.chatTheme || 'default';
 

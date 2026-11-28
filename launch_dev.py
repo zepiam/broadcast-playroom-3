@@ -4133,7 +4133,7 @@ class QuietHandler(SimpleHTTPRequestHandler):
 
 
 
-            state={**DOCK_STATE,'pages':[{'id':p.get('id'),'name':p.get('name',p.get('id'))} for p in pages],'active_page_id':page.get('id'),'active_widgets':[dict(w,enabled=not w.get('hidden',False),name=w.get('title',w['type'])) for w in page.get('widgets',[])],'viewers':{'total':sum(counts.values()),'platforms':counts},'recent_messages':recent,'widgets_installed':{kind:any(w.get('type')==kind for w in page.get('widgets',[])) for kind in ['chat','replie','ask','giveaway']}}
+            state={**DOCK_STATE,'pages':[{'id':p.get('id'),'name':p.get('name',p.get('id'))} for p in pages],'active_page_id':page.get('id'),'active_widgets':[dict(w,enabled=not w.get('hidden',False),name=w.get('title',w['type'])) for w in page.get('widgets',[])],'viewers':{'total':sum(counts.values()),'platforms':counts},'recent_messages':recent,'widgets_installed':{'chat':any(w.get('type')=='chat' for w in page.get('widgets',[])),'replie':True,'ask':True,'giveaway':True}}  # ASK/Replie/Giveaway are built into the overlay: no widget needed, Dock controls always usable
 
 
 

@@ -1,9 +1,21 @@
-# HANDOFF NOTES - Broadcast Playroom 3 (v3.95)
-- **Current Version**: v3.95 (Released — page memory growth fixed (viewer roster + Dock), read-once chat on every platform, SOOP fake chat lines)
+# HANDOFF NOTES - Broadcast Playroom 3 (v3.96)
+- **Current Version**: v3.96 (Released — OBS Dock usable without widgets, lighter font, square frames, tidy header; idle memory growth down to the browser floor)
 - **Status**: Tested, Smoke Test Gate Passed, Published to GitHub & Hugging Face.
 ---
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
+
+## 🚀 RELEASED v3.96 — OBS Dock: ASK/Replie/Giveaway กดได้ทันที + ฟอนต์บาง + กรอบมุมฉาก + หน่วยความจำ idle (Claude, 2026-11-28)
+- เจ้าของ: ASK, Replie, Giveaway ไม่ต้องใส่ widget แล้ว Dock ไม่ควรขึ้น "⚠️ ยังไม่มี Widget บนจอ" แล้วล็อก; ขอฟอนต์บางอ่านง่าย; กรอบทุกรายการเป็นมุมฉาก มนเฉพาะปุ่ม
+- สาเหตุล็อก: `launch_dev.py` `/api/dock/status` คำนวณ `widgets_installed` จาก widget บนหน้า → แก้ให้ ask/replie/giveaway = True เสมอ (chat ยังเช็ค widget ตามเดิม)
+- `src/dock.html`: `@font-face 'BP3 Dock Thai'` จากไฟล์ที่มากับโปรแกรม `/assets/fonts/NotoSansThai-{Regular,Medium,Bold}.ttf` (เดิมระบุ Kanit แต่ไม่ได้โหลด → ตกไปฟอนต์ไทยหนาของ Windows); ลดน้ำหนักฟอนต์หนึ่งขั้นทั้งหน้า (800→700, 700→500, 600→500; รวม inline); กฎ CSS ท้าย style ทำกรอบ/การ์ด/ป้าย/ช่องกรอก/เมนู/กล่องยืนยัน/toast เป็น `border-radius:0`, ปุ่ม แท็บ จุดสถานะ แถบเปอร์เซ็นต์ คงเดิม; กล่องยืนยัน inline 2 อันเป็นมุมฉาก; ต้นฉบับก่อนแก้สำรองที่ scratchpad `dock_before.html`
+- **Completed & Verified**: `dock_ui_test.py` 5/5 (ไม่มี widget แล้ว cover ทั้งสามซ่อน ป้ายสถานะปกติ, การ์ด/ป้าย 0px ปุ่ม 10px จุด 50%, ฟอนต์ BP3 Dock Thai โหลดจริง, ปุ่ม Giveaway ส่ง `open_giveaway_tool`, ไม่มี page error); dock_func_test 9/9; `npm run build` gates PASSED; ภาพก่อน/หลังส่งให้เจ้าของแล้ว
+- หัว Dock (ตามเจ้าของ "เบียดเสียด"): ชื่อ/ปุ่มอยู่บรรทัดเดียวเสมอ (ชื่อตัด … เมื่อแคบมาก), ปุ่มรีโหลด/จัดการเป็นไอคอนขนาดเท่ากันเมื่อ Dock < 440px (มีข้อความเมื่อกว้างกว่า) พร้อม title; ป้าย Online เหลือจุดสี (title "สถานะ: เชื่อมต่อกับโปรแกรมแล้ว"/"สถานะ: ขาดการเชื่อมต่อกับโปรแกรม" ตั้งใน poll()) และย้ายไปแทนไอคอน 🎮 หน้าชื่อ (เอา 🎮 ออก); ตรวจที่ 300/340/380/460px บรรทัดเดียว ไม่มี page error, จำลอง offline จุดแดง+title เปลี่ยน; ภาพส่งเจ้าของแล้ว
+- **Unverified**: ใน OBS จริง; ยังไม่ release
+- หน่วยความจำตอนเปิดทิ้งไว้ (เจ้าของ: เปิดเฉยๆ ไม่ควรขึ้น): หลัง v3.95 ยังโต ~1.1 MB/นาที → ไล่แบบไม่มี instrumentation 15–60 นาที เจอ: (1) `blacklist.js` POST `/api/chatbot/blocklist` ทุก 5 วิ → ส่งเฉพาะเมื่อเปลี่ยน + ส่งซ้ำทุก 60 วิ; (2) Dock resend 10 → 30 วิ; (3) หน้าโปรแกรมหลักมี iframe `legacy-chat.html` ซ่อนอยู่ใน Composer ในหน้า (ซึ่งไม่แสดงเพราะ Composer เปิดเป็นหน้าต่างแยก) วิ่ง polling เต็มรูปแบบ → `composer_studio.js` ให้ iframe แชทพรีวิวรอ (`data-src`) จนกว่า Composer ในหน้าจะแสดง (เงื่อนไข: มี `#win-composer` และ stage ไม่มีขนาด; overlay.html/composer.html/popout ไม่กระทบ) และโหลด+ส่ง widget config เมื่อเปิด
+  - ผล: idle 1.1 → 0.5–0.6 MB/นาที (2 รอบ 20 นาที) = เส้นฐานตอนปิด timer/observer ของแอปทั้งหมด (0.3–0.6, การโตของเบราว์เซอร์เอง); 60 นาทีก่อนแก้รอบนี้ 0.9–1.2 ตลอด ไม่ plateau
+  - ทดสอบ: legacy_chat_lazy_test 5/5 (หน้าหลักซ่อน Composer = รอ, popout โหลด, เปิด Composer ในหน้า = โหลด, OBS overlay โหลดทันที, ไม่มี error); dock_func 9/9 (resend 30 วิ), dock_ui 5/5, composer_fix, roster_func, single_reader, reload_backlog, nickname, read_once ผ่าน; tests/verify_blacklist_backend, verify_bot_runtime ผ่าน; verify_blacklist_rules/verify_block_settings ไม่ผ่านแบบเดียวกับ v3.94 (บรรทัด/assert เดิม)
+- เฝ้าหน่วยความจำ v3.95 บนเครื่องเจ้าของ 30 นาที (06:12–06:41): backend private 6,889→6,906 MB (RVC/CUDA, นิ่ง), หน้าโปรแกรม 125→149 MB (~1 MB/นาที) จนเจ้าของเปิดหน้าต่างเพิ่มตอน 06:36 (Edge รวม 390→679 แล้วลงเหลือ 567), หลังจากนั้นนิ่งที่ 191 MB
 
 > v3.95 ปล่อยแล้ว: commit 63eb347 + tag v3.95; SHA-256 ของแพตช์ lite/full บน GitHub และ HF ตรงกับ version.json ครบ, version.json ทั้งสองที่ = 3.95; ในแพตช์มี chat_bridge/chat_soop/power_guard/chat_youtube/chat_tiktok ทั้ง root และ _internal และ dist (user_controls saveDelta, dock lastDockBody, title v3.95). ยังไม่ได้ลองตัวติดตั้งจริง
 
