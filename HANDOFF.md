@@ -5,6 +5,8 @@
 
 > 📘 ปัญหา RVC/TTS: อ่าน `RVC_FLOW.md` ก่อน (flow, ไฟล์, data dir, เหตุการณ์ที่ผ่านมา, ขั้นตอนไล่ปัญหา)
 
+> v3.96 ปล่อยแล้ว: commit 2bdc7d2 + tag v3.96; SHA-256 ของแพตช์ lite/full บน GitHub และ HF ตรงกับ version.json ครบ, version.json ทั้งสองที่ = 3.96; ในแพตช์มี launch_dev.py (widgets_installed) ทั้ง root/_internal และ dist dock.html (BP3 Dock Thai), blacklist.js, composer_studio.js (legacyChatShouldWait), dock_controls.js (30 s), title v3.96. ยังไม่ได้ลองตัวติดตั้งจริง/ใน OBS
+
 ## 🚀 RELEASED v3.96 — OBS Dock: ASK/Replie/Giveaway กดได้ทันที + ฟอนต์บาง + กรอบมุมฉาก + หน่วยความจำ idle (Claude, 2026-11-28)
 - เจ้าของ: ASK, Replie, Giveaway ไม่ต้องใส่ widget แล้ว Dock ไม่ควรขึ้น "⚠️ ยังไม่มี Widget บนจอ" แล้วล็อก; ขอฟอนต์บางอ่านง่าย; กรอบทุกรายการเป็นมุมฉาก มนเฉพาะปุ่ม
 - สาเหตุล็อก: `launch_dev.py` `/api/dock/status` คำนวณ `widgets_installed` จาก widget บนหน้า → แก้ให้ ask/replie/giveaway = True เสมอ (chat ยังเช็ค widget ตามเดิม)
